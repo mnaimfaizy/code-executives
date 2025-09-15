@@ -1,5 +1,5 @@
-import { useRef, useEffect } from "react";
-import * as THREE from "three";
+import { useRef, useEffect } from 'react';
+import * as THREE from 'three';
 
 function App() {
   const mountRef = useRef<HTMLDivElement>(null);
