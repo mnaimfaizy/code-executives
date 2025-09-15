@@ -4,9 +4,6 @@ This template provides a minimal setup to get React working in Vite with HMR and
 
 Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
@@ -67,3 +64,19 @@ export default tseslint.config([
   },
 ]);
 ```
+
+## 3D/2D Visualization Architecture
+
+We use Three.js for 3D models with a modular structure under `src/three/`:
+
+- `core/Engine.ts`: Lightweight host that creates a scene, camera, renderer, shared lights, and an animation loop. It manages model lifecycle.
+- `core/types.ts`: `IModel` interface that all 3D models implement: `init(scene)`, `update(dt)`, `dispose()`.
+- `core/anim.ts`: Tiny tween scheduler for simple time-based animations.
+- `react/ThreeCanvas.tsx`: React bridge that mounts the engine in a div and registers provided models.
+- `models/CallStackAssemblyLine.ts`: First model visualizing the Call Stack as an assembly line (conveyor + lift). Exposes `pushFrame()` and `popFrame()`.
+
+Add a new model:
+
+1. Create `src/three/models/MyModel.ts` implementing `IModel`.
+2. Import it in a page and pass an instance to `ThreeCanvas` via `models={[new MyModel()]}`.
+3. Expose imperative methods on your model (e.g., `step()`) and call them from UI buttons.
