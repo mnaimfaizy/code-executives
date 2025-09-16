@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Play, Square, RotateCcw, StepForward } from 'lucide-react';
 import TwoDLayout from '../components/TwoDLayout';
 import CallStack2D, { type CallStack2DHandle } from '../components/models2d/CallStack2D';
 import ThreeCanvas, { type ThreeCanvasHandle } from '../three/react/ThreeCanvas';
@@ -14,13 +13,14 @@ import {
   setLabelColorMap,
   type FunctionInfo,
 } from '../utils/instrument';
+import ModeTabs from '../components/shared/ModeTabs';
+import RunnerToolbar, { type Speed } from '../components/shared/RunnerToolbar';
+import OutputPanel, { type OutputLine } from '../components/shared/OutputPanel';
+import InstrumentedSource, { type Segment } from '../components/shared/InstrumentedSource';
+import useRunner from '../hooks/useRunner';
 
 type Instruction = { type: 'push' | 'pop'; label?: string };
-type OutputLine = {
-  text: string;
-  label?: string;
-  kind?: 'push' | 'pop' | 'log' | 'info' | 'error';
-};
+// Using shared OutputLine (kind is a loose string)
 type Compiled = { program: Instruction[]; functions: FunctionInfo[] };
 
 function parseProgram(src: string): Instruction[] {
@@ -87,7 +87,7 @@ const CallStack: React.FC = () => {
   const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([{ text: 'Ready.', kind: 'info' }]);
   const [ip, setIp] = useState<number>(0);
-  const [speed, setSpeed] = useState<'very-slow' | 'slow' | 'normal'>('very-slow');
+  const [speed, setSpeed] = useState<Speed>('very-slow');
   const [running, setRunning] = useState<boolean>(false);
   const runnerRef = useRef<number | null>(null);
   const compiledRef = useRef<Compiled | null>(null);
@@ -170,83 +170,48 @@ const CallStack: React.FC = () => {
       return compiledRef.current;
     }
   };
-  const step = () => {
-    if (running) return; // ignore step while running
-    const { program } = ensureCompiled();
-    if (ip >= program.length) {
-      log('Program complete.', { kind: 'info' });
-      return;
-    }
-    const ins = program[ip];
-    if (ins.type === 'push') {
-      stackRef.current?.push(ins.label || 'fn');
-      log(`push(${ins.label || 'fn'})`, { label: ins.label || 'fn', kind: 'push' });
-      setStackLabels((s) => [...s, ins.label || 'fn']);
-    } else {
-      stackRef.current?.pop();
-      const lbl = ins.label ?? stackLabels[stackLabels.length - 1]; // use current top for DSL
-      log(`pop(${lbl ?? ''})`.trim(), { label: lbl, kind: 'pop' });
-      setStackLabels((s) => s.slice(0, -1));
-    }
-    setIp((n) => n + 1);
-  };
-  const getIntervalMs = () => {
-    switch (speed) {
-      case 'very-slow':
-        return 1600;
-      case 'slow':
-        return 1000;
-      case 'normal':
-      default:
-        return 450;
-    }
-  };
-
-  const stopRunner = () => {
-    if (runnerRef.current) {
-      clearInterval(runnerRef.current);
-      runnerRef.current = null;
-    }
-    setRunning(false);
-  };
-
-  const run = () => {
-    if (running) {
-      stopRunner();
-      return;
-    }
-    const { program } = ensureCompiled();
-    if (ip >= program.length) {
-      log('Program already complete. Reset to run again.', { kind: 'info' });
-      return;
-    }
-    let i = ip;
-    setRunning(true);
-    runnerRef.current = window.setInterval(() => {
-      if (i >= program.length) {
-        stopRunner();
-        log('Program complete.', { kind: 'info' });
-        return;
-      }
-      const ins = program[i++];
+  const {
+    toggleRun,
+    step: runnerStep,
+    setSpeed: setRunnerSpeed,
+  } = useRunner<Instruction>({
+    getProgram: () => ensureCompiled().program,
+    apply: (ins) => {
       if (ins.type === 'push') {
-        stackRef.current?.push(ins.label || 'fn');
-        log(`push(${ins.label || 'fn'})`, { label: ins.label || 'fn', kind: 'push' });
-        setStackLabels((s) => [...s, ins.label || 'fn']);
+        const lbl = ins.label || 'fn';
+        stackRef.current?.push(lbl);
+        log(`push(${lbl})`, { label: lbl, kind: 'push' });
+        setStackLabels((s) => [...s, lbl]);
       } else {
         stackRef.current?.pop();
         const lbl = ins.label ?? stackLabels[stackLabels.length - 1];
         log(`pop(${lbl ?? ''})`.trim(), { label: lbl, kind: 'pop' });
         setStackLabels((s) => s.slice(0, -1));
       }
-      setIp(i);
-    }, getIntervalMs());
+    },
+    getIntervalMs: (s) => (s === 'very-slow' ? 1600 : s === 'slow' ? 1000 : 450),
+    onComplete: () => log('Program complete.', { kind: 'info' }),
+  });
+
+  useEffect(() => {
+    setRunnerSpeed(speed);
+  }, [speed, setRunnerSpeed]);
+
+  const step = () => {
+    runnerStep();
+    setIp((n) => n + 1);
+  };
+  // interval handled by useRunner
+
+  const run = () => {
+    toggleRun();
   };
 
   // Cleanup runner on unmount or when switching away from 2D mode
   useEffect(() => {
+    const id = runnerRef.current;
     return () => {
-      if (runnerRef.current) clearInterval(runnerRef.current);
+      if (id) clearInterval(id);
     };
   }, []);
   // Load persisted colors once
@@ -271,53 +236,10 @@ const CallStack: React.FC = () => {
     }
   }, [ip, running]);
   useEffect(() => {
-    if (mode !== '2D' && running) stopRunner();
-  }, [mode, running]);
+    // When leaving 2D mode, just stop toggling run via toolbar. No extra action needed here.
+  }, [mode]);
 
-  const renderHighlighted = () => {
-    const compiled = compiledRef.current;
-    const functions = compiled?.functions ?? [];
-    if (!functions.length) return null;
-    const segments: Array<{ text: string; color?: string; emphasize?: boolean }> = [];
-    const sortedFns = [...functions].sort((a, b) => a.bodyStart - b.bodyStart);
-    let cursor = 0;
-    const src = source;
-    const active = stackLabels[stackLabels.length - 1];
-    for (const fn of sortedFns) {
-      if (fn.bodyStart > cursor) {
-        segments.push({ text: src.slice(cursor, fn.bodyStart) });
-      }
-      const bodyText = src.slice(fn.bodyStart, fn.bodyEnd);
-      segments.push({
-        text: bodyText,
-        color: colorForLabel(fn.label),
-        emphasize: active === fn.label,
-      });
-      cursor = fn.bodyEnd;
-    }
-    if (cursor < src.length) segments.push({ text: src.slice(cursor) });
-    return (
-      <div className="min-h-0 flex-1 overflow-auto whitespace-pre rounded-md border border-dashed border-gray-300 bg-white p-2 font-mono text-sm">
-        {segments.map((seg, idx) =>
-          seg.color ? (
-            <span
-              key={idx}
-              style={{
-                backgroundColor: seg.color,
-                color: '#0b1020',
-                borderRadius: 4,
-                boxShadow: seg.emphasize ? '0 0 0 2px rgba(0,0,0,0.15) inset' : undefined,
-              }}
-            >
-              {seg.text}
-            </span>
-          ) : (
-            <span key={idx}>{seg.text}</span>
-          )
-        )}
-      </div>
-    );
-  };
+  // highlighting is built inline when rendering InstrumentedSource
 
   const showHighlighted = running || ip > 0;
 
@@ -348,46 +270,45 @@ const CallStack: React.FC = () => {
             <option value="dsl">Simple DSL</option>
           </select>
           <div className="mx-2 h-5 w-px bg-gray-300" />
-          <button
-            title={running ? 'Stop' : 'Run'}
-            onClick={run}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-indigo-600 text-white hover:bg-indigo-500"
-          >
-            {running ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </button>
-          <button
-            title="Step"
-            onClick={step}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-600 text-white hover:bg-emerald-500"
-          >
-            <StepForward className="h-4 w-4" />
-          </button>
-          <button
-            title="Reset"
-            onClick={reset}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gray-700 text-white hover:bg-gray-600"
-          >
-            <RotateCcw className="h-4 w-4" />
-          </button>
-          <label className="ml-2 text-xs text-gray-600" htmlFor="speed-select">
-            Speed
-          </label>
-          <select
-            id="speed-select"
-            className="min-w-36 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
-            value={speed}
-            onChange={(e) => setSpeed(e.target.value as 'very-slow' | 'slow' | 'normal')}
-          >
-            <option value="very-slow">Very Slow</option>
-            <option value="slow">Slow</option>
-            <option value="normal">Normal</option>
-          </select>
+          <RunnerToolbar
+            running={running}
+            speed={speed}
+            onRunToggle={run}
+            onStep={step}
+            onReset={reset}
+            onSpeedChange={(s) => setSpeed(s)}
+          />
         </div>
       </div>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="min-h-0 flex-1 overflow-auto">
           {showHighlighted && inputMode === 'js' ? (
-            renderHighlighted()
+            <InstrumentedSource
+              segments={(() => {
+                const compiled = compiledRef.current;
+                const functions = compiled?.functions ?? [];
+                if (!functions.length) return [] as Segment[];
+                const segments: Segment[] = [];
+                const sortedFns = [...functions].sort((a, b) => a.bodyStart - b.bodyStart);
+                let cursor = 0;
+                const src = source;
+                const active = stackLabels[stackLabels.length - 1];
+                for (const fn of sortedFns) {
+                  if (fn.bodyStart > cursor) {
+                    segments.push({ text: src.slice(cursor, fn.bodyStart) });
+                  }
+                  const bodyText = src.slice(fn.bodyStart, fn.bodyEnd);
+                  segments.push({
+                    text: bodyText,
+                    color: colorForLabel(fn.label),
+                    emphasize: active === fn.label,
+                  });
+                  cursor = fn.bodyEnd;
+                }
+                if (cursor < src.length) segments.push({ text: src.slice(cursor) });
+                return segments;
+              })()}
+            />
           ) : (
             <textarea
               value={source}
@@ -449,28 +370,10 @@ const CallStack: React.FC = () => {
     </div>
   );
   const outputPanel = (
-    <div className="flex h-full flex-col">
-      <div className="mb-2 rounded-md border border-gray-200 bg-gray-100 px-2 py-1">
-        <div className="text-sm font-semibold">Output</div>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre rounded-md border border-gray-300 bg-gray-50 p-2 font-mono text-sm">
-        {output.map((line, idx) => {
-          const color = line.label ? colorForLabel(line.label) : undefined;
-          return (
-            <div
-              key={idx}
-              className="mb-0.5 inline-flex items-center gap-2 rounded-md px-1 py-0.5"
-              style={{
-                backgroundColor: color ?? 'transparent',
-                color: color ? '#0b1020' : undefined,
-              }}
-            >
-              <span>{line.text}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+    <OutputPanel
+      lines={output}
+      colorForLabel={(l?: string) => (l ? colorForLabel(l) : undefined)}
+    />
   );
   const canvas2D = (
     <div className="flex h-full flex-col gap-2">
@@ -526,23 +429,7 @@ const CallStack: React.FC = () => {
         allocated objects are stored.
       </p>
 
-      <div className="mt-2 border-b">
-        <nav className="flex gap-2">
-          {(['2D', '3D'] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`-mb-px border-b-2 px-3 py-2 text-sm ${
-                mode === m
-                  ? 'border-indigo-600 font-medium text-indigo-700'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              {m}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <ModeTabs mode={mode} onChange={setMode} />
 
       {mode === '2D' ? (
         <div className="mt-2">
