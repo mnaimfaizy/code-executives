@@ -29,6 +29,9 @@ const ThreeCanvas = React.forwardRef<ThreeCanvasHandle, ThreeCanvasProps>(
         engine.dispose();
         engineRef.current = null;
       };
+      // Note: models are managed in a separate effect to avoid re-creating the engine
+      // when the models array changes. We intentionally depend only on `background` here.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [background]);
 
     // Mount/unmount models changes

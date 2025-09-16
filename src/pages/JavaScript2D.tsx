@@ -1,8 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Box, Button, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
+import { Play, RotateCcw, StepForward } from 'lucide-react';
 import TwoDLayout from '../components/TwoDLayout';
 import CallStack2D, { type CallStack2DHandle } from '../components/models2d/CallStack2D';
 
@@ -93,265 +90,90 @@ const JavaScript2D: React.FC = () => {
   };
 
   const editor = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              bgcolor: '#22c55e',
-              boxShadow: '0 0 8px rgba(34, 197, 94, 0.4)',
-            }}
-          />
-          <Typography
-            variant="subtitle2"
-            sx={{
-              fontWeight: 600,
-              color: 'rgba(51, 65, 85, 0.9)',
-              letterSpacing: '0.02em',
-            }}
-          >
+    <div className="flex h-full flex-col">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex flex-1 items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+          <span className="text-sm font-semibold tracking-wide text-slate-800">
             Stack Operations
-          </Typography>
-        </Box>
-        <Tooltip title="Run All Commands" arrow>
-          <IconButton
-            sx={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                transform: 'scale(1.05)',
-              },
-              transition: 'all 0.2s',
-            }}
-            onClick={run}
-          >
-            <PlayArrowIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Step Through" arrow>
-          <IconButton
-            sx={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                transform: 'scale(1.05)',
-              },
-              transition: 'all 0.2s',
-            }}
-            onClick={step}
-          >
-            <SkipNextIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Reset Stack" arrow>
-          <IconButton
-            sx={{
-              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-              color: 'white',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-                transform: 'scale(1.05)',
-              },
-              transition: 'all 0.2s',
-            }}
-            onClick={reset}
-          >
-            <RestartAltIcon />
-          </IconButton>
-        </Tooltip>
-      </Stack>
-      <TextField
+          </span>
+        </div>
+        <button
+          title="Run All Commands"
+          onClick={run}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-tr from-indigo-500 to-violet-600 text-white shadow hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <Play className="h-4 w-4" />
+        </button>
+        <button
+          title="Step Through"
+          onClick={step}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        >
+          <StepForward className="h-4 w-4" />
+        </button>
+        <button
+          title="Reset Stack"
+          onClick={reset}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-tr from-rose-500 to-red-600 text-white shadow hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-rose-500"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </button>
+      </div>
+      <textarea
         value={source}
         onChange={(e) => setSource(e.target.value)}
-        multiline
-        minRows={8}
-        maxRows={18}
-        fullWidth
-        placeholder="// Type instructions: push <label> | pop
-push main
-push calculateSum
-pop"
-        sx={{
-          flex: 1,
-          '& .MuiOutlinedInput-root': {
-            fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-            fontSize: '14px',
-            lineHeight: 1.5,
-            '& fieldset': {
-              borderColor: 'rgba(203, 213, 225, 0.5)',
-              borderWidth: '1px',
-            },
-            '&:hover fieldset': {
-              borderColor: 'rgba(102, 126, 234, 0.5)',
-            },
-            '&.Mui-focused fieldset': {
-              borderColor: '#667eea',
-              borderWidth: '2px',
-            },
-          },
-          '& .MuiOutlinedInput-input': {
-            padding: '16px',
-          },
-        }}
+        rows={10}
+        placeholder={'// Type instructions: push <label> | pop\npush main\npush calculateSum\npop'}
+        className="flex-1 resize-none rounded-md border border-slate-300 p-4 font-mono text-sm leading-relaxed outline-none ring-indigo-500 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2"
       />
-      <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
-        <Button
-          size="small"
-          variant="outlined"
-          sx={{
-            borderColor: 'rgba(102, 126, 234, 0.3)',
-            color: '#667eea',
-            '&:hover': {
-              borderColor: '#667eea',
-              backgroundColor: 'rgba(102, 126, 234, 0.05)',
-            },
-          }}
+      <div className="mt-2 flex gap-2">
+        <button
           onClick={() => setSource(DEFAULT_PROGRAM)}
+          className="inline-flex items-center rounded-md border border-indigo-200 bg-white px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50"
         >
           📝 Load Example
-        </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          sx={{
-            borderColor: 'rgba(239, 68, 68, 0.3)',
-            color: '#ef4444',
-            '&:hover': {
-              borderColor: '#ef4444',
-              backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            },
-          }}
+        </button>
+        <button
           onClick={() => setSource('')}
+          className="inline-flex items-center rounded-md border border-rose-200 bg-white px-3 py-1.5 text-sm font-medium text-rose-600 hover:bg-rose-50"
         >
           🗑️ Clear
-        </Button>
-      </Box>
-    </Box>
+        </button>
+      </div>
+    </div>
   );
 
   const outputPanel = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              bgcolor: '#22c55e',
-              boxShadow: '0 0 8px rgba(34, 197, 94, 0.4)',
-            }}
-          />
-          <Typography
-            variant="subtitle2"
-            sx={{
-              fontWeight: 600,
-              color: 'rgba(34, 197, 94, 0.9)',
-              letterSpacing: '0.02em',
-            }}
-          >
-            Execution Log
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            px: 2,
-            py: 0.5,
-            borderRadius: 1,
-            bgcolor: 'rgba(34, 197, 94, 0.1)',
-            border: '1px solid rgba(34, 197, 94, 0.2)',
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              color: 'rgba(34, 197, 94, 0.8)',
-              fontWeight: 600,
-              fontSize: '0.7rem',
-            }}
-          >
-            {output.split('\n').length - 1} operations
-          </Typography>
-        </Box>
-      </Stack>
-      <Box
-        sx={{
-          flex: 1,
-          bgcolor: '#1a1a1a',
-          border: '1px solid rgba(34, 197, 94, 0.2)',
-          borderRadius: 2,
-          p: 2,
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-          fontSize: '13px',
-          lineHeight: 1.6,
-          color: '#22c55e',
-          whiteSpace: 'pre-wrap',
-          overflowY: 'auto',
-          position: 'relative',
-          '&::-webkit-scrollbar': {
-            width: '6px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'rgba(34, 197, 94, 0.1)',
-            borderRadius: '3px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'rgba(34, 197, 94, 0.3)',
-            borderRadius: '3px',
-            '&:hover': {
-              background: 'rgba(34, 197, 94, 0.5)',
-            },
-          },
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background:
-              'linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.4) 50%, transparent 100%)',
-          },
-        }}
-      >
+    <div className="flex h-full flex-col">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex flex-1 items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" />
+          <span className="text-sm font-semibold tracking-wide text-green-600">Execution Log</span>
+        </div>
+        <div className="rounded-md border border-green-300/40 bg-green-50 px-2 py-0.5 text-[11px] font-semibold text-green-700">
+          {output.split('\n').length - 1} operations
+        </div>
+      </div>
+      <div className="relative flex-1 overflow-y-auto whitespace-pre-wrap rounded-lg border border-green-300/30 bg-[#1a1a1a] p-2 font-mono text-[13px] leading-6 text-green-500">
         {output || (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%',
-              color: 'rgba(34, 197, 94, 0.5)',
-              fontSize: '12px',
-            }}
-          >
+          <div className="flex h-full items-center justify-center text-xs text-green-400/70">
             💡 Output will appear here when you run commands
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-green-400/40 to-transparent" />
+      </div>
+    </div>
   );
 
   const canvas = (
-    <Box sx={{ height: '100%', position: 'relative', p: 2 }}>
+    <div className="relative h-full p-2">
       <CallStack2D ref={stackRef} />
-    </Box>
+    </div>
   );
 
   return (
-    <Box
-      sx={{
-        mt: 2,
-        px: { xs: 1, sm: 2, md: 3 },
-        maxWidth: '100%',
-        overflow: 'hidden',
-      }}
-    >
+    <div className="mt-2 max-w-full overflow-hidden px-2 sm:px-4 md:px-6">
       {/* Theory heading for reusability across 2D models is placed in the Section above this page */}
       <TwoDLayout
         title="2D Visualization: Call Stack"
@@ -359,7 +181,7 @@ pop"
         output={outputPanel}
         canvas={canvas}
       />
-    </Box>
+    </div>
   );
 };
 

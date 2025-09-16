@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, CssBaseline } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -13,21 +12,20 @@ const App: React.FC = () => {
   const handleSidebarToggle = () => setSidebarOpen((open) => !open);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <CssBaseline />
+    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
       <Header onSidebarToggle={handleSidebarToggle} />
-      <Box sx={{ display: 'flex', flex: 1 }}>
+      <div className="flex flex-1">
         <Sidebar open={sidebarOpen} onClose={handleSidebarToggle} />
-        <Box component="main" sx={{ flex: 1, p: 3 }}>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/javascript" element={<JavaScriptPage />} />
           </Routes>
-        </Box>
-      </Box>
+        </main>
+      </div>
       <Footer />
-    </Box>
+    </div>
   );
 };
 

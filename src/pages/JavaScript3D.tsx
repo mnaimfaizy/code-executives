@@ -1,15 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import {
-  Box,
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  Typography,
-} from '@mui/material';
 import ThreeCanvas, { type ThreeCanvasHandle } from '../three/react/ThreeCanvas';
 import { CallStackAssemblyLine } from '../three/models/CallStackAssemblyLine';
 import { RobotActor } from '../three/models/RobotActor';
@@ -29,52 +19,54 @@ const JavaScript3D: React.FC = () => {
       if (names.length && !clip) setClip(names[0]);
     }, 500);
     return () => clearTimeout(id);
-  }, [robot]);
+  }, [robot, clip]);
   return (
-    <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-      <Typography variant="h6" gutterBottom>
-        3D Visualization: Call Stack Assembly Line
-      </Typography>
+    <section className="mt-2 rounded-lg bg-gray-100 p-3">
+      <h2 className="mb-2 text-lg font-semibold">3D Visualization: Call Stack Assembly Line</h2>
       <ThreeCanvas ref={ref} models={[model, robot]} />
-      <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-        <Button variant="contained" onClick={() => model.pushFrame('fn')}>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <button
+          className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
+          onClick={() => model.pushFrame('fn')}
+        >
           Push Frame
-        </Button>
-        <Button variant="outlined" onClick={() => model.popFrame()}>
+        </button>
+        <button
+          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+          onClick={() => model.popFrame()}
+        >
           Pop Frame
-        </Button>
-        <Button
-          variant="outlined"
+        </button>
+        <button
+          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
           onClick={() => ref.current?.getEngine()?.setLightingPreset('day')}
         >
           Daylight
-        </Button>
-        <Button
-          variant="outlined"
+        </button>
+        <button
+          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
           onClick={() => ref.current?.getEngine()?.setLightingPreset('factory')}
         >
           Factory
-        </Button>
-        <Button
-          variant="outlined"
+        </button>
+        <button
+          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
           onClick={() => ref.current?.getEngine()?.setLightingPreset('studio')}
         >
           Studio
-        </Button>
-        <Button
-          variant="text"
+        </button>
+        <button
+          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
           onClick={() =>
-            ref.current?.getEngine()?.focusCamera(
-              // focus on conveyor
-              new THREE.Vector3(6.5, 5.5, 10),
-              new THREE.Vector3(0, 0, 0)
-            )
+            ref.current
+              ?.getEngine()
+              ?.focusCamera(new THREE.Vector3(6.5, 5.5, 10), new THREE.Vector3(0, 0, 0))
           }
         >
           Focus Assembly
-        </Button>
-        <Button
-          variant="text"
+        </button>
+        <button
+          className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
           onClick={() =>
             ref.current
               ?.getEngine()
@@ -82,13 +74,12 @@ const JavaScript3D: React.FC = () => {
           }
         >
           Focus Robot
-        </Button>
+        </button>
         {clips.length > 0 && (
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel id="robot-clip-label">Robot Clip</InputLabel>
-            <Select
-              labelId="robot-clip-label"
-              label="Robot Clip"
+          <label className="ml-auto inline-flex items-center gap-2 text-sm">
+            <span>Robot Clip</span>
+            <select
+              className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
               value={clip}
               onChange={(e) => {
                 const name = e.target.value as string;
@@ -97,15 +88,15 @@ const JavaScript3D: React.FC = () => {
               }}
             >
               {clips.map((c) => (
-                <MenuItem key={c} value={c}>
+                <option key={c} value={c}>
                   {c}
-                </MenuItem>
+                </option>
               ))}
-            </Select>
-          </FormControl>
+            </select>
+          </label>
         )}
-      </Stack>
-    </Box>
+      </div>
+    </section>
   );
 };
 

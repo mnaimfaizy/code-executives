@@ -1,5 +1,4 @@
 import React, { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { Box } from '@mui/material';
 
 export interface HeapObject {
   id: string;
@@ -143,11 +142,11 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
     };
 
     return (
-      <Box
-        sx={{
+      <div
+        style={{
           width: '100%',
           height: '100%',
-          borderRadius: 2,
+          borderRadius: '0.5rem',
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           boxShadow: '0 10px 25px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.1)',
@@ -445,7 +444,7 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
             )}
           </g>
         </svg>
-      </Box>
+      </div>
     );
   }
 );

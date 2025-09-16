@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import Introduction from '../sections/Introduction';
 import EngineRuntime from '../sections/EngineRuntime';
@@ -28,7 +27,7 @@ function useQuery() {
 const JavaScriptPage: React.FC = () => {
   const query = useQuery();
   const section = query.get('section') || 'Introduction';
-  return <Box sx={{ p: 3 }}>{sectionComponents[section] || <Introduction />}</Box>;
+  return <div className="p-4 sm:p-6">{sectionComponents[section] || <Introduction />}</div>;
 };
 
 export default JavaScriptPage;

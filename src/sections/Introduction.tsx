@@ -1,13 +1,10 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
 
 const Introduction: React.FC = () => (
-  <Box sx={{ mb: 2 }}>
-    <Typography variant="subtitle1" gutterBottom>
-      Introduction
-    </Typography>
+  <section className="mb-4">
+    <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Introduction</h2>
     {/* Theory content for Introduction */}
-  </Box>
+  </section>
 );
 
 export default Introduction;

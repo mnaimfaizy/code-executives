@@ -1,13 +1,10 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
 
 const ExecutionModel: React.FC = () => (
-  <Box sx={{ mb: 2 }}>
-    <Typography variant="subtitle1" gutterBottom>
-      Execution Model
-    </Typography>
+  <section className="mb-4">
+    <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Execution Model</h2>
     {/* Theory content for Execution Model */}
-  </Box>
+  </section>
 );
 
 export default ExecutionModel;

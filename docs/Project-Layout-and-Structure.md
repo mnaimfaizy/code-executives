@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the layout and structure of the Code Executives web application, including navigation, sidebar logic, and page/component organization. The app uses React, Material UI, and react-router-dom for a modern, scalable UI.
+This document describes the layout and structure of the Code Executives web application, including navigation, sidebar logic, and page/component organization. The app uses React, Tailwind CSS, and react-router-dom for a modern, scalable UI.
 
 ---
 
@@ -60,7 +60,7 @@ This document describes the layout and structure of the Code Executives web appl
 
 ## Styling & Formatting
 
-- Uses Material UI for consistent, responsive design.
+- Uses Tailwind CSS utilities for consistent, responsive design, and lucide-react for icons.
 - Prettier and ESLint used for code formatting and linting.
 
 ---

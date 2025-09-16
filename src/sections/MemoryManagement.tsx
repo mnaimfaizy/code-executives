@@ -1,13 +1,12 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
 
 const MemoryManagement: React.FC = () => (
-  <Box sx={{ mb: 2 }}>
-    <Typography variant="subtitle1" gutterBottom>
+  <section className="mb-4">
+    <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
       Memory Management
-    </Typography>
+    </h2>
     {/* Theory content for Memory Management */}
-  </Box>
+  </section>
 );
 
 export default MemoryManagement;

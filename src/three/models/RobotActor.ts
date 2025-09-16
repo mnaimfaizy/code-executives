@@ -21,7 +21,7 @@ export class RobotActor implements IModel {
   private pendingPlay: string | null = null;
 
   constructor(opts: RobotActorOptions = {}) {
-    const base = (import.meta as any).env?.BASE_URL ?? '/';
+    const base = import.meta.env.BASE_URL || '/';
     // Use BASE_URL so assets resolve correctly when the app is served from a subpath
     this.url = opts.url || `${base}models/robot/RobotExpressive.glb`;
     this.position = opts.position ? opts.position.clone() : new THREE.Vector3(3.2, 0, -2.0);
@@ -66,10 +66,8 @@ export class RobotActor implements IModel {
       },
       undefined,
       (err) => {
-        // eslint-disable-next-line no-console
         console.error('RobotActor: failed to load', this.url, err);
         this.addMissingPlaceholder();
-        // eslint-disable-next-line no-console
         console.warn(
           [
             'RobotActor fallback: Showing placeholder box because the GLB could not be loaded.',
@@ -95,7 +93,7 @@ export class RobotActor implements IModel {
         else m.dispose();
       }
     });
-    (this.mixer as any) = null;
+    this.mixer = null;
     this.actions = [];
     this.actionMap.clear();
     this.currentAction = null;

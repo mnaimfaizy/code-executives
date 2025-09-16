@@ -1,25 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  Tab,
-  Tabs,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
+import { Play, Square, RotateCcw, StepForward } from 'lucide-react';
 import TwoDLayout from '../components/TwoDLayout';
 import CallStack2D, { type CallStack2DHandle } from '../components/models2d/CallStack2D';
 import ThreeCanvas, { type ThreeCanvasHandle } from '../three/react/ThreeCanvas';
@@ -316,20 +297,7 @@ const CallStack: React.FC = () => {
     }
     if (cursor < src.length) segments.push({ text: src.slice(cursor) });
     return (
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflow: 'auto',
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-          whiteSpace: 'pre',
-          p: 1,
-          borderRadius: 1,
-          border: '1px dashed',
-          borderColor: 'grey.300',
-          bgcolor: 'white',
-        }}
-      >
+      <div className="min-h-0 flex-1 overflow-auto whitespace-pre rounded-md border border-dashed border-gray-300 bg-white p-2 font-mono text-sm">
         {segments.map((seg, idx) =>
           seg.color ? (
             <span
@@ -347,119 +315,97 @@ const CallStack: React.FC = () => {
             <span key={idx}>{seg.text}</span>
           )
         )}
-      </Box>
+      </div>
     );
   };
 
   const showHighlighted = running || ip > 0;
 
   const editor = (
-    <Box
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0,
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        sx={{
-          mb: 1,
-          p: 1,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          bgcolor: 'grey.100',
-          borderRadius: 1.5,
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600 }}>
-            Editor
-          </Typography>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel id="input-mode-label">Input</InputLabel>
-            <Select
-              labelId="input-mode-label"
-              label="Input"
-              value={inputMode}
-              onChange={(e) => {
-                const mode = e.target.value as 'js' | 'dsl';
-                setInputMode(mode);
-                // swap example program and invalidate compiled
-                setSource(mode === 'js' ? DEFAULT_JS : DEFAULT_DSL);
-                compiledRef.current = null;
-                setIp(0);
-                stackRef.current?.reset();
-                setOutput([{ text: 'Mode changed.', kind: 'info' }]);
-                resetLabelColors();
-              }}
-            >
-              <MenuItem value="js">JavaScript</MenuItem>
-              <MenuItem value="dsl">Simple DSL</MenuItem>
-            </Select>
-          </FormControl>
-          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-          <Tooltip title={running ? 'Stop' : 'Run'}>
-            <IconButton color="primary" onClick={run}>
-              {running ? <StopIcon /> : <PlayArrowIcon />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Step">
-            <IconButton color="primary" onClick={step}>
-              <SkipNextIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Reset">
-            <IconButton color="inherit" onClick={reset}>
-              <RestartAltIcon />
-            </IconButton>
-          </Tooltip>
-          <FormControl size="small" sx={{ minWidth: 140, ml: 1 }}>
-            <InputLabel id="speed-label">Speed</InputLabel>
-            <Select
-              labelId="speed-label"
-              label="Speed"
-              value={speed}
-              onChange={(e) => setSpeed(e.target.value as 'very-slow' | 'slow' | 'normal')}
-            >
-              <MenuItem value="very-slow">Very Slow</MenuItem>
-              <MenuItem value="slow">Slow</MenuItem>
-              <MenuItem value="normal">Normal</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      </Box>
-      <Box
-        sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-      >
-        <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="mb-2 rounded-md border border-gray-200 bg-gray-100 p-2">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 text-sm font-semibold">Editor</div>
+          <label className="text-xs text-gray-600" htmlFor="input-mode-select">
+            Input
+          </label>
+          <select
+            id="input-mode-select"
+            className="min-w-40 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+            value={inputMode}
+            onChange={(e) => {
+              const mode = e.target.value as 'js' | 'dsl';
+              setInputMode(mode);
+              setSource(mode === 'js' ? DEFAULT_JS : DEFAULT_DSL);
+              compiledRef.current = null;
+              setIp(0);
+              stackRef.current?.reset();
+              setOutput([{ text: 'Mode changed.', kind: 'info' }]);
+              resetLabelColors();
+            }}
+          >
+            <option value="js">JavaScript</option>
+            <option value="dsl">Simple DSL</option>
+          </select>
+          <div className="mx-2 h-5 w-px bg-gray-300" />
+          <button
+            title={running ? 'Stop' : 'Run'}
+            onClick={run}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-indigo-600 text-white hover:bg-indigo-500"
+          >
+            {running ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </button>
+          <button
+            title="Step"
+            onClick={step}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-600 text-white hover:bg-emerald-500"
+          >
+            <StepForward className="h-4 w-4" />
+          </button>
+          <button
+            title="Reset"
+            onClick={reset}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gray-700 text-white hover:bg-gray-600"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+          <label className="ml-2 text-xs text-gray-600" htmlFor="speed-select">
+            Speed
+          </label>
+          <select
+            id="speed-select"
+            className="min-w-36 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+            value={speed}
+            onChange={(e) => setSpeed(e.target.value as 'very-slow' | 'slow' | 'normal')}
+          >
+            <option value="very-slow">Very Slow</option>
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-auto">
           {showHighlighted && inputMode === 'js' ? (
             renderHighlighted()
           ) : (
-            <TextField
+            <textarea
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              multiline
-              fullWidth
+              className="h-full min-h-64 w-full resize-none rounded-md border border-gray-300 p-2 font-mono text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
               placeholder={
                 inputMode === 'js'
                   ? 'Write JavaScript. Define and call functions; function bodies will be instrumented.'
                   : 'Type instructions: push <label> | pop'
               }
-              variant="outlined"
-              sx={{
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                '& .MuiInputBase-root': { alignItems: 'start' },
-                '& textarea': { overflow: 'auto' },
-              }}
+              rows={12}
             />
           )}
-        </Box>
-        <Divider sx={{ my: 1 }} />
-        <Stack direction="row" spacing={1}>
-          <Button
-            size="small"
+        </div>
+        <div className="my-2 h-px bg-gray-200" />
+        <div className="flex flex-row gap-2">
+          <button
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
             onClick={() => {
               const sample = inputMode === 'js' ? DEFAULT_JS : DEFAULT_DSL;
               setSource(sample);
@@ -472,12 +418,15 @@ const CallStack: React.FC = () => {
             }}
           >
             Load Example
-          </Button>
-          <Button size="small" onClick={() => setSource('')}>
+          </button>
+          <button
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            onClick={() => setSource('')}
+          >
             Clear
-          </Button>
-          <Button
-            size="small"
+          </button>
+          <button
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
             onClick={() => {
               compiledRef.current = null;
               setIp(0);
@@ -488,113 +437,65 @@ const CallStack: React.FC = () => {
             }}
           >
             Clear Compiled
-          </Button>
-          <Button size="small" onClick={() => setShowLegend((v) => !v)}>
+          </button>
+          <button
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            onClick={() => setShowLegend((v) => !v)}
+          >
             {showLegend ? 'Hide Legend' : 'Show Legend'}
-          </Button>
-        </Stack>
-      </Box>
-    </Box>
+          </button>
+        </div>
+      </div>
+    </div>
   );
   const outputPanel = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box
-        sx={{
-          mb: 1,
-          p: 0.75,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          bgcolor: 'grey.100',
-          borderRadius: 1,
-        }}
-      >
-        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-          Output
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          bgcolor: 'grey.50',
-          border: '1px solid',
-          borderColor: 'grey.300',
-          borderRadius: 1,
-          p: 1,
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-          whiteSpace: 'pre',
-          overflowY: 'auto',
-        }}
-      >
+    <div className="flex h-full flex-col">
+      <div className="mb-2 rounded-md border border-gray-200 bg-gray-100 px-2 py-1">
+        <div className="text-sm font-semibold">Output</div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre rounded-md border border-gray-300 bg-gray-50 p-2 font-mono text-sm">
         {output.map((line, idx) => {
           const color = line.label ? colorForLabel(line.label) : undefined;
           return (
-            <Box
+            <div
               key={idx}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                mb: 0.25,
-                px: 0.5,
-                py: 0.25,
-                borderRadius: 0.75,
-                bgcolor: color ? color : 'transparent',
-                color: color ? '#0b1020' : 'inherit',
+              className="mb-0.5 inline-flex items-center gap-2 rounded-md px-1 py-0.5"
+              style={{
+                backgroundColor: color ?? 'transparent',
+                color: color ? '#0b1020' : undefined,
               }}
             >
-              <Typography variant="body2" component="span" sx={{ fontFamily: 'inherit' }}>
-                {line.text}
-              </Typography>
-            </Box>
+              <span>{line.text}</span>
+            </div>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
   const canvas2D = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ flex: 1, border: '1px solid', borderColor: 'grey.300', borderRadius: 1 }}>
+    <div className="flex h-full flex-col gap-2">
+      <div className="flex-1 rounded-md border border-gray-300">
         <CallStack2D ref={stackRef} colorFor={colorForLabel} />
-      </Box>
-      {/* Legend */}
+      </div>
       {showLegend && (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <div className="flex flex-wrap gap-2">
           {(compiledRef.current?.functions ?? [])
             .map((f) => f.label)
             .filter((v, i, a) => a.indexOf(v) === i)
             .slice(0, 12)
             .map((label) => (
-              <Box
+              <span
                 key={label}
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  px: 0.75,
-                  py: 0.25,
-                  borderRadius: 1,
-                  bgcolor: colorForLabel(label),
-                  color: '#0b1020',
-                }}
+                className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold"
+                style={{ backgroundColor: colorForLabel(label), color: '#0b1020' }}
               >
-                <Box
-                  sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: 0.5,
-                    bgcolor: '#0b1020',
-                    opacity: 0.2,
-                  }}
-                />
-                <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                  {label}
-                </Typography>
-              </Box>
+                <span className="h-2 w-2 rounded bg-black/20" />
+                {label}
+              </span>
             ))}
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   );
 
   // 3D state
@@ -613,71 +514,82 @@ const CallStack: React.FC = () => {
   }, [robot, clip]);
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle1" gutterBottom>
-        Call Stack
-      </Typography>
-      <Typography variant="body1" paragraph>
+    <section className="mb-4">
+      <h2 className="text-base font-semibold">Call Stack</h2>
+      <p className="mb-2 text-sm text-gray-700">
         The Call Stack is a LIFO (Last-In, First-Out) data structure that keeps track of the
-        execution flow of a program. When a function is called, an entry is pushed onto the top of
-        the stack, and when the function completes its execution, it is popped off. This mechanism
-        underpins JavaScript's synchronous, single-threaded nature, as only one function can be on
-        top of the stack and actively executing at any given moment.
-      </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
-        In contrast to the Call Stack, the Memory Heap is an unstructured memory pool where
-        dynamically allocated objects and variables are stored. While the Call Stack manages the
-        execution order of the code, the Memory Heap stores the data your application needs.
-      </Typography>
+        execution flow of a program. When a function is called, an entry is pushed; when the
+        function completes, it is popped.
+      </p>
+      <p className="mb-2 text-xs text-gray-600">
+        In contrast to the Call Stack, the Memory Heap is an unstructured pool where dynamically
+        allocated objects are stored.
+      </p>
 
-      {/* Local tabs for this section */}
-      <Tabs value={mode} onChange={(_, val) => setMode(val)} aria-label="2D/3D Mode Switch">
-        <Tab label="2D" value="2D" />
-        <Tab label="3D" value="3D" />
-      </Tabs>
+      <div className="mt-2 border-b">
+        <nav className="flex gap-2">
+          {(['2D', '3D'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm ${
+                mode === m
+                  ? 'border-indigo-600 font-medium text-indigo-700'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </nav>
+      </div>
 
       {mode === '2D' ? (
-        <Box sx={{ mt: 2 }}>
+        <div className="mt-2">
           <TwoDLayout
             title="2D Visualization: Call Stack"
             editor={editor}
             output={outputPanel}
             canvas={canvas2D}
           />
-        </Box>
+        </div>
       ) : (
-        <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            3D Visualization: Call Stack Assembly Line
-          </Typography>
+        <div className="mt-2 rounded-lg bg-gray-100 p-3">
+          <h3 className="mb-2 text-lg font-semibold">3D Visualization: Call Stack Assembly Line</h3>
           <ThreeCanvas ref={ref3D} models={[model, robot]} />
-          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-            <Button variant="contained" onClick={() => model.pushFrame('fn')}>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
+              onClick={() => model.pushFrame('fn')}
+            >
               Push Frame
-            </Button>
-            <Button variant="outlined" onClick={() => model.popFrame()}>
+            </button>
+            <button
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+              onClick={() => model.popFrame()}
+            >
               Pop Frame
-            </Button>
-            <Button
-              variant="outlined"
+            </button>
+            <button
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
               onClick={() => ref3D.current?.getEngine()?.setLightingPreset('day')}
             >
               Daylight
-            </Button>
-            <Button
-              variant="outlined"
+            </button>
+            <button
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
               onClick={() => ref3D.current?.getEngine()?.setLightingPreset('factory')}
             >
               Factory
-            </Button>
-            <Button
-              variant="outlined"
+            </button>
+            <button
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
               onClick={() => ref3D.current?.getEngine()?.setLightingPreset('studio')}
             >
               Studio
-            </Button>
-            <Button
-              variant="text"
+            </button>
+            <button
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
               onClick={() =>
                 ref3D.current
                   ?.getEngine()
@@ -685,9 +597,9 @@ const CallStack: React.FC = () => {
               }
             >
               Focus Assembly
-            </Button>
-            <Button
-              variant="text"
+            </button>
+            <button
+              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
               onClick={() =>
                 ref3D.current
                   ?.getEngine()
@@ -695,13 +607,12 @@ const CallStack: React.FC = () => {
               }
             >
               Focus Robot
-            </Button>
+            </button>
             {clips.length > 0 && (
-              <FormControl size="small" sx={{ minWidth: 160 }}>
-                <InputLabel id="robot-clip-label">Robot Clip</InputLabel>
-                <Select
-                  labelId="robot-clip-label"
-                  label="Robot Clip"
+              <label className="ml-auto inline-flex items-center gap-2 text-sm">
+                <span>Robot Clip</span>
+                <select
+                  className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
                   value={clip}
                   onChange={(e) => {
                     const name = e.target.value as string;
@@ -710,17 +621,17 @@ const CallStack: React.FC = () => {
                   }}
                 >
                   {clips.map((c) => (
-                    <MenuItem key={c} value={c}>
+                    <option key={c} value={c}>
                       {c}
-                    </MenuItem>
+                    </option>
                   ))}
-                </Select>
-              </FormControl>
+                </select>
+              </label>
             )}
-          </Stack>
-        </Box>
+          </div>
+        </div>
       )}
-    </Box>
+    </section>
   );
 };
 

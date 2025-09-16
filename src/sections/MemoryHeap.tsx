@@ -1,30 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import {
-  Box,
-  Button,
-  Divider,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  Tab,
-  Tabs,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import StopIcon from '@mui/icons-material/Stop';
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import SkipNextIcon from '@mui/icons-material/SkipNext';
+import { Play, Square, RotateCcw, StepForward } from 'lucide-react';
 import TwoDLayout from '../components/TwoDLayout';
 import MemoryHeap2D, { type MemoryHeap2DHandle } from '../components/models2d/MemoryHeap2D';
 import {
+  instrumentCode,
   colorForLabel,
   resetLabelColors,
-  instrumentCode,
   type FunctionInfo,
 } from '../utils/instrument';
 
@@ -37,6 +18,8 @@ type OutputLine = {
   label?: string;
   kind?: 'alloc' | 'free' | 'log' | 'info' | 'error';
 };
+
+type Compiled = { program: Instruction[]; functions: FunctionInfo[] };
 
 function parseProgram(src: string): Instruction[] {
   const lines = src
@@ -68,59 +51,72 @@ free settings
 alloc cache 4`;
 
 const DEFAULT_JS = `// Write JavaScript. Use alloc(label, size?) and free(label?) to emit heap events.
-function main() {
-  console.log('Starting heap demo');
-  alloc('settings', 2);
-  addUser('alice');
-  addUser('bob');
-  free('settings');
-  alloc('cache', 4);
+function createUser(name) {
+  // Allocate a user object
+  alloc('user', 3);
+  return { name };
 }
 
-function addUser(name) {
-  alloc('user:' + name, 3);
+function loadSettings() {
+  alloc('settings', 2);
+}
+
+function main() {
+  console.log('Starting heap demo');
+  const u = createUser('Ada');
+  loadSettings();
+  free('settings');
+  alloc('cache', 4);
 }
 
 main();`;
 
 const MemoryHeap: React.FC = () => {
   const [mode, setMode] = useState<'2D' | '3D'>('2D');
-
   const heapRef = useRef<MemoryHeap2DHandle | null>(null);
-  const [inputMode, setInputMode] = useState<'js' | 'dsl'>('dsl');
-  const [source, setSource] = useState<string>(DEFAULT_DSL);
+  const [inputMode, setInputMode] = useState<'js' | 'dsl'>('js');
+  const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([{ text: 'Ready.', kind: 'info' }]);
   const [ip, setIp] = useState<number>(0);
   const [speed, setSpeed] = useState<'very-slow' | 'slow' | 'normal'>('very-slow');
   const [running, setRunning] = useState<boolean>(false);
   const runnerRef = useRef<number | null>(null);
-  const compiledRef = useRef<{ program: Instruction[]; functions?: FunctionInfo[] } | null>(null);
+  const compiledRef = useRef<Compiled | null>(null);
   const lastSrcRef = useRef<string>('');
 
   const log = (msg: string, opts?: { label?: string; kind?: OutputLine['kind'] }) =>
     setOutput((o) => [...o, { text: msg, label: opts?.label, kind: opts?.kind }]);
 
-  const reset = () => {
+  const getIntervalMs = () => {
+    switch (speed) {
+      case 'very-slow':
+        return 1600;
+      case 'slow':
+        return 1000;
+      case 'normal':
+      default:
+        return 450;
+    }
+  };
+
+  const stopRunner = () => {
     if (runnerRef.current) {
       clearInterval(runnerRef.current);
       runnerRef.current = null;
     }
     setRunning(false);
+  };
+
+  const reset = () => {
+    stopRunner();
     heapRef.current?.reset();
     setIp(0);
     setOutput([{ text: 'Reset.', kind: 'info' }]);
     compiledRef.current = null;
-    lastSrcRef.current = '';
     resetLabelColors();
   };
 
-  useEffect(() => {
-    return () => {
-      if (runnerRef.current) clearInterval(runnerRef.current);
-    };
-  }, []);
-
-  const ensureCompiled = (): { program: Instruction[]; functions?: FunctionInfo[] } => {
+  const ensureCompiled = (): Compiled => {
     if (compiledRef.current && lastSrcRef.current === source) return compiledRef.current;
     try {
       if (inputMode === 'dsl') {
@@ -129,7 +125,7 @@ const MemoryHeap: React.FC = () => {
         lastSrcRef.current = source;
         return compiledRef.current;
       }
-      // JavaScript mode: instrument to collect function boundaries, then execute transpiled in sandbox once
+      // JavaScript mode: instrument, execute once to collect events
       const instrumented = instrumentCode(source);
       const events: Instruction[] = [];
       const callStack: string[] = [];
@@ -144,7 +140,7 @@ const MemoryHeap: React.FC = () => {
       };
       console.log = (...args: unknown[]) => {
         const line = args.map((a) => toStr(a)).join(' ');
-        setOutput((o) => [...o, { text: line, kind: 'log' }]);
+        log(line, { kind: 'log' });
         try {
           (origLog as unknown as (...data: unknown[]) => void)(...args);
         } catch {
@@ -168,7 +164,6 @@ const MemoryHeap: React.FC = () => {
           callStack.push(l);
         };
         const __pop = (l: string) => {
-          // pop the matching label if present; fallback to pop last
           if (callStack.length && callStack[callStack.length - 1] === l) callStack.pop();
           else callStack.pop();
         };
@@ -183,7 +178,7 @@ const MemoryHeap: React.FC = () => {
         fn(__push, __pop, alloc, free);
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        setOutput((o) => [...o, { text: `Error: ${msg}`, kind: 'error' }]);
+        log(`Error: ${msg}`, { kind: 'error' });
       } finally {
         console.log = origLog;
       }
@@ -192,7 +187,7 @@ const MemoryHeap: React.FC = () => {
       return compiledRef.current;
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      setOutput((o) => [...o, { text: `Compile error: ${msg}`, kind: 'error' }]);
+      log(`Compile error: ${msg}`, { kind: 'error' });
       compiledRef.current = { program: [], functions: [] };
       lastSrcRef.current = source;
       return compiledRef.current;
@@ -209,40 +204,16 @@ const MemoryHeap: React.FC = () => {
     const ins = program[ip];
     if (ins.type === 'alloc') {
       heapRef.current?.alloc(ins.label, ins.size);
-      log(`alloc(${ins.label}${ins.size ? `, ${ins.size}` : ''})`, {
+      log(`alloc(${ins.label}${ins.size != null ? `, ${ins.size}` : ''})`, {
         label: ins.label,
         kind: 'alloc',
       });
-    } else if (ins.type === 'free') {
-      if (ins.label) {
-        heapRef.current?.free(ins.label);
-        log(`free(${ins.label})`, { label: ins.label, kind: 'free' });
-      } else {
-        heapRef.current?.free(''); // frees last
-        log('free()', { kind: 'free' });
-      }
+    } else {
+      const target = ins.label ?? heapRef.current?.getObjects().slice(-1)[0]?.id ?? '';
+      heapRef.current?.free(target);
+      log(`free(${ins.label ?? ''})`.trim(), { label: ins.label, kind: 'free' });
     }
     setIp((n) => n + 1);
-  };
-
-  const getIntervalMs = () => {
-    switch (speed) {
-      case 'very-slow':
-        return 1600;
-      case 'slow':
-        return 1000;
-      case 'normal':
-      default:
-        return 450;
-    }
-  };
-
-  const stopRunner = () => {
-    if (runnerRef.current) {
-      clearInterval(runnerRef.current);
-      runnerRef.current = null;
-    }
-    setRunning(false);
   };
 
   const run = () => {
@@ -266,159 +237,142 @@ const MemoryHeap: React.FC = () => {
       const ins = program[i++];
       if (ins.type === 'alloc') {
         heapRef.current?.alloc(ins.label, ins.size);
-        log(`alloc(${ins.label}${ins.size ? `, ${ins.size}` : ''})`, {
+        log(`alloc(${ins.label}${ins.size != null ? `, ${ins.size}` : ''})`, {
           label: ins.label,
           kind: 'alloc',
         });
-      } else if (ins.type === 'free') {
-        if (ins.label) {
-          heapRef.current?.free(ins.label);
-          log(`free(${ins.label})`, { label: ins.label, kind: 'free' });
-        } else {
-          heapRef.current?.free('');
-          log('free()', { kind: 'free' });
-        }
+      } else {
+        const target = ins.label ?? heapRef.current?.getObjects().slice(-1)[0]?.id ?? '';
+        heapRef.current?.free(target);
+        log(`free(${ins.label ?? ''})`.trim(), { label: ins.label, kind: 'free' });
       }
       setIp(i);
     }, getIntervalMs());
   };
 
-  const editor = (
-    <Box
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0,
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        sx={{
-          mb: 1,
-          p: 1,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          bgcolor: 'grey.100',
-          borderRadius: 1.5,
-        }}
-      >
-        <Stack direction="row" alignItems="center" spacing={1}>
-          <Typography variant="subtitle2" sx={{ flex: 1, fontWeight: 600 }}>
-            Editor
-          </Typography>
-          <FormControl size="small" sx={{ minWidth: 160 }}>
-            <InputLabel id="input-mode-label">Input</InputLabel>
-            <Select
-              labelId="input-mode-label"
-              label="Input"
-              value={inputMode}
-              onChange={(e) => {
-                const mode = e.target.value as 'js' | 'dsl';
-                setInputMode(mode);
-                setSource(mode === 'js' ? DEFAULT_JS : DEFAULT_DSL);
-                compiledRef.current = null;
-                lastSrcRef.current = '';
-                setIp(0);
-                heapRef.current?.reset();
-                setOutput([{ text: 'Mode changed.', kind: 'info' }]);
-                resetLabelColors();
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (runnerRef.current) clearInterval(runnerRef.current);
+    };
+  }, []);
+
+  const renderHighlighted = () => {
+    const compiled = compiledRef.current;
+    const functions = compiled?.functions ?? [];
+    if (!functions.length) return null;
+    const segments: Array<{ text: string; color?: string; emphasize?: boolean }> = [];
+    const sortedFns = [...functions].sort((a, b) => a.bodyStart - b.bodyStart);
+    let cursor = 0;
+    const src = source;
+    const program = compiled?.program ?? [];
+    const activeCaller = program[Math.min(ip, Math.max(0, program.length - 1))]?.caller;
+    for (const fn of sortedFns) {
+      if (fn.bodyStart > cursor) segments.push({ text: src.slice(cursor, fn.bodyStart) });
+      const bodyText = src.slice(fn.bodyStart, fn.bodyEnd);
+      segments.push({
+        text: bodyText,
+        color: colorForLabel(fn.label),
+        emphasize: activeCaller === fn.label,
+      });
+      cursor = fn.bodyEnd;
+    }
+    if (cursor < src.length) segments.push({ text: src.slice(cursor) });
+    return (
+      <div className="min-h-0 flex-1 overflow-auto whitespace-pre rounded-md border border-dashed border-gray-300 bg-white p-2 font-mono text-sm">
+        {segments.map((seg, idx) =>
+          seg.color ? (
+            <span
+              key={idx}
+              style={{
+                backgroundColor: seg.color,
+                color: '#0b1020',
+                borderRadius: 4,
+                boxShadow: seg.emphasize ? '0 0 0 2px rgba(0,0,0,0.15) inset' : undefined,
               }}
             >
-              <MenuItem value="js">JavaScript</MenuItem>
-              <MenuItem value="dsl">Simple DSL</MenuItem>
-            </Select>
-          </FormControl>
-          <Tooltip title={running ? 'Stop' : 'Run'}>
-            <IconButton color="primary" onClick={run}>
-              {running ? <StopIcon /> : <PlayArrowIcon />}
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Step">
-            <IconButton color="primary" onClick={step}>
-              <SkipNextIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Reset">
-            <IconButton color="inherit" onClick={reset}>
-              <RestartAltIcon />
-            </IconButton>
-          </Tooltip>
-          <FormControl size="small" sx={{ minWidth: 140, ml: 1 }}>
-            <InputLabel id="speed-label">Speed</InputLabel>
-            <Select
-              labelId="speed-label"
-              label="Speed"
-              value={speed}
-              onChange={(e) => setSpeed(e.target.value as 'very-slow' | 'slow' | 'normal')}
-            >
-              <MenuItem value="very-slow">Very Slow</MenuItem>
-              <MenuItem value="slow">Slow</MenuItem>
-              <MenuItem value="normal">Normal</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      </Box>
-      <Box sx={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
-        {(() => {
-          const compiled = compiledRef.current;
-          const functions = compiled?.functions ?? [];
-          const showHighlighted = inputMode === 'js' && (running || ip > 0) && functions.length > 0;
-          if (showHighlighted) {
-            const segments: Array<{ text: string; color?: string; emphasize?: boolean }> = [];
-            const sortedFns = [...functions].sort((a, b) => a.bodyStart - b.bodyStart);
-            let cursor = 0;
-            const src = source;
-            const { program } = compiled!;
-            const activeCaller = program[Math.min(ip, Math.max(0, program.length - 1))]?.caller;
-            for (const fn of sortedFns) {
-              if (fn.bodyStart > cursor) segments.push({ text: src.slice(cursor, fn.bodyStart) });
-              const bodyText = src.slice(fn.bodyStart, fn.bodyEnd);
-              segments.push({
-                text: bodyText,
-                color: colorForLabel(fn.label),
-                emphasize: activeCaller === fn.label,
-              });
-              cursor = fn.bodyEnd;
-            }
-            if (cursor < src.length) segments.push({ text: src.slice(cursor) });
-            return (
-              <Box
-                sx={{
-                  flex: 1,
-                  minHeight: 0,
-                  overflow: 'auto',
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                  whiteSpace: 'pre',
-                  p: 1,
-                  borderRadius: 1,
-                  border: '1px dashed',
-                  borderColor: 'grey.300',
-                  bgcolor: 'white',
-                }}
-              >
-                {segments.map((seg, idx) =>
-                  seg.color ? (
-                    <span
-                      key={idx}
-                      style={{
-                        backgroundColor: seg.color,
-                        color: '#0b1020',
-                        borderRadius: 4,
-                        boxShadow: seg.emphasize ? '0 0 0 2px rgba(0,0,0,0.15) inset' : undefined,
-                      }}
-                    >
-                      {seg.text}
-                    </span>
-                  ) : (
-                    <span key={idx}>{seg.text}</span>
-                  )
-                )}
-              </Box>
-            );
-          }
-          return (
-            <TextField
+              {seg.text}
+            </span>
+          ) : (
+            <span key={idx}>{seg.text}</span>
+          )
+        )}
+      </div>
+    );
+  };
+
+  const showHighlighted = inputMode === 'js' && (running || ip > 0);
+
+  const editor = (
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="mb-2 rounded-md border border-gray-200 bg-gray-100 p-2">
+        <div className="flex items-center gap-2">
+          <div className="flex-1 text-sm font-semibold">Editor</div>
+          <label className="text-xs text-gray-600" htmlFor="heap-input-mode-select">
+            Input
+          </label>
+          <select
+            id="heap-input-mode-select"
+            className="min-w-40 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+            value={inputMode}
+            onChange={(e) => {
+              const mode = e.target.value as 'js' | 'dsl';
+              setInputMode(mode);
+              setSource(mode === 'js' ? DEFAULT_JS : DEFAULT_DSL);
+              compiledRef.current = null;
+              lastSrcRef.current = '';
+              setIp(0);
+              heapRef.current?.reset();
+              setOutput([{ text: 'Mode changed.', kind: 'info' }]);
+              resetLabelColors();
+            }}
+          >
+            <option value="js">JavaScript</option>
+            <option value="dsl">Simple DSL</option>
+          </select>
+          <div className="mx-2 h-5 w-px bg-gray-300" />
+          <button
+            title={running ? 'Stop' : 'Run'}
+            onClick={run}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-indigo-600 text-white hover:bg-indigo-500"
+          >
+            {running ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </button>
+          <button
+            title="Step"
+            onClick={step}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-emerald-600 text-white hover:bg-emerald-500"
+          >
+            <StepForward className="h-4 w-4" />
+          </button>
+          <button
+            title="Reset"
+            onClick={reset}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gray-700 text-white hover:bg-gray-600"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+          <label className="ml-2 text-xs text-gray-600" htmlFor="heap-speed-select">
+            Speed
+          </label>
+          <select
+            id="heap-speed-select"
+            className="min-w-36 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
+            value={speed}
+            onChange={(e) => setSpeed(e.target.value as 'very-slow' | 'slow' | 'normal')}
+          >
+            <option value="very-slow">Very Slow</option>
+            <option value="slow">Slow</option>
+            <option value="normal">Normal</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-auto">
+          {showHighlighted ? (
+            renderHighlighted()
+          ) : (
+            <textarea
               value={source}
               onChange={(e) => {
                 const val = e.target.value;
@@ -430,146 +384,121 @@ const MemoryHeap: React.FC = () => {
                 setOutput([{ text: 'Program updated.', kind: 'info' }]);
                 resetLabelColors();
               }}
-              multiline
-              fullWidth
+              className="h-full min-h-64 w-full resize-none rounded-md border border-gray-300 p-2 font-mono text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
               placeholder={
                 inputMode === 'js'
                   ? 'Write JavaScript. Use alloc(label, size?) and free(label?) to emit heap events.'
                   : 'Type instructions: alloc <label> [size] | free [label]'
               }
-              variant="outlined"
-              sx={{
-                fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-                '& .MuiInputBase-root': { alignItems: 'start' },
-                '& textarea': { overflow: 'auto' },
-              }}
+              rows={12}
             />
-          );
-        })()}
-      </Box>
-      <Divider sx={{ my: 1 }} />
-      <Stack direction="row" spacing={1}>
-        <Button
-          size="small"
-          onClick={() => {
-            const sample = inputMode === 'js' ? DEFAULT_JS : DEFAULT_DSL;
-            setSource(sample);
-            compiledRef.current = null;
-            lastSrcRef.current = '';
-            setIp(0);
-            heapRef.current?.reset();
-            setOutput([{ text: 'Loaded example.', kind: 'info' }]);
-            resetLabelColors();
-          }}
-        >
-          Load Example
-        </Button>
-        <Button size="small" onClick={() => setSource('')}>
-          Clear
-        </Button>
-      </Stack>
-    </Box>
+          )}
+        </div>
+        <div className="my-2 h-px bg-gray-200" />
+        <div className="flex flex-row gap-2">
+          <button
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            onClick={() => {
+              const sample = inputMode === 'js' ? DEFAULT_JS : DEFAULT_DSL;
+              setSource(sample);
+              compiledRef.current = null;
+              lastSrcRef.current = '';
+              setIp(0);
+              heapRef.current?.reset();
+              setOutput([{ text: 'Loaded example.', kind: 'info' }]);
+              resetLabelColors();
+            }}
+          >
+            Load Example
+          </button>
+          <button
+            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
+            onClick={() => setSource('')}
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    </div>
   );
 
   const outputPanel = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box
-        sx={{
-          mb: 1,
-          p: 0.75,
-          border: '1px solid',
-          borderColor: 'grey.200',
-          bgcolor: 'grey.100',
-          borderRadius: 1,
-        }}
-      >
-        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-          Output
-        </Typography>
-      </Box>
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          bgcolor: 'grey.50',
-          border: '1px solid',
-          borderColor: 'grey.300',
-          borderRadius: 1,
-          p: 1,
-          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-          whiteSpace: 'pre',
-          overflowY: 'auto',
-        }}
-      >
+    <div className="flex h-full flex-col">
+      <div className="mb-2 rounded-md border border-gray-200 bg-gray-100 px-2 py-1">
+        <div className="text-sm font-semibold">Output</div>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto whitespace-pre rounded-md border border-gray-300 bg-gray-50 p-2 font-mono text-sm">
         {output.map((line, idx) => {
           const color = line.label ? colorForLabel(line.label) : undefined;
           return (
-            <Box
+            <div
               key={idx}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1,
-                mb: 0.25,
-                px: 0.5,
-                py: 0.25,
-                borderRadius: 0.75,
-                bgcolor: color ? color : 'transparent',
-                color: color ? '#0b1020' : 'inherit',
+              className="mb-0.5 inline-flex items-center gap-2 rounded-md px-1 py-0.5"
+              style={{
+                backgroundColor: color ?? 'transparent',
+                color: color ? '#0b1020' : undefined,
               }}
             >
-              <Typography variant="body2" component="span" sx={{ fontFamily: 'inherit' }}>
-                {line.text}
-              </Typography>
-            </Box>
+              <span>{line.text}</span>
+            </div>
           );
         })}
-      </Box>
-    </Box>
+      </div>
+    </div>
   );
 
   const canvas2D = (
-    <Box sx={{ height: '100%', position: 'relative', p: 2 }}>
-      <MemoryHeap2D ref={heapRef} colorFor={colorForLabel} />
-    </Box>
+    <div className="h-full p-2">
+      <div className="h-full rounded-md border border-gray-300">
+        <MemoryHeap2D ref={heapRef} colorFor={colorForLabel} />
+      </div>
+    </div>
   );
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Typography variant="subtitle1" gutterBottom>
-        Memory Heap
-      </Typography>
-      <Typography variant="body1" paragraph>
-        The Memory Heap is an unstructured memory pool where dynamically allocated objects and
-        variables are stored. While the Call Stack manages the execution order of the code, the
-        Memory Heap stores the data your application needs.
-      </Typography>
+    <section className="mb-4">
+      <h2 className="text-base font-semibold">Memory Heap</h2>
+      <p className="mb-2 text-sm text-gray-700">
+        The Memory Heap is an unstructured region of memory where objects, strings, and functions
+        are dynamically allocated.
+      </p>
+      <p className="mb-2 text-xs text-gray-600">
+        In JavaScript, garbage collection cleans memory that is no longer reachable from roots.
+      </p>
 
-      <Tabs value={mode} onChange={(_, val) => setMode(val)} aria-label="2D/3D Mode Switch">
-        <Tab label="2D" value="2D" />
-        <Tab label="3D" value="3D" />
-      </Tabs>
+      <div className="mt-2 border-b">
+        <nav className="flex gap-2">
+          {(['2D', '3D'] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`-mb-px border-b-2 px-3 py-2 text-sm ${
+                mode === m
+                  ? 'border-indigo-600 font-medium text-indigo-700'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              {m}
+            </button>
+          ))}
+        </nav>
+      </div>
 
       {mode === '2D' ? (
-        <Box sx={{ mt: 2 }}>
+        <div className="mt-2">
           <TwoDLayout
             title="2D Visualization: Memory Heap"
             editor={editor}
             output={outputPanel}
             canvas={canvas2D}
           />
-        </Box>
+        </div>
       ) : (
-        <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.100', borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            3D Visualization: Memory Heap
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            The 3D heap visualization is coming soon. For now, explore the 2D model and logs.
-          </Typography>
-        </Box>
+        <div className="mt-2 text-sm text-gray-600">
+          3D visualization for Memory Heap is coming soon.
+        </div>
       )}
-    </Box>
+    </section>
   );
 };
 

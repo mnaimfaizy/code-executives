@@ -1,5 +1,4 @@
 import React from 'react';
-import { Drawer, List, ListItem, Button } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 
 const sidebarSections: Record<string, Array<{ label: string; path: string }>> = {
@@ -29,39 +28,32 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const sections = sidebarSections[basePath] || [];
 
   return (
-    <Drawer
-      variant="temporary"
-      anchor="left"
-      open={open}
-      onClose={onClose}
-      ModalProps={{ keepMounted: true }}
-      sx={{
-        '& .MuiDrawer-paper': {
-          top: 64, // Height of AppBar
-          width: 240,
-        },
-      }}
+    <aside
+      aria-hidden={!open}
+      className={[
+        // Base drawer behavior for small/medium screens
+        'fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 border-r bg-white shadow-sm transition-transform duration-200 ease-out',
+        open ? 'translate-x-0' : '-translate-x-full',
+        // On large screens and up, make it always visible and static (no translate)
+        'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)]',
+      ].join(' ')}
     >
-      <List>
-        {sections.map(({ label, path }) => (
-          <ListItem key={label} disablePadding>
-            <Button
-              sx={{
-                justifyContent: 'flex-start',
-                width: '100%',
-                pl: 2,
-                py: 1,
-                textTransform: 'none',
-              }}
-              component={Link}
-              to={path}
-            >
-              {label}
-            </Button>
-          </ListItem>
-        ))}
-      </List>
-    </Drawer>
+      <nav className="p-2">
+        <ul className="space-y-1">
+          {sections.map(({ label, path }) => (
+            <li key={label}>
+              <Link
+                to={path}
+                onClick={onClose}
+                className="block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
   );
 };
 

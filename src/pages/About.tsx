@@ -1,16 +1,13 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
 
 const About: React.FC = () => (
-  <Box sx={{ p: 3 }}>
-    <Typography variant="h4" gutterBottom>
-      About Code Executives
-    </Typography>
-    <Typography variant="body1">
+  <section className="space-y-2 p-4 sm:p-6">
+    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">About Code Executives</h1>
+    <p className="text-gray-700">
       This platform helps learners understand programming languages through theory and interactive
       visualizations. More languages coming soon!
-    </Typography>
-  </Box>
+    </p>
+  </section>
 );
 
 export default About;
