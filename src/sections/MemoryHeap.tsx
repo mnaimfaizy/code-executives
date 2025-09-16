@@ -8,9 +8,10 @@ import {
   type FunctionInfo,
 } from '../utils/instrument';
 import ModeTabs from '../components/shared/ModeTabs';
-import RunnerToolbar, { type Speed } from '../components/shared/RunnerToolbar';
+import { type Speed } from '../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../components/shared/OutputPanel';
 import InstrumentedSource, { type Segment } from '../components/shared/InstrumentedSource';
+import Editor from '../components/shared/Editor';
 import useRunner from '../hooks/useRunner';
 
 type Instruction =
@@ -248,96 +249,52 @@ const MemoryHeap: React.FC = () => {
   const showHighlighted = inputMode === 'js' && (running || ip > 0);
 
   const editor = (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="mb-2 rounded-md border border-gray-200 bg-gray-100 p-2">
-        <div className="flex items-center gap-2">
-          <div className="flex-1 text-sm font-semibold">Editor</div>
-          <label className="text-xs text-gray-600" htmlFor="heap-input-mode-select">
-            Input
-          </label>
-          <select
-            id="heap-input-mode-select"
-            className="min-w-40 rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
-            value={inputMode}
-            onChange={(e) => {
-              const mode = e.target.value as 'js' | 'dsl';
-              setInputMode(mode);
-              setSource(mode === 'js' ? DEFAULT_JS : DEFAULT_DSL);
-              compiledRef.current = null;
-              lastSrcRef.current = '';
-              setIp(0);
-              heapRef.current?.reset();
-              setOutput([{ text: 'Mode changed.', kind: 'info' }]);
-              resetLabelColors();
-            }}
-          >
-            <option value="js">JavaScript</option>
-            <option value="dsl">Simple DSL</option>
-          </select>
-          <div className="mx-2 h-5 w-px bg-gray-300" />
-          <RunnerToolbar
-            running={running}
-            speed={speed}
-            onRunToggle={run}
-            onStep={step}
-            onReset={reset}
-            onSpeedChange={(s) => setSpeed(s)}
-          />
-        </div>
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="min-h-0 flex-1 overflow-auto">
-          {showHighlighted ? (
-            <InstrumentedSource segments={buildSegments()} />
-          ) : (
-            <textarea
-              value={source}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSource(val);
-                compiledRef.current = null;
-                lastSrcRef.current = '';
-                setIp(0);
-                heapRef.current?.reset();
-                setOutput([{ text: 'Program updated.', kind: 'info' }]);
-                resetLabelColors();
-              }}
-              className="h-full min-h-64 w-full resize-none rounded-md border border-gray-300 p-2 font-mono text-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-200"
-              placeholder={
-                inputMode === 'js'
-                  ? 'Write JavaScript. Use alloc(label, size?) and free(label?) to emit heap events.'
-                  : 'Type instructions: alloc <label> [size] | free [label]'
-              }
-              rows={12}
-            />
-          )}
-        </div>
-        <div className="my-2 h-px bg-gray-200" />
-        <div className="flex flex-row gap-2">
-          <button
-            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-            onClick={() => {
-              const sample = inputMode === 'js' ? DEFAULT_JS : DEFAULT_DSL;
-              setSource(sample);
-              compiledRef.current = null;
-              lastSrcRef.current = '';
-              setIp(0);
-              heapRef.current?.reset();
-              setOutput([{ text: 'Loaded example.', kind: 'info' }]);
-              resetLabelColors();
-            }}
-          >
-            Load Example
-          </button>
-          <button
-            className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-            onClick={() => setSource('')}
-          >
-            Clear
-          </button>
-        </div>
-      </div>
-    </div>
+    <Editor
+      title="Editor"
+      selectId="heap-input-mode-select"
+      inputMode={inputMode}
+      onInputModeChange={(mode) => {
+        setInputMode(mode);
+        setSource(mode === 'js' ? DEFAULT_JS : DEFAULT_DSL);
+        compiledRef.current = null;
+        lastSrcRef.current = '';
+        setIp(0);
+        heapRef.current?.reset();
+        setOutput([{ text: 'Mode changed.', kind: 'info' }]);
+        resetLabelColors();
+      }}
+      source={source}
+      onSourceChange={(val) => {
+        setSource(val);
+        compiledRef.current = null;
+        lastSrcRef.current = '';
+        setIp(0);
+        heapRef.current?.reset();
+        setOutput([{ text: 'Program updated.', kind: 'info' }]);
+        resetLabelColors();
+      }}
+      placeholderJs="Write JavaScript. Use alloc(label, size?) and free(label?) to emit heap events."
+      placeholderDsl="Type instructions: alloc <label> [size] | free [label]"
+      showHighlighted={showHighlighted}
+      renderHighlighted={() => <InstrumentedSource segments={buildSegments()} />}
+      running={running}
+      speed={speed}
+      onRunToggle={run}
+      onStep={step}
+      onReset={reset}
+      onSpeedChange={(s) => setSpeed(s)}
+      onLoadExample={() => {
+        const sample = inputMode === 'js' ? DEFAULT_JS : DEFAULT_DSL;
+        setSource(sample);
+        compiledRef.current = null;
+        lastSrcRef.current = '';
+        setIp(0);
+        heapRef.current?.reset();
+        setOutput([{ text: 'Loaded example.', kind: 'info' }]);
+        resetLabelColors();
+      }}
+      onClear={() => setSource('')}
+    />
   );
 
   const outputPanel = (
