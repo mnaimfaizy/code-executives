@@ -9,6 +9,7 @@ const sidebarSections: Record<string, Array<{ label: string; path: string }>> = 
     { label: 'Execution Model', path: '/javascript?section=Execution%20Model' },
     { label: 'Event Loop', path: '/javascript?section=Event%20Loop' },
     { label: 'Call Stack', path: '/javascript?section=Call%20Stack' },
+    { label: 'Memory Heap', path: '/javascript?section=Memory%20Heap' },
     { label: 'Memory Management', path: '/javascript?section=Memory%20Management' },
     { label: 'Visualization', path: '/javascript?section=Visualization' },
   ],
