@@ -529,10 +529,8 @@ const MemoryHeap: React.FC = () => {
   );
 
   const canvas2D = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 1 }}>
-      <Box sx={{ flex: 1, border: '1px solid', borderColor: 'grey.300', borderRadius: 1 }}>
-        <MemoryHeap2D ref={heapRef} colorFor={colorForLabel} />
-      </Box>
+    <Box sx={{ height: '100%', position: 'relative', p: 2 }}>
+      <MemoryHeap2D ref={heapRef} colorFor={colorForLabel} />
     </Box>
   );
 
