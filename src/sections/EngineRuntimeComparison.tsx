@@ -6,7 +6,7 @@ interface AnimationState {
   isPlaying: boolean;
 }
 
-const EngineRuntime: React.FC = () => {
+const EngineRuntimeComparison: React.FC = () => {
   const [animationState, setAnimationState] = useState<AnimationState>({
     engineStep: 0,
     runtimeStep: 0,
@@ -815,4 +815,4 @@ const EngineRuntime: React.FC = () => {
   );
 };
 
-export default EngineRuntime;
+export default EngineRuntimeComparison;

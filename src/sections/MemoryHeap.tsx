@@ -314,14 +314,59 @@ const MemoryHeap: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Memory Heap</h2>
-      <p className="mb-2 text-sm text-gray-700">
-        The Memory Heap is an unstructured region of memory where objects, strings, and functions
-        are dynamically allocated.
-      </p>
-      <p className="mb-2 text-xs text-gray-600">
-        In JavaScript, garbage collection cleans memory that is no longer reachable from roots.
-      </p>
+      <h2 className="text-base font-semibold">Memory Heap & Dynamic Allocation</h2>
+
+      {/* Engine Context Introduction */}
+      <div className="mb-4 rounded-lg bg-green-50 p-3">
+        <h3 className="mb-2 text-sm font-semibold text-green-900">Role in JavaScript Engine</h3>
+        <p className="mb-2 text-xs text-green-800">
+          The Memory Heap is the engine's dynamic memory region where objects, strings, functions,
+          and closures are allocated. It works closely with the Garbage Collector to manage memory
+          lifecycle and prevent memory leaks.
+        </p>
+        <p className="text-xs text-green-700">
+          <strong>Engine Integration:</strong> Call Stack references → Heap Objects → Garbage
+          Collection → Memory Reclaim
+        </p>
+      </div>
+
+      {/* Theory Section */}
+      <div className="mb-3">
+        <h3 className="mb-2 text-sm font-semibold">Heap Memory Management</h3>
+        <p className="mb-2 text-sm text-gray-700">
+          Unlike the structured Call Stack, the Heap is an unstructured memory pool for dynamic
+          allocation. Objects are allocated on-demand and freed by garbage collection when no longer
+          reachable.
+        </p>
+        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
+          <div>
+            <strong>Allocation Types:</strong>
+            <ul className="ml-3 list-disc">
+              <li>Objects & Arrays</li>
+              <li>Function closures</li>
+              <li>String literals</li>
+              <li>Dynamic data structures</li>
+            </ul>
+          </div>
+          <div>
+            <strong>Memory Lifecycle:</strong>
+            <ul className="ml-3 list-disc">
+              <li>
+                <strong>Allocation:</strong> Reserve memory space
+              </li>
+              <li>
+                <strong>Usage:</strong> Access & modify data
+              </li>
+              <li>
+                <strong>Reachability:</strong> GC root analysis
+              </li>
+              <li>
+                <strong>Collection:</strong> Automatic cleanup
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
       <ModeTabs mode={mode} onChange={setMode} />
 

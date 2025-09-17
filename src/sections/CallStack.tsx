@@ -382,16 +382,59 @@ const CallStack: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Call Stack</h2>
-      <p className="mb-2 text-sm text-gray-700">
-        The Call Stack is a LIFO (Last-In, First-Out) data structure that keeps track of the
-        execution flow of a program. When a function is called, an entry is pushed; when the
-        function completes, it is popped.
-      </p>
-      <p className="mb-2 text-xs text-gray-600">
-        In contrast to the Call Stack, the Memory Heap is an unstructured pool where dynamically
-        allocated objects are stored.
-      </p>
+      <h2 className="text-base font-semibold">Call Stack & Execution Context</h2>
+
+      {/* Engine Context Introduction */}
+      <div className="mb-4 rounded-lg bg-blue-50 p-3">
+        <h3 className="mb-2 text-sm font-semibold text-blue-900">Role in JavaScript Engine</h3>
+        <p className="mb-2 text-xs text-blue-800">
+          The Call Stack is a fundamental component of the JavaScript Engine's execution model. It
+          manages function calls, maintains execution contexts, and ensures proper program flow
+          through LIFO (Last-In, First-Out) operations.
+        </p>
+        <p className="text-xs text-blue-700">
+          <strong>Engine Pipeline:</strong> Parser → AST → Bytecode → Call Stack Execution → Memory
+          Management
+        </p>
+      </div>
+
+      {/* Theory Section */}
+      <div className="mb-3">
+        <h3 className="mb-2 text-sm font-semibold">How Call Stack Works</h3>
+        <p className="mb-2 text-sm text-gray-700">
+          The Call Stack tracks function invocations and manages execution contexts. Each function
+          call creates a new stack frame containing local variables, parameters, and return
+          addresses.
+        </p>
+        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
+          <div>
+            <strong>Stack Frame Contains:</strong>
+            <ul className="ml-3 list-disc">
+              <li>Function parameters</li>
+              <li>Local variables</li>
+              <li>Return address</li>
+              <li>Execution context</li>
+            </ul>
+          </div>
+          <div>
+            <strong>Operations:</strong>
+            <ul className="ml-3 list-disc">
+              <li>
+                <strong>Push:</strong> Function call starts
+              </li>
+              <li>
+                <strong>Pop:</strong> Function returns
+              </li>
+              <li>
+                <strong>Stack Overflow:</strong> Too many calls
+              </li>
+              <li>
+                <strong>Unwinding:</strong> Exception handling
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
       <ModeTabs mode={mode} onChange={setMode} />
 

@@ -11,7 +11,33 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
   '/javascript': [
     { label: 'Introduction', path: '/javascript?section=Introduction' },
     { label: 'JavaScript History', path: '/javascript?section=JavaScript%20History' },
-    { label: 'Engine & Runtime', path: '/javascript?section=Engine%20%26%20Runtime' },
+    {
+      label: 'Engine & Runtime Comparison',
+      path: '/javascript?section=Engine%20%26%20Runtime%20Comparison',
+    },
+    {
+      label: 'JavaScript Engine',
+      path: '/javascript?section=JavaScript%20Engine',
+      subItems: [
+        {
+          label: 'Call Stack & Execution',
+          path: '/javascript?section=Call%20Stack%20%26%20Execution',
+        },
+        {
+          label: 'Memory Heap & Objects',
+          path: '/javascript?section=Memory%20Heap%20%26%20Objects',
+        },
+        {
+          label: 'Parser & AST Generation',
+          path: '/javascript?section=Parser%20%26%20AST%20Generation',
+        },
+        {
+          label: 'JIT Compilation Pipeline',
+          path: '/javascript?section=JIT%20Compilation%20Pipeline',
+        },
+        { label: 'Garbage Collection', path: '/javascript?section=Garbage%20Collection' },
+      ],
+    },
     { label: 'Execution Model', path: '/javascript?section=Execution%20Model' },
     { label: 'Event Loop', path: '/javascript?section=Event%20Loop' },
     { label: 'Call Stack', path: '/javascript?section=Call%20Stack' },
@@ -34,7 +60,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
-  const [expandedItems, setExpandedItems] = useState<string[]>(['Memory Management']);
+  const [expandedItems, setExpandedItems] = useState<string[]>([
+    'JavaScript Engine',
+    'Memory Management',
+  ]);
 
   // Get the base path (e.g., '/javascript')
   const basePath = location.pathname;
