@@ -38,10 +38,28 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
         { label: 'Garbage Collection', path: '/javascript?section=Garbage%20Collection' },
       ],
     },
-    { label: 'Execution Model', path: '/javascript?section=Execution%20Model' },
-    { label: 'Event Loop', path: '/javascript?section=Event%20Loop' },
-    { label: 'Call Stack', path: '/javascript?section=Call%20Stack' },
-    { label: 'Memory Heap', path: '/javascript?section=Memory%20Heap' },
+    {
+      label: 'JavaScript Runtime',
+      path: '/javascript?section=JavaScript%20Runtime',
+      subItems: [
+        {
+          label: 'Event Loop & Coordination',
+          path: '/javascript?section=Event%20Loop%20%26%20Coordination',
+        },
+        {
+          label: 'Web APIs & Platform',
+          path: '/javascript?section=Web%20APIs%20%26%20Platform',
+        },
+        {
+          label: 'Task Queues & Priority',
+          path: '/javascript?section=Task%20Queues%20%26%20Priority',
+        },
+        {
+          label: 'V8 Runtime Features',
+          path: '/javascript?section=V8%20Runtime%20Features',
+        },
+      ],
+    },
     {
       label: 'Memory Management',
       path: '/javascript?section=Memory%20Management',
@@ -62,6 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
   const [expandedItems, setExpandedItems] = useState<string[]>([
     'JavaScript Engine',
+    'JavaScript Runtime',
     'Memory Management',
   ]);
 

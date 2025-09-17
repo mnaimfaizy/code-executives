@@ -93,15 +93,67 @@ const EventLoop: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Event Loop</h2>
-      <p className="mb-2 text-sm text-gray-700">
-        The Event Loop is the central mechanism that allows JavaScript to manage its asynchronous
-        tasks and provides the illusion of concurrency in a single-threaded environment.
-      </p>
-      <p className="mb-2 text-xs text-gray-600">
-        It orchestrates the execution of synchronous code (Call Stack), high-priority microtasks
-        (Promises, async/await), and lower-priority macrotasks (setTimeout, DOM events).
-      </p>
+      <h2 className="text-base font-semibold">Event Loop & Concurrency Model</h2>
+
+      {/* Runtime Context Introduction */}
+      <div className="mb-4 rounded-lg bg-yellow-50 p-3">
+        <h3 className="mb-2 text-sm font-semibold text-yellow-900">Role in JavaScript Runtime</h3>
+        <p className="mb-2 text-xs text-yellow-800">
+          The Event Loop is the heart of JavaScript's concurrency model in the Runtime. It
+          coordinates between the Engine (Call Stack, Heap) and Runtime-specific APIs (Web APIs,
+          Node.js APIs) to manage asynchronous operations without blocking the main thread.
+        </p>
+        <p className="text-xs text-yellow-700">
+          <strong>Runtime Integration:</strong> Call Stack ↔ Event Loop ↔ Web APIs ↔ Task Queues
+          → Non-blocking Execution
+        </p>
+      </div>
+
+      {/* Theory Section */}
+      <div className="mb-3">
+        <h3 className="mb-2 text-sm font-semibold">Concurrency Model</h3>
+        <p className="mb-2 text-sm text-gray-700">
+          The Event Loop enables JavaScript's "run-to-completion" concurrency model. Each task runs
+          completely before the next task starts, eliminating race conditions while providing
+          asynchronous capabilities.
+        </p>
+        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
+          <div>
+            <strong>Loop Phases:</strong>
+            <ul className="ml-3 list-disc">
+              <li>
+                <strong>Execute:</strong> Run all synchronous code on Call Stack
+              </li>
+              <li>
+                <strong>Microtasks:</strong> Process ALL pending microtasks
+              </li>
+              <li>
+                <strong>Macrotask:</strong> Process ONE macrotask
+              </li>
+              <li>
+                <strong>Repeat:</strong> Continue the cycle
+              </li>
+            </ul>
+          </div>
+          <div>
+            <strong>Task Priorities:</strong>
+            <ul className="ml-3 list-disc">
+              <li>
+                <strong>Synchronous:</strong> Immediate execution
+              </li>
+              <li>
+                <strong>Microtasks:</strong> Promise.then(), queueMicrotask()
+              </li>
+              <li>
+                <strong>Macrotasks:</strong> setTimeout(), DOM events
+              </li>
+              <li>
+                <strong>Idle:</strong> Background tasks
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
       <ModeTabs mode={mode} onChange={setMode} />
       {mode === '2D' ? (
         <div className="mt-2">

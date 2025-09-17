@@ -4,7 +4,6 @@ import Introduction from '../sections/Introduction';
 import JavaScriptHistory from '../sections/JavaScriptHistory';
 import EngineRuntimeComparison from '../sections/EngineRuntimeComparison';
 import Engine from '../sections/Engine';
-import ExecutionModel from '../sections/ExecutionModel';
 import EventLoop from '../sections/EventLoop';
 import MemoryManagement from '../sections/MemoryManagement';
 import MemoryLeaks from '../sections/MemoryLeaks';
@@ -14,6 +13,10 @@ import MemoryHeap from '../sections/MemoryHeap';
 import ParserAST from '../sections/ParserAST';
 import JITCompilation from '../sections/JITCompilation';
 import GarbageCollection from '../sections/GarbageCollection';
+import JavaScriptRuntime from '../sections/JavaScriptRuntime';
+import WebAPIs from '../sections/WebAPIs';
+import TaskQueues from '../sections/TaskQueues';
+import V8Runtime from '../sections/V8Runtime';
 
 const sectionComponents: Record<string, React.ReactNode> = {
   Introduction: <Introduction />,
@@ -26,13 +29,15 @@ const sectionComponents: Record<string, React.ReactNode> = {
   'Parser & AST Generation': <ParserAST />,
   'JIT Compilation Pipeline': <JITCompilation />,
   'Garbage Collection': <GarbageCollection />,
+  // Runtime sections
+  'JavaScript Runtime': <JavaScriptRuntime />,
+  'Event Loop & Coordination': <EventLoop />,
+  'Web APIs & Platform': <WebAPIs />,
+  'Task Queues & Priority': <TaskQueues />,
+  'V8 Runtime Features': <V8Runtime />,
   // Other sections
-  'Execution Model': <ExecutionModel />,
-  'Event Loop': <EventLoop />,
-  'Call Stack': <CallStack />,
   'Memory Management': <MemoryManagement />,
   'Memory Leaks': <MemoryLeaks />,
-  'Memory Heap': <MemoryHeap />,
   Visualization: <Visualization />,
 };
 
