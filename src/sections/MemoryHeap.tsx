@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import TwoDLayout from '../components/TwoDLayout';
 import MemoryHeap2D, { type MemoryHeap2DHandle } from '../components/models2d/MemoryHeap2D';
+import MemoryHeap3D, { type MemoryHeap3DHandle } from '../components/models3d/MemoryHeap3D';
 import {
   instrumentCode,
   colorForLabel,
@@ -75,6 +76,7 @@ main();`;
 const MemoryHeap: React.FC = () => {
   const [mode, setMode] = useState<'2D' | '3D'>('2D');
   const heapRef = useRef<MemoryHeap2DHandle | null>(null);
+  const heap3DRef = useRef<MemoryHeap3DHandle | null>(null);
   const [inputMode, setInputMode] = useState<'js' | 'dsl'>('js');
   const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([{ text: 'Ready.', kind: 'info' }]);
@@ -97,9 +99,13 @@ const MemoryHeap: React.FC = () => {
     setSpeed: setRunnerSpeed,
   } = useRunner<Instruction>({
     getProgram: () => ensureCompiled().program,
-    apply: (ins) => {
+    apply: async (ins) => {
       if (ins.type === 'alloc') {
+        // Apply to both 2D and 3D heaps
         heapRef.current?.alloc(ins.label, ins.size);
+        if (mode === '3D' && heap3DRef.current) {
+          await heap3DRef.current.allocateObject(ins.label, ins.label, ins.size || 1);
+        }
         log(`alloc(${ins.label}${ins.size != null ? `, ${ins.size}` : ''})`, {
           label: ins.label,
           kind: 'alloc',
@@ -107,6 +113,9 @@ const MemoryHeap: React.FC = () => {
       } else {
         const target = ins.label ?? heapRef.current?.getObjects().slice(-1)[0]?.id ?? '';
         heapRef.current?.free(target);
+        if (mode === '3D' && heap3DRef.current) {
+          await heap3DRef.current.deallocateObject(ins.label);
+        }
         log(`free(${ins.label ?? ''})`.trim(), { label: ins.label, kind: 'free' });
       }
     },
@@ -122,6 +131,7 @@ const MemoryHeap: React.FC = () => {
   const reset = () => {
     runnerReset();
     heapRef.current?.reset();
+    heap3DRef.current?.reset();
     setOutput([{ text: 'Reset.', kind: 'info' }]);
     compiledRef.current = null;
     resetLabelColors();
@@ -312,6 +322,14 @@ const MemoryHeap: React.FC = () => {
     </div>
   );
 
+  const canvas3D = (
+    <div className="h-full p-2">
+      <div className="h-full rounded-md border border-gray-300 relative">
+        <MemoryHeap3D ref={heap3DRef} className="h-full w-full" />
+      </div>
+    </div>
+  );
+
   return (
     <section className="mb-4">
       <h2 className="text-base font-semibold">Memory Heap & Dynamic Allocation</h2>
@@ -380,8 +398,33 @@ const MemoryHeap: React.FC = () => {
           />
         </div>
       ) : (
-        <div className="mt-2 text-sm text-gray-600">
-          3D visualization for Memory Heap is coming soon.
+        <div className="mt-2">
+          <div className="mb-3 rounded-lg bg-blue-50 p-3">
+            <h4 className="mb-2 text-sm font-semibold text-blue-900">3D Memory Heap Library</h4>
+            <p className="text-xs text-blue-800">
+              Experience memory management through a 3D library metaphor! Watch the robot librarian 
+              organize books (objects) on shelves (heap memory). Different colored books represent 
+              different object types, and you can interact with the 3D scene using mouse controls.
+            </p>
+            <div className="mt-2 flex items-center justify-between">
+              <div className="text-xs text-blue-700">
+                <strong>🤖 Robot Actions:</strong> Allocation (places books) • Deallocation (removes books) • 
+                Garbage Collection (cleans unreferenced books)
+              </div>
+              <button
+                onClick={() => heap3DRef.current?.focusCamera()}
+                className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                📷 Focus Camera
+              </button>
+            </div>
+          </div>
+          <TwoDLayout
+            title="3D Visualization: Memory Heap Library"
+            editor={editor}
+            output={outputPanel}
+            canvas={canvas3D}
+          />
         </div>
       )}
     </section>
