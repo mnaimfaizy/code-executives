@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import Introduction from '../sections/Introduction';
+import JavaScriptHistory from '../sections/JavaScriptHistory';
 import EngineRuntime from '../sections/EngineRuntime';
 import ExecutionModel from '../sections/ExecutionModel';
 import EventLoop from '../sections/EventLoop';
@@ -11,6 +12,7 @@ import MemoryHeap from '../sections/MemoryHeap';
 
 const sectionComponents: Record<string, React.ReactNode> = {
   Introduction: <Introduction />,
+  'JavaScript History': <JavaScriptHistory />,
   'Engine & Runtime': <EngineRuntime />,
   'Execution Model': <ExecutionModel />,
   'Event Loop': <EventLoop />,

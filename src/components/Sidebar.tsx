@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 const sidebarSections: Record<string, Array<{ label: string; path: string }>> = {
   '/javascript': [
     { label: 'Introduction', path: '/javascript?section=Introduction' },
+    { label: 'JavaScript History', path: '/javascript?section=JavaScript%20History' },
     { label: 'Engine & Runtime', path: '/javascript?section=Engine%20%26%20Runtime' },
     { label: 'Execution Model', path: '/javascript?section=Execution%20Model' },
     { label: 'Event Loop', path: '/javascript?section=Event%20Loop' },
