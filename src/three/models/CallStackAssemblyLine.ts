@@ -280,4 +280,30 @@ export class CallStackAssemblyLine implements IModel {
     mesh.userData.label = label;
     return mesh;
   }
+
+  /**
+   * Get current stack height
+   */
+  getStackHeight(): number {
+    return this.stackHeight;
+  }
+
+  /**
+   * Reset the assembly line (clear all crates)
+   */
+  reset(): void {
+    // Clear all existing crates
+    this.frames.forEach((crate) => {
+      crate.parent?.remove(crate);
+      crate.geometry.dispose();
+      if (Array.isArray(crate.material)) {
+        crate.material.forEach((m) => m.dispose());
+      } else {
+        (crate.material as THREE.Material).dispose();
+      }
+    });
+
+    this.frames = [];
+    this.stackHeight = 0;
+  }
 }

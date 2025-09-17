@@ -4,7 +4,10 @@ import TwoDLayout from '../components/TwoDLayout';
 import CallStack2D, { type CallStack2DHandle } from '../components/models2d/CallStack2D';
 import ThreeCanvas, { type ThreeCanvasHandle } from '../three/react/ThreeCanvas';
 import { CallStackAssemblyLine } from '../three/models/CallStackAssemblyLine';
+import { RestaurantKitchen } from '../three/models/RestaurantKitchen';
 import { RobotActor } from '../three/models/RobotActor';
+import ThreeDLayout from '../components/ThreeDLayout';
+import CallStackControlPanel from '../components/shared/CallStackControlPanel';
 import {
   instrumentCode,
   colorForLabel,
@@ -366,73 +369,163 @@ const CallStack: React.FC = () => {
   );
 
   // 3D state
-  const model = useMemo(() => new CallStackAssemblyLine(), []);
+  const kitchenModel = useMemo(() => new RestaurantKitchen(), []);
+  const assemblyModel = useMemo(() => new CallStackAssemblyLine(), []);
   const robot = useMemo(() => new RobotActor(), []);
   const ref3D = useRef<ThreeCanvasHandle | null>(null);
-  const [clips, setClips] = useState<string[]>([]);
-  const [clip, setClip] = useState<string>('');
-  useEffect(() => {
-    const id = setTimeout(() => {
-      const names = robot.getClips?.() ?? [];
-      setClips(names);
-      if (names.length && !clip) setClip(names[0]);
-    }, 500);
-    return () => clearTimeout(id);
-  }, [robot, clip]);
+  const [outputLines3D, setOutputLines3D] = useState<OutputLine[]>([
+    { text: 'Kitchen ready!', kind: 'info' },
+  ]);
+  const [running3D, setRunning3D] = useState<boolean>(false);
+  const [speed3D, setSpeed3D] = useState<Speed>('very-slow');
+  const [currentModel, setCurrentModel] = useState<'kitchen' | 'assembly'>('kitchen');
+
+  const activeModel = currentModel === 'kitchen' ? kitchenModel : assemblyModel;
+
+  const log3D = (msg: string, opts?: { label?: string; kind?: OutputLine['kind'] }) =>
+    setOutputLines3D((o) => [...o, { text: msg, label: opts?.label, kind: opts?.kind }]);
+
+  const reset3D = () => {
+    setRunning3D(false);
+    activeModel.reset?.();
+    setOutputLines3D([{ text: 'Kitchen reset!', kind: 'info' }]);
+  };
+
+  const step3D = () => {
+    // Simulate a function call and return cycle
+    const functions = ['main', 'processOrder', 'cookPasta', 'serveDish', 'calculateTotal'];
+    const randomFunc = functions[Math.floor(Math.random() * functions.length)];
+
+    if (Math.random() > 0.5 && activeModel.getStackHeight?.() > 0) {
+      // Pop (complete order)
+      activeModel.popFrame();
+      log3D(`Order completed: ${randomFunc}()`, { label: randomFunc, kind: 'pop' });
+    } else {
+      // Push (new order)
+      activeModel.pushFrame(randomFunc);
+      log3D(`New order: ${randomFunc}()`, { label: randomFunc, kind: 'push' });
+    }
+  };
+
+  const runDemo3D = () => {
+    if (running3D) return;
+    setRunning3D(true);
+    log3D('Starting kitchen demo...', { kind: 'info' });
+
+    // Simulate a function call sequence
+    const demoSequence = [
+      { action: 'push', name: 'main' },
+      { action: 'push', name: 'processOrder' },
+      { action: 'push', name: 'cookPasta' },
+      { action: 'pop', name: 'cookPasta' },
+      { action: 'push', name: 'serveDish' },
+      { action: 'pop', name: 'serveDish' },
+      { action: 'pop', name: 'processOrder' },
+      { action: 'pop', name: 'main' },
+    ];
+
+    let stepIndex = 0;
+    const interval = setInterval(
+      () => {
+        if (stepIndex >= demoSequence.length) {
+          clearInterval(interval);
+          setRunning3D(false);
+          log3D('Kitchen demo complete!', { kind: 'info' });
+          return;
+        }
+
+        const step = demoSequence[stepIndex];
+        if (step.action === 'push') {
+          activeModel.pushFrame(step.name);
+          log3D(`New order: ${step.name}()`, { label: step.name, kind: 'push' });
+        } else {
+          activeModel.popFrame();
+          log3D(`Order completed: ${step.name}()`, { label: step.name, kind: 'pop' });
+        }
+
+        stepIndex++;
+      },
+      speed3D === 'very-slow' ? 1600 : speed3D === 'slow' ? 1000 : 450
+    );
+  };
+
+  const focusCamera3D = () => {
+    if (currentModel === 'kitchen') {
+      ref3D.current
+        ?.getEngine()
+        ?.focusCamera(new THREE.Vector3(4, 3, 5), new THREE.Vector3(0, 0.5, 0));
+    } else {
+      ref3D.current
+        ?.getEngine()
+        ?.focusCamera(new THREE.Vector3(6.5, 5.5, 10), new THREE.Vector3(0, 0, 0));
+    }
+  };
 
   return (
     <section className="mb-4">
       <h2 className="text-base font-semibold">Call Stack & Execution Context</h2>
 
       {/* Engine Context Introduction */}
-      <div className="mb-4 rounded-lg bg-blue-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-blue-900">Role in JavaScript Engine</h3>
-        <p className="mb-2 text-xs text-blue-800">
-          The Call Stack is a fundamental component of the JavaScript Engine's execution model. It
-          manages function calls, maintains execution contexts, and ensures proper program flow
-          through LIFO (Last-In, First-Out) operations.
+      <div className="mb-4 rounded-lg bg-indigo-50 p-3">
+        <h3 className="mb-2 text-sm font-semibold text-indigo-900">Role in JavaScript Engine</h3>
+        <p className="mb-2 text-xs text-indigo-800">
+          The Call Stack is the engine's execution orchestrator, managing function calls through a
+          precise LIFO (Last-In, First-Out) system. It creates, maintains, and destroys execution
+          contexts while tracking the program's execution flow and managing scope chains.
         </p>
-        <p className="text-xs text-blue-700">
-          <strong>Engine Pipeline:</strong> Parser → AST → Bytecode → Call Stack Execution → Memory
-          Management
+        <p className="text-xs text-indigo-700">
+          <strong>Engine Integration:</strong> Parser → AST → Bytecode → Call Stack Execution →
+          Memory Heap → Garbage Collection
         </p>
       </div>
 
       {/* Theory Section */}
       <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">How Call Stack Works</h3>
+        <h3 className="mb-2 text-sm font-semibold">Call Stack Management</h3>
         <p className="mb-2 text-sm text-gray-700">
-          The Call Stack tracks function invocations and manages execution contexts. Each function
-          call creates a new stack frame containing local variables, parameters, and return
-          addresses.
+          The Call Stack operates as a structured memory region where each function call creates a
+          new stack frame. These frames contain execution contexts with variable environments, scope
+          chains, and 'this' bindings, enabling proper function isolation and execution flow
+          control.
         </p>
         <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
           <div>
-            <strong>Stack Frame Contains:</strong>
+            <strong>Stack Frame Components:</strong>
             <ul className="ml-3 list-disc">
-              <li>Function parameters</li>
-              <li>Local variables</li>
-              <li>Return address</li>
-              <li>Execution context</li>
+              <li>Function parameters & arguments</li>
+              <li>Local variables & declarations</li>
+              <li>Return address & caller info</li>
+              <li>Execution context & scope chain</li>
+              <li>'this' binding & closure references</li>
             </ul>
           </div>
           <div>
-            <strong>Operations:</strong>
+            <strong>Stack Operations:</strong>
             <ul className="ml-3 list-disc">
               <li>
-                <strong>Push:</strong> Function call starts
+                <strong>Push:</strong> Function invocation
               </li>
               <li>
-                <strong>Pop:</strong> Function returns
+                <strong>Pop:</strong> Function return/completion
               </li>
               <li>
-                <strong>Stack Overflow:</strong> Too many calls
+                <strong>Unwind:</strong> Exception propagation
               </li>
               <li>
-                <strong>Unwinding:</strong> Exception handling
+                <strong>Overflow:</strong> Stack size limit exceeded
+              </li>
+              <li>
+                <strong>Trace:</strong> Error stack generation
               </li>
             </ul>
           </div>
+        </div>
+        <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200">
+          <p className="text-xs text-yellow-800">
+            <strong>💡 Key Insight:</strong> The Call Stack's LIFO nature ensures that function
+            calls complete in reverse order of invocation, maintaining proper scope resolution and
+            enabling features like recursion and nested function calls.
+          </p>
         </div>
       </div>
 
@@ -448,81 +541,107 @@ const CallStack: React.FC = () => {
           />
         </div>
       ) : (
-        <div className="mt-2 rounded-lg bg-gray-100 p-3">
-          <h3 className="mb-2 text-lg font-semibold">3D Visualization: Call Stack Assembly Line</h3>
-          <ThreeCanvas ref={ref3D} models={[model, robot]} />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button
-              className="rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
-              onClick={() => model.pushFrame('fn')}
-            >
-              Push Frame
-            </button>
-            <button
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-              onClick={() => model.popFrame()}
-            >
-              Pop Frame
-            </button>
-            <button
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-              onClick={() => ref3D.current?.getEngine()?.setLightingPreset('day')}
-            >
-              Daylight
-            </button>
-            <button
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-              onClick={() => ref3D.current?.getEngine()?.setLightingPreset('factory')}
-            >
-              Factory
-            </button>
-            <button
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-              onClick={() => ref3D.current?.getEngine()?.setLightingPreset('studio')}
-            >
-              Studio
-            </button>
-            <button
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-              onClick={() =>
-                ref3D.current
-                  ?.getEngine()
-                  ?.focusCamera(new THREE.Vector3(6.5, 5.5, 10), new THREE.Vector3(0, 0, 0))
-              }
-            >
-              Focus Assembly
-            </button>
-            <button
-              className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm hover:bg-gray-50"
-              onClick={() =>
-                ref3D.current
-                  ?.getEngine()
-                  ?.focusCamera(new THREE.Vector3(4.5, 4.8, 7.5), new THREE.Vector3(3.2, 0.8, -2.0))
-              }
-            >
-              Focus Robot
-            </button>
-            {clips.length > 0 && (
-              <label className="ml-auto inline-flex items-center gap-2 text-sm">
-                <span>Robot Clip</span>
-                <select
-                  className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm"
-                  value={clip}
-                  onChange={(e) => {
-                    const name = e.target.value as string;
-                    setClip(name);
-                    robot.play?.(name, 0.25);
-                  }}
-                >
-                  {clips.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-          </div>
+        <div className="mt-2">
+          <ThreeDLayout
+            title="3D Visualization: Restaurant Kitchen Call Stack"
+            canvas={
+              <ThreeCanvas
+                ref={ref3D}
+                models={currentModel === 'kitchen' ? [kitchenModel] : [assemblyModel, robot]}
+              />
+            }
+            controlPanel={
+              <CallStackControlPanel
+                running={running3D}
+                speed={speed3D}
+                onRunToggle={runDemo3D}
+                onStep={step3D}
+                onReset={reset3D}
+                onSpeedChange={setSpeed3D}
+                onFocusCamera={focusCamera3D}
+                outputLines={outputLines3D}
+                colorForLabel={(label?: string) => (label ? colorForLabel(label) : undefined)}
+                currentModel={currentModel}
+                onModelSwitch={() =>
+                  setCurrentModel(currentModel === 'kitchen' ? 'assembly' : 'kitchen')
+                }
+              />
+            }
+            scenarioDescription={
+              <div className="space-y-4">
+                <div>
+                  <h4 className="text-lg font-semibold text-orange-900 mb-2">
+                    🍽️ The Restaurant Kitchen & Order Management
+                  </h4>
+                  <p className="text-sm text-orange-800 mb-3">
+                    Welcome to our bustling restaurant kitchen! Watch as order tickets stack up at
+                    the order station, demonstrating how JavaScript manages function calls through
+                    the Call Stack. Each new order (function call) goes to the top of the stack, and
+                    orders are completed in LIFO order (Last In, First Out).
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <h5 className="font-semibold text-orange-900 mb-2">
+                        🏪 The Kitchen Metaphor
+                      </h5>
+                      <ul className="space-y-1 text-orange-700">
+                        <li>
+                          <strong>Kitchen:</strong> JavaScript Call Stack
+                        </li>
+                        <li>
+                          <strong>Order Station:</strong> Stack memory region
+                        </li>
+                        <li>
+                          <strong>Order Tickets:</strong> Function calls (stack frames)
+                        </li>
+                        <li>
+                          <strong>Order Spike:</strong> Stack pointer
+                        </li>
+                        <li>
+                          <strong>Kitchen Staff:</strong> JavaScript engine
+                        </li>
+                        <li>
+                          <strong>Completed Orders:</strong> Returned functions
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-orange-900 mb-2">🎬 Kitchen Operations</h5>
+                      <ul className="space-y-1 text-orange-700">
+                        <li>
+                          <strong>New Order:</strong> Function call (push to stack)
+                        </li>
+                        <li>
+                          <strong>Order Processing:</strong> Function execution
+                        </li>
+                        <li>
+                          <strong>Order Complete:</strong> Function return (pop from stack)
+                        </li>
+                        <li>
+                          <strong>Rush Hour:</strong> Deep call chains
+                        </li>
+                        <li>
+                          <strong>Kitchen Reset:</strong> Stack cleared
+                        </li>
+                        <li>
+                          <strong>Order Colors:</strong> Different function types
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-orange-700 mt-3">
+                    <strong>💡 Try it:</strong> Use the controls on the right to add new orders
+                    (function calls) and complete them. Notice how orders are processed in LIFO
+                    order - the last order received is the first one completed! You can also switch
+                    between Kitchen and Assembly Line views using the control panel.
+                  </p>
+                </div>
+              </div>
+            }
+          />
         </div>
       )}
     </section>
