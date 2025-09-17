@@ -6,6 +6,7 @@ import EngineRuntime from '../sections/EngineRuntime';
 import ExecutionModel from '../sections/ExecutionModel';
 import EventLoop from '../sections/EventLoop';
 import MemoryManagement from '../sections/MemoryManagement';
+import MemoryLeaks from '../sections/MemoryLeaks';
 import Visualization from '../sections/Visualization';
 import CallStack from '../sections/CallStack';
 import MemoryHeap from '../sections/MemoryHeap';
@@ -18,6 +19,7 @@ const sectionComponents: Record<string, React.ReactNode> = {
   'Event Loop': <EventLoop />,
   'Call Stack': <CallStack />,
   'Memory Management': <MemoryManagement />,
+  'Memory Leaks': <MemoryLeaks />,
   'Memory Heap': <MemoryHeap />,
   Visualization: <Visualization />,
 };
