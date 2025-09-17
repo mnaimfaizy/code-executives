@@ -14,78 +14,83 @@ const JavaScriptHistory: React.FC = () => {
   const [activeEvent, setActiveEvent] = useState<number | null>(null);
   const [visibleEvents, setVisibleEvents] = useState<Set<number>>(new Set());
 
-  const timelineEvents: TimelineEvent[] = useMemo(() => [
-    {
-      year: 1995,
-      title: "The 10-Day Wonder",
-      description: "Brendan Eich creates LiveScript in just 10 days at Netscape Communications",
-      significance: "The birth of the language that would revolutionize the web",
-      details: [
-        "Initially named Mocha, then LiveScript",
-        "Created under extreme time pressure",
-        "Designed to make static web pages interactive",
-        "Combined influences from Java, Scheme, and Self"
-      ],
-      category: 'creation',
-      icon: '⚡'
-    },
-    {
-      year: 1996,
-      title: "The Great Rename",
-      description: "LiveScript becomes JavaScript - a strategic marketing decision",
-      significance: "Capitalizing on Java's popularity, despite being fundamentally different languages",
-      details: [
-        "Name changed to leverage Java's market presence",
-        "Created confusion that persists today",
-        "Sparked the beginning of the 'browser wars'",
-        "Microsoft develops JScript as a competing implementation"
-      ],
-      category: 'naming',
-      icon: '🏷️'
-    },
-    {
-      year: 1997,
-      title: "The Standardization Salvation",
-      description: "JavaScript submitted to ECMA for standardization as ECMAScript 1",
-      significance: "End of the fragmentation nightmare and beginning of a unified web",
-      details: [
-        "European Computer Manufacturers Association takes control",
-        "ECMAScript specification created",
-        "Solved compatibility issues across browsers",
-        "Established foundation for modern JavaScript"
-      ],
-      category: 'standardization',
-      icon: '📋'
-    },
-    {
-      year: 2008,
-      title: "The V8 Revolution",
-      description: "Google releases the high-performance V8 JavaScript engine",
-      significance: "Crucial turning point enabling sophisticated, performance-intensive applications",
-      details: [
-        "Just-in-Time (JIT) compilation introduced",
-        "Dramatic performance improvements",
-        "Open-source C++ implementation",
-        "Foundation for modern JavaScript applications"
-      ],
-      category: 'performance',
-      icon: '🚀'
-    },
-    {
-      year: 2009,
-      title: "Breaking Free from Browsers",
-      description: "Ryan Dahl releases Node.js, built on the V8 engine",
-      significance: "JavaScript liberated from browser confines for server-side development",
-      details: [
-        "Server-side JavaScript becomes reality",
-        "Full-stack development with one language",
-        "Enables desktop and mobile applications",
-        "Birth of the modern JavaScript ecosystem"
-      ],
-      category: 'expansion',
-      icon: '🌐'
-    }
-  ], []);
+  const timelineEvents: TimelineEvent[] = useMemo(
+    () => [
+      {
+        year: 1995,
+        title: 'The 10-Day Wonder',
+        description: 'Brendan Eich creates LiveScript in just 10 days at Netscape Communications',
+        significance: 'The birth of the language that would revolutionize the web',
+        details: [
+          'Initially named Mocha, then LiveScript',
+          'Created under extreme time pressure',
+          'Designed to make static web pages interactive',
+          'Combined influences from Java, Scheme, and Self',
+        ],
+        category: 'creation',
+        icon: '⚡',
+      },
+      {
+        year: 1996,
+        title: 'The Great Rename',
+        description: 'LiveScript becomes JavaScript - a strategic marketing decision',
+        significance:
+          "Capitalizing on Java's popularity, despite being fundamentally different languages",
+        details: [
+          "Name changed to leverage Java's market presence",
+          'Created confusion that persists today',
+          "Sparked the beginning of the 'browser wars'",
+          'Microsoft develops JScript as a competing implementation',
+        ],
+        category: 'naming',
+        icon: '🏷️',
+      },
+      {
+        year: 1997,
+        title: 'The Standardization Salvation',
+        description: 'JavaScript submitted to ECMA for standardization as ECMAScript 1',
+        significance: 'End of the fragmentation nightmare and beginning of a unified web',
+        details: [
+          'European Computer Manufacturers Association takes control',
+          'ECMAScript specification created',
+          'Solved compatibility issues across browsers',
+          'Established foundation for modern JavaScript',
+        ],
+        category: 'standardization',
+        icon: '📋',
+      },
+      {
+        year: 2008,
+        title: 'The V8 Revolution',
+        description: 'Google releases the high-performance V8 JavaScript engine',
+        significance:
+          'Crucial turning point enabling sophisticated, performance-intensive applications',
+        details: [
+          'Just-in-Time (JIT) compilation introduced',
+          'Dramatic performance improvements',
+          'Open-source C++ implementation',
+          'Foundation for modern JavaScript applications',
+        ],
+        category: 'performance',
+        icon: '🚀',
+      },
+      {
+        year: 2009,
+        title: 'Breaking Free from Browsers',
+        description: 'Ryan Dahl releases Node.js, built on the V8 engine',
+        significance: 'JavaScript liberated from browser confines for server-side development',
+        details: [
+          'Server-side JavaScript becomes reality',
+          'Full-stack development with one language',
+          'Enables desktop and mobile applications',
+          'Birth of the modern JavaScript ecosystem',
+        ],
+        category: 'expansion',
+        icon: '🌐',
+      },
+    ],
+    []
+  );
 
   const getCategoryColor = (category: TimelineEvent['category']) => {
     const colors = {
@@ -93,7 +98,7 @@ const JavaScriptHistory: React.FC = () => {
       naming: 'from-blue-400 to-indigo-500',
       standardization: 'from-green-400 to-emerald-500',
       performance: 'from-purple-400 to-violet-500',
-      expansion: 'from-red-400 to-pink-500'
+      expansion: 'from-red-400 to-pink-500',
     };
     return colors[category];
   };
@@ -104,7 +109,7 @@ const JavaScriptHistory: React.FC = () => {
       naming: 'border-indigo-200 bg-indigo-50',
       standardization: 'border-emerald-200 bg-emerald-50',
       performance: 'border-violet-200 bg-violet-50',
-      expansion: 'border-pink-200 bg-pink-50'
+      expansion: 'border-pink-200 bg-pink-50',
     };
     return colors[category];
   };
@@ -113,7 +118,7 @@ const JavaScriptHistory: React.FC = () => {
     // Animate timeline events on mount
     timelineEvents.forEach((_, index) => {
       setTimeout(() => {
-        setVisibleEvents(prev => new Set([...prev, index]));
+        setVisibleEvents((prev) => new Set([...prev, index]));
       }, index * 300);
     });
   }, [timelineEvents]);
@@ -143,8 +148,9 @@ const JavaScriptHistory: React.FC = () => {
       </div>
       <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-4">
         <p className="text-yellow-800 text-sm">
-          <strong>Developer Nightmare:</strong> Each browser had its own incompatible version, 
-          making cross-browser development extremely challenging. This chaos drove the need for standardization.
+          <strong>Developer Nightmare:</strong> Each browser had its own incompatible version,
+          making cross-browser development extremely challenging. This chaos drove the need for
+          standardization.
         </p>
       </div>
     </div>
@@ -165,7 +171,9 @@ const JavaScriptHistory: React.FC = () => {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">Fragmentation Crisis</h4>
-              <p className="text-sm text-gray-600">Multiple incompatible implementations causing developer headaches</p>
+              <p className="text-sm text-gray-600">
+                Multiple incompatible implementations causing developer headaches
+              </p>
             </div>
           </div>
           <div className="flex items-start space-x-4">
@@ -174,7 +182,9 @@ const JavaScriptHistory: React.FC = () => {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">ECMA Submission</h4>
-              <p className="text-sm text-gray-600">JavaScript submitted to European Computer Manufacturers Association</p>
+              <p className="text-sm text-gray-600">
+                JavaScript submitted to European Computer Manufacturers Association
+              </p>
             </div>
           </div>
           <div className="flex items-start space-x-4">
@@ -183,7 +193,9 @@ const JavaScriptHistory: React.FC = () => {
             </div>
             <div>
               <h4 className="font-semibold text-gray-900">ECMAScript Born</h4>
-              <p className="text-sm text-gray-600">Unified specification ensuring consistent behavior across browsers</p>
+              <p className="text-sm text-gray-600">
+                Unified specification ensuring consistent behavior across browsers
+              </p>
             </div>
           </div>
         </div>
@@ -271,11 +283,11 @@ const JavaScriptHistory: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
           The Timeline of JavaScript Evolution
         </h2>
-        
+
         <div className="relative max-w-4xl mx-auto">
           {/* Timeline Line */}
           <div className="absolute left-1/2 transform -translate-x-1/2 w-1 bg-gradient-to-b from-yellow-400 to-pink-500 h-full rounded-full"></div>
-          
+
           {/* Timeline Events */}
           <div className="space-y-12">
             {timelineEvents.map((event, index) => (
@@ -284,51 +296,45 @@ const JavaScriptHistory: React.FC = () => {
                 className={`relative flex items-center ${
                   index % 2 === 0 ? 'justify-start' : 'justify-end'
                 } transition-all duration-500 ${
-                  visibleEvents.has(index) 
-                    ? 'opacity-100 translate-y-0' 
-                    : 'opacity-0 translate-y-8'
+                  visibleEvents.has(index) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
                 }`}
               >
                 {/* Timeline Node */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 w-12 h-12 bg-white border-4 border-gray-300 rounded-full flex items-center justify-center shadow-lg z-10">
                   <span className="text-xl">{event.icon}</span>
                 </div>
-                
+
                 {/* Event Card */}
-                <div
-                  className={`w-5/12 ${
-                    index % 2 === 0 ? 'mr-auto pr-8' : 'ml-auto pl-8'
-                  }`}
-                >
+                <div className={`w-5/12 ${index % 2 === 0 ? 'mr-auto pr-8' : 'ml-auto pl-8'}`}>
                   <div
-                    className={`p-6 rounded-lg border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                      getCategoryBorderColor(event.category)
-                    } ${
-                      activeEvent === index ? 'ring-2 ring-offset-2 ring-blue-400 scale-105' : 'hover:scale-102'
+                    className={`p-6 rounded-lg border-2 cursor-pointer transition-all duration-300 hover:shadow-lg ${getCategoryBorderColor(
+                      event.category
+                    )} ${
+                      activeEvent === index
+                        ? 'ring-2 ring-offset-2 ring-blue-400 scale-105'
+                        : 'hover:scale-102'
                     }`}
                     onClick={() => setActiveEvent(activeEvent === index ? null : index)}
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <div className={`text-2xl font-bold bg-gradient-to-r ${getCategoryColor(event.category)} bg-clip-text text-transparent`}>
+                      <div
+                        className={`text-2xl font-bold bg-gradient-to-r ${getCategoryColor(event.category)} bg-clip-text text-transparent`}
+                      >
                         {event.year}
                       </div>
                       <div className="text-2xl">{event.icon}</div>
                     </div>
-                    
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
-                      {event.title}
-                    </h3>
-                    
-                    <p className="text-gray-600 text-sm mb-3">
-                      {event.description}
-                    </p>
-                    
+
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">{event.title}</h3>
+
+                    <p className="text-gray-600 text-sm mb-3">{event.description}</p>
+
                     <div className="bg-white bg-opacity-50 rounded-lg p-3 mb-3">
                       <p className="text-xs font-medium text-gray-800">
                         <strong>Significance:</strong> {event.significance}
                       </p>
                     </div>
-                    
+
                     {/* Expandable Details */}
                     {activeEvent === index && (
                       <div className="mt-4 pt-4 border-t border-gray-200 animate-in slide-in-from-top duration-300">
@@ -343,7 +349,7 @@ const JavaScriptHistory: React.FC = () => {
                         </ul>
                       </div>
                     )}
-                    
+
                     <div className="mt-3 text-right">
                       <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">
                         {activeEvent === index ? 'Hide Details' : 'Learn More'}
@@ -367,10 +373,10 @@ const JavaScriptHistory: React.FC = () => {
         <div className="text-center max-w-4xl mx-auto">
           <h3 className="text-2xl font-bold mb-4">From Chaos to Universal Language</h3>
           <p className="text-indigo-100 mb-6 leading-relaxed">
-            What began as a rushed 10-day project to add interactivity to web pages has evolved into 
-            the backbone of modern software development. JavaScript's journey from browser chaos to 
-            universal standardization demonstrates how a simple idea, when nurtured by a global community, 
-            can transform the entire digital landscape.
+            What began as a rushed 10-day project to add interactivity to web pages has evolved into
+            the backbone of modern software development. JavaScript's journey from browser chaos to
+            universal standardization demonstrates how a simple idea, when nurtured by a global
+            community, can transform the entire digital landscape.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
             <div className="text-center">
