@@ -25,7 +25,7 @@ export class RobotActor implements IModel {
     // Use BASE_URL so assets resolve correctly when the app is served from a subpath
     this.url = opts.url || `${base}models/robot/RobotExpressive.glb`;
     this.position = opts.position ? opts.position.clone() : new THREE.Vector3(3.2, 0, -2.0);
-    this.scale = opts.scale ?? 0.6;
+    this.scale = opts.scale ?? 0.4;
   }
 
   init(scene: THREE.Scene): void {

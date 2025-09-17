@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import TwoDLayout from '../components/TwoDLayout';
+import ThreeDLayout from '../components/ThreeDLayout';
 import MemoryHeap2D, { type MemoryHeap2DHandle } from '../components/models2d/MemoryHeap2D';
 import MemoryHeap3D, { type MemoryHeap3DHandle } from '../components/models3d/MemoryHeap3D';
+import ThreeDControlPanel from '../components/shared/ThreeDControlPanel';
 import {
   instrumentCode,
   colorForLabel,
@@ -323,10 +325,8 @@ const MemoryHeap: React.FC = () => {
   );
 
   const canvas3D = (
-    <div className="h-full p-2">
-      <div className="h-full rounded-md border border-gray-300 relative">
-        <MemoryHeap3D ref={heap3DRef} className="h-full w-full" />
-      </div>
+    <div className="h-full">
+      <MemoryHeap3D ref={heap3DRef} className="h-full w-full" />
     </div>
   );
 
@@ -399,31 +399,86 @@ const MemoryHeap: React.FC = () => {
         </div>
       ) : (
         <div className="mt-2">
-          <div className="mb-3 rounded-lg bg-blue-50 p-3">
-            <h4 className="mb-2 text-sm font-semibold text-blue-900">3D Memory Heap Library</h4>
-            <p className="text-xs text-blue-800">
-              Experience memory management through a 3D library metaphor! Watch the robot librarian 
-              organize books (objects) on shelves (heap memory). Different colored books represent 
-              different object types, and you can interact with the 3D scene using mouse controls.
-            </p>
-            <div className="mt-2 flex items-center justify-between">
-              <div className="text-xs text-blue-700">
-                <strong>🤖 Robot Actions:</strong> Allocation (places books) • Deallocation (removes books) • 
-                Garbage Collection (cleans unreferenced books)
-              </div>
-              <button
-                onClick={() => heap3DRef.current?.focusCamera()}
-                className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                📷 Focus Camera
-              </button>
-            </div>
-          </div>
-          <TwoDLayout
-            title="3D Visualization: Memory Heap Library"
-            editor={editor}
-            output={outputPanel}
+          <ThreeDLayout
+            title="3D Memory Heap Library"
             canvas={canvas3D}
+            controlPanel={
+              <ThreeDControlPanel
+                running={running}
+                speed={speed}
+                onRunToggle={run}
+                onStep={step}
+                onReset={reset}
+                onSpeedChange={(s) => setSpeed(s)}
+                onFocusCamera={() => heap3DRef.current?.focusCamera()}
+                outputLines={output}
+                colorForLabel={(label?: string) => (label ? colorForLabel(label) : undefined)}
+              />
+            }
+            scenarioDescription={
+              <div className="rounded-lg bg-blue-50 p-4">
+                <h4 className="mb-3 text-lg font-semibold text-blue-900">
+                  🏛️ The Digital Library & Memory Librarian
+                </h4>
+                <div className="space-y-3">
+                  <p className="text-sm text-blue-800">
+                    Welcome to our interactive 3D library where memory management comes to life!
+                    Watch as our friendly robot librarian organizes books (objects) on shelves (heap
+                    memory), demonstrating how JavaScript manages memory allocation, references, and
+                    garbage collection.
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <h5 className="font-semibold text-blue-900 mb-2">📚 The Metaphor</h5>
+                      <ul className="space-y-1 text-blue-700">
+                        <li>
+                          <strong>Library:</strong> JavaScript Memory Heap
+                        </li>
+                        <li>
+                          <strong>Bookshelves:</strong> Memory regions
+                        </li>
+                        <li>
+                          <strong>Books:</strong> Objects and variables
+                        </li>
+                        <li>
+                          <strong>Robot Librarian:</strong> Memory manager
+                        </li>
+                        <li>
+                          <strong>Book Colors:</strong> Different data types
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h5 className="font-semibold text-blue-900 mb-2">🤖 Robot Actions</h5>
+                      <ul className="space-y-1 text-blue-700">
+                        <li>
+                          <strong>Walking:</strong> Moving to allocate/deallocate
+                        </li>
+                        <li>
+                          <strong>Placing Books:</strong> Memory allocation
+                        </li>
+                        <li>
+                          <strong>Removing Books:</strong> Memory deallocation
+                        </li>
+                        <li>
+                          <strong>Organizing:</strong> Garbage collection
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>💡 Try it:</strong> Use the controls on the right to run the example
+                      code and watch the robot manage memory in real-time. You can interact with the
+                      3D scene using your mouse!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            }
           />
         </div>
       )}

@@ -47,7 +47,11 @@ const ThreeCanvas = React.forwardRef<ThreeCanvasHandle, ThreeCanvasProps>(
     }, [models]);
 
     return (
-      <div ref={containerRef} className={className} style={{ width: '100%', height: '480px' }} />
+      <div
+        ref={containerRef}
+        className={className}
+        style={{ width: '100%', height: '100%', minHeight: '480px' }}
+      />
     );
   }
 );

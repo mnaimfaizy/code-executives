@@ -35,7 +35,7 @@ export class Engine {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.scene.background = new THREE.Color(0xffffff);
+    this.scene.background = new THREE.Color(opts.background || 0xffffff);
     container.appendChild(this.renderer.domElement);
 
     this.camera.position.set(7.5, 6.5, 10.5);
