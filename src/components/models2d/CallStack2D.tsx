@@ -22,7 +22,7 @@ export interface CallStack2DHandle {
 
 const FRAME_H = 50;
 const FRAME_GAP = 8;
-const PADDING = 20;
+const PADDING = 10;
 
 const CallStack2D = React.forwardRef<CallStack2DHandle, CallStack2DProps>(
   ({ frames: controlledFrames, colorFor }, ref) => {
@@ -124,23 +124,45 @@ const CallStack2D = React.forwardRef<CallStack2DHandle, CallStack2DProps>(
         style={{
           width: '100%',
           height: '100%',
-          borderRadius: '0.5rem',
+          borderRadius: '0.75rem',
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.1)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.15), 0 25px 60px rgba(0,0,0,0.15)',
           display: 'flex',
           alignItems: 'stretch',
+          position: 'relative',
         }}
       >
+        {/* Responsive info overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '8px',
+            padding: '6px 10px',
+            fontSize: '11px',
+            color: 'white',
+            fontWeight: '500',
+            zIndex: 10,
+            display: frames.length > 0 ? 'block' : 'none',
+          }}
+        >
+          {frames.length} {frames.length === 1 ? 'frame' : 'frames'}
+        </div>
+
         <svg
           width="100%"
           height="100%"
           viewBox="0 0 640 400"
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
           style={{
             width: '100%',
             height: '100%',
             display: 'block',
+            minHeight: '200px',
           }}
         >
           {/* Enhanced background with multiple gradients */}
@@ -185,69 +207,74 @@ const CallStack2D = React.forwardRef<CallStack2DHandle, CallStack2DProps>(
           {/* Main background */}
           <rect x={0} y={0} width={viewBoxWidth} height={viewBoxHeight} fill="url(#mainBg)" />
 
-          {/* Title with improved styling */}
+          {/* Enhanced responsive title */}
           <g>
-            <text x={inner.x + 8} y={inner.y + 20} fill="white" fontSize="18" fontWeight="700">
-              Call Stack
+            <text x={inner.x + 8} y={inner.y + 22} fill="white" fontSize="20" fontWeight="700">
+              📚 Call Stack
             </text>
             <text
-              x={inner.x + 110}
-              y={inner.y + 20}
-              fill="rgba(255,255,255,0.8)"
-              fontSize="13"
-              fontWeight="400"
+              x={inner.x + 8}
+              y={inner.y + 38}
+              fill="rgba(255,255,255,0.9)"
+              fontSize="12"
+              fontWeight="500"
             >
-              Last In, First Out (LIFO)
+              Last In, First Out (LIFO) •{' '}
+              {frames.length === 0 ? 'Empty' : `${frames.length} active`}
             </text>
           </g>
 
-          {/* Stack container with glassmorphism effect */}
+          {/* Enhanced stack container with glassmorphism effect */}
           <g>
             <rect
               x={inner.x}
-              y={inner.y + 35}
+              y={inner.y + 50}
               width={inner.w}
-              height={inner.h - 35}
-              rx={16}
-              ry={16}
+              height={inner.h - 50}
+              rx={20}
+              ry={20}
               fill="url(#containerBg)"
-              stroke="rgba(255,255,255,0.3)"
-              strokeWidth="1"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth="1.5"
               filter="url(#dropShadow)"
             />
 
-            {/* Overflow indicator with better styling */}
+            {/* Enhanced overflow indicator */}
             {overflow > 0 && (
               <g>
                 <rect
-                  x={inner.x + inner.w - 80}
-                  y={inner.y + 43}
-                  width="70"
-                  height="20"
-                  rx="10"
-                  fill="rgba(239, 68, 68, 0.9)"
+                  x={inner.x + inner.w - 100}
+                  y={inner.y + 58}
+                  width="90"
+                  height="24"
+                  rx="12"
+                  fill="rgba(239, 68, 68, 0.95)"
+                  stroke="rgba(255,255,255,0.3)"
+                  strokeWidth="1"
+                  filter="url(#dropShadow)"
                 />
                 <text
-                  x={inner.x + inner.w - 45}
-                  y={inner.y + 55}
+                  x={inner.x + inner.w - 55}
+                  y={inner.y + 72}
                   textAnchor="middle"
-                  fontSize={10}
-                  fontWeight="600"
+                  fontSize={11}
+                  fontWeight="700"
                   fill="white"
                 >
-                  +{overflow} more
+                  ⚠️ +{overflow} hidden
                 </text>
               </g>
             )}
 
-            {/* Enhanced frames drawn from bottom up */}
+            {/* Enhanced responsive frames drawn from bottom up */}
             {visibleFrames.map((f, i) => {
               const idxFromBottom = i;
               const yBottom = inner.y + inner.h - FRAME_GAP - FRAME_H;
               const y = yBottom - idxFromBottom * (FRAME_H + FRAME_GAP);
               const isAnimating = animatingFrames.has(f.id);
-              const opacity = isAnimating ? '0.7' : '0.95';
-              const transform = isAnimating ? 'scale(1.05)' : 'scale(1)';
+              const isTopFrame = i === visibleFrames.length - 1;
+              const opacity = isAnimating ? '0.8' : '0.98';
+              const transform = isAnimating ? 'scale(1.03)' : 'scale(1)';
 
               return (
                 <g key={f.id} style={{ transform, transformOrigin: 'center' }}>
@@ -294,11 +321,11 @@ const CallStack2D = React.forwardRef<CallStack2DHandle, CallStack2DProps>(
                     ƒ
                   </text>
 
-                  {/* Function name */}
+                  {/* Function name with responsive sizing */}
                   <text
                     x={inner.x + 48}
                     y={y + FRAME_H / 2 - 2}
-                    fontSize="15"
+                    fontSize={inner.w < 400 ? '13' : '15'}
                     fontWeight="600"
                     fill="white"
                   >
@@ -315,22 +342,43 @@ const CallStack2D = React.forwardRef<CallStack2DHandle, CallStack2DProps>(
                     Level {visibleFrames.length - i}
                   </text>
 
-                  {/* Stack pointer for top frame */}
-                  {i === visibleFrames.length - 1 && (
+                  {/* Enhanced stack pointer for top frame */}
+                  {isTopFrame && (
                     <g>
-                      <polygon
-                        points={`${inner.x + inner.w - 32},${y + FRAME_H / 2 - 6} ${inner.x + inner.w - 20},${y + FRAME_H / 2} ${inner.x + inner.w - 32},${y + FRAME_H / 2 + 6}`}
+                      {/* Animated top indicator */}
+                      <circle
+                        cx={inner.x + inner.w - 28}
+                        cy={y + FRAME_H / 2}
+                        r="8"
                         fill="#22c55e"
-                      />
+                        opacity="0.9"
+                      >
+                        <animate
+                          attributeName="r"
+                          values="8;10;8"
+                          dur="2s"
+                          repeatCount="indefinite"
+                        />
+                      </circle>
                       <text
-                        x={inner.x + inner.w - 44}
+                        x={inner.x + inner.w - 28}
+                        y={y + FRAME_H / 2 + 3}
+                        fontSize="10"
+                        fontWeight="700"
+                        fill="white"
+                        textAnchor="middle"
+                      >
+                        ↑
+                      </text>
+                      <text
+                        x={inner.x + inner.w - 50}
                         y={y + FRAME_H / 2 + 4}
-                        fontSize="11"
+                        fontSize="10"
                         fontWeight="600"
                         fill="#22c55e"
                         textAnchor="end"
                       >
-                        TOP
+                        ACTIVE
                       </text>
                     </g>
                   )}
@@ -338,36 +386,52 @@ const CallStack2D = React.forwardRef<CallStack2DHandle, CallStack2DProps>(
               );
             })}
 
-            {/* Empty state illustration */}
+            {/* Enhanced empty state illustration */}
             {visibleFrames.length === 0 && (
               <g>
                 <circle
                   cx={inner.x + inner.w / 2}
-                  cy={inner.y + inner.h / 2 + 20}
-                  r="40"
-                  fill="rgba(148, 163, 184, 0.1)"
-                  stroke="rgba(148, 163, 184, 0.3)"
+                  cy={inner.y + inner.h / 2 + 25}
+                  r="50"
+                  fill="rgba(255,255,255,0.08)"
+                  stroke="rgba(255,255,255,0.2)"
                   strokeWidth="2"
-                  strokeDasharray="5,5"
-                />
+                  strokeDasharray="8,4"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    values="0;24"
+                    dur="3s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
                 <text
                   x={inner.x + inner.w / 2}
-                  y={inner.y + inner.h / 2 + 15}
+                  y={inner.y + inner.h / 2 + 10}
                   textAnchor="middle"
-                  fontSize="16"
-                  fill="rgba(148, 163, 184, 0.6)"
+                  fontSize="28"
+                  fill="rgba(255,255,255,0.4)"
                 >
                   📚
                 </text>
                 <text
                   x={inner.x + inner.w / 2}
-                  y={inner.y + inner.h / 2 + 40}
+                  y={inner.y + inner.h / 2 + 45}
                   textAnchor="middle"
-                  fontSize="12"
-                  fill="rgba(148, 163, 184, 0.8)"
-                  fontWeight="500"
+                  fontSize="14"
+                  fill="rgba(255,255,255,0.8)"
+                  fontWeight="600"
                 >
-                  Stack is empty
+                  Call Stack Empty
+                </text>
+                <text
+                  x={inner.x + inner.w / 2}
+                  y={inner.y + inner.h / 2 + 62}
+                  textAnchor="middle"
+                  fontSize="11"
+                  fill="rgba(255,255,255,0.6)"
+                >
+                  Function calls will appear here
                 </text>
               </g>
             )}

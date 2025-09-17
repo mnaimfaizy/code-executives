@@ -146,23 +146,46 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
         style={{
           width: '100%',
           height: '100%',
-          borderRadius: '0.5rem',
+          borderRadius: '0.75rem',
           overflow: 'hidden',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 10px 25px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.1)',
+          boxShadow: '0 10px 30px rgba(0,0,0,0.15), 0 25px 60px rgba(0,0,0,0.15)',
           display: 'flex',
           alignItems: 'stretch',
+          position: 'relative',
         }}
       >
+        {/* Responsive stats overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: 'rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '8px',
+            padding: '6px 10px',
+            fontSize: '11px',
+            color: 'white',
+            fontWeight: '500',
+            zIndex: 10,
+            display: objects.length > 0 ? 'block' : 'none',
+          }}
+        >
+          {objects.length}/{capacity} objects • {Math.round((objects.length / capacity) * 100)}%
+          full
+        </div>
+
         <svg
           width="100%"
           height="100%"
           viewBox="0 0 640 400"
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
           style={{
             width: '100%',
             height: '100%',
             display: 'block',
+            minHeight: '200px',
           }}
         >
           <defs>
@@ -173,7 +196,16 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
               <stop offset="100%" stopColor="#667eea" />
             </linearGradient>
 
-            {/* Container background */}
+            {/* Container background with grid pattern */}
+            <pattern id="heapGridPattern" patternUnits="userSpaceOnUse" width="20" height="20">
+              <rect width="20" height="20" fill="rgba(255,255,255,0.95)" />
+              <path
+                d="M 20 0 L 0 0 0 20"
+                fill="none"
+                stroke="rgba(148,163,184,0.2)"
+                strokeWidth="0.5"
+              />
+            </pattern>
             <linearGradient id="heapContainerBg" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="rgba(255,255,255,0.95)" />
               <stop offset="100%" stopColor="rgba(248,250,252,0.95)" />
@@ -209,101 +241,122 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
           {/* Main background */}
           <rect x={0} y={0} width={viewBoxWidth} height={viewBoxHeight} fill="url(#heapMainBg)" />
 
-          {/* Title section with improved styling */}
+          {/* Enhanced responsive title section */}
           <g>
-            <text x={inner.x + 8} y={inner.y + 20} fill="white" fontSize="18" fontWeight="700">
-              Memory Heap
+            <text x={inner.x + 8} y={inner.y + 22} fill="white" fontSize="20" fontWeight="700">
+              🗂️ Memory Heap
             </text>
             <text
-              x={inner.x + 140}
-              y={inner.y + 20}
-              fill="rgba(255,255,255,0.8)"
-              fontSize="13"
-              fontWeight="400"
+              x={inner.x + 8}
+              y={inner.y + 38}
+              fill="rgba(255,255,255,0.9)"
+              fontSize="12"
+              fontWeight="500"
             >
-              Dynamic Object Allocation
+              Dynamic Object Allocation •{' '}
+              {objects.length === 0 ? 'Empty' : `${objects.length} objects allocated`}
             </text>
           </g>
 
-          {/* Heap container with glassmorphism */}
+          {/* Enhanced heap container with glassmorphism */}
           <g>
             <rect
               x={inner.x}
-              y={inner.y + 35}
+              y={inner.y + 50}
               width={inner.w}
-              height={inner.h - 35}
-              rx={16}
-              ry={16}
-              fill="url(#heapContainerBg)"
-              stroke="rgba(255,255,255,0.3)"
-              strokeWidth="1"
+              height={inner.h - 50}
+              rx={20}
+              ry={20}
+              fill="url(#heapGridPattern)"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth="1.5"
               filter="url(#heapDropShadow)"
             />
 
-            {/* Memory usage indicator */}
+            {/* Enhanced memory usage indicator */}
             <g>
               <rect
                 x={inner.x + 12}
-                y={inner.y + 47}
-                width="120"
-                height="6"
-                rx="3"
-                fill="rgba(148, 163, 184, 0.3)"
+                y={inner.y + 62}
+                width="140"
+                height="8"
+                rx="4"
+                fill="rgba(255,255,255,0.2)"
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="1"
               />
               <rect
                 x={inner.x + 12}
-                y={inner.y + 47}
-                width={Math.min(120, (visible.length / capacity) * 120)}
-                height="6"
-                rx="3"
-                fill="#22c55e"
-              />
-              <text
-                x={inner.x + 140}
-                y={inner.y + 53}
-                fontSize="10"
-                fill="rgba(55, 65, 81, 0.8)"
-                fontWeight="500"
+                y={inner.y + 62}
+                width={Math.min(140, (visible.length / capacity) * 140)}
+                height="8"
+                rx="4"
+                fill={
+                  visible.length / capacity > 0.8
+                    ? '#ef4444'
+                    : visible.length / capacity > 0.6
+                      ? '#f59e0b'
+                      : '#22c55e'
+                }
               >
-                {visible.length}/{capacity} objects
+                {visible.length > 0 && (
+                  <animate
+                    attributeName="opacity"
+                    values="0.8;1;0.8"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                )}
+              </rect>
+              <text
+                x={inner.x + 160}
+                y={inner.y + 69}
+                fontSize="11"
+                fill="rgba(255,255,255,0.9)"
+                fontWeight="600"
+              >
+                {Math.round((visible.length / capacity) * 100)}% used
               </text>
             </g>
 
-            {/* Overflow indicator with enhanced styling */}
+            {/* Enhanced overflow indicator */}
             {overflow > 0 && (
               <g>
                 <rect
-                  x={inner.x + inner.w - 90}
-                  y={inner.y + 43}
-                  width="80"
-                  height="24"
-                  rx="12"
-                  fill="rgba(239, 68, 68, 0.9)"
+                  x={inner.x + inner.w - 110}
+                  y={inner.y + 58}
+                  width="100"
+                  height="26"
+                  rx="13"
+                  fill="rgba(239, 68, 68, 0.95)"
+                  stroke="rgba(255,255,255,0.3)"
+                  strokeWidth="1"
                   filter="url(#objectShadow)"
                 />
                 <text
-                  x={inner.x + inner.w - 50}
-                  y={inner.y + 57}
+                  x={inner.x + inner.w - 60}
+                  y={inner.y + 73}
                   textAnchor="middle"
                   fontSize="11"
-                  fontWeight="600"
+                  fontWeight="700"
                   fill="white"
                 >
-                  +{overflow} more
+                  📊 +{overflow} hidden
                 </text>
               </g>
             )}
 
-            {/* Enhanced objects grid */}
+            {/* Enhanced responsive objects grid */}
             {visible.map((obj, i) => {
               const row = Math.floor(i / cols);
               const col = i % cols;
               const x = inner.x + GAP + col * (CELL_W + GAP);
-              const y = inner.y + 70 + GAP + row * (CELL_H + GAP);
+              const y = inner.y + 90 + GAP + row * (CELL_H + GAP);
               const colors = getObjectColor(obj.label, i);
               const sizeNote = obj.size ? `${obj.size}` : '';
               const isAnimating = animatingObjects.has(obj.id);
-              const opacity = isAnimating ? '0.7' : '0.95';
+              const isRecent = obj.timestamp && Date.now() - obj.timestamp < 5000;
+              const opacity = isAnimating ? '0.8' : '0.98';
 
               return (
                 <g key={obj.id} style={{ opacity }}>
@@ -356,8 +409,14 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
                     ⬢
                   </text>
 
-                  {/* Object label */}
-                  <text x={x + 36} y={y + 22} fontSize="14" fontWeight="600" fill="white">
+                  {/* Object label with responsive sizing */}
+                  <text
+                    x={x + 36}
+                    y={y + 22}
+                    fontSize={inner.w < 500 ? '12' : '14'}
+                    fontWeight="600"
+                    fill="rgba(30,41,59,0.9)"
+                  >
                     {obj.label}
                   </text>
 
@@ -367,7 +426,7 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
                       x={x + 36}
                       y={y + 38}
                       fontSize="11"
-                      fill="rgba(255,255,255,0.8)"
+                      fill="rgba(71,85,105,0.8)"
                       fontWeight="500"
                     >
                       {sizeNote} units
@@ -379,66 +438,94 @@ const MemoryHeap2D = React.forwardRef<MemoryHeap2DHandle, MemoryHeap2DProps>(
                     x={x + 10}
                     y={y + CELL_H - 10}
                     fontSize="9"
-                    fill="rgba(255,255,255,0.6)"
+                    fill="rgba(100,116,139,0.7)"
                     fontFamily="monospace"
                   >
                     0x{obj.id.padStart(4, '0')}
                   </text>
 
-                  {/* Activity indicator for recent objects */}
-                  {obj.timestamp && Date.now() - obj.timestamp < 5000 && (
-                    <circle cx={x + CELL_W - 12} cy={y + 12} r="4" fill="#22c55e">
-                      <animate
-                        attributeName="opacity"
-                        values="1;0.3;1"
-                        dur="2s"
-                        repeatCount="indefinite"
-                      />
-                    </circle>
+                  {/* Enhanced activity indicator for recent objects */}
+                  {isRecent && (
+                    <g>
+                      <circle cx={x + CELL_W - 14} cy={y + 14} r="6" fill="#22c55e" opacity="0.8">
+                        <animate
+                          attributeName="r"
+                          values="6;8;6"
+                          dur="1.5s"
+                          repeatCount="indefinite"
+                        />
+                      </circle>
+                      <text
+                        x={x + CELL_W - 14}
+                        y={y + 17}
+                        textAnchor="middle"
+                        fontSize="8"
+                        fill="white"
+                        fontWeight="700"
+                      >
+                        ●
+                      </text>
+                    </g>
                   )}
                 </g>
               );
             })}
 
-            {/* Empty state with improved design */}
+            {/* Enhanced empty state with animation */}
             {visible.length === 0 && (
               <g>
                 <circle
                   cx={inner.x + inner.w / 2}
-                  cy={inner.y + inner.h / 2 + 20}
-                  r="50"
-                  fill="rgba(148, 163, 184, 0.1)"
-                  stroke="rgba(148, 163, 184, 0.3)"
+                  cy={inner.y + inner.h / 2 + 25}
+                  r="60"
+                  fill="rgba(255,255,255,0.08)"
+                  stroke="rgba(255,255,255,0.2)"
                   strokeWidth="2"
-                  strokeDasharray="8,4"
-                />
+                  strokeDasharray="10,6"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    values="0;32"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
                 <text
                   x={inner.x + inner.w / 2}
-                  y={inner.y + inner.h / 2 + 10}
+                  y={inner.y + inner.h / 2 + 5}
                   textAnchor="middle"
-                  fontSize="24"
-                  fill="rgba(148, 163, 184, 0.6)"
+                  fontSize="32"
+                  fill="rgba(255,255,255,0.4)"
                 >
                   🗂️
                 </text>
                 <text
                   x={inner.x + inner.w / 2}
-                  y={inner.y + inner.h / 2 + 35}
+                  y={inner.y + inner.h / 2 + 45}
                   textAnchor="middle"
-                  fontSize="14"
-                  fill="rgba(148, 163, 184, 0.8)"
-                  fontWeight="500"
+                  fontSize="16"
+                  fill="rgba(255,255,255,0.8)"
+                  fontWeight="600"
                 >
-                  No objects allocated
+                  Heap Memory Empty
                 </text>
                 <text
                   x={inner.x + inner.w / 2}
-                  y={inner.y + inner.h / 2 + 52}
+                  y={inner.y + inner.h / 2 + 62}
                   textAnchor="middle"
-                  fontSize="11"
-                  fill="rgba(148, 163, 184, 0.6)"
+                  fontSize="12"
+                  fill="rgba(255,255,255,0.6)"
                 >
-                  Heap memory is empty
+                  Objects will be allocated here
+                </text>
+                <text
+                  x={inner.x + inner.w / 2}
+                  y={inner.y + inner.h / 2 + 78}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fill="rgba(255,255,255,0.5)"
+                >
+                  Available: {capacity} slots
                 </text>
               </g>
             )}

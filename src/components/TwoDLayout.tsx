@@ -8,7 +8,7 @@ export interface TwoDLayoutProps {
   height?: number; // layout height in px
 }
 
-const TwoDLayout: React.FC<TwoDLayoutProps> = ({ title, editor, output, canvas, height = 560 }) => {
+const TwoDLayout: React.FC<TwoDLayoutProps> = ({ title, editor, output, canvas, height = 700 }) => {
   return (
     <div className="relative w-full max-w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-slate-50 to-slate-200 p-4 shadow-xl sm:p-6">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
@@ -25,7 +25,7 @@ const TwoDLayout: React.FC<TwoDLayoutProps> = ({ title, editor, output, canvas, 
         <div className="min-w-0 space-y-3 lg:w-[44%]">
           <div
             className="relative w-full min-w-0 overflow-hidden rounded-xl border border-slate-300/50 bg-gradient-to-br from-white to-slate-50 p-2 shadow hover:-translate-y-0.5 hover:shadow-lg transition-all"
-            style={{ height: `min(max(250px, ${height * 0.55}px), ${height * 0.55}px)` }}
+            style={{ height: `min(max(350px, ${height * 0.6}px), ${height * 0.6}px)` }}
           >
             <div className="mb-1 text-[0.7rem] font-semibold uppercase tracking-wide text-slate-600 md:text-[0.75rem]">
               Code Editor
@@ -34,7 +34,7 @@ const TwoDLayout: React.FC<TwoDLayoutProps> = ({ title, editor, output, canvas, 
           </div>
           <div
             className="relative w-full min-w-0 overflow-hidden rounded-xl border border-slate-600/50 bg-gradient-to-br from-gray-800 to-gray-900 p-2 shadow-md hover:-translate-y-0.5 hover:shadow-xl transition-all"
-            style={{ height: `min(max(150px, ${height * 0.35}px), ${height * 0.35}px)` }}
+            style={{ height: `min(max(200px, ${height * 0.3}px), ${height * 0.3}px)` }}
           >
             <div className="mb-1 text-[0.7rem] font-semibold uppercase tracking-wide text-green-400 md:text-[0.75rem]">
               Console Output

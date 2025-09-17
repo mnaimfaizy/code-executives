@@ -344,9 +344,6 @@ const CallStack: React.FC = () => {
   );
   const canvas2D = (
     <div className="flex h-full flex-col gap-2">
-      <div className="flex-1 rounded-md border border-gray-300">
-        <CallStack2D ref={stackRef} colorFor={colorForLabel} />
-      </div>
       {showLegend && (
         <div className="flex flex-wrap gap-2">
           {(compiledRef.current?.functions ?? [])
@@ -365,6 +362,9 @@ const CallStack: React.FC = () => {
             ))}
         </div>
       )}
+      <div className="rounded-md border border-gray-300">
+        <CallStack2D ref={stackRef} colorFor={colorForLabel} />
+      </div>
     </div>
   );
 

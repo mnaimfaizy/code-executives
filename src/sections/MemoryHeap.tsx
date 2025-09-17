@@ -318,7 +318,7 @@ const MemoryHeap: React.FC = () => {
 
   const canvas2D = (
     <div className="h-full p-2">
-      <div className="h-full rounded-md border border-gray-300">
+      <div className=" rounded-md border border-gray-300">
         <MemoryHeap2D ref={heapRef} colorFor={colorForLabel} />
       </div>
     </div>
