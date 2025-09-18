@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-import TwoDLayout from '../components/TwoDLayout';
-import CallStack2D, { type CallStack2DHandle } from '../components/models2d/CallStack2D';
-import ThreeCanvas, { type ThreeCanvasHandle } from '../three/react/ThreeCanvas';
-import { CallStackAssemblyLine } from '../three/models/CallStackAssemblyLine';
-import { RestaurantKitchen } from '../three/models/RestaurantKitchen';
-import { RobotActor } from '../three/models/RobotActor';
-import ThreeDLayout from '../components/ThreeDLayout';
-import CallStackControlPanel from '../components/shared/CallStackControlPanel';
+import TwoDLayout from '../../components/TwoDLayout';
+import CallStack2D, {
+  type CallStack2DHandle,
+} from '../../components/models2d/javascript/CallStack2D';
+import ThreeCanvas, { type ThreeCanvasHandle } from '../../three/react/ThreeCanvas';
+import { CallStackAssemblyLine } from '../../three/models/CallStackAssemblyLine';
+import { RestaurantKitchen } from '../../three/models/RestaurantKitchen';
+import { RobotActor } from '../../three/models/RobotActor';
+import ThreeDLayout from '../../components/ThreeDLayout';
+import CallStackControlPanel from '../../components/shared/CallStackControlPanel';
 import {
   instrumentCode,
   colorForLabel,
@@ -15,13 +17,13 @@ import {
   getLabelColorMap,
   setLabelColorMap,
   type FunctionInfo,
-} from '../utils/instrument';
-import ModeTabs from '../components/shared/ModeTabs';
-import { type Speed } from '../components/shared/RunnerToolbar';
-import OutputPanel, { type OutputLine } from '../components/shared/OutputPanel';
-import InstrumentedSource, { type Segment } from '../components/shared/InstrumentedSource';
-import Editor from '../components/shared/Editor';
-import useRunner from '../hooks/useRunner';
+} from '../../utils/instrument';
+import ModeTabs from '../../components/shared/ModeTabs';
+import { type Speed } from '../../components/shared/RunnerToolbar';
+import OutputPanel, { type OutputLine } from '../../components/shared/OutputPanel';
+import InstrumentedSource, { type Segment } from '../../components/shared/InstrumentedSource';
+import Editor from '../../components/shared/Editor';
+import useRunner from '../../hooks/useRunner';
 
 type Instruction = { type: 'push' | 'pop'; label?: string };
 // Using shared OutputLine (kind is a loose string)

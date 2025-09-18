@@ -1,21 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import TwoDLayout from '../components/TwoDLayout';
-import ThreeDLayout from '../components/ThreeDLayout';
-import MemoryHeap2D, { type MemoryHeap2DHandle } from '../components/models2d/MemoryHeap2D';
-import MemoryHeap3D, { type MemoryHeap3DHandle } from '../components/models3d/MemoryHeap3D';
-import ThreeDControlPanel from '../components/shared/ThreeDControlPanel';
+import TwoDLayout from '../../components/TwoDLayout';
+import ThreeDLayout from '../../components/ThreeDLayout';
+import MemoryHeap2D, {
+  type MemoryHeap2DHandle,
+} from '../../components/models2d/javascript/MemoryHeap2D';
+import MemoryHeap3D, { type MemoryHeap3DHandle } from '../../components/models3d/MemoryHeap3D';
+import ThreeDControlPanel from '../../components/shared/ThreeDControlPanel';
 import {
   instrumentCode,
   colorForLabel,
   resetLabelColors,
   type FunctionInfo,
-} from '../utils/instrument';
-import ModeTabs from '../components/shared/ModeTabs';
-import { type Speed } from '../components/shared/RunnerToolbar';
-import OutputPanel, { type OutputLine } from '../components/shared/OutputPanel';
-import InstrumentedSource, { type Segment } from '../components/shared/InstrumentedSource';
-import Editor from '../components/shared/Editor';
-import useRunner from '../hooks/useRunner';
+} from '../../utils/instrument';
+import ModeTabs from '../../components/shared/ModeTabs';
+import { type Speed } from '../../components/shared/RunnerToolbar';
+import OutputPanel, { type OutputLine } from '../../components/shared/OutputPanel';
+import InstrumentedSource, { type Segment } from '../../components/shared/InstrumentedSource';
+import Editor from '../../components/shared/Editor';
+import useRunner from '../../hooks/useRunner';
 
 type Instruction =
   | { type: 'alloc'; label: string; size?: number; caller?: string }

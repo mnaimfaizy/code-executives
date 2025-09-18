@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import TwoDLayout from '../components/TwoDLayout';
-import ModeTabs from '../components/shared/ModeTabs';
-import { type Speed } from '../components/shared/RunnerToolbar';
-import OutputPanel, { type OutputLine } from '../components/shared/OutputPanel';
-import Editor from '../components/shared/Editor';
-import useRunner from '../hooks/useRunner';
+import TwoDLayout from '../../components/TwoDLayout';
+import ModeTabs from '../../components/shared/ModeTabs';
+import { type Speed } from '../../components/shared/RunnerToolbar';
+import OutputPanel, { type OutputLine } from '../../components/shared/OutputPanel';
+import Editor from '../../components/shared/Editor';
+import useRunner from '../../hooks/useRunner';
 
 // Simplified AST node structure for visualization
 type ASTNode = {

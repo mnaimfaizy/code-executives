@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import MemoryManagement2D from './../components/models2d/MemoryManagement2D';
+import MemoryManagement2D from '../../components/models2d/javascript/MemoryManagement2D';
 
 const MemoryManagement: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import EventLoop2D from '../components/models2d/EventLoop2D';
-import EventLoop3D, { type EventLoop3DHandle } from '../components/models3d/EventLoop3D';
-import ModeTabs from '../components/shared/ModeTabs';
+import EventLoop2D from '../../components/models2d/javascript/EventLoop2D';
+import EventLoop3D, { type EventLoop3DHandle } from '../../components/models3d/EventLoop3D';
+import ModeTabs from '../../components/shared/ModeTabs';
 
 const initialStack = ['main()', 'console.log()'];
 const initialMicrotasks = ['Promise.then()', 'async/await'];

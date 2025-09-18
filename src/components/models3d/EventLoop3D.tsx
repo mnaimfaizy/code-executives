@@ -4,6 +4,33 @@ import { ThreeCanvas } from '../../three';
 import type { ThreeCanvasHandle } from '../../three/react/ThreeCanvas';
 import { EventLoopRestaurant } from '../../three/models/EventLoopRestaurant';
 
+// Type for simplified restaurant
+type SimpleEventLoopRestaurant = {
+  group: THREE.Group;
+  callStackOrders: THREE.Mesh[];
+  microtaskOrders: THREE.Mesh[];
+  macrotaskOrders: THREE.Mesh[];
+  init(scene: THREE.Scene): void;
+  buildSimpleKitchen(): void;
+  addCallStackOrder(taskName: string): void;
+  processCallStackOrder(): void;
+  addMicrotaskOrder(taskName: string): void;
+  processMicrotaskOrder(): void;
+  addMacrotaskOrder(taskName: string): void;
+  processMacrotaskOrder(): void;
+  pushToCallStack(taskName: string): void;
+  popFromCallStack(): void;
+  addToMicrotaskQueue(taskName: string): void;
+  processMicrotask(): void;
+  addToMacrotaskQueue(taskName: string): void;
+  processMacrotask(): void;
+  setEventLoopStatus(status: string): void;
+  reset(): void;
+  getState(): { callStack: string[]; microtasks: string[]; macrotasks: string[] };
+  getOptimalCameraPosition(): THREE.Vector3;
+  getFocusPosition(): THREE.Vector3;
+};
+
 export interface EventLoop3DHandle {
   pushToCallStack(taskName: string): void;
   popFromCallStack(): void;
@@ -48,7 +75,7 @@ const EventLoop3D = forwardRef<EventLoop3DHandle, EventLoop3DProps>(
     ref
   ) => {
     const canvasRef = useRef<ThreeCanvasHandle>(null);
-    const restaurantRef = useRef<EventLoopRestaurant | null>(null);
+    const restaurantRef = useRef<EventLoopRestaurant | SimpleEventLoopRestaurant | null>(null);
 
     // Create a simplified EventLoopRestaurant that avoids shader compilation issues
     const restaurant = useMemo(() => {
@@ -206,7 +233,7 @@ const EventLoop3D = forwardRef<EventLoop3DHandle, EventLoop3DProps>(
     }, []);
 
     useEffect(() => {
-      restaurantRef.current = restaurant;
+      restaurantRef.current = restaurant as unknown as EventLoopRestaurant;
       console.log('EventLoop3D: Restaurant ref set');
 
       // Camera setup for restaurant

@@ -34,6 +34,12 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => (
             JavaScript
           </Link>
           <Link
+            to="/rxjs"
+            className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          >
+            RxJS
+          </Link>
+          <Link
             to="/about"
             className="rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
           >

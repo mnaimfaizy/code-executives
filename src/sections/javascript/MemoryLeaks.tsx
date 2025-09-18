@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import MemoryLeaks2D from '../components/models2d/MemoryLeaks2D';
+import MemoryLeaks2D from '../../components/models2d/javascript/MemoryLeaks2D';
 
 const MemoryLeaks: React.FC = () => {
   const [activeExample, setActiveExample] = useState(0);

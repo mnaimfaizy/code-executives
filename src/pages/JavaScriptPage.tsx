@@ -1,22 +1,22 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import Introduction from '../sections/Introduction';
-import JavaScriptHistory from '../sections/JavaScriptHistory';
-import EngineRuntimeComparison from '../sections/EngineRuntimeComparison';
-import Engine from '../sections/Engine';
-import EventLoop from '../sections/EventLoop';
-import MemoryManagement from '../sections/MemoryManagement';
-import MemoryLeaks from '../sections/MemoryLeaks';
-import Visualization from '../sections/Visualization';
-import CallStack from '../sections/CallStack';
-import MemoryHeap from '../sections/MemoryHeap';
-import ParserAST from '../sections/ParserAST';
-import JITCompilation from '../sections/JITCompilation';
-import GarbageCollection from '../sections/GarbageCollection';
-import JavaScriptRuntime from '../sections/JavaScriptRuntime';
-import WebAPIs from '../sections/WebAPIs';
-import TaskQueues from '../sections/TaskQueues';
-import V8Runtime from '../sections/V8Runtime';
+import Introduction from '../sections/javascript/Introduction';
+import JavaScriptHistory from '../sections/javascript/JavaScriptHistory';
+import EngineRuntimeComparison from '../sections/javascript/EngineRuntimeComparison';
+import Engine from '../sections/javascript/Engine';
+import EventLoop from '../sections/javascript/EventLoop';
+import MemoryManagement from '../sections/javascript/MemoryManagement';
+import MemoryLeaks from '../sections/javascript/MemoryLeaks';
+import Visualization from '../sections/javascript/Visualization';
+import CallStack from '../sections/javascript/CallStack';
+import MemoryHeap from '../sections/javascript/MemoryHeap';
+import ParserAST from '../sections/javascript/ParserAST';
+import JITCompilation from '../sections/javascript/JITCompilation';
+import GarbageCollection from '../sections/javascript/GarbageCollection';
+import JavaScriptRuntime from '../sections/javascript/JavaScriptRuntime';
+import WebAPIs from '../sections/javascript/WebAPIs';
+import TaskQueues from '../sections/javascript/TaskQueues';
+import V8Runtime from '../sections/javascript/V8Runtime';
 
 const sectionComponents: Record<string, React.ReactNode> = {
   Introduction: <Introduction />,

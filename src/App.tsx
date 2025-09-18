@@ -6,6 +6,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import About from './pages/About';
 import JavaScriptPage from './pages/JavaScriptPage';
+import RxJSPage from './pages/RxJSPage';
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -21,6 +22,7 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/javascript" element={<JavaScriptPage />} />
+            <Route path="/rxjs" element={<RxJSPage />} />
           </Routes>
         </main>
       </div>

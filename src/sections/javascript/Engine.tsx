@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Engine2D from '../components/models2d/Engine2D';
+import Engine2D from '../../components/models2d/javascript/Engine2D';
 
 const Engine: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState(0);

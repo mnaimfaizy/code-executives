@@ -67,6 +67,36 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     },
     { label: 'Visualization', path: '/javascript?section=Visualization' },
   ],
+  '/rxjs': [
+    { label: 'Introduction', path: '/rxjs?section=Introduction' },
+    { label: 'Reactive Manifesto', path: '/rxjs?section=Reactive%20Manifesto' },
+    {
+      label: 'Core Components',
+      path: '/rxjs?section=Core%20Components',
+      subItems: [
+        { label: 'Observables', path: '/rxjs?section=Observables' },
+        { label: 'Operators', path: '/rxjs?section=Operators' },
+        { label: 'Subjects', path: '/rxjs?section=Subjects' },
+      ],
+    },
+    {
+      label: 'Advanced Concepts',
+      path: '/rxjs?section=Advanced%20Concepts',
+      subItems: [
+        { label: 'Advanced Operators', path: '/rxjs?section=Advanced%20Operators' },
+        { label: 'Marble Diagrams', path: '/rxjs?section=Marble%20Diagrams' },
+        { label: 'Error Handling', path: '/rxjs?section=Error%20Handling' },
+      ],
+    },
+    {
+      label: 'Real-World Applications',
+      path: '/rxjs?section=Real-World%20Applications',
+      subItems: [
+        { label: 'Real-World Examples', path: '/rxjs?section=Real-World%20Examples' },
+        { label: 'Visualization Tool', path: '/rxjs?section=Visualization%20Tool' },
+      ],
+    },
+  ],
   '/': [],
   '/about': [],
 };
@@ -82,6 +112,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     'JavaScript Engine',
     'JavaScript Runtime',
     'Memory Management',
+    'Core Components',
+    'Advanced Concepts',
+    'Real-World Applications',
   ]);
 
   // Get the base path (e.g., '/javascript')
