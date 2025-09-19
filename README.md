@@ -1,69 +1,221 @@
-# React + TypeScript + Vite
+# 🚀 Code Executives: Interactive Programming Education Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
 
-Currently, two official plugins are available:
+## 🌟 Features
 
-## Expanding the ESLint configuration
+### 📚 **Interactive Learning Modules**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Git Mastery**: Complete Git tutorial with 7 interactive 2D visualizations
+- **JavaScript Engine**: Deep dive into V8 runtime, memory management, and execution flow
+- **RxJS Reactive Programming**: Observable streams and reactive patterns
+- **More modules coming soon**: Data structures, algorithms, system design
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🎮 **Interactive Visualizations**
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **2D SVG Models**: Smooth animations explaining complex concepts
+- **3D Three.js Models**: Immersive 3D representations of programming constructs
+- **Real-time Interactions**: Click, drag, and explore concepts dynamically
+- **Step-by-Step Guidance**: Progressive learning with animated tutorials
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+### 🎨 **Modern User Experience**
+
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Dark/Light Themes**: Adaptive UI for comfortable learning
+- **Professional UI**: Clean, modern interface built with Tailwind CSS
+- **Fast Performance**: Optimized with Vite for instant feedback
+
+## 🏗️ Architecture Overview
+
+### **Frontend Stack**
+
+- **Framework**: React 19 with TypeScript for type safety
+- **Build Tool**: Vite for fast development and optimized builds
+- **Styling**: Tailwind CSS 4.x for utility-first styling
+- **Routing**: React Router for seamless navigation
+- **Icons**: Lucide React for consistent iconography
+
+### **Visualization Technologies**
+
+- **2D Graphics**: SVG-based interactive diagrams
+- **3D Graphics**: Three.js for immersive 3D models
+- **Animations**: CSS transitions and JavaScript-driven animations
+- **Interactivity**: Mouse/touch events with real-time feedback
+
+## 📁 Project Structure
+
+```
+src/
+├── components/           # Reusable UI components
+│   ├── models2d/        # 2D visualization components
+│   │   └── git/         # Git tutorial visualizations
+│   ├── models3d/        # 3D visualization components
+│   └── shared/          # Shared UI components
+├── pages/               # Main application pages
+│   ├── GitPage.tsx      # Git tutorial page
+│   ├── JavaScriptPage.tsx
+│   └── RxJSPage.tsx
+├── sections/            # Educational content sections
+│   ├── git/            # Git learning modules
+│   ├── javascript/     # JavaScript concepts
+│   └── rxjs/           # RxJS tutorials
+├── hooks/              # Custom React hooks
+├── types/              # TypeScript type definitions
+├── utils/              # Utility functions
+└── three/              # Three.js 3D models and scenes
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚀 Quick Start
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x';
-import reactDom from 'eslint-plugin-react-dom';
+### Prerequisites
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-]);
+- **Node.js** 18+ (LTS recommended)
+- **npm** or **yarn** package manager
+- Modern web browser with ES2020+ support
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd code-executives
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Start development server**
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. **Open in browser**
+   Navigate to `http://localhost:5173`
+
+### Building for Production
+
+```bash
+npm run build
+# or
+yarn build
 ```
+
+The built application will be in the `dist/` directory.
+
+## 🎓 Learning Modules
+
+### 📚 **Git Tutorial (Complete)**
+
+Master Git version control with interactive visualizations:
+
+- **Repository Architecture**: Understanding Git's internal structure
+- **Three-Tree Model**: Working directory, staging area, and commit history
+- **Object Model**: Blobs, trees, commits, and references
+- **Core Workflow**: Add, commit, push, pull operations
+- **Branching & Merging**: Feature branches and merge strategies
+- **Collaboration**: Remote repositories and team workflows
+- **History Management**: Rebase, reset, and advanced Git operations
+
+### ⚡ **JavaScript Engine**
+
+Deep dive into how JavaScript actually works:
+
+- **V8 Runtime**: Chrome's JavaScript engine internals
+- **Call Stack**: Function execution and stack frames
+- **Memory Heap**: Object allocation and garbage collection
+- **Event Loop**: Asynchronous execution and task queues
+- **Memory Management**: Leak detection and optimization
+
+### 🔄 **RxJS Reactive Programming**
+
+Master reactive programming patterns:
+
+- **Observables**: Data streams and subscription patterns
+- **Operators**: Transform, filter, and combine streams
+- **Error Handling**: Robust error management strategies
+- **Real-world Examples**: Practical applications and use cases
+
+## 🛠️ Development
+
+### **Available Scripts**
+
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build production-ready bundle
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint code quality checks
+- `npm run type-check` - Run TypeScript type checking
+
+### **Code Quality**
+
+The project maintains high code quality through:
+
+- **TypeScript**: Static type checking for safer development
+- **ESLint**: Code linting with React and TypeScript rules
+- **Prettier**: Consistent code formatting (recommended)
+- **Modular Architecture**: Clean separation of concerns
+
+### **Adding New Modules**
+
+To add a new learning module:
+
+1. **Create section components** in `src/sections/[module-name]/`
+2. **Add 2D visualizations** in `src/components/models2d/[module-name]/`
+3. **Create page component** in `src/pages/[ModuleName]Page.tsx`
+4. **Update navigation** in `src/components/Header.tsx` and `src/components/Sidebar.tsx`
+5. **Add routing** in `src/App.tsx`
+
+## 🤝 Contributing
+
+We welcome contributions! This project is designed to be educational and community-driven.
+
+### **Getting Started**
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes following the existing patterns
+4. Test your changes thoroughly
+5. Commit with descriptive messages
+6. Push to your branch and create a Pull Request
+
+### **Contribution Guidelines**
+
+- Follow the existing code style and architecture
+- Add TypeScript types for all new code
+- Include interactive visualizations where applicable
+- Write descriptive commit messages
+- Update documentation for new features
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Three.js** community for 3D visualization capabilities
+- **React** team for the amazing framework
+- **Vite** for lightning-fast development experience
+- **Tailwind CSS** for utility-first styling approach
+
+## 📞 Support
+
+- 📧 **Issues**: Report bugs or request features via GitHub Issues
+- 💬 **Discussions**: Join community discussions for questions and ideas
+- 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
+
+---
+
+**Built with ❤️ for developers, by developers**
+
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning._
 
 ## 3D/2D Visualization Architecture
 
