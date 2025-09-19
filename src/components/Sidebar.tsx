@@ -97,6 +97,18 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
       ],
     },
   ],
+  '/git': [
+    { label: 'Introduction', path: '/git?section=Introduction' },
+    { label: 'Git Architecture', path: '/git?section=Git%20Architecture' },
+    { label: 'Three-Tree Model', path: '/git?section=Three-Tree%20Model' },
+    { label: 'Object Model', path: '/git?section=Object%20Model' },
+    { label: 'Core Workflow', path: '/git?section=Core%20Workflow' },
+    { label: 'Branching & Merging', path: '/git?section=Branching%20%26%20Merging' },
+    { label: 'Professional Workflows', path: '/git?section=Professional%20Workflows' },
+    { label: 'History Management', path: '/git?section=History%20Management' },
+    { label: 'Troubleshooting', path: '/git?section=Troubleshooting' },
+    { label: 'Visualization', path: '/git?section=Visualization' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -115,6 +127,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     'Core Components',
     'Advanced Concepts',
     'Real-World Applications',
+    'Git Fundamentals',
+    'Advanced Git',
   ]);
 
   // Get the base path (e.g., '/javascript')
