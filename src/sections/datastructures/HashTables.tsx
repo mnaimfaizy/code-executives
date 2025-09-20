@@ -1,0 +1,403 @@
+import React, { useState } from 'react';
+import { ArrowRight, Hash, Zap, Users, Search } from 'lucide-react';
+import HashTableVisualization from '../../components/models2d/datastructures/hash/HashTableVisualization';
+import CollisionHandling from '../../components/models2d/datastructures/hash/CollisionHandling';
+
+interface HashTablesProps {
+  onNavigate: (section: string) => void;
+}
+
+const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
+  const [activeDemo, setActiveDemo] = useState<'basic' | 'collision'>('basic');
+  const [hashFunction, setHashFunction] = useState<'simple' | 'djb2' | 'fnv1a'>('simple');
+  const [collisionStrategy, setCollisionStrategy] = useState<'chaining' | 'linear-probing' | 'quadratic-probing'>('chaining');
+
+  return (
+    <section className="relative min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl mb-6 shadow-lg">
+            <Hash className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 bg-clip-text text-transparent mb-6">
+            Hash Tables
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+            Hash tables provide average O(1) time complexity for insertions, deletions, and lookups
+            by using hash functions to map keys directly to array indices.
+          </p>
+        </div>
+
+        {/* Demo Selection */}
+        <div className="flex justify-center mb-12">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-2">
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setActiveDemo('basic')}
+                className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+                  activeDemo === 'basic'
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                Basic Operations
+              </button>
+              <button
+                onClick={() => setActiveDemo('collision')}
+                className={`px-4 py-2 rounded-lg transition-colors font-medium ${
+                  activeDemo === 'collision'
+                    ? 'bg-purple-600 text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                Collision Resolution
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Hash Function & Strategy Controls */}
+        {activeDemo === 'basic' && (
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Configuration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Hash Function
+                </label>
+                <select
+                  value={hashFunction}
+                  onChange={(e) => setHashFunction(e.target.value as 'simple' | 'djb2' | 'fnv1a')}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="simple">Simple (ASCII Sum)</option>
+                  <option value="djb2">DJB2 Hash</option>
+                  <option value="fnv1a">FNV-1a Hash</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Collision Strategy
+                </label>
+                <select
+                  value={collisionStrategy}
+                  onChange={(e) => setCollisionStrategy(e.target.value as 'chaining' | 'linear-probing' | 'quadratic-probing')}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="chaining">Separate Chaining</option>
+                  <option value="linear-probing">Linear Probing</option>
+                  <option value="quadratic-probing">Quadratic Probing</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Interactive Visualization */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-purple-200 dark:border-purple-800 rounded-2xl p-8 mb-12">
+          {activeDemo === 'basic' ? (
+            <HashTableVisualization
+              hashFunction={hashFunction}
+              collisionStrategy={collisionStrategy}
+              showHashCalculation={true}
+              tableSize={7}
+            />
+          ) : (
+            <CollisionHandling
+              strategy={collisionStrategy}
+              onStrategyChange={setCollisionStrategy}
+            />
+          )}
+        </div>
+
+        {/* Core Concepts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Hash Functions */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Hash Functions</h3>
+            
+            <div className="space-y-6">
+              <div className="flex items-start space-x-4">
+                <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Deterministic</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Same input always produces the same hash value.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">Uniform Distribution</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Distributes keys evenly across the hash table.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">Fast Computation</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Quick to calculate to maintain O(1) performance.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-4">
+                <div className="w-3 h-3 bg-orange-500 rounded-full mt-1.5"></div>
+                <div>
+                  <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2">Avalanche Effect</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Small input changes create large hash changes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Performance & Load Factor */}
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Performance Factors</h3>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <span className="font-medium text-gray-900 dark:text-white">Insert</span>
+                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">O(1) avg</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <span className="font-medium text-gray-900 dark:text-white">Delete</span>
+                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">O(1) avg</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <span className="font-medium text-gray-900 dark:text-white">Search</span>
+                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">O(1) avg</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <span className="font-medium text-gray-900 dark:text-white">Worst Case</span>
+                <span className="text-red-600 dark:text-red-400 font-mono font-semibold">O(n)</span>
+              </div>
+            </div>
+            
+            <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Load Factor Impact</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                Load Factor = n / m (entries / buckets)
+              </p>
+              <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                <li>• &lt; 0.7: Excellent performance</li>
+                <li>• 0.7-0.8: Good performance</li>
+                <li>• &gt; 0.8: Consider resizing</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Hash Function Types */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Popular Hash Functions</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-6">
+              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-3">Simple Hash</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Sum of ASCII values modulo table size. Easy to understand but poor distribution.
+              </p>
+              <div className="text-xs text-purple-600 dark:text-purple-400 font-mono bg-white dark:bg-gray-800 p-2 rounded">
+                hash = (sum of chars) % size
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6">
+              <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">DJB2 Hash</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Good distribution with simple bit operations. Popular in practice.
+              </p>
+              <div className="text-xs text-blue-600 dark:text-blue-400 font-mono bg-white dark:bg-gray-800 p-2 rounded">
+                hash = hash * 33 + char
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6">
+              <h4 className="font-semibold text-green-700 dark:text-green-300 mb-3">FNV-1a Hash</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                Fast and well-distributed. Good avalanche properties.
+              </p>
+              <div className="text-xs text-green-600 dark:text-green-400 font-mono bg-white dark:bg-gray-800 p-2 rounded">
+                hash = (hash ^ char) * prime
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Real-World Applications */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Real-World Applications</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Search className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Database Indexing</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Fast record lookup and query optimization
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Caching Systems</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Redis, Memcached for fast data retrieval
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">User Sessions</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Web application session management
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Hash className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Symbol Tables</h4>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                Compiler variable and function lookup
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Implementation Examples */}
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Language Implementations</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+              <h4 className="font-semibold text-yellow-700 dark:text-yellow-300 mb-3">JavaScript</h4>
+              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Map</code> and <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Set</code> objects</li>
+                <li>• Object property lookup</li>
+                <li>• V8 hidden classes</li>
+              </ul>
+            </div>
+            
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+              <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">Python</h4>
+              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">dict</code> built-in type</li>
+                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">set</code> collections</li>
+                <li>• Module namespace lookup</li>
+              </ul>
+            </div>
+            
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
+              <h4 className="font-semibold text-red-700 dark:text-red-300 mb-3">Java</h4>
+              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashMap</code> and <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashSet</code></li>
+                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">ConcurrentHashMap</code></li>
+                <li>• String interning</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* When to Use Hash Tables */}
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-8 mb-12">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">When to Use Hash Tables</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h4 className="font-semibold text-green-700 dark:text-green-300 mb-4">✅ Great For</h4>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2 mt-1">•</span>
+                  Fast lookups, insertions, and deletions
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2 mt-1">•</span>
+                  Implementing caches and memoization
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2 mt-1">•</span>
+                  Counting frequencies and duplicates
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2 mt-1">•</span>
+                  Building indices for fast search
+                </li>
+                <li className="flex items-start">
+                  <span className="text-green-500 mr-2 mt-1">•</span>
+                  Implementing associative arrays
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-red-700 dark:text-red-300 mb-4">❌ Consider Alternatives</h4>
+              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2 mt-1">•</span>
+                  When you need ordered data (use BST)
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2 mt-1">•</span>
+                  Small datasets (&lt; 100 items)
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2 mt-1">•</span>
+                  When memory is severely constrained
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2 mt-1">•</span>
+                  Need guaranteed O(1) worst-case
+                </li>
+                <li className="flex items-start">
+                  <span className="text-red-500 mr-2 mt-1">•</span>
+                  Frequent iteration over all elements
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex justify-between items-center pt-8 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => onNavigate('Queues')}
+            className="flex items-center space-x-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          >
+            <ArrowRight className="w-4 h-4 rotate-180" />
+            <span>Queues</span>
+          </button>
+          
+          <button
+            onClick={() => onNavigate('tree-structures')}
+            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+          >
+            <span>Tree Structures</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default HashTables;

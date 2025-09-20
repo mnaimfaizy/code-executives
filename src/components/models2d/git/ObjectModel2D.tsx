@@ -93,7 +93,6 @@ const connections = [
 
 const ObjectModel2D: React.FC<ObjectModel2DProps> = ({ selectedObject, onObjectSelect }) => {
   const [highlightedConnections, setHighlightedConnections] = useState<string[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [animationStep, setAnimationStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -298,6 +297,10 @@ const ObjectModel2D: React.FC<ObjectModel2DProps> = ({ selectedObject, onObjectS
                     cy={obj.y + 20}
                     r="30"
                     className="fill-none stroke-orange-400 stroke-2 animate-pulse"
+                    style={{
+                      opacity: isAnimating ? 0.5 + animationStep * 0.1 : 1,
+                      strokeDasharray: animationStep > 0 ? '5,5' : 'none',
+                    }}
                   />
                 )}
               </g>

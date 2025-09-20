@@ -109,6 +109,37 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Troubleshooting', path: '/git?section=Troubleshooting' },
     { label: 'Visualization', path: '/git?section=Visualization' },
   ],
+  '/datastructures': [
+    { label: 'Introduction', path: '/datastructures?section=Introduction' },
+    {
+      label: 'Linear Structures',
+      path: '/datastructures?section=Linear%20Structures',
+      subItems: [
+        { label: 'Arrays', path: '/datastructures?section=Arrays' },
+        { label: 'Linked Lists', path: '/datastructures?section=Linked%20Lists' },
+        { label: 'Stacks', path: '/datastructures?section=Stacks' },
+        { label: 'Queues', path: '/datastructures?section=Queues' },
+      ],
+    },
+    { label: 'Hash Tables', path: '/datastructures?section=Hash%20Tables' },
+    {
+      label: 'Tree Structures',
+      path: '/datastructures?section=Tree%20Structures',
+      subItems: [
+        { label: 'Binary Trees', path: '/datastructures?section=Binary%20Trees' },
+        { label: 'Binary Search Trees', path: '/datastructures?section=Binary%20Search%20Trees' },
+        { label: 'AVL Trees', path: '/datastructures?section=AVL%20Trees' },
+        { label: 'Red-Black Trees', path: '/datastructures?section=Red-Black%20Trees' },
+        { label: 'Heaps', path: '/datastructures?section=Heaps' },
+        { label: 'B-Trees', path: '/datastructures?section=B-Trees' },
+      ],
+    },
+    { label: 'Graph Structures', path: '/datastructures?section=Graph%20Structures' },
+    { label: 'Complexity Analysis', path: '/datastructures?section=Complexity%20Analysis' },
+    { label: 'Real-World Applications', path: '/datastructures?section=Real-World%20Applications' },
+    { label: 'Practice Problems', path: '/datastructures?section=Practice%20Problems' },
+    { label: '3D Visualizations', path: '/datastructures?section=3D%20Visualizations' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -129,6 +160,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     'Real-World Applications',
     'Git Fundamentals',
     'Advanced Git',
+    'Linear Structures',
+    'Tree Structures',
   ]);
 
   // Get the base path (e.g., '/javascript')
