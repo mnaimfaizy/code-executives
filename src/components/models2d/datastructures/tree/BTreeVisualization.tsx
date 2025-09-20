@@ -15,10 +15,7 @@ interface BTreeVisualizationProps {
   className?: string;
 }
 
-const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
-  degree = 3,
-  className = ""
-}) => {
+const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, className = '' }) => {
   const [root, setRoot] = useState<BTreeNode | null>(null);
   const [insertValue, setInsertValue] = useState<string>('');
 
@@ -37,27 +34,30 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
     isLeaf,
     level: 0,
     x: 0,
-    y: 0
+    y: 0,
   });
 
-  const calculatePositions = useCallback((node: BTreeNode | null, x: number = 400, y: number = 50, level: number = 0): void => {
-    if (!node) return;
+  const calculatePositions = useCallback(
+    (node: BTreeNode | null, x: number = 400, y: number = 50, level: number = 0): void => {
+      if (!node) return;
 
-    node.x = x;
-    node.y = y;
-    node.level = level;
+      node.x = x;
+      node.y = y;
+      node.level = level;
 
-    if (!node.isLeaf && node.children.length > 0) {
-      const childSpacing = Math.max(120, 200 / Math.pow(2, level));
-      const totalWidth = (node.children.length - 1) * childSpacing;
-      const startX = x - totalWidth / 2;
+      if (!node.isLeaf && node.children.length > 0) {
+        const childSpacing = Math.max(120, 200 / Math.pow(2, level));
+        const totalWidth = (node.children.length - 1) * childSpacing;
+        const startX = x - totalWidth / 2;
 
-      node.children.forEach((child, index) => {
-        const childX = startX + index * childSpacing;
-        calculatePositions(child, childX, y + 80, level + 1);
-      });
-    }
-  }, []);
+        node.children.forEach((child, index) => {
+          const childX = startX + index * childSpacing;
+          calculatePositions(child, childX, y + 80, level + 1);
+        });
+      }
+    },
+    []
+  );
 
   const splitChild = (parent: BTreeNode, index: number, fullChild: BTreeNode): BTreeNode => {
     const newChild = createNode([], fullChild.isLeaf);
@@ -65,7 +65,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
 
     // Move second half of keys to new node
     newChild.keys = fullChild.keys.splice(midIndex + 1);
-    
+
     // Move second half of children if not leaf
     if (!fullChild.isLeaf) {
       newChild.children = fullChild.children.splice(midIndex + 1);
@@ -73,7 +73,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
 
     // Insert new child into parent
     parent.children.splice(index + 1, 0, newChild);
-    
+
     // Move middle key up to parent
     const middleKey = fullChild.keys.splice(midIndex, 1)[0];
     parent.keys.splice(index, 0, middleKey);
@@ -110,40 +110,43 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
     }
   };
 
-  const insert = useCallback((key: number) => {
-    setIsAnimating(true);
-    setMessage(`Inserting ${key}...`);
+  const insert = useCallback(
+    (key: number) => {
+      setIsAnimating(true);
+      setMessage(`Inserting ${key}...`);
 
-    setTimeout(() => {
-      if (!root) {
-        const newRoot = createNode([key]);
-        setRoot(newRoot);
-        setMessage(`Created root with key ${key}`);
-      } else {
-        if (root.keys.length === maxKeys) {
-          // Root is full, need to split
-          const newRoot = createNode([], false);
-          newRoot.children.push(root);
-          splitChild(newRoot, 0, root);
+      setTimeout(() => {
+        if (!root) {
+          const newRoot = createNode([key]);
           setRoot(newRoot);
-          insertNonFull(newRoot, key);
+          setMessage(`Created root with key ${key}`);
         } else {
-          insertNonFull(root, key);
+          if (root.keys.length === maxKeys) {
+            // Root is full, need to split
+            const newRoot = createNode([], false);
+            newRoot.children.push(root);
+            splitChild(newRoot, 0, root);
+            setRoot(newRoot);
+            insertNonFull(newRoot, key);
+          } else {
+            insertNonFull(root, key);
+          }
+          setMessage(`Inserted ${key} into B-Tree`);
         }
-        setMessage(`Inserted ${key} into B-Tree`);
-      }
-      
-      // Recalculate positions
-      const newRoot = root;
-      if (newRoot) {
-        calculatePositions(newRoot);
-        setRoot({...newRoot});
-      }
-      
-      setIsAnimating(false);
-    }, 500);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [root, maxKeys, calculatePositions]);
+
+        // Recalculate positions
+        const newRoot = root;
+        if (newRoot) {
+          calculatePositions(newRoot);
+          setRoot({ ...newRoot });
+        }
+
+        setIsAnimating(false);
+      }, 500);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [root, maxKeys, calculatePositions]
+  );
 
   const handleInsert = () => {
     const value = parseInt(insertValue);
@@ -189,8 +192,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
           y={node.y - nodeHeight / 2}
           width={nodeWidth}
           height={nodeHeight}
-          fill={isHighlighted ? "#3B82F6" : "#F3F4F6"}
-          stroke={isHighlighted ? "#1E40AF" : "#9CA3AF"}
+          fill={isHighlighted ? '#3B82F6' : '#F3F4F6'}
+          stroke={isHighlighted ? '#1E40AF' : '#9CA3AF'}
           strokeWidth="2"
           rx="8"
           className="transition-all duration-300"
@@ -210,7 +213,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
                 strokeWidth="1"
               />
             )}
-            
+
             {/* Key text */}
             <text
               x={node.x - nodeWidth / 2 + ((keyIndex + 0.5) * nodeWidth) / node.keys.length}
@@ -224,18 +227,19 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
         ))}
 
         {/* Children connections */}
-        {!node.isLeaf && node.children.map((child, childIndex) => (
-          <line
-            key={`connection-${childIndex}`}
-            x1={node.x}
-            y1={node.y + nodeHeight / 2}
-            x2={child.x}
-            y2={child.y - nodeHeight / 2}
-            stroke="#6B7280"
-            strokeWidth="2"
-            className="transition-all duration-300"
-          />
-        ))}
+        {!node.isLeaf &&
+          node.children.map((child, childIndex) => (
+            <line
+              key={`connection-${childIndex}`}
+              x1={node.x}
+              y1={node.y + nodeHeight / 2}
+              x2={child.x}
+              y2={child.y - nodeHeight / 2}
+              stroke="#6B7280"
+              strokeWidth="2"
+              className="transition-all duration-300"
+            />
+          ))}
       </g>
     );
   };
@@ -244,10 +248,10 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
     if (!node) return [];
 
     const nodes = [renderNode(node)];
-    
+
     // Render children
     if (!node.isLeaf) {
-      node.children.forEach(child => {
+      node.children.forEach((child) => {
         nodes.push(...renderTree(child));
       });
     }
@@ -272,7 +276,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
@@ -351,10 +355,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
 
       {/* Tree Visualization */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg
-          viewBox="0 0 800 400"
-          className="w-full h-96 bg-gray-50 dark:bg-gray-900"
-        >
+        <svg viewBox="0 0 800 400" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
           {/* Background pattern */}
           <defs>
             <pattern id="btree-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -401,20 +402,23 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
               })()}
             </div>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
             <div className="font-semibold text-gray-900 dark:text-white">Total Keys</div>
             <div className="text-purple-600 dark:text-purple-400">
               {(() => {
                 const countKeys = (node: BTreeNode | null): number => {
                   if (!node) return 0;
-                  return node.keys.length + node.children.reduce((sum, child) => sum + countKeys(child), 0);
+                  return (
+                    node.keys.length +
+                    node.children.reduce((sum, child) => sum + countKeys(child), 0)
+                  );
                 };
                 return countKeys(root);
               })()}
             </div>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
             <div className="font-semibold text-gray-900 dark:text-white">Nodes</div>
             <div className="text-purple-600 dark:text-purple-400">
@@ -427,7 +431,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({
               })()}
             </div>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
             <div className="font-semibold text-gray-900 dark:text-white">Balanced</div>
             <div className="text-green-600 dark:text-green-400">✓ Always</div>

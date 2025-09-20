@@ -26,9 +26,7 @@ interface DijkstraVisualizationProps {
   className?: string;
 }
 
-const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
-  className = ""
-}) => {
+const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className = '' }) => {
   const [nodes, setNodes] = useState<DijkstraNode[]>([]);
   const [edges, setEdges] = useState<DijkstraEdge[]>([]);
   const [priorityQueue, setPriorityQueue] = useState<{ nodeId: string; distance: number }[]>([]);
@@ -44,12 +42,66 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
 
   const initializeGraph = useCallback(() => {
     const initialNodes: DijkstraNode[] = [
-      { id: 'A', label: 'A', x: 100, y: 150, distance: Infinity, visited: false, current: false, isSource: false },
-      { id: 'B', label: 'B', x: 250, y: 100, distance: Infinity, visited: false, current: false, isSource: false },
-      { id: 'C', label: 'C', x: 250, y: 200, distance: Infinity, visited: false, current: false, isSource: false },
-      { id: 'D', label: 'D', x: 400, y: 100, distance: Infinity, visited: false, current: false, isSource: false },
-      { id: 'E', label: 'E', x: 400, y: 200, distance: Infinity, visited: false, current: false, isSource: false },
-      { id: 'F', label: 'F', x: 550, y: 150, distance: Infinity, visited: false, current: false, isSource: false },
+      {
+        id: 'A',
+        label: 'A',
+        x: 100,
+        y: 150,
+        distance: Infinity,
+        visited: false,
+        current: false,
+        isSource: false,
+      },
+      {
+        id: 'B',
+        label: 'B',
+        x: 250,
+        y: 100,
+        distance: Infinity,
+        visited: false,
+        current: false,
+        isSource: false,
+      },
+      {
+        id: 'C',
+        label: 'C',
+        x: 250,
+        y: 200,
+        distance: Infinity,
+        visited: false,
+        current: false,
+        isSource: false,
+      },
+      {
+        id: 'D',
+        label: 'D',
+        x: 400,
+        y: 100,
+        distance: Infinity,
+        visited: false,
+        current: false,
+        isSource: false,
+      },
+      {
+        id: 'E',
+        label: 'E',
+        x: 400,
+        y: 200,
+        distance: Infinity,
+        visited: false,
+        current: false,
+        isSource: false,
+      },
+      {
+        id: 'F',
+        label: 'F',
+        x: 550,
+        y: 150,
+        distance: Infinity,
+        visited: false,
+        current: false,
+        isSource: false,
+      },
     ];
 
     const initialEdges: DijkstraEdge[] = [
@@ -65,10 +117,10 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
     ];
 
     // Set source node distance to 0 and mark as source
-    const updatedNodes = initialNodes.map(node => ({
+    const updatedNodes = initialNodes.map((node) => ({
       ...node,
       distance: node.id === sourceNode ? 0 : Infinity,
-      isSource: node.id === sourceNode
+      isSource: node.id === sourceNode,
     }));
 
     setNodes(updatedNodes);
@@ -89,48 +141,58 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
     initializeGraph();
   }, [initializeGraph]);
 
-  const getAdjacentNodes = useCallback((nodeId: string): { nodeId: string; weight: number }[] => {
-    const adjacent: { nodeId: string; weight: number }[] = [];
-    edges.forEach(edge => {
-      if (edge.source === nodeId) {
-        adjacent.push({ nodeId: edge.target, weight: edge.weight });
-      } else if (edge.target === nodeId) {
-        adjacent.push({ nodeId: edge.source, weight: edge.weight });
-      }
-    });
-    return adjacent;
-  }, [edges]);
+  const getAdjacentNodes = useCallback(
+    (nodeId: string): { nodeId: string; weight: number }[] => {
+      const adjacent: { nodeId: string; weight: number }[] = [];
+      edges.forEach((edge) => {
+        if (edge.source === nodeId) {
+          adjacent.push({ nodeId: edge.target, weight: edge.weight });
+        } else if (edge.target === nodeId) {
+          adjacent.push({ nodeId: edge.source, weight: edge.weight });
+        }
+      });
+      return adjacent;
+    },
+    [edges]
+  );
 
-  const findShortestPath = useCallback((target: string): string[] => {
-    const path: string[] = [];
-    let current = target;
-    
-    while (current) {
-      path.unshift(current);
-      const nodeData = nodes.find(n => n.id === current);
-      current = nodeData?.previous || '';
-    }
-    
-    return path;
-  }, [nodes]);
+  const findShortestPath = useCallback(
+    (target: string): string[] => {
+      const path: string[] = [];
+      let current = target;
+
+      while (current) {
+        path.unshift(current);
+        const nodeData = nodes.find((n) => n.id === current);
+        current = nodeData?.previous || '';
+      }
+
+      return path;
+    },
+    [nodes]
+  );
 
   const performDijkstraStep = useCallback(() => {
     if (priorityQueue.length === 0) {
       // Algorithm completed, show shortest path
       const path = findShortestPath(targetNode);
       setShortestPath(path);
-      
+
       // Highlight shortest path edges
-      setEdges(prev => prev.map(edge => {
-        const isInPath = path.some((nodeId, index) => {
-          if (index === path.length - 1) return false;
-          const nextNode = path[index + 1];
-          return (edge.source === nodeId && edge.target === nextNode) ||
-                 (edge.target === nodeId && edge.source === nextNode);
-        });
-        return { ...edge, inPath: isInPath, highlighted: false };
-      }));
-      
+      setEdges((prev) =>
+        prev.map((edge) => {
+          const isInPath = path.some((nodeId, index) => {
+            if (index === path.length - 1) return false;
+            const nextNode = path[index + 1];
+            return (
+              (edge.source === nodeId && edge.target === nextNode) ||
+              (edge.target === nodeId && edge.source === nextNode)
+            );
+          });
+          return { ...edge, inPath: isInPath, highlighted: false };
+        })
+      );
+
       setIsComplete(true);
       setCurrentNode(null);
       setIsPlaying(false);
@@ -140,60 +202,67 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
     // Get node with minimum distance from priority queue
     const sortedQueue = [...priorityQueue].sort((a, b) => a.distance - b.distance);
     const { nodeId: currentNodeId } = sortedQueue[0];
-    const newQueue = priorityQueue.filter(item => item.nodeId !== currentNodeId);
-    
+    const newQueue = priorityQueue.filter((item) => item.nodeId !== currentNodeId);
+
     setPriorityQueue(newQueue);
     setCurrentNode(currentNodeId);
 
     // Mark current node as visited
-    setNodes(prev => prev.map(node => ({
-      ...node,
-      visited: node.id === currentNodeId ? true : node.visited,
-      current: node.id === currentNodeId
-    })));
+    setNodes((prev) =>
+      prev.map((node) => ({
+        ...node,
+        visited: node.id === currentNodeId ? true : node.visited,
+        current: node.id === currentNodeId,
+      }))
+    );
 
     // Get current node data
-    const currentNodeData = nodes.find(n => n.id === currentNodeId);
+    const currentNodeData = nodes.find((n) => n.id === currentNodeId);
     if (!currentNodeData) return;
 
     // Update distances to adjacent nodes
     const adjacentNodes = getAdjacentNodes(currentNodeId);
-    
+
     adjacentNodes.forEach(({ nodeId: adjNodeId, weight }) => {
-      const adjNode = nodes.find(n => n.id === adjNodeId);
+      const adjNode = nodes.find((n) => n.id === adjNodeId);
       if (!adjNode || adjNode.visited) return;
 
       const newDistance = currentNodeData.distance + weight;
-      
+
       if (newDistance < adjNode.distance) {
         // Update node with new shorter distance
-        setNodes(prev => prev.map(node => 
-          node.id === adjNodeId 
-            ? { ...node, distance: newDistance, previous: currentNodeId }
-            : node
-        ));
+        setNodes((prev) =>
+          prev.map((node) =>
+            node.id === adjNodeId
+              ? { ...node, distance: newDistance, previous: currentNodeId }
+              : node
+          )
+        );
 
         // Update or add to priority queue
-        setPriorityQueue(prev => {
-          const filtered = prev.filter(item => item.nodeId !== adjNodeId);
+        setPriorityQueue((prev) => {
+          const filtered = prev.filter((item) => item.nodeId !== adjNodeId);
           return [...filtered, { nodeId: adjNodeId, distance: newDistance }];
         });
 
         // Highlight the edge being relaxed
-        setEdges(prev => prev.map(edge => {
-          const isRelaxedEdge = (edge.source === currentNodeId && edge.target === adjNodeId) ||
-                               (edge.target === currentNodeId && edge.source === adjNodeId);
-          return { ...edge, highlighted: isRelaxedEdge };
-        }));
+        setEdges((prev) =>
+          prev.map((edge) => {
+            const isRelaxedEdge =
+              (edge.source === currentNodeId && edge.target === adjNodeId) ||
+              (edge.target === currentNodeId && edge.source === adjNodeId);
+            return { ...edge, highlighted: isRelaxedEdge };
+          })
+        );
       }
     });
 
-    setStep(prev => prev + 1);
+    setStep((prev) => prev + 1);
   }, [priorityQueue, nodes, getAdjacentNodes, findShortestPath, targetNode]);
 
   const startDijkstra = useCallback(() => {
     if (isPlaying) return;
-    
+
     setIsPlaying(true);
     intervalRef.current = setInterval(() => {
       performDijkstraStep();
@@ -224,23 +293,23 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
   }, [initializeGraph]);
 
   const getEdgePath = (edge: DijkstraEdge) => {
-    const sourceNode = nodes.find(n => n.id === edge.source);
-    const targetNode = nodes.find(n => n.id === edge.target);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
     if (!sourceNode || !targetNode) return '';
 
     const dx = targetNode.x - sourceNode.x;
     const dy = targetNode.y - sourceNode.y;
     const length = Math.sqrt(dx * dx + dy * dy);
-    
+
     const nodeRadius = 30;
     const offsetX = (dx / length) * nodeRadius;
     const offsetY = (dy / length) * nodeRadius;
-    
+
     const startX = sourceNode.x + offsetX;
     const startY = sourceNode.y + offsetY;
     const endX = targetNode.x - offsetX;
     const endY = targetNode.y - offsetY;
-    
+
     return `M ${startX} ${startY} L ${endX} ${endY}`;
   };
 
@@ -267,7 +336,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
@@ -297,9 +366,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
       {/* Controls */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Source:
-          </label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Source:</label>
           <select
             value={sourceNode}
             onChange={(e) => setSourceNode(e.target.value)}
@@ -308,16 +375,16 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           >
-            {nodes.map(node => (
-              <option key={node.id} value={node.id}>{node.label}</option>
+            {nodes.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.label}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Target:
-          </label>
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Target:</label>
           <select
             value={targetNode}
             onChange={(e) => setTargetNode(e.target.value)}
@@ -326,9 +393,13 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           >
-            {nodes.filter(node => node.id !== sourceNode).map(node => (
-              <option key={node.id} value={node.id}>{node.label}</option>
-            ))}
+            {nodes
+              .filter((node) => node.id !== sourceNode)
+              .map((node) => (
+                <option key={node.id} value={node.id}>
+                  {node.label}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -386,14 +457,16 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
           </div>
           {isComplete && targetNode && (
             <div className="text-sm">
-              <span className="font-medium text-gray-700 dark:text-gray-300">Distance to {targetNode}:</span>
+              <span className="font-medium text-gray-700 dark:text-gray-300">
+                Distance to {targetNode}:
+              </span>
               <span className="ml-1 text-green-600 dark:text-green-400 font-bold">
-                {nodes.find(n => n.id === targetNode)?.distance || '∞'}
+                {nodes.find((n) => n.id === targetNode)?.distance || '∞'}
               </span>
             </div>
           )}
         </div>
-        
+
         {isComplete && (
           <div className="text-sm text-green-600 dark:text-green-400 font-medium">
             ✓ Shortest path found!
@@ -434,8 +507,10 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
           <div className="flex items-center space-x-2 flex-wrap">
             {shortestPath.map((nodeId, index) => (
               <div key={index} className="flex items-center">
-                <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 
-                             rounded text-sm font-medium border border-green-200 dark:border-green-800">
+                <div
+                  className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 
+                             rounded text-sm font-medium border border-green-200 dark:border-green-800"
+                >
                   {nodeId}
                 </div>
                 {index < shortestPath.length - 1 && (
@@ -449,10 +524,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
 
       {/* Graph Visualization */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg
-          viewBox="0 0 650 300"
-          className="w-full h-96 bg-gray-50 dark:bg-gray-900"
-        >
+        <svg viewBox="0 0 650 300" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
           {/* Background pattern */}
           <defs>
             <pattern id="dijkstra-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -468,20 +540,29 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
           <rect width="100%" height="100%" fill="url(#dijkstra-grid)" />
 
           {/* Edges */}
-          {edges.map(edge => (
+          {edges.map((edge) => (
             <g key={edge.id}>
               <path
                 d={getEdgePath(edge)}
                 stroke={getEdgeColor(edge)}
-                strokeWidth={edge.inPath ? "5" : edge.highlighted ? "4" : "2"}
+                strokeWidth={edge.inPath ? '5' : edge.highlighted ? '4' : '2'}
                 fill="none"
                 className="transition-all duration-500"
               />
-              
+
               {/* Edge weight label */}
               <text
-                x={((nodes.find(n => n.id === edge.source)?.x || 0) + (nodes.find(n => n.id === edge.target)?.x || 0)) / 2}
-                y={((nodes.find(n => n.id === edge.source)?.y || 0) + (nodes.find(n => n.id === edge.target)?.y || 0)) / 2 - 5}
+                x={
+                  ((nodes.find((n) => n.id === edge.source)?.x || 0) +
+                    (nodes.find((n) => n.id === edge.target)?.x || 0)) /
+                  2
+                }
+                y={
+                  ((nodes.find((n) => n.id === edge.source)?.y || 0) +
+                    (nodes.find((n) => n.id === edge.target)?.y || 0)) /
+                    2 -
+                  5
+                }
                 textAnchor="middle"
                 className="text-xs font-bold fill-gray-700 dark:fill-gray-300"
                 style={{ pointerEvents: 'none' }}
@@ -492,16 +573,20 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
           ))}
 
           {/* Nodes */}
-          {nodes.map(node => (
+          {nodes.map((node) => (
             <g key={node.id}>
               <circle
                 cx={node.x}
                 cy={node.y}
                 r="30"
                 fill={
-                  node.current ? '#EF4444' :
-                  node.isSource ? '#10B981' :
-                  node.visited ? '#8B5CF6' : '#6B7280'
+                  node.current
+                    ? '#EF4444'
+                    : node.isSource
+                      ? '#10B981'
+                      : node.visited
+                        ? '#8B5CF6'
+                        : '#6B7280'
                 }
                 stroke="#1F2937"
                 strokeWidth="2"
@@ -515,7 +600,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({
               >
                 {node.label}
               </text>
-              
+
               {/* Distance label */}
               <text
                 x={node.x}

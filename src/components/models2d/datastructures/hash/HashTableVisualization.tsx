@@ -16,7 +16,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
   collisionStrategy = 'chaining',
   showHashCalculation = true,
   className = '',
-  onOperationComplete
+  onOperationComplete,
 }) => {
   const [entries, setEntries] = useState<HashTableEntry[]>([]);
   const [table, setTable] = useState<(HashTableEntry | null)[]>([]);
@@ -24,49 +24,59 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [searchKey, setSearchKey] = useState('');
   const [animatingEntry, setAnimatingEntry] = useState<string | null>(null);
-  const [hashSteps, setHashSteps] = useState<{ key: string; calculation: string; result: number } | null>(null);
+  const [hashSteps, setHashSteps] = useState<{
+    key: string;
+    calculation: string;
+    result: number;
+  } | null>(null);
   const [collisionHighlight, setCollisionHighlight] = useState<number[]>([]);
 
   // Hash function implementations
-  const calculateHash = useCallback((key: string): { hash: number; calculation: string } => {
-    let hash = 0;
-    let calculation = '';
+  const calculateHash = useCallback(
+    (key: string): { hash: number; calculation: string } => {
+      let hash = 0;
+      let calculation = '';
 
-    switch (hashFunction) {
-      case 'simple':
-        for (let i = 0; i < key.length; i++) {
-          hash += key.charCodeAt(i);
-        }
-        calculation = `Sum of ASCII values: ${key.split('').map(c => c.charCodeAt(0)).join(' + ')} = ${hash}`;
-        break;
-      
-      case 'djb2':
-        hash = 5381;
-        calculation = `hash = 5381; `;
-        for (let i = 0; i < key.length; i++) {
-          const char = key.charCodeAt(i);
-          hash = ((hash << 5) + hash) + char;
-          calculation += `hash = ((${hash >> 5} << 5) + ${hash >> 5}) + ${char}; `;
-        }
-        break;
-      
-      case 'fnv1a':
-        hash = 2166136261;
-        calculation = `hash = 2166136261; `;
-        for (let i = 0; i < key.length; i++) {
-          const char = key.charCodeAt(i);
-          hash ^= char;
-          hash *= 16777619;
-          calculation += `hash ^= ${char}; hash *= 16777619; `;
-        }
-        break;
-    }
+      switch (hashFunction) {
+        case 'simple':
+          for (let i = 0; i < key.length; i++) {
+            hash += key.charCodeAt(i);
+          }
+          calculation = `Sum of ASCII values: ${key
+            .split('')
+            .map((c) => c.charCodeAt(0))
+            .join(' + ')} = ${hash}`;
+          break;
 
-    const finalHash = Math.abs(hash) % tableSize;
-    calculation += ` → ${Math.abs(hash)} % ${tableSize} = ${finalHash}`;
-    
-    return { hash: finalHash, calculation };
-  }, [hashFunction, tableSize]);
+        case 'djb2':
+          hash = 5381;
+          calculation = `hash = 5381; `;
+          for (let i = 0; i < key.length; i++) {
+            const char = key.charCodeAt(i);
+            hash = (hash << 5) + hash + char;
+            calculation += `hash = ((${hash >> 5} << 5) + ${hash >> 5}) + ${char}; `;
+          }
+          break;
+
+        case 'fnv1a':
+          hash = 2166136261;
+          calculation = `hash = 2166136261; `;
+          for (let i = 0; i < key.length; i++) {
+            const char = key.charCodeAt(i);
+            hash ^= char;
+            hash *= 16777619;
+            calculation += `hash ^= ${char}; hash *= 16777619; `;
+          }
+          break;
+      }
+
+      const finalHash = Math.abs(hash) % tableSize;
+      calculation += ` → ${Math.abs(hash)} % ${tableSize} = ${finalHash}`;
+
+      return { hash: finalHash, calculation };
+    },
+    [hashFunction, tableSize]
+  );
 
   // Initialize empty table
   useEffect(() => {
@@ -76,31 +86,34 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
   }, [tableSize]);
 
   // Handle collision resolution
-  const findSlot = useCallback((key: string, hash: number): { slot: number; probeCount: number } => {
-    if (collisionStrategy === 'chaining') {
-      return { slot: hash, probeCount: 0 };
-    }
-
-    let slot = hash;
-    let probeCount = 0;
-    const visited: number[] = [];
-
-    while (table[slot] !== null && table[slot]?.key !== key && probeCount < tableSize) {
-      visited.push(slot);
-      probeCount++;
-      
-      if (collisionStrategy === 'linear-probing') {
-        slot = (slot + 1) % tableSize;
-      } else if (collisionStrategy === 'quadratic-probing') {
-        slot = (hash + probeCount * probeCount) % tableSize;
+  const findSlot = useCallback(
+    (key: string, hash: number): { slot: number; probeCount: number } => {
+      if (collisionStrategy === 'chaining') {
+        return { slot: hash, probeCount: 0 };
       }
-    }
 
-    setCollisionHighlight(visited);
-    setTimeout(() => setCollisionHighlight([]), 2000);
+      let slot = hash;
+      let probeCount = 0;
+      const visited: number[] = [];
 
-    return { slot, probeCount };
-  }, [table, tableSize, collisionStrategy]);
+      while (table[slot] !== null && table[slot]?.key !== key && probeCount < tableSize) {
+        visited.push(slot);
+        probeCount++;
+
+        if (collisionStrategy === 'linear-probing') {
+          slot = (slot + 1) % tableSize;
+        } else if (collisionStrategy === 'quadratic-probing') {
+          slot = (hash + probeCount * probeCount) % tableSize;
+        }
+      }
+
+      setCollisionHighlight(visited);
+      setTimeout(() => setCollisionHighlight([]), 2000);
+
+      return { slot, probeCount };
+    },
+    [table, tableSize, collisionStrategy]
+  );
 
   // Insert operation
   const handleInsert = useCallback(() => {
@@ -112,7 +125,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
     }
 
     const { slot, probeCount } = findSlot(inputKey, hash);
-    
+
     const entryId = `${inputKey}-${Date.now()}`;
     const newEntry: HashTableEntry = {
       id: entryId,
@@ -120,12 +133,12 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
       key: inputKey,
       bucket: slot,
       highlighted: true,
-      position: { x: 50 + slot * 80, y: 100 }
+      position: { x: 50 + slot * 80, y: 100 },
     };
 
     // Animate insertion
     setAnimatingEntry(entryId);
-    
+
     if (collisionStrategy === 'chaining') {
       // Handle chaining
       const existingEntry = table[slot];
@@ -138,8 +151,8 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
     const newTable = [...table];
     newTable[slot] = newEntry;
     setTable(newTable);
-    
-    setEntries(prev => [...prev, newEntry]);
+
+    setEntries((prev) => [...prev, newEntry]);
     setInputKey('');
     setInputValue('');
 
@@ -152,10 +165,19 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
         target: inputKey,
         value: inputValue,
         description: `Inserted ${inputKey}: ${inputValue} at slot ${slot}${probeCount > 0 ? ` after ${probeCount} collisions` : ''}`,
-        complexity: { time: 'O(1) avg, O(n) worst', space: 'O(1)' }
+        complexity: { time: 'O(1) avg, O(n) worst', space: 'O(1)' },
       });
     }, 1500);
-  }, [inputKey, inputValue, calculateHash, findSlot, showHashCalculation, table, collisionStrategy, onOperationComplete]);
+  }, [
+    inputKey,
+    inputValue,
+    calculateHash,
+    findSlot,
+    showHashCalculation,
+    table,
+    collisionStrategy,
+    onOperationComplete,
+  ]);
 
   // Search operation
   const handleSearch = useCallback(() => {
@@ -163,13 +185,13 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
 
     const { hash } = calculateHash(searchKey);
     const { slot } = findSlot(searchKey, hash);
-    
+
     const found = table[slot]?.key === searchKey;
-    
+
     // Highlight search result
-    const updatedEntries = entries.map(entry => ({
+    const updatedEntries = entries.map((entry) => ({
       ...entry,
-      highlighted: entry.key === searchKey && found
+      highlighted: entry.key === searchKey && found,
     }));
     setEntries(updatedEntries);
 
@@ -179,7 +201,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
     }
 
     setTimeout(() => {
-      setEntries(prev => prev.map(entry => ({ ...entry, highlighted: false })));
+      setEntries((prev) => prev.map((entry) => ({ ...entry, highlighted: false })));
       setHashSteps(null);
     }, 2000);
 
@@ -187,9 +209,17 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
       type: 'search',
       target: searchKey,
       description: `Search for ${searchKey}: ${found ? 'Found' : 'Not found'}${found ? ` at slot ${slot}` : ''}`,
-      complexity: { time: 'O(1) avg, O(n) worst', space: 'O(1)' }
+      complexity: { time: 'O(1) avg, O(n) worst', space: 'O(1)' },
     });
-  }, [searchKey, calculateHash, findSlot, table, entries, showHashCalculation, onOperationComplete]);
+  }, [
+    searchKey,
+    calculateHash,
+    findSlot,
+    table,
+    entries,
+    showHashCalculation,
+    onOperationComplete,
+  ]);
 
   // Delete operation
   const handleDelete = useCallback(() => {
@@ -197,32 +227,32 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
 
     const { hash } = calculateHash(searchKey);
     const { slot } = findSlot(searchKey, hash);
-    
+
     if (table[slot]?.key === searchKey) {
       const newTable = [...table];
-      
+
       if (collisionStrategy === 'chaining' && table[slot]?.collisionChain?.length) {
         // Handle chaining deletion
         const chainedEntryId = table[slot]!.collisionChain![0];
-        const chainedEntry = entries.find(e => e.id === chainedEntryId);
+        const chainedEntry = entries.find((e) => e.id === chainedEntryId);
         if (chainedEntry) {
           newTable[slot] = {
             ...chainedEntry,
-            collisionChain: table[slot]!.collisionChain!.slice(1)
+            collisionChain: table[slot]!.collisionChain!.slice(1),
           };
         }
       } else {
         newTable[slot] = null;
       }
-      
+
       setTable(newTable);
-      setEntries(prev => prev.filter(entry => entry.key !== searchKey));
-      
+      setEntries((prev) => prev.filter((entry) => entry.key !== searchKey));
+
       onOperationComplete?.({
         type: 'delete',
         target: searchKey,
         description: `Deleted ${searchKey} from slot ${slot}`,
-        complexity: { time: 'O(1) avg, O(n) worst', space: 'O(1)' }
+        complexity: { time: 'O(1) avg, O(n) worst', space: 'O(1)' },
       });
     }
 
@@ -364,7 +394,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
                   collisionHighlight.includes(i) ? 'animate-pulse' : ''
                 }`}
               />
-              
+
               {/* Entry display */}
               {table[i] && (
                 <g>
@@ -443,11 +473,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
             >
               Hash Function: {hashFunction.toUpperCase()}
             </text>
-            <text
-              x={50}
-              y={tableHeight + 8}
-              className="text-sm fill-gray-500 dark:fill-gray-500"
-            >
+            <text x={50} y={tableHeight + 8} className="text-sm fill-gray-500 dark:fill-gray-500">
               Collision Resolution: {collisionStrategy.replace('-', ' ')}
             </text>
           </g>
@@ -464,7 +490,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {table.filter(slot => slot !== null).length}
+            {table.filter((slot) => slot !== null).length}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Occupied Slots</div>
         </div>
@@ -476,10 +502,9 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {collisionStrategy === 'chaining' ? 
-              entries.reduce((acc, entry) => acc + (entry.collisionChain?.length || 0), 0) :
-              0
-            }
+            {collisionStrategy === 'chaining'
+              ? entries.reduce((acc, entry) => acc + (entry.collisionChain?.length || 0), 0)
+              : 0}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Collisions</div>
         </div>

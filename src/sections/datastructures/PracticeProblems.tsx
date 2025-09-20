@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Code, 
-  Play, 
-  RefreshCw, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  HelpCircle, 
+import {
+  Code,
+  Play,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Clock,
+  HelpCircle,
   Lightbulb,
   Target,
   Trophy,
   BarChart3,
-  Timer
+  Timer,
 } from 'lucide-react';
 
 interface ProblemCase {
@@ -73,12 +73,12 @@ Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].`,
       testCases: [
         { input: 'nums = [2,7,11,15], target = 9', expectedOutput: '[0,1]' },
         { input: 'nums = [3,2,4], target = 6', expectedOutput: '[1,2]' },
-        { input: 'nums = [3,3], target = 6', expectedOutput: '[0,1]' }
+        { input: 'nums = [3,3], target = 6', expectedOutput: '[0,1]' },
       ],
       hints: [
         'Think about what information you need to store as you iterate through the array.',
         'A hash table is a good way to maintain a mapping of values to indices.',
-        'For each element, check if the complement (target - current element) exists in your hash table.'
+        'For each element, check if the complement (target - current element) exists in your hash table.',
       ],
       solution: `function twoSum(nums, target) {
     const map = new Map();
@@ -95,7 +95,7 @@ Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].`,
     
     return [];
 }`,
-      solutionExplanation: `The optimal solution uses a hash table to store elements we've seen along with their indices. As we iterate through the array, we calculate the complement of each element (target - current element) and check if it exists in our hash table. If it does, we've found our pair! This approach has O(n) time complexity and O(n) space complexity.`
+      solutionExplanation: `The optimal solution uses a hash table to store elements we've seen along with their indices. As we iterate through the array, we calculate the complement of each element (target - current element) and check if it exists in our hash table. If it does, we've found our pair! This approach has O(n) time complexity and O(n) space complexity.`,
     },
     {
       id: 'valid-parentheses',
@@ -121,12 +121,12 @@ Output: false`,
         { input: 's = "()"', expectedOutput: 'true' },
         { input: 's = "()[]{}"', expectedOutput: 'true' },
         { input: 's = "([)]"', expectedOutput: 'false' },
-        { input: 's = "((("', expectedOutput: 'false' }
+        { input: 's = "((("', expectedOutput: 'false' },
       ],
       hints: [
         'Think about the Last-In-First-Out (LIFO) nature of matching brackets.',
         'Use a stack to keep track of opening brackets.',
-        'When you encounter a closing bracket, check if it matches the most recent opening bracket.'
+        'When you encounter a closing bracket, check if it matches the most recent opening bracket.',
       ],
       solution: `function isValid(s) {
     const stack = [];
@@ -148,7 +148,7 @@ Output: false`,
     
     return stack.length === 0;
 }`,
-      solutionExplanation: `This problem is a classic application of the stack data structure. We use a stack to keep track of opening brackets. When we encounter a closing bracket, we check if it matches the most recently opened bracket (top of stack). The key insight is that valid parentheses follow a LIFO pattern - the most recently opened bracket should be the first to be closed.`
+      solutionExplanation: `This problem is a classic application of the stack data structure. We use a stack to keep track of opening brackets. When we encounter a closing bracket, we check if it matches the most recently opened bracket (top of stack). The key insight is that valid parentheses follow a LIFO pattern - the most recently opened bracket should be the first to be closed.`,
     },
     {
       id: 'binary-tree-inorder',
@@ -169,12 +169,12 @@ Follow up: Recursive solution is trivial, could you do it iteratively?`,
       testCases: [
         { input: 'root = [1,null,2,3]', expectedOutput: '[1,3,2]' },
         { input: 'root = []', expectedOutput: '[]' },
-        { input: 'root = [1]', expectedOutput: '[1]' }
+        { input: 'root = [1]', expectedOutput: '[1]' },
       ],
       hints: [
         'Recursive approach: Process left subtree, current node, then right subtree.',
         'For iterative approach, use a stack to simulate the recursive call stack.',
-        'Keep going left and pushing nodes to stack, then process and go right.'
+        'Keep going left and pushing nodes to stack, then process and go right.',
       ],
       solution: `// Recursive approach
 function inorderTraversal(root) {
@@ -215,7 +215,7 @@ function inorderTraversalIterative(root) {
     
     return result;
 }`,
-      solutionExplanation: `Inorder traversal follows the pattern: Left → Root → Right. The recursive solution is straightforward - visit left subtree, process current node, then visit right subtree. The iterative solution uses a stack to simulate recursion, continuously going left while pushing nodes, then processing them and moving right.`
+      solutionExplanation: `Inorder traversal follows the pattern: Left → Root → Right. The recursive solution is straightforward - visit left subtree, process current node, then visit right subtree. The iterative solution uses a stack to simulate recursion, continuously going left while pushing nodes, then processing them and moving right.`,
     },
     {
       id: 'find-kth-largest',
@@ -239,12 +239,12 @@ Output: 4`,
       testCases: [
         { input: 'nums = [3,2,1,5,6,4], k = 2', expectedOutput: '5' },
         { input: 'nums = [3,2,3,1,2,4,5,5,6], k = 4', expectedOutput: '4' },
-        { input: 'nums = [1], k = 1', expectedOutput: '1' }
+        { input: 'nums = [1], k = 1', expectedOutput: '1' },
       ],
       hints: [
         'Think about maintaining only k elements instead of sorting the entire array.',
         'A min heap of size k can help you track the k largest elements.',
-        'When the heap size exceeds k, remove the smallest element.'
+        'When the heap size exceeds k, remove the smallest element.',
       ],
       solution: `function findKthLargest(nums, k) {
     // Using built-in sort (simple but O(n log n))
@@ -321,8 +321,8 @@ Output: 4`,
     
     return minHeap.peek();
 }`,
-      solutionExplanation: `The optimal solution uses a min heap of size k to track the k largest elements. As we iterate through the array, we add each element to the heap. If the heap size exceeds k, we remove the smallest element (root of min heap). At the end, the root of the heap is the kth largest element. This approach has O(n log k) time complexity, which is better than sorting for small k values.`
-    }
+      solutionExplanation: `The optimal solution uses a min heap of size k to track the k largest elements. As we iterate through the array, we add each element to the heap. If the heap size exceeds k, we remove the smallest element (root of min heap). At the end, the root of the heap is the kth largest element. This approach has O(n log k) time complexity, which is better than sorting for small k values.`,
+    },
   ];
 
   const getStarterCode = (problem: Problem): string => {
@@ -355,46 +355,47 @@ Output: 4`,
   // Simulate code execution
   const runCode = async () => {
     setIsRunning(true);
-    const problem = problems.find(p => p.id === selectedProblem)!;
-    
+    const problem = problems.find((p) => p.id === selectedProblem)!;
+
     // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 1000));
+
     // Simple simulation of test results
     const passedTests = Math.floor(Math.random() * problem.testCases.length) + 1;
     const runtime = Math.floor(Math.random() * 100) + 50;
-    
+
     setSubmissionResult({
       passed: passedTests === problem.testCases.length,
       runtime,
       memoryUsage: `${Math.floor(Math.random() * 20) + 10} MB`,
       passedTests,
       totalTests: problem.testCases.length,
-      error: passedTests < problem.testCases.length ? 'Runtime Error: Index out of bounds' : undefined
+      error:
+        passedTests < problem.testCases.length ? 'Runtime Error: Index out of bounds' : undefined,
     });
-    
+
     setIsRunning(false);
   };
 
   const resetCode = () => {
-    const problem = problems.find(p => p.id === selectedProblem)!;
+    const problem = problems.find((p) => p.id === selectedProblem)!;
     setUserCode(getStarterCode(problem));
     setSubmissionResult(null);
   };
 
   // Initialize with first problem's starter code if empty
   if (!userCode) {
-    const problem = problems.find(p => p.id === selectedProblem);
+    const problem = problems.find((p) => p.id === selectedProblem);
     if (problem) {
       setUserCode(getStarterCode(problem));
     }
   }
 
-  const selectedProblemData = problems.find(p => p.id === selectedProblem)!;
+  const selectedProblemData = problems.find((p) => p.id === selectedProblem)!;
   const difficultyColors = {
     Easy: 'text-green-600 dark:text-green-400',
     Medium: 'text-yellow-600 dark:text-yellow-400',
-    Hard: 'text-red-600 dark:text-red-400'
+    Hard: 'text-red-600 dark:text-red-400',
   };
 
   return (
@@ -408,8 +409,8 @@ Output: 4`,
           </h1>
         </div>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Sharpen your data structure skills with curated coding challenges.
-          Practice implementation, analyze complexity, and master problem-solving patterns.
+          Sharpen your data structure skills with curated coding challenges. Practice
+          implementation, analyze complexity, and master problem-solving patterns.
         </p>
       </div>
 
@@ -421,7 +422,7 @@ Output: 4`,
               <Code className="w-5 h-5 mr-2" />
               Problems
             </h3>
-            
+
             <div className="space-y-2">
               {problems.map((problem) => (
                 <button
@@ -464,11 +465,13 @@ Output: 4`,
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                   {selectedProblemData.title}
                 </h2>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${difficultyColors[selectedProblemData.difficulty]}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${difficultyColors[selectedProblemData.difficulty]}`}
+                >
                   {selectedProblemData.difficulty}
                 </span>
               </div>
-              
+
               <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center space-x-1">
                   <Clock className="w-4 h-4" />
@@ -580,9 +583,12 @@ Output: 4`,
                     <Lightbulb className="w-5 h-5" />
                     <h3 className="text-lg font-semibold">Hints to Guide Your Solution</h3>
                   </div>
-                  
+
                   {selectedProblemData.hints.map((hint, index) => (
-                    <div key={index} className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                    <div
+                      key={index}
+                      className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800"
+                    >
                       <div className="flex items-start space-x-3">
                         <div className="bg-blue-100 dark:bg-blue-800 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
                           <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">
@@ -633,7 +639,7 @@ Output: 4`,
                 <Code className="w-5 h-5 mr-2" />
                 Your Solution
               </h3>
-              
+
               <div className="flex items-center space-x-2">
                 <button
                   onClick={resetCode}
@@ -644,7 +650,7 @@ Output: 4`,
                   <RefreshCw className="w-4 h-4" />
                   <span>Reset</span>
                 </button>
-                
+
                 <button
                   onClick={runCode}
                   disabled={isRunning}
@@ -682,11 +688,13 @@ Output: 4`,
 
           {/* Submission Result */}
           {submissionResult && (
-            <div className={`rounded-xl p-6 shadow-sm border ${
-              submissionResult.passed 
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-            }`}>
+            <div
+              className={`rounded-xl p-6 shadow-sm border ${
+                submissionResult.passed
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+              }`}
+            >
               <div className="flex items-center space-x-3 mb-4">
                 {submissionResult.passed ? (
                   <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -694,18 +702,22 @@ Output: 4`,
                   <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
                 )}
                 <div>
-                  <h3 className={`text-lg font-semibold ${
-                    submissionResult.passed 
-                      ? 'text-green-900 dark:text-green-100'
-                      : 'text-red-900 dark:text-red-100'
-                  }`}>
+                  <h3
+                    className={`text-lg font-semibold ${
+                      submissionResult.passed
+                        ? 'text-green-900 dark:text-green-100'
+                        : 'text-red-900 dark:text-red-100'
+                    }`}
+                  >
                     {submissionResult.passed ? 'Accepted!' : 'Runtime Error'}
                   </h3>
-                  <p className={`text-sm ${
-                    submissionResult.passed 
-                      ? 'text-green-700 dark:text-green-300'
-                      : 'text-red-700 dark:text-red-300'
-                  }`}>
+                  <p
+                    className={`text-sm ${
+                      submissionResult.passed
+                        ? 'text-green-700 dark:text-green-300'
+                        : 'text-red-700 dark:text-red-300'
+                    }`}
+                  >
                     {submissionResult.passedTests}/{submissionResult.totalTests} test cases passed
                   </p>
                 </div>
@@ -720,7 +732,7 @@ Output: 4`,
                     {submissionResult.runtime}ms
                   </div>
                 </div>
-                
+
                 <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
                   <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
                     Memory Usage

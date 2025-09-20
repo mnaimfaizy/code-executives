@@ -27,9 +27,7 @@ interface DFSVisualizationProps {
   className?: string;
 }
 
-const DFSVisualization: React.FC<DFSVisualizationProps> = ({
-  className = ""
-}) => {
+const DFSVisualization: React.FC<DFSVisualizationProps> = ({ className = '' }) => {
   const [nodes, setNodes] = useState<DFSNode[]>([]);
   const [edges, setEdges] = useState<DFSEdge[]>([]);
   const [stack, setStack] = useState<string[]>([]);
@@ -45,25 +43,158 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
 
   const initializeGraph = useCallback(() => {
     const initialNodes: DFSNode[] = [
-      { id: 'A', label: 'A', x: 200, y: 100, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
-      { id: 'B', label: 'B', x: 400, y: 100, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
-      { id: 'C', label: 'C', x: 100, y: 200, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
-      { id: 'D', label: 'D', x: 300, y: 200, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
-      { id: 'E', label: 'E', x: 500, y: 200, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
-      { id: 'F', label: 'F', x: 200, y: 300, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
-      { id: 'G', label: 'G', x: 400, y: 300, visited: false, current: false, discoveryTime: -1, finishTime: -1, depth: 0 },
+      {
+        id: 'A',
+        label: 'A',
+        x: 200,
+        y: 100,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
+      {
+        id: 'B',
+        label: 'B',
+        x: 400,
+        y: 100,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
+      {
+        id: 'C',
+        label: 'C',
+        x: 100,
+        y: 200,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
+      {
+        id: 'D',
+        label: 'D',
+        x: 300,
+        y: 200,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
+      {
+        id: 'E',
+        label: 'E',
+        x: 500,
+        y: 200,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
+      {
+        id: 'F',
+        label: 'F',
+        x: 200,
+        y: 300,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
+      {
+        id: 'G',
+        label: 'G',
+        x: 400,
+        y: 300,
+        visited: false,
+        current: false,
+        discoveryTime: -1,
+        finishTime: -1,
+        depth: 0,
+      },
     ];
 
     const initialEdges: DFSEdge[] = [
-      { id: 'AB', source: 'A', target: 'B', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'AC', source: 'A', target: 'C', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'BD', source: 'B', target: 'D', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'BE', source: 'B', target: 'E', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'CD', source: 'C', target: 'D', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'CF', source: 'C', target: 'F', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'DG', source: 'D', target: 'G', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'EG', source: 'E', target: 'G', traversed: false, highlighted: false, type: 'unvisited' },
-      { id: 'FG', source: 'F', target: 'G', traversed: false, highlighted: false, type: 'unvisited' },
+      {
+        id: 'AB',
+        source: 'A',
+        target: 'B',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'AC',
+        source: 'A',
+        target: 'C',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'BD',
+        source: 'B',
+        target: 'D',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'BE',
+        source: 'B',
+        target: 'E',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'CD',
+        source: 'C',
+        target: 'D',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'CF',
+        source: 'C',
+        target: 'F',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'DG',
+        source: 'D',
+        target: 'G',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'EG',
+        source: 'E',
+        target: 'G',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
+      {
+        id: 'FG',
+        source: 'F',
+        target: 'G',
+        traversed: false,
+        highlighted: false,
+        type: 'unvisited',
+      },
     ];
 
     setNodes(initialNodes);
@@ -85,26 +216,31 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
     initializeGraph();
   }, [initializeGraph]);
 
-  const getAdjacentNodes = useCallback((nodeId: string): string[] => {
-    const adjacentNodes: string[] = [];
-    edges.forEach(edge => {
-      if (edge.source === nodeId) {
-        adjacentNodes.push(edge.target);
-      } else if (edge.target === nodeId) {
-        adjacentNodes.push(edge.source);
-      }
-    });
-    return adjacentNodes.sort(); // Sort for consistent ordering
-  }, [edges]);
+  const getAdjacentNodes = useCallback(
+    (nodeId: string): string[] => {
+      const adjacentNodes: string[] = [];
+      edges.forEach((edge) => {
+        if (edge.source === nodeId) {
+          adjacentNodes.push(edge.target);
+        } else if (edge.target === nodeId) {
+          adjacentNodes.push(edge.source);
+        }
+      });
+      return adjacentNodes.sort(); // Sort for consistent ordering
+    },
+    [edges]
+  );
 
   const performDFSStep = useCallback(() => {
     if (stack.length === 0 && step === 0) {
       // Initialize DFS
-      setNodes(prev => prev.map(node => 
-        node.id === startNode 
-          ? { ...node, visited: true, current: true, discoveryTime: time, depth: 0 }
-          : node
-      ));
+      setNodes((prev) =>
+        prev.map((node) =>
+          node.id === startNode
+            ? { ...node, visited: true, current: true, discoveryTime: time, depth: 0 }
+            : node
+        )
+      );
       setStack([startNode]);
       setCurrentNode(startNode);
       setTraversalOrder([startNode]);
@@ -127,80 +263,87 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
 
     // Get unvisited adjacent nodes
     const adjacentNodes = getAdjacentNodes(current);
-    const unvisitedAdjacent = adjacentNodes.filter(nodeId => 
-      !nodes.find(n => n.id === nodeId)?.visited
+    const unvisitedAdjacent = adjacentNodes.filter(
+      (nodeId) => !nodes.find((n) => n.id === nodeId)?.visited
     );
 
     if (unvisitedAdjacent.length > 0) {
       // Visit first unvisited adjacent node
       const nextNode = unvisitedAdjacent[0];
-      const currentNodeData = nodes.find(n => n.id === current);
-      
-      setNodes(prev => prev.map(node => {
-        if (node.id === current) {
-          return { ...node, current: false };
-        }
-        if (node.id === nextNode) {
-          return { 
-            ...node, 
-            visited: true, 
-            current: true,
-            discoveryTime: time + 1,
-            depth: (currentNodeData?.depth ?? 0) + 1,
-            parent: current
-          };
-        }
-        return node;
-      }));
+      const currentNodeData = nodes.find((n) => n.id === current);
+
+      setNodes((prev) =>
+        prev.map((node) => {
+          if (node.id === current) {
+            return { ...node, current: false };
+          }
+          if (node.id === nextNode) {
+            return {
+              ...node,
+              visited: true,
+              current: true,
+              discoveryTime: time + 1,
+              depth: (currentNodeData?.depth ?? 0) + 1,
+              parent: current,
+            };
+          }
+          return node;
+        })
+      );
 
       // Mark edge as tree edge
-      setEdges(prev => prev.map(edge => {
-        const isTreeEdge = (edge.source === current && edge.target === nextNode) ||
-                           (edge.target === current && edge.source === nextNode);
-        if (isTreeEdge) {
-          return {
-            ...edge,
-            traversed: true,
-            highlighted: true,
-            type: 'tree'
-          };
-        }
-        return { ...edge, highlighted: false };
-      }));
+      setEdges((prev) =>
+        prev.map((edge) => {
+          const isTreeEdge =
+            (edge.source === current && edge.target === nextNode) ||
+            (edge.target === current && edge.source === nextNode);
+          if (isTreeEdge) {
+            return {
+              ...edge,
+              traversed: true,
+              highlighted: true,
+              type: 'tree',
+            };
+          }
+          return { ...edge, highlighted: false };
+        })
+      );
 
       // Push to stack
-      setStack(prev => [...prev, nextNode]);
-      setTraversalOrder(prev => [...prev, nextNode]);
-      setTime(prev => prev + 1);
+      setStack((prev) => [...prev, nextNode]);
+      setTraversalOrder((prev) => [...prev, nextNode]);
+      setTime((prev) => prev + 1);
     } else {
       // Backtrack - pop from stack
       const poppedNode = stack[stack.length - 1];
       const newStack = stack.slice(0, -1);
-      
+
       // Set finish time for the node being popped
-      setNodes(prev => prev.map(node => {
-        if (node.id === poppedNode) {
-          return { ...node, current: false, finishTime: time + 1 };
-        }
-        if (newStack.length > 0 && node.id === newStack[newStack.length - 1]) {
-          return { ...node, current: true };
-        }
-        return { ...node, current: false };
-      }));
+      setNodes((prev) =>
+        prev.map((node) => {
+          if (node.id === poppedNode) {
+            return { ...node, current: false, finishTime: time + 1 };
+          }
+          if (newStack.length > 0 && node.id === newStack[newStack.length - 1]) {
+            return { ...node, current: true };
+          }
+          return { ...node, current: false };
+        })
+      );
 
       setStack(newStack);
-      setTime(prev => prev + 1);
-      
+      setTime((prev) => prev + 1);
+
       // Clear edge highlighting
-      setEdges(prev => prev.map(edge => ({ ...edge, highlighted: false })));
+      setEdges((prev) => prev.map((edge) => ({ ...edge, highlighted: false })));
     }
 
-    setStep(prev => prev + 1);
+    setStep((prev) => prev + 1);
   }, [stack, step, startNode, nodes, getAdjacentNodes, time]);
 
   const startDFS = useCallback(() => {
     if (isPlaying) return;
-    
+
     setIsPlaying(true);
     intervalRef.current = setInterval(() => {
       performDFSStep();
@@ -231,34 +374,39 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
   }, [initializeGraph]);
 
   const getEdgePath = (edge: DFSEdge) => {
-    const sourceNode = nodes.find(n => n.id === edge.source);
-    const targetNode = nodes.find(n => n.id === edge.target);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
     if (!sourceNode || !targetNode) return '';
 
     const dx = targetNode.x - sourceNode.x;
     const dy = targetNode.y - sourceNode.y;
     const length = Math.sqrt(dx * dx + dy * dy);
-    
+
     const nodeRadius = 25;
     const offsetX = (dx / length) * nodeRadius;
     const offsetY = (dy / length) * nodeRadius;
-    
+
     const startX = sourceNode.x + offsetX;
     const startY = sourceNode.y + offsetY;
     const endX = targetNode.x - offsetX;
     const endY = targetNode.y - offsetY;
-    
+
     return `M ${startX} ${startY} L ${endX} ${endY}`;
   };
 
   const getEdgeColor = (edge: DFSEdge) => {
     if (edge.highlighted) return '#EF4444';
     switch (edge.type) {
-      case 'tree': return '#10B981';
-      case 'back': return '#F59E0B';
-      case 'forward': return '#8B5CF6';
-      case 'cross': return '#06B6D4';
-      default: return '#9CA3AF';
+      case 'tree':
+        return '#10B981';
+      case 'back':
+        return '#F59E0B';
+      case 'forward':
+        return '#8B5CF6';
+      case 'cross':
+        return '#06B6D4';
+      default:
+        return '#9CA3AF';
     }
   };
 
@@ -279,7 +427,7 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
@@ -320,8 +468,10 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
-            {nodes.map(node => (
-              <option key={node.id} value={node.id}>{node.label}</option>
+            {nodes.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.label}
+              </option>
             ))}
           </select>
         </div>
@@ -383,7 +533,7 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
             </span>
           </div>
         </div>
-        
+
         {isComplete && (
           <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
             ✓ DFS Complete!
@@ -393,9 +543,7 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
 
       {/* Stack Display */}
       <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-          Stack (LIFO):
-        </h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Stack (LIFO):</h4>
         <div className="flex items-center space-x-2">
           <span className="text-xs text-gray-600 dark:text-gray-400">Bottom</span>
           {stack.length === 0 ? (
@@ -429,13 +577,13 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
           <div className="flex items-center space-x-2 flex-wrap">
             {traversalOrder.map((nodeId, index) => (
               <div key={index} className="flex items-center">
-                <div className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 
-                             rounded text-sm font-medium border border-purple-200 dark:border-purple-800">
+                <div
+                  className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 
+                             rounded text-sm font-medium border border-purple-200 dark:border-purple-800"
+                >
                   {nodeId}
                 </div>
-                {index < traversalOrder.length - 1 && (
-                  <span className="mx-2 text-gray-400">→</span>
-                )}
+                {index < traversalOrder.length - 1 && <span className="mx-2 text-gray-400">→</span>}
               </div>
             ))}
           </div>
@@ -444,10 +592,7 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
 
       {/* Graph Visualization */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg
-          viewBox="0 0 600 400"
-          className="w-full h-96 bg-gray-50 dark:bg-gray-900"
-        >
+        <svg viewBox="0 0 600 400" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
           {/* Background pattern */}
           <defs>
             <pattern id="dfs-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -463,28 +608,25 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
           <rect width="100%" height="100%" fill="url(#dfs-grid)" />
 
           {/* Edges */}
-          {edges.map(edge => (
+          {edges.map((edge) => (
             <path
               key={edge.id}
               d={getEdgePath(edge)}
               stroke={getEdgeColor(edge)}
-              strokeWidth={edge.highlighted ? "4" : edge.traversed ? "3" : "2"}
+              strokeWidth={edge.highlighted ? '4' : edge.traversed ? '3' : '2'}
               fill="none"
               className="transition-all duration-500"
             />
           ))}
 
           {/* Nodes */}
-          {nodes.map(node => (
+          {nodes.map((node) => (
             <g key={node.id}>
               <circle
                 cx={node.x}
                 cy={node.y}
                 r="25"
-                fill={
-                  node.current ? '#EF4444' :
-                  node.visited ? '#8B5CF6' : '#6B7280'
-                }
+                fill={node.current ? '#EF4444' : node.visited ? '#8B5CF6' : '#6B7280'}
                 stroke="#1F2937"
                 strokeWidth="2"
                 className="transition-all duration-500"
@@ -497,7 +639,7 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
               >
                 {node.label}
               </text>
-              
+
               {/* Discovery/Finish time labels */}
               {node.discoveryTime >= 0 && (
                 <text
@@ -506,7 +648,8 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({
                   textAnchor="middle"
                   className="text-xs font-medium fill-purple-600 dark:fill-purple-400"
                 >
-                  {node.discoveryTime}{node.finishTime >= 0 ? `/${node.finishTime}` : ''}
+                  {node.discoveryTime}
+                  {node.finishTime >= 0 ? `/${node.finishTime}` : ''}
                 </text>
               )}
             </g>

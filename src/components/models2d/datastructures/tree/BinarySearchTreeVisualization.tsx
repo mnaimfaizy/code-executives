@@ -14,7 +14,7 @@ interface TreePosition {
 const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
   maxNodes = 15,
   className = '',
-  onOperationComplete
+  onOperationComplete,
 }) => {
   const [nodes, setNodes] = useState<Map<string, TreeNode>>(new Map());
   const [rootId, setRootId] = useState<string | null>(null);
@@ -32,37 +32,40 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
   const LEVEL_HEIGHT = 60;
 
   // Calculate positions for all nodes
-  const calculatePositions = useCallback((rootNodeId: string | null) => {
-    if (!rootNodeId || !nodes.has(rootNodeId)) return new Map();
+  const calculatePositions = useCallback(
+    (rootNodeId: string | null) => {
+      if (!rootNodeId || !nodes.has(rootNodeId)) return new Map();
 
-    const positions = new Map<string, TreePosition>();
-    
-    // Calculate in-order positions for better BST layout
-    const inOrderTraversal: string[] = [];
-    const traverse = (nodeId: string) => {
-      const node = nodes.get(nodeId);
-      if (!node) return;
-      
-      if (node.left) traverse(node.left);
-      inOrderTraversal.push(nodeId);
-      if (node.right) traverse(node.right);
-    };
-    
-    traverse(rootNodeId);
-    
-    // Assign x positions based on in-order sequence
-    const xSpacing = SVG_WIDTH / (inOrderTraversal.length + 1);
-    inOrderTraversal.forEach((nodeId, index) => {
-      const node = nodes.get(nodeId);
-      if (node) {
-        const x = (index + 1) * xSpacing;
-        const y = 50 + node.level * LEVEL_HEIGHT;
-        positions.set(nodeId, { x, y });
-      }
-    });
+      const positions = new Map<string, TreePosition>();
 
-    return positions;
-  }, [nodes, SVG_WIDTH, LEVEL_HEIGHT]);
+      // Calculate in-order positions for better BST layout
+      const inOrderTraversal: string[] = [];
+      const traverse = (nodeId: string) => {
+        const node = nodes.get(nodeId);
+        if (!node) return;
+
+        if (node.left) traverse(node.left);
+        inOrderTraversal.push(nodeId);
+        if (node.right) traverse(node.right);
+      };
+
+      traverse(rootNodeId);
+
+      // Assign x positions based on in-order sequence
+      const xSpacing = SVG_WIDTH / (inOrderTraversal.length + 1);
+      inOrderTraversal.forEach((nodeId, index) => {
+        const node = nodes.get(nodeId);
+        if (node) {
+          const x = (index + 1) * xSpacing;
+          const y = 50 + node.level * LEVEL_HEIGHT;
+          positions.set(nodeId, { x, y });
+        }
+      });
+
+      return positions;
+    },
+    [nodes, SVG_WIDTH, LEVEL_HEIGHT]
+  );
 
   // Update positions when nodes change
   useEffect(() => {
@@ -78,7 +81,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
     if (isNaN(numValue)) return;
 
     // Check if value already exists
-    const existingNode = Array.from(nodes.values()).find(n => n.value === numValue);
+    const existingNode = Array.from(nodes.values()).find((n) => n.value === numValue);
     if (existingNode) {
       alert('Value already exists in BST!');
       return;
@@ -89,7 +92,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
       id: newNodeId,
       value: numValue,
       level: 0,
-      isRoot: rootId === null
+      isRoot: rootId === null,
     };
 
     if (rootId === null) {
@@ -106,7 +109,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
 
       while (!inserted) {
         const current = newNodes.get(currentId)!;
-        
+
         if (numValue < (current.value as number)) {
           // Go left
           if (!current.left) {
@@ -135,12 +138,12 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
     }
 
     setInputValue('');
-    
+
     onOperationComplete?.({
       type: 'insert',
       target: numValue,
       description: `Inserted ${numValue} into BST`,
-      complexity: { time: 'O(log n) avg, O(n) worst', space: 'O(1)' }
+      complexity: { time: 'O(log n) avg, O(n) worst', space: 'O(1)' },
     });
   }, [inputValue, nodes, rootId, onOperationComplete]);
 
@@ -196,23 +199,23 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
       type: 'search',
       target: numValue,
       description: `Search for ${numValue}: ${found ? 'Found' : 'Not found'}`,
-      complexity: { time: 'O(log n) avg, O(n) worst', space: 'O(1)' }
+      complexity: { time: 'O(log n) avg, O(n) worst', space: 'O(1)' },
     });
   }, [searchValue, rootId, nodes, onOperationComplete]);
 
   // BST Delete operation (simplified)
   const handleDelete = useCallback(() => {
     if (!deleteValue.trim() || !rootId) return;
-    
+
     const numValue = parseInt(deleteValue);
     if (isNaN(numValue)) return;
 
     // Find the node to delete
-    const nodeToDelete = Array.from(nodes.values()).find(n => n.value === numValue);
+    const nodeToDelete = Array.from(nodes.values()).find((n) => n.value === numValue);
     if (!nodeToDelete) return;
 
     const newNodes = new Map(nodes);
-    
+
     // Case 1: Leaf node
     if (!nodeToDelete.left && !nodeToDelete.right) {
       if (nodeToDelete.parent) {
@@ -231,12 +234,12 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
     else if (!nodeToDelete.left || !nodeToDelete.right) {
       const childId = nodeToDelete.left || nodeToDelete.right!;
       const child = newNodes.get(childId)!;
-      
+
       if (nodeToDelete.parent) {
         const parent = newNodes.get(nodeToDelete.parent)!;
         child.parent = nodeToDelete.parent;
         child.level = nodeToDelete.level;
-        
+
         if (parent.left === nodeToDelete.id) {
           parent.left = childId;
         } else {
@@ -248,7 +251,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
         child.isRoot = true;
         child.level = 0;
         setRootId(childId);
-        
+
         // Update levels of all descendants
         const updateLevels = (nodeId: string, level: number) => {
           const node = newNodes.get(nodeId);
@@ -270,12 +273,12 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
         if (!successor.left) break;
         successorId = successor.left;
       }
-      
+
       const successor = newNodes.get(successorId)!;
-      
+
       // Replace nodeToDelete's value with successor's value
       nodeToDelete.value = successor.value;
-      
+
       // Delete the successor (which has at most one child)
       if (successor.parent && successor.parent !== nodeToDelete.id) {
         const successorParent = newNodes.get(successor.parent)!;
@@ -292,7 +295,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
           rightChild.parent = nodeToDelete.id;
         }
       }
-      
+
       newNodes.delete(successorId);
       setNodes(newNodes);
       setDeleteValue('');
@@ -307,7 +310,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
       type: 'delete',
       target: numValue,
       description: `Deleted ${numValue} from BST`,
-      complexity: { time: 'O(log n) avg, O(n) worst', space: 'O(1)' }
+      complexity: { time: 'O(log n) avg, O(n) worst', space: 'O(1)' },
     });
   }, [deleteValue, rootId, nodes, onOperationComplete]);
 
@@ -326,7 +329,7 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
   // Render tree edges
   const renderEdges = () => {
     const edges: React.ReactElement[] = [];
-    
+
     nodes.forEach((node) => {
       const nodePos = nodePositions.get(node.id);
       if (!nodePos) return;
@@ -537,7 +540,9 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
             <div className="text-center text-gray-500">
               <div className="text-4xl mb-2">🌲</div>
               <p className="text-sm">Add nodes to build your Binary Search Tree</p>
-              <p className="text-xs text-gray-400 mt-1">Values are automatically placed according to BST rules</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Values are automatically placed according to BST rules
+              </p>
             </div>
           </div>
         )}
@@ -546,20 +551,18 @@ const BinarySearchTreeVisualization: React.FC<BSTVisualizationProps> = ({
       {/* Tree Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {nodes.size}
-          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{nodes.size}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Total Nodes</div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {Math.max(...Array.from(nodes.values()).map(n => n.level), -1) + 1}
+            {Math.max(...Array.from(nodes.values()).map((n) => n.level), -1) + 1}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Height</div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {Array.from(nodes.values()).filter(n => !n.left && !n.right).length}
+            {Array.from(nodes.values()).filter((n) => !n.left && !n.right).length}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Leaf Nodes</div>
         </div>

@@ -25,9 +25,7 @@ interface BFSVisualizationProps {
   className?: string;
 }
 
-const BFSVisualization: React.FC<BFSVisualizationProps> = ({
-  className = ""
-}) => {
+const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) => {
   const [nodes, setNodes] = useState<BFSNode[]>([]);
   const [edges, setEdges] = useState<BFSEdge[]>([]);
   const [queue, setQueue] = useState<string[]>([]);
@@ -41,13 +39,76 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
 
   const initializeGraph = useCallback(() => {
     const initialNodes: BFSNode[] = [
-      { id: 'A', label: 'A', x: 200, y: 100, visited: false, current: false, distance: -1, level: 0 },
-      { id: 'B', label: 'B', x: 400, y: 100, visited: false, current: false, distance: -1, level: 0 },
-      { id: 'C', label: 'C', x: 100, y: 200, visited: false, current: false, distance: -1, level: 0 },
-      { id: 'D', label: 'D', x: 300, y: 200, visited: false, current: false, distance: -1, level: 0 },
-      { id: 'E', label: 'E', x: 500, y: 200, visited: false, current: false, distance: -1, level: 0 },
-      { id: 'F', label: 'F', x: 200, y: 300, visited: false, current: false, distance: -1, level: 0 },
-      { id: 'G', label: 'G', x: 400, y: 300, visited: false, current: false, distance: -1, level: 0 },
+      {
+        id: 'A',
+        label: 'A',
+        x: 200,
+        y: 100,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
+      {
+        id: 'B',
+        label: 'B',
+        x: 400,
+        y: 100,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
+      {
+        id: 'C',
+        label: 'C',
+        x: 100,
+        y: 200,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
+      {
+        id: 'D',
+        label: 'D',
+        x: 300,
+        y: 200,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
+      {
+        id: 'E',
+        label: 'E',
+        x: 500,
+        y: 200,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
+      {
+        id: 'F',
+        label: 'F',
+        x: 200,
+        y: 300,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
+      {
+        id: 'G',
+        label: 'G',
+        x: 400,
+        y: 300,
+        visited: false,
+        current: false,
+        distance: -1,
+        level: 0,
+      },
     ];
 
     const initialEdges: BFSEdge[] = [
@@ -79,26 +140,31 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
     initializeGraph();
   }, [initializeGraph]);
 
-  const getAdjacentNodes = useCallback((nodeId: string): string[] => {
-    const adjacentNodes: string[] = [];
-    edges.forEach(edge => {
-      if (edge.source === nodeId) {
-        adjacentNodes.push(edge.target);
-      } else if (edge.target === nodeId) {
-        adjacentNodes.push(edge.source);
-      }
-    });
-    return adjacentNodes;
-  }, [edges]);
+  const getAdjacentNodes = useCallback(
+    (nodeId: string): string[] => {
+      const adjacentNodes: string[] = [];
+      edges.forEach((edge) => {
+        if (edge.source === nodeId) {
+          adjacentNodes.push(edge.target);
+        } else if (edge.target === nodeId) {
+          adjacentNodes.push(edge.source);
+        }
+      });
+      return adjacentNodes;
+    },
+    [edges]
+  );
 
   const performBFSStep = useCallback(() => {
     if (queue.length === 0 && step === 0) {
       // Initialize BFS
-      setNodes(prev => prev.map(node => 
-        node.id === startNode 
-          ? { ...node, visited: true, current: true, distance: 0, level: 0 }
-          : node
-      ));
+      setNodes((prev) =>
+        prev.map((node) =>
+          node.id === startNode
+            ? { ...node, visited: true, current: true, distance: 0, level: 0 }
+            : node
+        )
+      );
       setQueue([startNode]);
       setCurrentNode(startNode);
       setStep(1);
@@ -116,52 +182,57 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
     // Dequeue the front node
     const current = queue[0];
     const newQueue = queue.slice(1);
-    
+
     setCurrentNode(current);
-    
+
     // Get unvisited adjacent nodes
     const adjacentNodes = getAdjacentNodes(current);
-    const unvisitedAdjacent = adjacentNodes.filter(nodeId => 
-      !nodes.find(n => n.id === nodeId)?.visited
+    const unvisitedAdjacent = adjacentNodes.filter(
+      (nodeId) => !nodes.find((n) => n.id === nodeId)?.visited
     );
 
     // Update nodes and edges
-    setNodes(prev => prev.map(node => {
-      if (node.id === current) {
+    setNodes((prev) =>
+      prev.map((node) => {
+        if (node.id === current) {
+          return { ...node, current: false };
+        }
+        if (unvisitedAdjacent.includes(node.id)) {
+          const currentNodeData = prev.find((n) => n.id === current);
+          return {
+            ...node,
+            visited: true,
+            current: true,
+            distance: (currentNodeData?.distance ?? 0) + 1,
+            level: (currentNodeData?.level ?? 0) + 1,
+            parent: current,
+          };
+        }
         return { ...node, current: false };
-      }
-      if (unvisitedAdjacent.includes(node.id)) {
-        const currentNodeData = prev.find(n => n.id === current);
-        return { 
-          ...node, 
-          visited: true, 
-          current: true,
-          distance: (currentNodeData?.distance ?? 0) + 1,
-          level: (currentNodeData?.level ?? 0) + 1,
-          parent: current
-        };
-      }
-      return { ...node, current: false };
-    }));
+      })
+    );
 
-    setEdges(prev => prev.map(edge => {
-      const isTraversingEdge = (edge.source === current && unvisitedAdjacent.includes(edge.target)) ||
-                               (edge.target === current && unvisitedAdjacent.includes(edge.source));
-      return {
-        ...edge,
-        traversed: edge.traversed || isTraversingEdge,
-        highlighted: isTraversingEdge
-      };
-    }));
+    setEdges((prev) =>
+      prev.map((edge) => {
+        const isTraversingEdge =
+          (edge.source === current && unvisitedAdjacent.includes(edge.target)) ||
+          (edge.target === current && unvisitedAdjacent.includes(edge.source));
+        return {
+          ...edge,
+          traversed: edge.traversed || isTraversingEdge,
+          highlighted: isTraversingEdge,
+        };
+      })
+    );
 
     // Add unvisited adjacent nodes to queue
     setQueue([...newQueue, ...unvisitedAdjacent]);
-    setStep(prev => prev + 1);
+    setStep((prev) => prev + 1);
   }, [queue, step, startNode, nodes, getAdjacentNodes]);
 
   const startBFS = useCallback(() => {
     if (isPlaying) return;
-    
+
     setIsPlaying(true);
     intervalRef.current = setInterval(() => {
       performBFSStep();
@@ -192,23 +263,23 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
   }, [initializeGraph]);
 
   const getEdgePath = (edge: BFSEdge) => {
-    const sourceNode = nodes.find(n => n.id === edge.source);
-    const targetNode = nodes.find(n => n.id === edge.target);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
     if (!sourceNode || !targetNode) return '';
 
     const dx = targetNode.x - sourceNode.x;
     const dy = targetNode.y - sourceNode.y;
     const length = Math.sqrt(dx * dx + dy * dy);
-    
+
     const nodeRadius = 25;
     const offsetX = (dx / length) * nodeRadius;
     const offsetY = (dy / length) * nodeRadius;
-    
+
     const startX = sourceNode.x + offsetX;
     const startY = sourceNode.y + offsetY;
     const endX = targetNode.x - offsetX;
     const endY = targetNode.y - offsetY;
-    
+
     return `M ${startX} ${startY} L ${endX} ${endY}`;
   };
 
@@ -229,7 +300,7 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
@@ -269,8 +340,10 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
                      bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                      focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
-            {nodes.map(node => (
-              <option key={node.id} value={node.id}>{node.label}</option>
+            {nodes.map((node) => (
+              <option key={node.id} value={node.id}>
+                {node.label}
+              </option>
             ))}
           </select>
         </div>
@@ -323,12 +396,10 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
           </div>
           <div className="text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">Current:</span>
-            <span className="ml-1 text-green-600 dark:text-green-400">
-              {currentNode || 'None'}
-            </span>
+            <span className="ml-1 text-green-600 dark:text-green-400">{currentNode || 'None'}</span>
           </div>
         </div>
-        
+
         {isComplete && (
           <div className="text-sm text-green-600 dark:text-green-400 font-medium">
             ✓ BFS Complete!
@@ -338,9 +409,7 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
 
       {/* Queue Display */}
       <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-          Queue (FIFO):
-        </h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Queue (FIFO):</h4>
         <div className="flex items-center space-x-2">
           <span className="text-xs text-gray-600 dark:text-gray-400">Front →</span>
           {queue.length === 0 ? (
@@ -362,10 +431,7 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
 
       {/* Graph Visualization */}
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg
-          viewBox="0 0 600 400"
-          className="w-full h-96 bg-gray-50 dark:bg-gray-900"
-        >
+        <svg viewBox="0 0 600 400" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
           {/* Background pattern */}
           <defs>
             <pattern id="bfs-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -381,28 +447,25 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
           <rect width="100%" height="100%" fill="url(#bfs-grid)" />
 
           {/* Edges */}
-          {edges.map(edge => (
+          {edges.map((edge) => (
             <path
               key={edge.id}
               d={getEdgePath(edge)}
               stroke={edge.highlighted ? '#EF4444' : edge.traversed ? '#10B981' : '#9CA3AF'}
-              strokeWidth={edge.highlighted ? "4" : edge.traversed ? "3" : "2"}
+              strokeWidth={edge.highlighted ? '4' : edge.traversed ? '3' : '2'}
               fill="none"
               className="transition-all duration-500"
             />
           ))}
 
           {/* Nodes */}
-          {nodes.map(node => (
+          {nodes.map((node) => (
             <g key={node.id}>
               <circle
                 cx={node.x}
                 cy={node.y}
                 r="25"
-                fill={
-                  node.current ? '#EF4444' :
-                  node.visited ? '#10B981' : '#6B7280'
-                }
+                fill={node.current ? '#EF4444' : node.visited ? '#10B981' : '#6B7280'}
                 stroke="#1F2937"
                 strokeWidth="2"
                 className="transition-all duration-500"
@@ -415,7 +478,7 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({
               >
                 {node.label}
               </text>
-              
+
               {/* Distance label */}
               {node.distance >= 0 && (
                 <text

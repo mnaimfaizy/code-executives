@@ -19,7 +19,7 @@ interface TreePosition {
 const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
   maxNodes = 15,
   className = '',
-  onOperationComplete
+  onOperationComplete,
 }) => {
   const [nodes, setNodes] = useState<Map<string, RBNode>>(new Map());
   const [rootId, setRootId] = useState<string | null>(null);
@@ -37,307 +37,330 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
   const LEVEL_HEIGHT = 80;
 
   // Red-Black Tree Properties Check
-  const checkRBProperties = useCallback((nodeMap: Map<string, RBNode>, rootNodeId: string | null): string[] => {
-    const violations: string[] = [];
-    if (!rootNodeId) return violations;
+  const checkRBProperties = useCallback(
+    (nodeMap: Map<string, RBNode>, rootNodeId: string | null): string[] => {
+      const violations: string[] = [];
+      if (!rootNodeId) return violations;
 
-    // Property 1: Root is black
-    const rootNode = nodeMap.get(rootNodeId);
-    if (rootNode?.color !== 'black') {
-      violations.push(rootNodeId);
-    }
-
-    // Property 4: Red nodes have black children
-    const checkRedNodeProperty = (nodeId: string) => {
-      const node = nodeMap.get(nodeId);
-      if (!node) return;
-
-      if (node.color === 'red') {
-        if (node.left) {
-          const leftChild = nodeMap.get(node.left);
-          if (leftChild?.color === 'red') {
-            violations.push(nodeId);
-          }
-        }
-        if (node.right) {
-          const rightChild = nodeMap.get(node.right);
-          if (rightChild?.color === 'red') {
-            violations.push(nodeId);
-          }
-        }
+      // Property 1: Root is black
+      const rootNode = nodeMap.get(rootNodeId);
+      if (rootNode?.color !== 'black') {
+        violations.push(rootNodeId);
       }
 
-      if (node.left) checkRedNodeProperty(node.left);
-      if (node.right) checkRedNodeProperty(node.right);
-    };
+      // Property 4: Red nodes have black children
+      const checkRedNodeProperty = (nodeId: string) => {
+        const node = nodeMap.get(nodeId);
+        if (!node) return;
 
-    checkRedNodeProperty(rootNodeId);
-    return violations;
-  }, []);
+        if (node.color === 'red') {
+          if (node.left) {
+            const leftChild = nodeMap.get(node.left);
+            if (leftChild?.color === 'red') {
+              violations.push(nodeId);
+            }
+          }
+          if (node.right) {
+            const rightChild = nodeMap.get(node.right);
+            if (rightChild?.color === 'red') {
+              violations.push(nodeId);
+            }
+          }
+        }
+
+        if (node.left) checkRedNodeProperty(node.left);
+        if (node.right) checkRedNodeProperty(node.right);
+      };
+
+      checkRedNodeProperty(rootNodeId);
+      return violations;
+    },
+    []
+  );
 
   // Left rotation
-  const rotateLeft = useCallback((nodeMap: Map<string, RBNode>, xId: string): [Map<string, RBNode>, string] => {
-    const x = nodeMap.get(xId)!;
-    const yId = x.right!;
-    const y = nodeMap.get(yId)!;
+  const rotateLeft = useCallback(
+    (nodeMap: Map<string, RBNode>, xId: string): [Map<string, RBNode>, string] => {
+      const x = nodeMap.get(xId)!;
+      const yId = x.right!;
+      const y = nodeMap.get(yId)!;
 
-    // Perform rotation
-    x.right = y.left;
-    y.left = xId;
+      // Perform rotation
+      x.right = y.left;
+      y.left = xId;
 
-    // Update parent references
-    if (x.right) {
-      const rightChild = nodeMap.get(x.right)!;
-      rightChild.parent = xId;
-    }
-    y.parent = x.parent;
-    x.parent = yId;
-
-    // Update levels
-    x.level = y.level + 1;
-    const updateLevels = (nodeId: string, level: number) => {
-      const node = nodeMap.get(nodeId);
-      if (node) {
-        node.level = level;
-        if (node.left) updateLevels(node.left, level + 1);
-        if (node.right) updateLevels(node.right, level + 1);
+      // Update parent references
+      if (x.right) {
+        const rightChild = nodeMap.get(x.right)!;
+        rightChild.parent = xId;
       }
-    };
-    updateLevels(xId, y.level + 1);
+      y.parent = x.parent;
+      x.parent = yId;
 
-    return [nodeMap, yId];
-  }, []);
+      // Update levels
+      x.level = y.level + 1;
+      const updateLevels = (nodeId: string, level: number) => {
+        const node = nodeMap.get(nodeId);
+        if (node) {
+          node.level = level;
+          if (node.left) updateLevels(node.left, level + 1);
+          if (node.right) updateLevels(node.right, level + 1);
+        }
+      };
+      updateLevels(xId, y.level + 1);
+
+      return [nodeMap, yId];
+    },
+    []
+  );
 
   // Right rotation
-  const rotateRight = useCallback((nodeMap: Map<string, RBNode>, yId: string): [Map<string, RBNode>, string] => {
-    const y = nodeMap.get(yId)!;
-    const xId = y.left!;
-    const x = nodeMap.get(xId)!;
+  const rotateRight = useCallback(
+    (nodeMap: Map<string, RBNode>, yId: string): [Map<string, RBNode>, string] => {
+      const y = nodeMap.get(yId)!;
+      const xId = y.left!;
+      const x = nodeMap.get(xId)!;
 
-    // Perform rotation
-    y.left = x.right;
-    x.right = yId;
+      // Perform rotation
+      y.left = x.right;
+      x.right = yId;
 
-    // Update parent references
-    if (y.left) {
-      const leftChild = nodeMap.get(y.left)!;
-      leftChild.parent = yId;
-    }
-    x.parent = y.parent;
-    y.parent = xId;
-
-    // Update levels
-    y.level = x.level + 1;
-    const updateLevels = (nodeId: string, level: number) => {
-      const node = nodeMap.get(nodeId);
-      if (node) {
-        node.level = level;
-        if (node.left) updateLevels(node.left, level + 1);
-        if (node.right) updateLevels(node.right, level + 1);
+      // Update parent references
+      if (y.left) {
+        const leftChild = nodeMap.get(y.left)!;
+        leftChild.parent = yId;
       }
-    };
-    updateLevels(yId, x.level + 1);
+      x.parent = y.parent;
+      y.parent = xId;
 
-    return [nodeMap, xId];
-  }, []);
+      // Update levels
+      y.level = x.level + 1;
+      const updateLevels = (nodeId: string, level: number) => {
+        const node = nodeMap.get(nodeId);
+        if (node) {
+          node.level = level;
+          if (node.left) updateLevels(node.left, level + 1);
+          if (node.right) updateLevels(node.right, level + 1);
+        }
+      };
+      updateLevels(yId, x.level + 1);
+
+      return [nodeMap, xId];
+    },
+    []
+  );
 
   // Red-Black Tree insertion with fixup
-  const insertRB = useCallback((nodeMap: Map<string, RBNode>, rootNodeId: string | null, value: number): [Map<string, RBNode>, string] => {
-    // Create new node
-    const newNodeId = `rb-${value}-${Date.now()}`;
-    const newNode: RBNode = {
-      id: newNodeId,
-      value,
-      level: 0,
-      color: 'red', // New nodes are always red
-      isRoot: rootNodeId === null
-    };
+  const insertRB = useCallback(
+    (
+      nodeMap: Map<string, RBNode>,
+      rootNodeId: string | null,
+      value: number
+    ): [Map<string, RBNode>, string] => {
+      // Create new node
+      const newNodeId = `rb-${value}-${Date.now()}`;
+      const newNode: RBNode = {
+        id: newNodeId,
+        value,
+        level: 0,
+        color: 'red', // New nodes are always red
+        isRoot: rootNodeId === null,
+      };
 
-    if (rootNodeId === null) {
-      newNode.color = 'black'; // Root is always black
+      if (rootNodeId === null) {
+        newNode.color = 'black'; // Root is always black
+        nodeMap.set(newNodeId, newNode);
+        return [nodeMap, newNodeId];
+      }
+
+      // Standard BST insertion
+      let currentId: string | null = rootNodeId;
+      let parentId: string | null = null;
+
+      while (currentId) {
+        const current: RBNode = nodeMap.get(currentId)!;
+        parentId = currentId;
+
+        if (value < (current.value as number)) {
+          currentId = current.left || null;
+        } else if (value > (current.value as number)) {
+          currentId = current.right || null;
+        } else {
+          // Value already exists
+          return [nodeMap, rootNodeId];
+        }
+      }
+
+      // Insert the new node
+      const parent = nodeMap.get(parentId!)!;
+      newNode.parent = parentId || undefined;
+      newNode.level = parent.level + 1;
+
+      if (value < (parent.value as number)) {
+        parent.left = newNodeId;
+      } else {
+        parent.right = newNodeId;
+      }
+
       nodeMap.set(newNodeId, newNode);
-      return [nodeMap, newNodeId];
-    }
 
-    // Standard BST insertion
-    let currentId: string | null = rootNodeId;
-    let parentId: string | null = null;
+      // Fix Red-Black Tree properties
+      let currentRoot = rootNodeId;
+      let current = newNodeId;
 
-    while (currentId) {
-      const current: RBNode = nodeMap.get(currentId)!;
-      parentId = currentId;
+      while (current !== currentRoot) {
+        const node = nodeMap.get(current)!;
+        const parentNode = node.parent ? nodeMap.get(node.parent) : null;
 
-      if (value < (current.value as number)) {
-        currentId = current.left || null;
-      } else if (value > (current.value as number)) {
-        currentId = current.right || null;
-      } else {
-        // Value already exists
-        return [nodeMap, rootNodeId];
-      }
-    }
-
-    // Insert the new node
-    const parent = nodeMap.get(parentId!)!;
-    newNode.parent = parentId || undefined;
-    newNode.level = parent.level + 1;
-
-    if (value < (parent.value as number)) {
-      parent.left = newNodeId;
-    } else {
-      parent.right = newNodeId;
-    }
-
-    nodeMap.set(newNodeId, newNode);
-
-    // Fix Red-Black Tree properties
-    let currentRoot = rootNodeId;
-    let current = newNodeId;
-
-    while (current !== currentRoot) {
-      const node = nodeMap.get(current)!;
-      const parentNode = node.parent ? nodeMap.get(node.parent) : null;
-
-      if (!parentNode || parentNode.color === 'black') {
-        break;
-      }
-
-      const grandparentId = parentNode.parent;
-      if (!grandparentId) {
-        parentNode.color = 'black';
-        break;
-      }
-
-      const grandparent = nodeMap.get(grandparentId)!;
-      
-      if (parentNode.id === grandparent.left) {
-        // Parent is left child of grandparent
-        const uncleId = grandparent.right;
-        const uncle = uncleId ? nodeMap.get(uncleId) : null;
-
-        if (uncle && uncle.color === 'red') {
-          // Case 1: Uncle is red
-          parentNode.color = 'black';
-          uncle.color = 'black';
-          grandparent.color = 'red';
-          current = grandparentId;
-        } else {
-          // Case 2 & 3: Uncle is black
-          if (current === parentNode.right) {
-            // Case 2: Node is right child
-            current = parentNode.id;
-            const [newMap] = rotateLeft(nodeMap, current);
-            nodeMap = newMap;
-            const updatedNode = nodeMap.get(current)!;
-            const updatedParent = updatedNode.parent ? nodeMap.get(updatedNode.parent) : null;
-            if (updatedParent) {
-              current = updatedParent.id;
-            }
-          }
-          
-          // Case 3: Node is left child
-          const currentNode = nodeMap.get(current)!;
-          const currentParent = currentNode.parent ? nodeMap.get(currentNode.parent) : null;
-          const currentGrandparent = currentParent?.parent ? nodeMap.get(currentParent.parent) : null;
-          
-          if (currentParent && currentGrandparent) {
-            currentParent.color = 'black';
-            currentGrandparent.color = 'red';
-            
-            const [newMap, newRoot] = rotateRight(nodeMap, currentGrandparent.id);
-            nodeMap = newMap;
-            
-            if (currentGrandparent.id === currentRoot) {
-              currentRoot = newRoot;
-            }
-          }
+        if (!parentNode || parentNode.color === 'black') {
           break;
         }
-      } else {
-        // Parent is right child of grandparent (symmetric cases)
-        const uncleId = grandparent.left;
-        const uncle = uncleId ? nodeMap.get(uncleId) : null;
 
-        if (uncle && uncle.color === 'red') {
-          // Case 1: Uncle is red
+        const grandparentId = parentNode.parent;
+        if (!grandparentId) {
           parentNode.color = 'black';
-          uncle.color = 'black';
-          grandparent.color = 'red';
-          current = grandparentId;
-        } else {
-          // Case 2 & 3: Uncle is black
-          if (current === parentNode.left) {
-            // Case 2: Node is left child
-            current = parentNode.id;
-            const [newMap] = rotateRight(nodeMap, current);
-            nodeMap = newMap;
-            const updatedNode = nodeMap.get(current)!;
-            const updatedParent = updatedNode.parent ? nodeMap.get(updatedNode.parent) : null;
-            if (updatedParent) {
-              current = updatedParent.id;
-            }
-          }
-          
-          // Case 3: Node is right child
-          const currentNode = nodeMap.get(current)!;
-          const currentParent = currentNode.parent ? nodeMap.get(currentNode.parent) : null;
-          const currentGrandparent = currentParent?.parent ? nodeMap.get(currentParent.parent) : null;
-          
-          if (currentParent && currentGrandparent) {
-            currentParent.color = 'black';
-            currentGrandparent.color = 'red';
-            
-            const [newMap, newRoot] = rotateLeft(nodeMap, currentGrandparent.id);
-            nodeMap = newMap;
-            
-            if (currentGrandparent.id === currentRoot) {
-              currentRoot = newRoot;
-            }
-          }
           break;
         }
+
+        const grandparent = nodeMap.get(grandparentId)!;
+
+        if (parentNode.id === grandparent.left) {
+          // Parent is left child of grandparent
+          const uncleId = grandparent.right;
+          const uncle = uncleId ? nodeMap.get(uncleId) : null;
+
+          if (uncle && uncle.color === 'red') {
+            // Case 1: Uncle is red
+            parentNode.color = 'black';
+            uncle.color = 'black';
+            grandparent.color = 'red';
+            current = grandparentId;
+          } else {
+            // Case 2 & 3: Uncle is black
+            if (current === parentNode.right) {
+              // Case 2: Node is right child
+              current = parentNode.id;
+              const [newMap] = rotateLeft(nodeMap, current);
+              nodeMap = newMap;
+              const updatedNode = nodeMap.get(current)!;
+              const updatedParent = updatedNode.parent ? nodeMap.get(updatedNode.parent) : null;
+              if (updatedParent) {
+                current = updatedParent.id;
+              }
+            }
+
+            // Case 3: Node is left child
+            const currentNode = nodeMap.get(current)!;
+            const currentParent = currentNode.parent ? nodeMap.get(currentNode.parent) : null;
+            const currentGrandparent = currentParent?.parent
+              ? nodeMap.get(currentParent.parent)
+              : null;
+
+            if (currentParent && currentGrandparent) {
+              currentParent.color = 'black';
+              currentGrandparent.color = 'red';
+
+              const [newMap, newRoot] = rotateRight(nodeMap, currentGrandparent.id);
+              nodeMap = newMap;
+
+              if (currentGrandparent.id === currentRoot) {
+                currentRoot = newRoot;
+              }
+            }
+            break;
+          }
+        } else {
+          // Parent is right child of grandparent (symmetric cases)
+          const uncleId = grandparent.left;
+          const uncle = uncleId ? nodeMap.get(uncleId) : null;
+
+          if (uncle && uncle.color === 'red') {
+            // Case 1: Uncle is red
+            parentNode.color = 'black';
+            uncle.color = 'black';
+            grandparent.color = 'red';
+            current = grandparentId;
+          } else {
+            // Case 2 & 3: Uncle is black
+            if (current === parentNode.left) {
+              // Case 2: Node is left child
+              current = parentNode.id;
+              const [newMap] = rotateRight(nodeMap, current);
+              nodeMap = newMap;
+              const updatedNode = nodeMap.get(current)!;
+              const updatedParent = updatedNode.parent ? nodeMap.get(updatedNode.parent) : null;
+              if (updatedParent) {
+                current = updatedParent.id;
+              }
+            }
+
+            // Case 3: Node is right child
+            const currentNode = nodeMap.get(current)!;
+            const currentParent = currentNode.parent ? nodeMap.get(currentNode.parent) : null;
+            const currentGrandparent = currentParent?.parent
+              ? nodeMap.get(currentParent.parent)
+              : null;
+
+            if (currentParent && currentGrandparent) {
+              currentParent.color = 'black';
+              currentGrandparent.color = 'red';
+
+              const [newMap, newRoot] = rotateLeft(nodeMap, currentGrandparent.id);
+              nodeMap = newMap;
+
+              if (currentGrandparent.id === currentRoot) {
+                currentRoot = newRoot;
+              }
+            }
+            break;
+          }
+        }
       }
-    }
 
-    // Ensure root is black
-    const finalRoot = nodeMap.get(currentRoot)!;
-    finalRoot.color = 'black';
+      // Ensure root is black
+      const finalRoot = nodeMap.get(currentRoot)!;
+      finalRoot.color = 'black';
 
-    return [nodeMap, currentRoot];
-  }, [rotateLeft, rotateRight]);
+      return [nodeMap, currentRoot];
+    },
+    [rotateLeft, rotateRight]
+  );
 
   // Calculate positions for all nodes
-  const calculatePositions = useCallback((rootNodeId: string | null) => {
-    if (!rootNodeId || !nodes.has(rootNodeId)) return new Map();
+  const calculatePositions = useCallback(
+    (rootNodeId: string | null) => {
+      if (!rootNodeId || !nodes.has(rootNodeId)) return new Map();
 
-    const positions = new Map<string, TreePosition>();
+      const positions = new Map<string, TreePosition>();
 
-    // In-order traversal for x-positioning
-    const inOrderTraversal: string[] = [];
-    const traverse = (nodeId: string) => {
-      const node = nodes.get(nodeId);
-      if (!node) return;
+      // In-order traversal for x-positioning
+      const inOrderTraversal: string[] = [];
+      const traverse = (nodeId: string) => {
+        const node = nodes.get(nodeId);
+        if (!node) return;
 
-      if (node.left) traverse(node.left);
-      inOrderTraversal.push(nodeId);
-      if (node.right) traverse(node.right);
-    };
+        if (node.left) traverse(node.left);
+        inOrderTraversal.push(nodeId);
+        if (node.right) traverse(node.right);
+      };
 
-    traverse(rootNodeId);
+      traverse(rootNodeId);
 
-    // Assign positions
-    const xSpacing = SVG_WIDTH / (inOrderTraversal.length + 1);
-    inOrderTraversal.forEach((nodeId, index) => {
-      const node = nodes.get(nodeId);
-      if (node) {
-        const x = (index + 1) * xSpacing;
-        const y = 60 + node.level * LEVEL_HEIGHT;
-        positions.set(nodeId, { x, y });
-      }
-    });
+      // Assign positions
+      const xSpacing = SVG_WIDTH / (inOrderTraversal.length + 1);
+      inOrderTraversal.forEach((nodeId, index) => {
+        const node = nodes.get(nodeId);
+        if (node) {
+          const x = (index + 1) * xSpacing;
+          const y = 60 + node.level * LEVEL_HEIGHT;
+          positions.set(nodeId, { x, y });
+        }
+      });
 
-    return positions;
-  }, [nodes, SVG_WIDTH, LEVEL_HEIGHT]);
+      return positions;
+    },
+    [nodes, SVG_WIDTH, LEVEL_HEIGHT]
+  );
 
   // Update positions when nodes change
   useEffect(() => {
@@ -369,7 +392,7 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       type: 'insert',
       target: numValue,
       description: `Inserted ${numValue} into Red-Black tree with property preservation`,
-      complexity: { time: 'O(log n)', space: 'O(1)' }
+      complexity: { time: 'O(log n)', space: 'O(1)' },
     });
   }, [inputValue, nodes, rootId, insertRB, isOperating, onOperationComplete]);
 
@@ -491,19 +514,19 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
               isHighlighted
                 ? '#3b82f6'
                 : hasViolation
-                ? '#f59e0b'
-                : node.color === 'red'
-                ? '#ef4444'
-                : '#1f2937'
+                  ? '#f59e0b'
+                  : node.color === 'red'
+                    ? '#ef4444'
+                    : '#1f2937'
             }
             stroke={
               isHighlighted
                 ? '#1d4ed8'
                 : hasViolation
-                ? '#d97706'
-                : node.color === 'red'
-                ? '#dc2626'
-                : '#111827'
+                  ? '#d97706'
+                  : node.color === 'red'
+                    ? '#dc2626'
+                    : '#111827'
             }
             strokeWidth={isHighlighted || hasViolation ? 3 : 2}
             className="cursor-pointer hover:opacity-80 transition-colors"
@@ -609,7 +632,9 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
         <div className="flex items-center justify-between">
           <div className="text-sm">
             <span className="font-medium text-red-700 dark:text-red-300">RB Properties: </span>
-            <span className={`font-semibold ${isValidRBTree() ? 'text-green-600' : 'text-red-600'}`}>
+            <span
+              className={`font-semibold ${isValidRBTree() ? 'text-green-600' : 'text-red-600'}`}
+            >
               {isValidRBTree() ? '✓ Valid' : '✗ Violations Found'}
             </span>
             {violationNodes.length > 0 && (
@@ -641,7 +666,9 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
             <div className="text-center text-gray-500">
               <div className="text-4xl mb-2">🔴⚫</div>
               <p className="text-sm">Add nodes to build your Red-Black Tree</p>
-              <p className="text-xs text-gray-400 mt-1">Watch automatic recoloring and rotations maintain balance</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Watch automatic recoloring and rotations maintain balance
+              </p>
             </div>
           </div>
         )}
@@ -683,33 +710,33 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
           <div>2. Root is always black</div>
           <div>3. All leaves (NIL) are black</div>
           <div>4. Red nodes have black children</div>
-          <div className="md:col-span-2">5. All paths from node to leaves have equal black height</div>
+          <div className="md:col-span-2">
+            5. All paths from node to leaves have equal black height
+          </div>
         </div>
       </div>
 
       {/* Tree Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {nodes.size}
-          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{nodes.size}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Total Nodes</div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {Array.from(nodes.values()).filter(n => n.color === 'red').length}
+            {Array.from(nodes.values()).filter((n) => n.color === 'red').length}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Red Nodes</div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {Array.from(nodes.values()).filter(n => n.color === 'black').length}
+            {Array.from(nodes.values()).filter((n) => n.color === 'black').length}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Black Nodes</div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {Math.max(...Array.from(nodes.values()).map(n => n.level), -1) + 1}
+            {Math.max(...Array.from(nodes.values()).map((n) => n.level), -1) + 1}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Height</div>
         </div>

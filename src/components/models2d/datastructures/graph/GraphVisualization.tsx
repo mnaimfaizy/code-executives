@@ -30,7 +30,7 @@ interface GraphVisualizationProps {
 const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   directed = false,
   weighted = false,
-  className = ""
+  className = '',
 }) => {
   const [nodes, setNodes] = useState<GraphNode[]>([]);
   const [edges, setEdges] = useState<GraphEdge[]>([]);
@@ -42,96 +42,115 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   const [mode, setMode] = useState<'add-node' | 'add-edge' | 'select'>('select');
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const addNode = useCallback((x: number, y: number) => {
-    const nodeId = `node-${nodes.length + 1}`;
-    const newNode: GraphNode = {
-      id: nodeId,
-      label: String.fromCharCode(65 + nodes.length), // A, B, C, ...
-      x,
-      y,
-      color: '#3B82F6',
-      visited: false
-    };
-    setNodes(prev => [...prev, newNode]);
-  }, [nodes.length]);
-
-  const addEdge = useCallback((sourceId: string, targetId: string) => {
-    const edgeId = `edge-${sourceId}-${targetId}`;
-    const existingEdge = edges.find(e => 
-      (e.source === sourceId && e.target === targetId) ||
-      (!directed && e.source === targetId && e.target === sourceId)
-    );
-    
-    if (!existingEdge) {
-      const newEdge: GraphEdge = {
-        id: edgeId,
-        source: sourceId,
-        target: targetId,
-        weight: weighted ? Math.floor(Math.random() * 10) + 1 : undefined,
-        directed,
-        color: '#6B7280',
-        highlighted: false
+  const addNode = useCallback(
+    (x: number, y: number) => {
+      const nodeId = `node-${nodes.length + 1}`;
+      const newNode: GraphNode = {
+        id: nodeId,
+        label: String.fromCharCode(65 + nodes.length), // A, B, C, ...
+        x,
+        y,
+        color: '#3B82F6',
+        visited: false,
       };
-      setEdges(prev => [...prev, newEdge]);
-    }
-  }, [edges, directed, weighted]);
+      setNodes((prev) => [...prev, newNode]);
+    },
+    [nodes.length]
+  );
 
-  const handleSVGClick = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return;
-    
-    const rect = svgRef.current.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width) * 800;
-    const y = ((event.clientY - rect.top) / rect.height) * 400;
-    
-    if (mode === 'add-node') {
-      addNode(x, y);
-    }
-  }, [mode, addNode]);
+  const addEdge = useCallback(
+    (sourceId: string, targetId: string) => {
+      const edgeId = `edge-${sourceId}-${targetId}`;
+      const existingEdge = edges.find(
+        (e) =>
+          (e.source === sourceId && e.target === targetId) ||
+          (!directed && e.source === targetId && e.target === sourceId)
+      );
 
-  const handleNodeClick = useCallback((nodeId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    
-    if (mode === 'add-edge') {
-      if (!edgeStart) {
-        setEdgeStart(nodeId);
-        setSelectedNode(nodeId);
-      } else if (edgeStart !== nodeId) {
-        addEdge(edgeStart, nodeId);
-        setEdgeStart(null);
-        setSelectedNode(null);
-        setMode('select');
+      if (!existingEdge) {
+        const newEdge: GraphEdge = {
+          id: edgeId,
+          source: sourceId,
+          target: targetId,
+          weight: weighted ? Math.floor(Math.random() * 10) + 1 : undefined,
+          directed,
+          color: '#6B7280',
+          highlighted: false,
+        };
+        setEdges((prev) => [...prev, newEdge]);
       }
-    } else {
-      setSelectedNode(selectedNode === nodeId ? null : nodeId);
-    }
-  }, [mode, edgeStart, addEdge, selectedNode]);
+    },
+    [edges, directed, weighted]
+  );
 
-  const handleNodeMouseDown = useCallback((nodeId: string, event: React.MouseEvent) => {
-    if (mode === 'select') {
-      setDraggedNode(nodeId);
-      const node = nodes.find(n => n.id === nodeId);
-      if (node && svgRef.current) {
-        const rect = svgRef.current.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 800;
-        const y = ((event.clientY - rect.top) / rect.height) * 400;
-        setDragOffset({ x: x - node.x, y: y - node.y });
-      }
-    }
-  }, [mode, nodes]);
+  const handleSVGClick = useCallback(
+    (event: React.MouseEvent<SVGSVGElement>) => {
+      if (!svgRef.current) return;
 
-  const handleMouseMove = useCallback((event: React.MouseEvent<SVGSVGElement>) => {
-    if (draggedNode && svgRef.current) {
       const rect = svgRef.current.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 800;
       const y = ((event.clientY - rect.top) / rect.height) * 400;
-      
-      setNodes(prev => prev.map(node => 
-        node.id === draggedNode 
-          ? { ...node, x: x - dragOffset.x, y: y - dragOffset.y }
-          : node
-      ));
-    }
-  }, [draggedNode, dragOffset]);
+
+      if (mode === 'add-node') {
+        addNode(x, y);
+      }
+    },
+    [mode, addNode]
+  );
+
+  const handleNodeClick = useCallback(
+    (nodeId: string, event: React.MouseEvent) => {
+      event.stopPropagation();
+
+      if (mode === 'add-edge') {
+        if (!edgeStart) {
+          setEdgeStart(nodeId);
+          setSelectedNode(nodeId);
+        } else if (edgeStart !== nodeId) {
+          addEdge(edgeStart, nodeId);
+          setEdgeStart(null);
+          setSelectedNode(null);
+          setMode('select');
+        }
+      } else {
+        setSelectedNode(selectedNode === nodeId ? null : nodeId);
+      }
+    },
+    [mode, edgeStart, addEdge, selectedNode]
+  );
+
+  const handleNodeMouseDown = useCallback(
+    (nodeId: string, event: React.MouseEvent) => {
+      if (mode === 'select') {
+        setDraggedNode(nodeId);
+        const node = nodes.find((n) => n.id === nodeId);
+        if (node && svgRef.current) {
+          const rect = svgRef.current.getBoundingClientRect();
+          const x = ((event.clientX - rect.left) / rect.width) * 800;
+          const y = ((event.clientY - rect.top) / rect.height) * 400;
+          setDragOffset({ x: x - node.x, y: y - node.y });
+        }
+      }
+    },
+    [mode, nodes]
+  );
+
+  const handleMouseMove = useCallback(
+    (event: React.MouseEvent<SVGSVGElement>) => {
+      if (draggedNode && svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width) * 800;
+        const y = ((event.clientY - rect.top) / rect.height) * 400;
+
+        setNodes((prev) =>
+          prev.map((node) =>
+            node.id === draggedNode ? { ...node, x: x - dragOffset.x, y: y - dragOffset.y } : node
+          )
+        );
+      }
+    },
+    [draggedNode, dragOffset]
+  );
 
   const handleMouseUp = useCallback(() => {
     setDraggedNode(null);
@@ -156,51 +175,93 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
         { id: 'D', label: 'D', x: 450, y: 200, color: '#3B82F6' },
         { id: 'E', label: 'E', x: 350, y: 300, color: '#3B82F6' },
       ];
-      
+
       const sampleEdges: GraphEdge[] = [
-        { id: 'AB', source: 'A', target: 'B', color: '#6B7280', directed, weight: weighted ? 5 : undefined },
-        { id: 'AC', source: 'A', target: 'C', color: '#6B7280', directed, weight: weighted ? 3 : undefined },
-        { id: 'BC', source: 'B', target: 'C', color: '#6B7280', directed, weight: weighted ? 2 : undefined },
-        { id: 'BD', source: 'B', target: 'D', color: '#6B7280', directed, weight: weighted ? 4 : undefined },
-        { id: 'CE', source: 'C', target: 'E', color: '#6B7280', directed, weight: weighted ? 6 : undefined },
-        { id: 'DE', source: 'D', target: 'E', color: '#6B7280', directed, weight: weighted ? 1 : undefined },
+        {
+          id: 'AB',
+          source: 'A',
+          target: 'B',
+          color: '#6B7280',
+          directed,
+          weight: weighted ? 5 : undefined,
+        },
+        {
+          id: 'AC',
+          source: 'A',
+          target: 'C',
+          color: '#6B7280',
+          directed,
+          weight: weighted ? 3 : undefined,
+        },
+        {
+          id: 'BC',
+          source: 'B',
+          target: 'C',
+          color: '#6B7280',
+          directed,
+          weight: weighted ? 2 : undefined,
+        },
+        {
+          id: 'BD',
+          source: 'B',
+          target: 'D',
+          color: '#6B7280',
+          directed,
+          weight: weighted ? 4 : undefined,
+        },
+        {
+          id: 'CE',
+          source: 'C',
+          target: 'E',
+          color: '#6B7280',
+          directed,
+          weight: weighted ? 6 : undefined,
+        },
+        {
+          id: 'DE',
+          source: 'D',
+          target: 'E',
+          color: '#6B7280',
+          directed,
+          weight: weighted ? 1 : undefined,
+        },
       ];
-      
+
       setNodes(sampleNodes);
       setEdges(sampleEdges);
     }, 100);
   };
 
   const getEdgePath = (edge: GraphEdge) => {
-    const sourceNode = nodes.find(n => n.id === edge.source);
-    const targetNode = nodes.find(n => n.id === edge.target);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
     if (!sourceNode || !targetNode) return '';
 
     const dx = targetNode.x - sourceNode.x;
     const dy = targetNode.y - sourceNode.y;
     const length = Math.sqrt(dx * dx + dy * dy);
-    
+
     // Offset to node radius
     const nodeRadius = 25;
     const offsetX = (dx / length) * nodeRadius;
     const offsetY = (dy / length) * nodeRadius;
-    
+
     const startX = sourceNode.x + offsetX;
     const startY = sourceNode.y + offsetY;
     const endX = targetNode.x - offsetX;
     const endY = targetNode.y - offsetY;
-    
+
     return `M ${startX} ${startY} L ${endX} ${endY}`;
   };
 
   const getEdgeMidpoint = (edge: GraphEdge) => {
-    const sourceNode = nodes.find(n => n.id === edge.source);
-    const targetNode = nodes.find(n => n.id === edge.target);
+    const sourceNode = nodes.find((n) => n.id === edge.source);
+    const targetNode = nodes.find((n) => n.id === edge.target);
     if (!sourceNode || !targetNode) return { x: 0, y: 0 };
 
     return {
       x: (sourceNode.x + targetNode.x) / 2,
-      y: (sourceNode.y + targetNode.y) / 2
+      y: (sourceNode.y + targetNode.y) / 2,
     };
   };
 
@@ -221,7 +282,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
             </p>
           </div>
         </div>
-        
+
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -249,7 +310,10 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       {/* Mode Selection */}
       <div className="flex flex-wrap gap-2 mb-4">
         <button
-          onClick={() => { setMode('select'); setEdgeStart(null); }}
+          onClick={() => {
+            setMode('select');
+            setEdgeStart(null);
+          }}
           className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
             mode === 'select'
               ? 'bg-blue-600 text-white'
@@ -259,9 +323,12 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           <MousePointer className="w-4 h-4" />
           <span>Select</span>
         </button>
-        
+
         <button
-          onClick={() => { setMode('add-node'); setEdgeStart(null); }}
+          onClick={() => {
+            setMode('add-node');
+            setEdgeStart(null);
+          }}
           className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
             mode === 'add-node'
               ? 'bg-green-600 text-white'
@@ -271,9 +338,12 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           <Plus className="w-4 h-4" />
           <span>Add Node</span>
         </button>
-        
+
         <button
-          onClick={() => { setMode('add-edge'); setEdgeStart(null); }}
+          onClick={() => {
+            setMode('add-edge');
+            setEdgeStart(null);
+          }}
           className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
             mode === 'add-edge'
               ? 'bg-purple-600 text-white'
@@ -308,8 +378,8 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       {mode === 'add-edge' && edgeStart && (
         <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
           <p className="text-sm text-purple-800 dark:text-purple-200">
-            Selected node: <strong>{nodes.find(n => n.id === edgeStart)?.label}</strong>. 
-            Click another node to create an edge.
+            Selected node: <strong>{nodes.find((n) => n.id === edgeStart)?.label}</strong>. Click
+            another node to create an edge.
           </p>
         </div>
       )}
@@ -335,7 +405,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
                 opacity="0.3"
               />
             </pattern>
-            
+
             {/* Arrow marker for directed graphs */}
             {directed && (
               <marker
@@ -346,29 +416,26 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
                 refY="3.5"
                 orient="auto"
               >
-                <polygon
-                  points="0 0, 10 3.5, 0 7"
-                  fill="#6B7280"
-                />
+                <polygon points="0 0, 10 3.5, 0 7" fill="#6B7280" />
               </marker>
             )}
           </defs>
           <rect width="100%" height="100%" fill="url(#graph-grid)" />
 
           {/* Edges */}
-          {edges.map(edge => {
+          {edges.map((edge) => {
             const midpoint = getEdgeMidpoint(edge);
             return (
               <g key={edge.id}>
                 <path
                   d={getEdgePath(edge)}
                   stroke={edge.highlighted ? '#EF4444' : edge.color}
-                  strokeWidth={edge.highlighted ? "3" : "2"}
+                  strokeWidth={edge.highlighted ? '3' : '2'}
                   fill="none"
-                  markerEnd={directed ? "url(#arrowhead)" : undefined}
+                  markerEnd={directed ? 'url(#arrowhead)' : undefined}
                   className="transition-all duration-300"
                 />
-                
+
                 {/* Weight label */}
                 {weighted && edge.weight && (
                   <g>
@@ -395,7 +462,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           })}
 
           {/* Nodes */}
-          {nodes.map(node => (
+          {nodes.map((node) => (
             <g key={node.id}>
               <circle
                 cx={node.x}
@@ -440,26 +507,28 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
             <div className="font-semibold text-gray-900 dark:text-white">Vertices</div>
             <div className="text-blue-600 dark:text-blue-400">{nodes.length}</div>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
             <div className="font-semibold text-gray-900 dark:text-white">Edges</div>
             <div className="text-blue-600 dark:text-blue-400">{edges.length}</div>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
             <div className="font-semibold text-gray-900 dark:text-white">Type</div>
             <div className="text-blue-600 dark:text-blue-400">
               {directed ? 'Directed' : 'Undirected'}
             </div>
           </div>
-          
+
           <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
             <div className="font-semibold text-gray-900 dark:text-white">Density</div>
             <div className="text-blue-600 dark:text-blue-400">
-              {nodes.length > 1 
-                ? ((edges.length / (nodes.length * (nodes.length - 1) / (directed ? 1 : 2))) * 100).toFixed(1) + '%'
-                : '0%'
-              }
+              {nodes.length > 1
+                ? (
+                    (edges.length / ((nodes.length * (nodes.length - 1)) / (directed ? 1 : 2))) *
+                    100
+                  ).toFixed(1) + '%'
+                : '0%'}
             </div>
           </div>
         </div>

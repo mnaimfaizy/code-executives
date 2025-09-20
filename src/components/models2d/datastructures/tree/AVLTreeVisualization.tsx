@@ -21,7 +21,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
   maxNodes = 15,
   showBalanceFactors = true,
   className = '',
-  onOperationComplete
+  onOperationComplete,
 }) => {
   const [nodes, setNodes] = useState<Map<string, AVLNode>>(new Map());
   const [rootId, setRootId] = useState<string | null>(null);
@@ -41,295 +41,317 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
   // Calculate height of a node
   const getHeight = useCallback((nodeId: string | null, nodeMap: Map<string, AVLNode>): number => {
     if (!nodeId || !nodeMap.has(nodeId)) return -1;
-    
+
     const node = nodeMap.get(nodeId)!;
     const leftHeight = getHeight(node.left || null, nodeMap);
     const rightHeight = getHeight(node.right || null, nodeMap);
-    
+
     return Math.max(leftHeight, rightHeight) + 1;
   }, []);
 
   // Calculate balance factor
-  const getBalanceFactor = useCallback((nodeId: string, nodeMap: Map<string, AVLNode>): number => {
-    const node = nodeMap.get(nodeId);
-    if (!node) return 0;
-    
-    const leftHeight = getHeight(node.left || null, nodeMap);
-    const rightHeight = getHeight(node.right || null, nodeMap);
-    
-    return leftHeight - rightHeight;
-  }, [getHeight]);
+  const getBalanceFactor = useCallback(
+    (nodeId: string, nodeMap: Map<string, AVLNode>): number => {
+      const node = nodeMap.get(nodeId);
+      if (!node) return 0;
+
+      const leftHeight = getHeight(node.left || null, nodeMap);
+      const rightHeight = getHeight(node.right || null, nodeMap);
+
+      return leftHeight - rightHeight;
+    },
+    [getHeight]
+  );
 
   // Update heights and balance factors for all nodes
-  const updateTreeMetrics = useCallback((nodeMap: Map<string, AVLNode>, rootNodeId: string | null) => {
-    if (!rootNodeId) return nodeMap;
-    
-    const updateNode = (nodeId: string): void => {
-      const node = nodeMap.get(nodeId);
-      if (!node) return;
-      
-      // Update children first
-      if (node.left) updateNode(node.left);
-      if (node.right) updateNode(node.right);
-      
-      // Update this node's metrics
-      node.height = getHeight(nodeId, nodeMap);
-      node.balanceFactor = getBalanceFactor(nodeId, nodeMap);
-    };
-    
-    updateNode(rootNodeId);
-    return nodeMap;
-  }, [getHeight, getBalanceFactor]);
+  const updateTreeMetrics = useCallback(
+    (nodeMap: Map<string, AVLNode>, rootNodeId: string | null) => {
+      if (!rootNodeId) return nodeMap;
+
+      const updateNode = (nodeId: string): void => {
+        const node = nodeMap.get(nodeId);
+        if (!node) return;
+
+        // Update children first
+        if (node.left) updateNode(node.left);
+        if (node.right) updateNode(node.right);
+
+        // Update this node's metrics
+        node.height = getHeight(nodeId, nodeMap);
+        node.balanceFactor = getBalanceFactor(nodeId, nodeMap);
+      };
+
+      updateNode(rootNodeId);
+      return nodeMap;
+    },
+    [getHeight, getBalanceFactor]
+  );
 
   // Right rotation
-  const rotateRight = useCallback((nodeMap: Map<string, AVLNode>, yId: string): [Map<string, AVLNode>, string] => {
-    const y = nodeMap.get(yId)!;
-    const xId = y.left!;
-    const x = nodeMap.get(xId)!;
-    
-    // Perform rotation
-    y.left = x.right;
-    x.right = yId;
-    
-    // Update parent references
-    if (y.left) {
-      const leftChild = nodeMap.get(y.left)!;
-      leftChild.parent = yId;
-    }
-    x.parent = y.parent;
-    y.parent = xId;
-    
-    // Update levels
-    y.level = x.level + 1;
-    const updateLevels = (nodeId: string, level: number) => {
-      const node = nodeMap.get(nodeId);
-      if (node) {
-        node.level = level;
-        if (node.left) updateLevels(node.left, level + 1);
-        if (node.right) updateLevels(node.right, level + 1);
+  const rotateRight = useCallback(
+    (nodeMap: Map<string, AVLNode>, yId: string): [Map<string, AVLNode>, string] => {
+      const y = nodeMap.get(yId)!;
+      const xId = y.left!;
+      const x = nodeMap.get(xId)!;
+
+      // Perform rotation
+      y.left = x.right;
+      x.right = yId;
+
+      // Update parent references
+      if (y.left) {
+        const leftChild = nodeMap.get(y.left)!;
+        leftChild.parent = yId;
       }
-    };
-    updateLevels(yId, x.level + 1);
-    
-    return [nodeMap, xId];
-  }, []);
+      x.parent = y.parent;
+      y.parent = xId;
+
+      // Update levels
+      y.level = x.level + 1;
+      const updateLevels = (nodeId: string, level: number) => {
+        const node = nodeMap.get(nodeId);
+        if (node) {
+          node.level = level;
+          if (node.left) updateLevels(node.left, level + 1);
+          if (node.right) updateLevels(node.right, level + 1);
+        }
+      };
+      updateLevels(yId, x.level + 1);
+
+      return [nodeMap, xId];
+    },
+    []
+  );
 
   // Left rotation
-  const rotateLeft = useCallback((nodeMap: Map<string, AVLNode>, xId: string): [Map<string, AVLNode>, string] => {
-    const x = nodeMap.get(xId)!;
-    const yId = x.right!;
-    const y = nodeMap.get(yId)!;
-    
-    // Perform rotation
-    x.right = y.left;
-    y.left = xId;
-    
-    // Update parent references
-    if (x.right) {
-      const rightChild = nodeMap.get(x.right)!;
-      rightChild.parent = xId;
-    }
-    y.parent = x.parent;
-    x.parent = yId;
-    
-    // Update levels
-    x.level = y.level + 1;
-    const updateLevels = (nodeId: string, level: number) => {
-      const node = nodeMap.get(nodeId);
-      if (node) {
-        node.level = level;
-        if (node.left) updateLevels(node.left, level + 1);
-        if (node.right) updateLevels(node.right, level + 1);
+  const rotateLeft = useCallback(
+    (nodeMap: Map<string, AVLNode>, xId: string): [Map<string, AVLNode>, string] => {
+      const x = nodeMap.get(xId)!;
+      const yId = x.right!;
+      const y = nodeMap.get(yId)!;
+
+      // Perform rotation
+      x.right = y.left;
+      y.left = xId;
+
+      // Update parent references
+      if (x.right) {
+        const rightChild = nodeMap.get(x.right)!;
+        rightChild.parent = xId;
       }
-    };
-    updateLevels(xId, y.level + 1);
-    
-    return [nodeMap, yId];
-  }, []);
+      y.parent = x.parent;
+      x.parent = yId;
+
+      // Update levels
+      x.level = y.level + 1;
+      const updateLevels = (nodeId: string, level: number) => {
+        const node = nodeMap.get(nodeId);
+        if (node) {
+          node.level = level;
+          if (node.left) updateLevels(node.left, level + 1);
+          if (node.right) updateLevels(node.right, level + 1);
+        }
+      };
+      updateLevels(xId, y.level + 1);
+
+      return [nodeMap, yId];
+    },
+    []
+  );
 
   // AVL insertion with rebalancing
-  const insertAVL = useCallback((nodeMap: Map<string, AVLNode>, rootNodeId: string | null, value: number): [Map<string, AVLNode>, string] => {
-    // Create new node
-    const newNodeId = `avl-${value}-${Date.now()}`;
-    const newNode: AVLNode = {
-      id: newNodeId,
-      value,
-      level: 0,
-      height: 0,
-      balanceFactor: 0,
-      isRoot: rootNodeId === null
-    };
+  const insertAVL = useCallback(
+    (
+      nodeMap: Map<string, AVLNode>,
+      rootNodeId: string | null,
+      value: number
+    ): [Map<string, AVLNode>, string] => {
+      // Create new node
+      const newNodeId = `avl-${value}-${Date.now()}`;
+      const newNode: AVLNode = {
+        id: newNodeId,
+        value,
+        level: 0,
+        height: 0,
+        balanceFactor: 0,
+        isRoot: rootNodeId === null,
+      };
 
-    if (rootNodeId === null) {
-      nodeMap.set(newNodeId, newNode);
-      return [nodeMap, newNodeId];
-    }
+      if (rootNodeId === null) {
+        nodeMap.set(newNodeId, newNode);
+        return [nodeMap, newNodeId];
+      }
 
-    // Standard BST insertion
-    let currentId: string | null = rootNodeId;
-    let parentId: string | null = null;
-    
-    while (currentId) {
-      const current: AVLNode = nodeMap.get(currentId)!;
-      parentId = currentId;
-      
-      if (value < (current.value as number)) {
-        currentId = current.left || null;
-      } else if (value > (current.value as number)) {
-        currentId = current.right || null;
+      // Standard BST insertion
+      let currentId: string | null = rootNodeId;
+      let parentId: string | null = null;
+
+      while (currentId) {
+        const current: AVLNode = nodeMap.get(currentId)!;
+        parentId = currentId;
+
+        if (value < (current.value as number)) {
+          currentId = current.left || null;
+        } else if (value > (current.value as number)) {
+          currentId = current.right || null;
+        } else {
+          // Value already exists
+          return [nodeMap, rootNodeId];
+        }
+      }
+
+      // Insert the new node
+      const parent = nodeMap.get(parentId!)!;
+      newNode.parent = parentId || undefined;
+      newNode.level = parent.level + 1;
+
+      if (value < (parent.value as number)) {
+        parent.left = newNodeId;
       } else {
-        // Value already exists
-        return [nodeMap, rootNodeId];
+        parent.right = newNodeId;
       }
-    }
 
-    // Insert the new node
-    const parent = nodeMap.get(parentId!)!;
-    newNode.parent = parentId || undefined;
-    newNode.level = parent.level + 1;
-    
-    if (value < (parent.value as number)) {
-      parent.left = newNodeId;
-    } else {
-      parent.right = newNodeId;
-    }
-    
-    nodeMap.set(newNodeId, newNode);
+      nodeMap.set(newNodeId, newNode);
 
-    // Update metrics and rebalance
-    updateTreeMetrics(nodeMap, rootNodeId);
+      // Update metrics and rebalance
+      updateTreeMetrics(nodeMap, rootNodeId);
 
-    // Rebalance the tree
-    let currentRoot = rootNodeId;
-    let current = parentId;
-    
-    while (current) {
-      const node = nodeMap.get(current)!;
-      const balance = node.balanceFactor;
-      
-      // Left heavy
-      if (balance > 1) {
-        const leftChild = nodeMap.get(node.left!)!;
-        
-        if (leftChild.balanceFactor >= 0) {
-          // Left-Left case
-          setRotationAnimation('right');
-          const [newMap, newRoot] = rotateRight(nodeMap, current);
-          nodeMap = newMap;
-          
-          if (current === currentRoot) {
-            currentRoot = newRoot;
-          } else if (node.parent) {
-            const grandParent = nodeMap.get(node.parent)!;
-            if (grandParent.left === current) {
-              grandParent.left = newRoot;
-            } else {
-              grandParent.right = newRoot;
+      // Rebalance the tree
+      let currentRoot = rootNodeId;
+      let current = parentId;
+
+      while (current) {
+        const node = nodeMap.get(current)!;
+        const balance = node.balanceFactor;
+
+        // Left heavy
+        if (balance > 1) {
+          const leftChild = nodeMap.get(node.left!)!;
+
+          if (leftChild.balanceFactor >= 0) {
+            // Left-Left case
+            setRotationAnimation('right');
+            const [newMap, newRoot] = rotateRight(nodeMap, current);
+            nodeMap = newMap;
+
+            if (current === currentRoot) {
+              currentRoot = newRoot;
+            } else if (node.parent) {
+              const grandParent = nodeMap.get(node.parent)!;
+              if (grandParent.left === current) {
+                grandParent.left = newRoot;
+              } else {
+                grandParent.right = newRoot;
+              }
             }
-          }
-        } else {
-          // Left-Right case
-          setRotationAnimation('left-right');
-          const [mapAfterLeft] = rotateLeft(nodeMap, node.left!);
-          const [newMap, newRoot] = rotateRight(mapAfterLeft, current);
-          nodeMap = newMap;
-          
-          if (current === currentRoot) {
-            currentRoot = newRoot;
-          } else if (node.parent) {
-            const grandParent = nodeMap.get(node.parent)!;
-            if (grandParent.left === current) {
-              grandParent.left = newRoot;
-            } else {
-              grandParent.right = newRoot;
+          } else {
+            // Left-Right case
+            setRotationAnimation('left-right');
+            const [mapAfterLeft] = rotateLeft(nodeMap, node.left!);
+            const [newMap, newRoot] = rotateRight(mapAfterLeft, current);
+            nodeMap = newMap;
+
+            if (current === currentRoot) {
+              currentRoot = newRoot;
+            } else if (node.parent) {
+              const grandParent = nodeMap.get(node.parent)!;
+              if (grandParent.left === current) {
+                grandParent.left = newRoot;
+              } else {
+                grandParent.right = newRoot;
+              }
             }
           }
         }
-      }
-      // Right heavy
-      else if (balance < -1) {
-        const rightChild = nodeMap.get(node.right!)!;
-        
-        if (rightChild.balanceFactor <= 0) {
-          // Right-Right case
-          setRotationAnimation('left');
-          const [newMap, newRoot] = rotateLeft(nodeMap, current);
-          nodeMap = newMap;
-          
-          if (current === currentRoot) {
-            currentRoot = newRoot;
-          } else if (node.parent) {
-            const grandParent = nodeMap.get(node.parent)!;
-            if (grandParent.left === current) {
-              grandParent.left = newRoot;
-            } else {
-              grandParent.right = newRoot;
+        // Right heavy
+        else if (balance < -1) {
+          const rightChild = nodeMap.get(node.right!)!;
+
+          if (rightChild.balanceFactor <= 0) {
+            // Right-Right case
+            setRotationAnimation('left');
+            const [newMap, newRoot] = rotateLeft(nodeMap, current);
+            nodeMap = newMap;
+
+            if (current === currentRoot) {
+              currentRoot = newRoot;
+            } else if (node.parent) {
+              const grandParent = nodeMap.get(node.parent)!;
+              if (grandParent.left === current) {
+                grandParent.left = newRoot;
+              } else {
+                grandParent.right = newRoot;
+              }
             }
-          }
-        } else {
-          // Right-Left case
-          setRotationAnimation('right-left');
-          const [mapAfterRight] = rotateRight(nodeMap, node.right!);
-          const [newMap, newRoot] = rotateLeft(mapAfterRight, current);
-          nodeMap = newMap;
-          
-          if (current === currentRoot) {
-            currentRoot = newRoot;
-          } else if (node.parent) {
-            const grandParent = nodeMap.get(node.parent)!;
-            if (grandParent.left === current) {
-              grandParent.left = newRoot;
-            } else {
-              grandParent.right = newRoot;
+          } else {
+            // Right-Left case
+            setRotationAnimation('right-left');
+            const [mapAfterRight] = rotateRight(nodeMap, node.right!);
+            const [newMap, newRoot] = rotateLeft(mapAfterRight, current);
+            nodeMap = newMap;
+
+            if (current === currentRoot) {
+              currentRoot = newRoot;
+            } else if (node.parent) {
+              const grandParent = nodeMap.get(node.parent)!;
+              if (grandParent.left === current) {
+                grandParent.left = newRoot;
+              } else {
+                grandParent.right = newRoot;
+              }
             }
           }
         }
-      }
-      
-      current = node.parent || null;
-    }
 
-    // Final metrics update
-    updateTreeMetrics(nodeMap, currentRoot);
-    
-    // Clear rotation animation after delay
-    setTimeout(() => setRotationAnimation(null), 1500);
-    
-    return [nodeMap, currentRoot];
-  }, [updateTreeMetrics, rotateRight, rotateLeft]);
+        current = node.parent || null;
+      }
+
+      // Final metrics update
+      updateTreeMetrics(nodeMap, currentRoot);
+
+      // Clear rotation animation after delay
+      setTimeout(() => setRotationAnimation(null), 1500);
+
+      return [nodeMap, currentRoot];
+    },
+    [updateTreeMetrics, rotateRight, rotateLeft]
+  );
 
   // Calculate positions for all nodes
-  const calculatePositions = useCallback((rootNodeId: string | null) => {
-    if (!rootNodeId || !nodes.has(rootNodeId)) return new Map();
+  const calculatePositions = useCallback(
+    (rootNodeId: string | null) => {
+      if (!rootNodeId || !nodes.has(rootNodeId)) return new Map();
 
-    const positions = new Map<string, TreePosition>();
-    
-    // In-order traversal for x-positioning
-    const inOrderTraversal: string[] = [];
-    const traverse = (nodeId: string) => {
-      const node = nodes.get(nodeId);
-      if (!node) return;
-      
-      if (node.left) traverse(node.left);
-      inOrderTraversal.push(nodeId);
-      if (node.right) traverse(node.right);
-    };
-    
-    traverse(rootNodeId);
-    
-    // Assign positions
-    const xSpacing = SVG_WIDTH / (inOrderTraversal.length + 1);
-    inOrderTraversal.forEach((nodeId, index) => {
-      const node = nodes.get(nodeId);
-      if (node) {
-        const x = (index + 1) * xSpacing;
-        const y = 60 + node.level * LEVEL_HEIGHT;
-        positions.set(nodeId, { x, y });
-      }
-    });
+      const positions = new Map<string, TreePosition>();
 
-    return positions;
-  }, [nodes, SVG_WIDTH, LEVEL_HEIGHT]);
+      // In-order traversal for x-positioning
+      const inOrderTraversal: string[] = [];
+      const traverse = (nodeId: string) => {
+        const node = nodes.get(nodeId);
+        if (!node) return;
+
+        if (node.left) traverse(node.left);
+        inOrderTraversal.push(nodeId);
+        if (node.right) traverse(node.right);
+      };
+
+      traverse(rootNodeId);
+
+      // Assign positions
+      const xSpacing = SVG_WIDTH / (inOrderTraversal.length + 1);
+      inOrderTraversal.forEach((nodeId, index) => {
+        const node = nodes.get(nodeId);
+        if (node) {
+          const x = (index + 1) * xSpacing;
+          const y = 60 + node.level * LEVEL_HEIGHT;
+          positions.set(nodeId, { x, y });
+        }
+      });
+
+      return positions;
+    },
+    [nodes, SVG_WIDTH, LEVEL_HEIGHT]
+  );
 
   // Update positions when nodes change
   useEffect(() => {
@@ -345,19 +367,19 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
     if (isNaN(numValue)) return;
 
     setIsOperating(true);
-    
+
     const [newNodes, newRootId] = insertAVL(new Map(nodes), rootId, numValue);
     setNodes(newNodes);
     setRootId(newRootId);
     setInputValue('');
-    
+
     setTimeout(() => setIsOperating(false), 2000);
 
     onOperationComplete?.({
       type: 'insert',
       target: numValue,
       description: `Inserted ${numValue} into AVL tree with automatic rebalancing`,
-      complexity: { time: 'O(log n)', space: 'O(log n)' }
+      complexity: { time: 'O(log n)', space: 'O(log n)' },
     });
   }, [inputValue, nodes, rootId, insertAVL, isOperating, onOperationComplete]);
 
@@ -412,7 +434,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
   // Render edges
   const renderEdges = () => {
     const edges: React.ReactElement[] = [];
-    
+
     nodes.forEach((node) => {
       const nodePos = nodePositions.get(node.id);
       if (!nodePos) return;
@@ -476,27 +498,27 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
             cy={position.y}
             r={NODE_RADIUS}
             fill={
-              isHighlighted 
-                ? '#3b82f6' 
-                : isImbalanced 
-                  ? '#ef4444' 
-                  : node.isRoot 
-                    ? '#10b981' 
+              isHighlighted
+                ? '#3b82f6'
+                : isImbalanced
+                  ? '#ef4444'
+                  : node.isRoot
+                    ? '#10b981'
                     : '#f3f4f6'
             }
             stroke={
-              isHighlighted 
-                ? '#1d4ed8' 
-                : isImbalanced 
-                  ? '#dc2626' 
-                  : node.isRoot 
-                    ? '#059669' 
+              isHighlighted
+                ? '#1d4ed8'
+                : isImbalanced
+                  ? '#dc2626'
+                  : node.isRoot
+                    ? '#059669'
                     : '#9ca3af'
             }
             strokeWidth={isHighlighted || isImbalanced ? 3 : 2}
             className="cursor-pointer hover:fill-blue-100 transition-colors"
           />
-          
+
           {/* Node value */}
           <text
             x={position.x}
@@ -506,7 +528,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
           >
             {node.value}
           </text>
-          
+
           {/* Balance factor */}
           {showBalanceFactors && (
             <text
@@ -520,7 +542,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
               {node.balanceFactor > 0 ? `+${node.balanceFactor}` : node.balanceFactor}
             </text>
           )}
-          
+
           {/* Height indicator */}
           <text
             x={position.x - NODE_RADIUS - 8}
@@ -537,7 +559,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
 
   // Check if tree is balanced
   const isTreeBalanced = () => {
-    return Array.from(nodes.values()).every(node => Math.abs(node.balanceFactor) <= 1);
+    return Array.from(nodes.values()).every((node) => Math.abs(node.balanceFactor) <= 1);
   };
 
   return (
@@ -596,7 +618,9 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
         <div className="flex items-center justify-between">
           <div className="text-sm">
             <span className="font-medium text-green-700 dark:text-green-300">AVL Property: </span>
-            <span className={`font-semibold ${isTreeBalanced() ? 'text-green-600' : 'text-red-600'}`}>
+            <span
+              className={`font-semibold ${isTreeBalanced() ? 'text-green-600' : 'text-red-600'}`}
+            >
               {isTreeBalanced() ? '✓ Balanced' : '✗ Imbalanced'}
             </span>
             {rotationAnimation && (
@@ -628,7 +652,9 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
             <div className="text-center text-gray-500">
               <div className="text-4xl mb-2">⚖️</div>
               <p className="text-sm">Add nodes to build your AVL Tree</p>
-              <p className="text-xs text-gray-400 mt-1">Watch automatic rebalancing maintain optimal height</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Watch automatic rebalancing maintain optimal height
+              </p>
             </div>
           </div>
         )}
@@ -660,14 +686,12 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
       {/* Tree Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {nodes.size}
-          </div>
+          <div className="text-lg font-semibold text-gray-900 dark:text-white">{nodes.size}</div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Total Nodes</div>
         </div>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
           <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {Math.max(...Array.from(nodes.values()).map(n => n.height), -1) + 1}
+            {Math.max(...Array.from(nodes.values()).map((n) => n.height), -1) + 1}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Actual Height</div>
         </div>

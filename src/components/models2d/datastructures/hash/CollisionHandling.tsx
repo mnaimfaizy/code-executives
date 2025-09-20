@@ -11,7 +11,7 @@ interface CollisionHandlingProps {
 const CollisionHandling: React.FC<CollisionHandlingProps> = ({
   strategy,
   onStrategyChange,
-  className = ''
+  className = '',
 }) => {
   const [selectedStrategy, setSelectedStrategy] = useState(strategy);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -22,7 +22,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
   const demoData = [
     { key: 'apple', value: '🍎' },
     { key: 'banana', value: '🍌' },
-    { key: 'cherry', value: '🍒' }
+    { key: 'cherry', value: '🍒' },
   ];
 
   // Simple hash function for demo (all keys hash to index 2)
@@ -39,7 +39,9 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
     setAnimationStep(0);
   }, [selectedStrategy]);
 
-  const handleStrategyChange = (newStrategy: 'chaining' | 'linear-probing' | 'quadratic-probing') => {
+  const handleStrategyChange = (
+    newStrategy: 'chaining' | 'linear-probing' | 'quadratic-probing'
+  ) => {
     setSelectedStrategy(newStrategy);
     onStrategyChange(newStrategy);
   };
@@ -67,7 +69,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
               key: item.key,
               value: item.value,
               bucket: hash,
-              highlighted: true
+              highlighted: true,
             };
           }
         } else {
@@ -90,7 +92,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
               key: item.key,
               value: item.value,
               bucket: slot,
-              highlighted: true
+              highlighted: true,
             };
           }
         }
@@ -106,10 +108,19 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
       case 'chaining':
         return {
           title: 'Separate Chaining',
-          description: 'Each bucket contains a linked list of elements that hash to the same index.',
-          pros: ['Simple to implement', 'Never fills up', 'Good performance with good hash function'],
-          cons: ['Extra memory for pointers', 'Poor cache performance', 'Can degrade to O(n) in worst case'],
-          complexity: 'Average: O(1), Worst: O(n)'
+          description:
+            'Each bucket contains a linked list of elements that hash to the same index.',
+          pros: [
+            'Simple to implement',
+            'Never fills up',
+            'Good performance with good hash function',
+          ],
+          cons: [
+            'Extra memory for pointers',
+            'Poor cache performance',
+            'Can degrade to O(n) in worst case',
+          ],
+          complexity: 'Average: O(1), Worst: O(n)',
         };
       case 'linear-probing':
         return {
@@ -117,15 +128,23 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
           description: 'If a collision occurs, search linearly for the next empty slot.',
           pros: ['Good cache performance', 'No extra memory overhead', 'Simple implementation'],
           cons: ['Primary clustering', 'Table can fill up', 'Deletion is complex'],
-          complexity: 'Average: O(1), Worst: O(n)'
+          complexity: 'Average: O(1), Worst: O(n)',
         };
       case 'quadratic-probing':
         return {
           title: 'Quadratic Probing',
           description: 'If a collision occurs, probe at quadratic intervals (1², 2², 3², ...).',
-          pros: ['Reduces primary clustering', 'Better than linear probing', 'Good cache performance'],
-          cons: ['Secondary clustering', 'May not find empty slot if table > 50% full', 'Complex deletion'],
-          complexity: 'Average: O(1), Worst: O(n)'
+          pros: [
+            'Reduces primary clustering',
+            'Better than linear probing',
+            'Good cache performance',
+          ],
+          cons: [
+            'Secondary clustering',
+            'May not find empty slot if table > 50% full',
+            'Complex deletion',
+          ],
+          complexity: 'Average: O(1), Worst: O(n)',
         };
     }
   };
@@ -139,27 +158,31 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
           Collision Resolution Strategies
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
             { key: 'chaining', label: 'Separate Chaining', color: 'blue' },
             { key: 'linear-probing', label: 'Linear Probing', color: 'green' },
-            { key: 'quadratic-probing', label: 'Quadratic Probing', color: 'purple' }
+            { key: 'quadratic-probing', label: 'Quadratic Probing', color: 'purple' },
           ].map(({ key, label, color }) => (
             <button
               key={key}
-              onClick={() => handleStrategyChange(key as 'chaining' | 'linear-probing' | 'quadratic-probing')}
+              onClick={() =>
+                handleStrategyChange(key as 'chaining' | 'linear-probing' | 'quadratic-probing')
+              }
               className={`p-4 rounded-lg border-2 transition-all ${
                 selectedStrategy === key
                   ? `border-${color}-500 bg-${color}-50 dark:bg-${color}-900/20`
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
               }`}
             >
-              <div className={`text-sm font-medium ${
-                selectedStrategy === key
-                  ? `text-${color}-700 dark:text-${color}-300`
-                  : 'text-gray-700 dark:text-gray-300'
-              }`}>
+              <div
+                className={`text-sm font-medium ${
+                  selectedStrategy === key
+                    ? `text-${color}-700 dark:text-${color}-300`
+                    : 'text-gray-700 dark:text-gray-300'
+                }`}
+              >
                 {label}
               </div>
             </button>
@@ -181,16 +204,16 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
               <ChevronRight className="w-5 h-5 text-gray-500" />
             )}
           </button>
-          
+
           {showExplanation && (
             <div className="mt-4 space-y-4">
-              <p className="text-gray-600 dark:text-gray-300">
-                {strategyInfo.description}
-              </p>
-              
+              <p className="text-gray-600 dark:text-gray-300">{strategyInfo.description}</p>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h5 className="font-medium text-green-700 dark:text-green-300 mb-2">Advantages</h5>
+                  <h5 className="font-medium text-green-700 dark:text-green-300 mb-2">
+                    Advantages
+                  </h5>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                     {strategyInfo.pros.map((pro, index) => (
                       <li key={index} className="flex items-start">
@@ -200,7 +223,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                     ))}
                   </ul>
                 </div>
-                
+
                 <div>
                   <h5 className="font-medium text-red-700 dark:text-red-300 mb-2">Disadvantages</h5>
                   <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
@@ -213,9 +236,11 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                   </ul>
                 </div>
               </div>
-              
+
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <h5 className="font-medium text-blue-700 dark:text-blue-300 mb-1">Time Complexity</h5>
+                <h5 className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                  Time Complexity
+                </h5>
                 <p className="text-sm text-gray-600 dark:text-gray-300 font-mono">
                   {strategyInfo.complexity}
                 </p>
@@ -269,7 +294,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                   strokeWidth={1}
                   rx={4}
                 />
-                
+
                 {/* Entry display */}
                 {demoTable[i] && (
                   <g>

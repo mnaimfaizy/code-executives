@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Layers, 
-  Zap, 
-  Eye,
-  RotateCcw,
-  Maximize2,
-  Activity,
-  Cpu
-} from 'lucide-react';
+import { Box, Layers, Zap, Eye, RotateCcw, Maximize2, Activity, Cpu } from 'lucide-react';
 import TreeVisualization3D from '../../components/models3d/TreeVisualization3D';
 
 const Visualizations3D: React.FC = () => {
@@ -18,10 +9,16 @@ const Visualizations3D: React.FC = () => {
     {
       id: 'tree' as const,
       title: '3D Binary Tree',
-      description: 'Interactive 3D representation of binary tree structures with traversal animations',
+      description:
+        'Interactive 3D representation of binary tree structures with traversal animations',
       icon: <Layers className="w-5 h-5" />,
       color: '#3B82F6',
-      features: ['Interactive rotation', 'Zoom controls', 'Traversal animation', 'Node highlighting']
+      features: [
+        'Interactive rotation',
+        'Zoom controls',
+        'Traversal animation',
+        'Node highlighting',
+      ],
     },
     {
       id: 'heap' as const,
@@ -29,7 +26,12 @@ const Visualizations3D: React.FC = () => {
       description: 'Visualization of memory allocation and garbage collection in 3D space',
       icon: <Activity className="w-5 h-5" />,
       color: '#10B981',
-      features: ['Memory blocks', 'Allocation patterns', 'GC visualization', 'Memory fragmentation']
+      features: [
+        'Memory blocks',
+        'Allocation patterns',
+        'GC visualization',
+        'Memory fragmentation',
+      ],
     },
     {
       id: 'graph' as const,
@@ -37,11 +39,11 @@ const Visualizations3D: React.FC = () => {
       description: 'Complex network visualizations with force-directed layouts in 3D',
       icon: <Cpu className="w-5 h-5" />,
       color: '#F59E0B',
-      features: ['Force simulation', 'Node clustering', 'Edge bundling', 'Network metrics']
-    }
+      features: ['Force simulation', 'Node clustering', 'Edge bundling', 'Network metrics'],
+    },
   ];
 
-  const selectedViz = visualizations.find(v => v.id === activeVisualization)!;
+  const selectedViz = visualizations.find((v) => v.id === activeVisualization)!;
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -54,7 +56,7 @@ const Visualizations3D: React.FC = () => {
           </h1>
         </div>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Experience data structures in three dimensions. Interactive 3D models bring complex 
+          Experience data structures in three dimensions. Interactive 3D models bring complex
           algorithms and memory patterns to life with immersive visualizations.
         </p>
       </div>
@@ -73,26 +75,20 @@ const Visualizations3D: React.FC = () => {
               }`}
             >
               <div className="flex items-center space-x-3 mb-3">
-                <div 
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: `${viz.color}20` }}
-                >
-                  <div style={{ color: viz.color }}>
-                    {viz.icon}
-                  </div>
+                <div className="p-2 rounded-lg" style={{ backgroundColor: `${viz.color}20` }}>
+                  <div style={{ color: viz.color }}>{viz.icon}</div>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {viz.title}
-                </h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">{viz.title}</h3>
               </div>
-              
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {viz.description}
-              </p>
-              
+
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{viz.description}</p>
+
               <div className="space-y-1">
                 {viz.features.map((feature, index) => (
-                  <div key={index} className="text-xs text-gray-500 dark:text-gray-500 flex items-center">
+                  <div
+                    key={index}
+                    className="text-xs text-gray-500 dark:text-gray-500 flex items-center"
+                  >
                     <div className="w-1 h-1 rounded-full bg-gray-400 mr-2"></div>
                     {feature}
                   </div>
@@ -107,36 +103,25 @@ const Visualizations3D: React.FC = () => {
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div 
-              className="p-2 rounded-lg"
-              style={{ backgroundColor: `${selectedViz.color}20` }}
-            >
-              <div style={{ color: selectedViz.color }}>
-                {selectedViz.icon}
-              </div>
+            <div className="p-2 rounded-lg" style={{ backgroundColor: `${selectedViz.color}20` }}>
+              <div style={{ color: selectedViz.color }}>{selectedViz.icon}</div>
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 {selectedViz.title}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                {selectedViz.description}
-              </p>
+              <p className="text-gray-600 dark:text-gray-400">{selectedViz.description}</p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <Maximize2 className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-500 dark:text-gray-500">
-              Fullscreen available
-            </span>
+            <span className="text-sm text-gray-500 dark:text-gray-500">Fullscreen available</span>
           </div>
         </div>
 
         {/* 3D Visualization Container */}
-        {activeVisualization === 'tree' && (
-          <TreeVisualization3D isActive={true} className="mb-6" />
-        )}
+        {activeVisualization === 'tree' && <TreeVisualization3D isActive={true} className="mb-6" />}
 
         {activeVisualization === 'heap' && (
           <div className="h-96 bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border-2 border-dashed border-green-300 dark:border-green-700 flex items-center justify-center">

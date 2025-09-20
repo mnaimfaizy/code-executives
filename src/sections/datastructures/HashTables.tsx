@@ -10,7 +10,9 @@ interface HashTablesProps {
 const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
   const [activeDemo, setActiveDemo] = useState<'basic' | 'collision'>('basic');
   const [hashFunction, setHashFunction] = useState<'simple' | 'djb2' | 'fnv1a'>('simple');
-  const [collisionStrategy, setCollisionStrategy] = useState<'chaining' | 'linear-probing' | 'quadratic-probing'>('chaining');
+  const [collisionStrategy, setCollisionStrategy] = useState<
+    'chaining' | 'linear-probing' | 'quadratic-probing'
+  >('chaining');
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
@@ -60,7 +62,9 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         {/* Hash Function & Strategy Controls */}
         {activeDemo === 'basic' && (
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Configuration</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Configuration
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -82,7 +86,11 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 </label>
                 <select
                   value={collisionStrategy}
-                  onChange={(e) => setCollisionStrategy(e.target.value as 'chaining' | 'linear-probing' | 'quadratic-probing')}
+                  onChange={(e) =>
+                    setCollisionStrategy(
+                      e.target.value as 'chaining' | 'linear-probing' | 'quadratic-probing'
+                    )
+                  }
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="chaining">Separate Chaining</option>
@@ -115,43 +123,53 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Hash Functions */}
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Hash Functions</h3>
-            
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Hash Functions
+            </h3>
+
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Deterministic</h4>
+                  <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
+                    Deterministic
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Same input always produces the same hash value.
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">Uniform Distribution</h4>
+                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
+                    Uniform Distribution
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Distributes keys evenly across the hash table.
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">Fast Computation</h4>
+                  <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">
+                    Fast Computation
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Quick to calculate to maintain O(1) performance.
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-orange-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2">Avalanche Effect</h4>
+                  <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2">
+                    Avalanche Effect
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     Small input changes create large hash changes.
                   </p>
@@ -162,32 +180,42 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
           {/* Performance & Load Factor */}
           <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Performance Factors</h3>
-            
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Performance Factors
+            </h3>
+
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <span className="font-medium text-gray-900 dark:text-white">Insert</span>
-                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">O(1) avg</span>
+                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">
+                  O(1) avg
+                </span>
               </div>
-              
+
               <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <span className="font-medium text-gray-900 dark:text-white">Delete</span>
-                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">O(1) avg</span>
+                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">
+                  O(1) avg
+                </span>
               </div>
-              
+
               <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
                 <span className="font-medium text-gray-900 dark:text-white">Search</span>
-                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">O(1) avg</span>
+                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">
+                  O(1) avg
+                </span>
               </div>
-              
+
               <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
                 <span className="font-medium text-gray-900 dark:text-white">Worst Case</span>
                 <span className="text-red-600 dark:text-red-400 font-mono font-semibold">O(n)</span>
               </div>
             </div>
-            
+
             <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Load Factor Impact</h4>
+              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
+                Load Factor Impact
+              </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                 Load Factor = n / m (entries / buckets)
               </p>
@@ -202,11 +230,15 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* Hash Function Types */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">Popular Hash Functions</h3>
-          
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+            Popular Hash Functions
+          </h3>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg p-6">
-              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-3">Simple Hash</h4>
+              <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-3">
+                Simple Hash
+              </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                 Sum of ASCII values modulo table size. Easy to understand but poor distribution.
               </p>
@@ -214,7 +246,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 hash = (sum of chars) % size
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6">
               <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">DJB2 Hash</h4>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
@@ -224,7 +256,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 hash = hash * 33 + char
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6">
               <h4 className="font-semibold text-green-700 dark:text-green-300 mb-3">FNV-1a Hash</h4>
               <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
@@ -239,19 +271,23 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* Real-World Applications */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Real-World Applications</h3>
-          
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Real-World Applications
+          </h3>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Search className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Database Indexing</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
+                Database Indexing
+              </h4>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 Fast record lookup and query optimization
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Zap className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -261,7 +297,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 Redis, Memcached for fast data retrieval
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
@@ -271,7 +307,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 Web application session management
               </p>
             </div>
-            
+
             <div className="text-center">
               <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <Hash className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -286,32 +322,56 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* Implementation Examples */}
         <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Language Implementations</h3>
-          
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+            Language Implementations
+          </h3>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
-              <h4 className="font-semibold text-yellow-700 dark:text-yellow-300 mb-3">JavaScript</h4>
+              <h4 className="font-semibold text-yellow-700 dark:text-yellow-300 mb-3">
+                JavaScript
+              </h4>
               <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Map</code> and <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Set</code> objects</li>
+                <li>
+                  • <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Map</code>{' '}
+                  and <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Set</code>{' '}
+                  objects
+                </li>
                 <li>• Object property lookup</li>
                 <li>• V8 hidden classes</li>
               </ul>
             </div>
-            
+
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
               <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-3">Python</h4>
               <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">dict</code> built-in type</li>
-                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">set</code> collections</li>
+                <li>
+                  • <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">dict</code>{' '}
+                  built-in type
+                </li>
+                <li>
+                  • <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">set</code>{' '}
+                  collections
+                </li>
                 <li>• Module namespace lookup</li>
               </ul>
             </div>
-            
+
             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
               <h4 className="font-semibold text-red-700 dark:text-red-300 mb-3">Java</h4>
               <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashMap</code> and <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashSet</code></li>
-                <li>• <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">ConcurrentHashMap</code></li>
+                <li>
+                  •{' '}
+                  <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashMap</code>{' '}
+                  and{' '}
+                  <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashSet</code>
+                </li>
+                <li>
+                  •{' '}
+                  <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">
+                    ConcurrentHashMap
+                  </code>
+                </li>
                 <li>• String interning</li>
               </ul>
             </div>
@@ -320,11 +380,15 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* When to Use Hash Tables */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-8 mb-12">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">When to Use Hash Tables</h3>
-          
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+            When to Use Hash Tables
+          </h3>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-semibold text-green-700 dark:text-green-300 mb-4">✅ Great For</h4>
+              <h4 className="font-semibold text-green-700 dark:text-green-300 mb-4">
+                ✅ Great For
+              </h4>
               <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2 mt-1">•</span>
@@ -348,9 +412,11 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 </li>
               </ul>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold text-red-700 dark:text-red-300 mb-4">❌ Consider Alternatives</h4>
+              <h4 className="font-semibold text-red-700 dark:text-red-300 mb-4">
+                ❌ Consider Alternatives
+              </h4>
               <ul className="space-y-2 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
                   <span className="text-red-500 mr-2 mt-1">•</span>
@@ -386,7 +452,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
             <ArrowRight className="w-4 h-4 rotate-180" />
             <span>Queues</span>
           </button>
-          
+
           <button
             onClick={() => onNavigate('tree-structures')}
             className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl"

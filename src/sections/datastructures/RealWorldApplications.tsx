@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { 
-  Globe, 
-  Smartphone, 
-  Database, 
-  Brain, 
-  Gamepad2, 
-  ShoppingCart, 
-  MapPin, 
-  Users, 
+import {
+  Globe,
+  Smartphone,
+  Database,
+  Brain,
+  Gamepad2,
+  ShoppingCart,
+  MapPin,
+  Users,
   Code,
   ArrowRight,
   CheckCircle,
   TrendingUp,
-  Zap
+  Zap,
 } from 'lucide-react';
 
 interface UseCase {
@@ -43,7 +43,7 @@ const RealWorldApplications: React.FC = () => {
     dataSize: 'medium',
     operations: ['search'],
     performance: 'balanced',
-    memory: 'medium'
+    memory: 'medium',
   });
 
   // Real-world use cases
@@ -57,9 +57,13 @@ const RealWorldApplications: React.FC = () => {
       reasoning: 'Graphs model user relationships, hash tables provide fast user lookups',
       example: 'Facebook friend recommendations, Twitter follower network',
       complexity: 'O(1) user lookup, O(V + E) for network traversal',
-      benefits: ['Fast user searches', 'Efficient friend discovery', 'Scalable relationship mapping'],
+      benefits: [
+        'Fast user searches',
+        'Efficient friend discovery',
+        'Scalable relationship mapping',
+      ],
       icon: <Users className="w-6 h-6" />,
-      color: '#3B82F6'
+      color: '#3B82F6',
     },
     {
       id: 'gps-navigation',
@@ -67,12 +71,12 @@ const RealWorldApplications: React.FC = () => {
       description: 'Finding optimal routes between locations',
       industry: 'Transportation',
       dataStructure: 'Weighted Graph + Priority Queue',
-      reasoning: 'Roads as edges with distances/time, Dijkstra\'s for shortest paths',
+      reasoning: "Roads as edges with distances/time, Dijkstra's for shortest paths",
       example: 'Google Maps, Waze route calculation',
       complexity: 'O((V + E) log V) for shortest path calculation',
       benefits: ['Optimal route finding', 'Real-time traffic adaptation', 'Multiple route options'],
       icon: <MapPin className="w-6 h-6" />,
-      color: '#10B981'
+      color: '#10B981',
     },
     {
       id: 'search-engine',
@@ -85,7 +89,7 @@ const RealWorldApplications: React.FC = () => {
       complexity: 'O(m) for prefix search, O(k) for document lookup',
       benefits: ['Fast autocomplete', 'Relevant result ranking', 'Typo tolerance'],
       icon: <Globe className="w-6 h-6" />,
-      color: '#8B5CF6'
+      color: '#8B5CF6',
     },
     {
       id: 'ecommerce',
@@ -98,7 +102,7 @@ const RealWorldApplications: React.FC = () => {
       complexity: 'O(log n) product search, O(1) cart operations',
       benefits: ['Fast product search', 'Efficient inventory', 'Dynamic pricing'],
       icon: <ShoppingCart className="w-6 h-6" />,
-      color: '#F59E0B'
+      color: '#F59E0B',
     },
     {
       id: 'gaming',
@@ -111,7 +115,7 @@ const RealWorldApplications: React.FC = () => {
       complexity: 'O(log n) collision detection, O(b^d) pathfinding',
       benefits: ['Real-time performance', 'Smooth gameplay', 'Intelligent AI'],
       icon: <Gamepad2 className="w-6 h-6" />,
-      color: '#EF4444'
+      color: '#EF4444',
     },
     {
       id: 'database',
@@ -124,7 +128,7 @@ const RealWorldApplications: React.FC = () => {
       complexity: 'O(log n) for range queries, O(1) for key lookups',
       benefits: ['Fast query execution', 'Efficient storage', 'ACID compliance'],
       icon: <Database className="w-6 h-6" />,
-      color: '#06B6D4'
+      color: '#06B6D4',
     },
     {
       id: 'ai-ml',
@@ -137,7 +141,7 @@ const RealWorldApplications: React.FC = () => {
       complexity: 'O(log n) for tree traversal, O(log n) for priority operations',
       benefits: ['Model interpretability', 'Feature importance', 'Efficient training'],
       icon: <Brain className="w-6 h-6" />,
-      color: '#84CC16'
+      color: '#84CC16',
     },
     {
       id: 'mobile-app',
@@ -150,44 +154,44 @@ const RealWorldApplications: React.FC = () => {
       complexity: 'O(1) cache operations, O(m) for text operations',
       benefits: ['Memory efficiency', 'Fast app performance', 'Offline capability'],
       icon: <Smartphone className="w-6 h-6" />,
-      color: '#EC4899'
-    }
+      color: '#EC4899',
+    },
   ];
 
   // Data structure recommendation engine
   const getRecommendation = (input: RecommendationInput): string => {
     const { dataSize, operations, performance, memory } = input;
-    
+
     // Simple recommendation logic
     if (operations.includes('search') && performance === 'fast-read') {
       if (dataSize === 'large') return 'Hash Table or B+ Tree';
       return 'Hash Table';
     }
-    
+
     if (operations.includes('range-query')) {
       return 'B+ Tree or Binary Search Tree';
     }
-    
+
     if (operations.includes('priority')) {
       return 'Binary Heap or Priority Queue';
     }
-    
+
     if (operations.includes('relationships')) {
       return 'Graph (Adjacency List)';
     }
-    
+
     if (operations.includes('sequence') && performance === 'fast-write') {
       return 'Linked List or Dynamic Array';
     }
-    
+
     if (memory === 'low' && dataSize === 'small') {
       return 'Array';
     }
-    
+
     return 'Hash Table (balanced performance)';
   };
 
-  const selectedCase = useCases.find(uc => uc.id === selectedUseCase) || useCases[0];
+  const selectedCase = useCases.find((uc) => uc.id === selectedUseCase) || useCases[0];
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-12">
@@ -200,8 +204,8 @@ const RealWorldApplications: React.FC = () => {
           </h1>
         </div>
         <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-          Discover how data structures power the applications you use every day.
-          From social media to GPS navigation, see the practical impact of choosing the right structure.
+          Discover how data structures power the applications you use every day. From social media
+          to GPS navigation, see the practical impact of choosing the right structure.
         </p>
       </div>
 
@@ -257,21 +261,14 @@ const RealWorldApplications: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center space-x-3 mb-2">
-                  <div 
-                    className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${useCase.color}20` }}
-                  >
-                    <div style={{ color: useCase.color }}>
-                      {useCase.icon}
-                    </div>
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: `${useCase.color}20` }}>
+                    <div style={{ color: useCase.color }}>{useCase.icon}</div>
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
                       {useCase.title}
                     </h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {useCase.industry}
-                    </p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{useCase.industry}</p>
                   </div>
                 </div>
               </button>
@@ -284,21 +281,17 @@ const RealWorldApplications: React.FC = () => {
               {/* Left Column */}
               <div className="space-y-6">
                 <div className="flex items-center space-x-4">
-                  <div 
+                  <div
                     className="p-3 rounded-lg"
                     style={{ backgroundColor: `${selectedCase.color}20` }}
                   >
-                    <div style={{ color: selectedCase.color }}>
-                      {selectedCase.icon}
-                    </div>
+                    <div style={{ color: selectedCase.color }}>{selectedCase.icon}</div>
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                       {selectedCase.title}
                     </h2>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {selectedCase.industry}
-                    </p>
+                    <p className="text-gray-600 dark:text-gray-400">{selectedCase.industry}</p>
                   </div>
                 </div>
 
@@ -306,9 +299,7 @@ const RealWorldApplications: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Description
                   </h3>
-                  <p className="text-gray-700 dark:text-gray-300">
-                    {selectedCase.description}
-                  </p>
+                  <p className="text-gray-700 dark:text-gray-300">{selectedCase.description}</p>
                 </div>
 
                 <div>
@@ -329,9 +320,7 @@ const RealWorldApplications: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                     Real Examples
                   </h3>
-                  <p className="text-gray-700 dark:text-gray-300 italic">
-                    {selectedCase.example}
-                  </p>
+                  <p className="text-gray-700 dark:text-gray-300 italic">{selectedCase.example}</p>
                 </div>
               </div>
 
@@ -368,9 +357,9 @@ const RealWorldApplications: React.FC = () => {
                     Industry Impact
                   </h4>
                   <p className="text-sm text-gray-700 dark:text-gray-300">
-                    This application pattern processes millions of operations daily,
-                    demonstrating the critical importance of efficient data structure selection
-                    in production systems.
+                    This application pattern processes millions of operations daily, demonstrating
+                    the critical importance of efficient data structure selection in production
+                    systems.
                   </p>
                 </div>
               </div>
@@ -387,7 +376,7 @@ const RealWorldApplications: React.FC = () => {
               <Zap className="w-6 h-6 mr-2 text-yellow-600" />
               Performance Benchmarks
             </h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Small Dataset */}
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
@@ -488,7 +477,7 @@ const RealWorldApplications: React.FC = () => {
               <Brain className="w-6 h-6 mr-2 text-purple-600" />
               Data Structure Recommendation Engine
             </h2>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Input Form */}
               <div className="space-y-6">
@@ -498,10 +487,12 @@ const RealWorldApplications: React.FC = () => {
                   </label>
                   <select
                     value={recommendation.dataSize}
-                    onChange={(e) => setRecommendation(prev => ({ 
-                      ...prev, 
-                      dataSize: e.target.value as 'small' | 'medium' | 'large' 
-                    }))}
+                    onChange={(e) =>
+                      setRecommendation((prev) => ({
+                        ...prev,
+                        dataSize: e.target.value as 'small' | 'medium' | 'large',
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                              focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -522,7 +513,7 @@ const RealWorldApplications: React.FC = () => {
                       { id: 'sequence', label: 'Sequential Access' },
                       { id: 'range-query', label: 'Range Queries' },
                       { id: 'priority', label: 'Priority Operations' },
-                      { id: 'relationships', label: 'Relationship Modeling' }
+                      { id: 'relationships', label: 'Relationship Modeling' },
                     ].map((op) => (
                       <label key={op.id} className="flex items-center">
                         <input
@@ -531,8 +522,8 @@ const RealWorldApplications: React.FC = () => {
                           onChange={(e) => {
                             const ops = e.target.checked
                               ? [...recommendation.operations, op.id]
-                              : recommendation.operations.filter(o => o !== op.id);
-                            setRecommendation(prev => ({ ...prev, operations: ops }));
+                              : recommendation.operations.filter((o) => o !== op.id);
+                            setRecommendation((prev) => ({ ...prev, operations: ops }));
                           }}
                           className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                         />
@@ -550,10 +541,12 @@ const RealWorldApplications: React.FC = () => {
                   </label>
                   <select
                     value={recommendation.performance}
-                    onChange={(e) => setRecommendation(prev => ({ 
-                      ...prev, 
-                      performance: e.target.value as 'fast-read' | 'fast-write' | 'balanced' 
-                    }))}
+                    onChange={(e) =>
+                      setRecommendation((prev) => ({
+                        ...prev,
+                        performance: e.target.value as 'fast-read' | 'fast-write' | 'balanced',
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                              focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -570,10 +563,12 @@ const RealWorldApplications: React.FC = () => {
                   </label>
                   <select
                     value={recommendation.memory}
-                    onChange={(e) => setRecommendation(prev => ({ 
-                      ...prev, 
-                      memory: e.target.value as 'low' | 'medium' | 'high' 
-                    }))}
+                    onChange={(e) =>
+                      setRecommendation((prev) => ({
+                        ...prev,
+                        memory: e.target.value as 'low' | 'medium' | 'high',
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
                              bg-white dark:bg-gray-700 text-gray-900 dark:text-white
                              focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -592,7 +587,7 @@ const RealWorldApplications: React.FC = () => {
                     <ArrowRight className="w-5 h-5 mr-2" />
                     Recommended Data Structure
                   </h3>
-                  
+
                   <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
                     <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
                       {getRecommendation(recommendation)}
@@ -605,7 +600,9 @@ const RealWorldApplications: React.FC = () => {
                     </div>
                     <ul className="space-y-1 ml-4">
                       <li>• Data size: {recommendation.dataSize}</li>
-                      <li>• Operations: {recommendation.operations.join(', ') || 'none selected'}</li>
+                      <li>
+                        • Operations: {recommendation.operations.join(', ') || 'none selected'}
+                      </li>
                       <li>• Performance: {recommendation.performance.replace('-', ' ')}</li>
                       <li>• Memory: {recommendation.memory} constraints</li>
                     </ul>
