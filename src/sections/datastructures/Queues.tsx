@@ -21,9 +21,7 @@ const Queues: React.FC = () => {
           <ArrowRight className="w-16 h-16 text-indigo-600" />
         </div>
       </div>
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">
-        Queues: FIFO Data Structures
-      </h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">Queues: FIFO Data Structures</h1>
       <p className="text-xl text-gray-700 mb-6 leading-relaxed">
         Queues are fundamental data structures that follow the First In, First Out (FIFO) principle,
         enabling efficient enqueue and dequeue operations for managing ordered data processing.
@@ -53,7 +51,8 @@ const Queues: React.FC = () => {
         <div className="mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Interactive Queue Demo</h3>
           <p className="text-gray-600 mb-6">
-            Watch how elements are enqueued at the rear and dequeued from the front following the FIFO principle.
+            Watch how elements are enqueued at the rear and dequeued from the front following the
+            FIFO principle.
           </p>
           <QueueVisualization isActive={true} className="w-full" />
         </div>
@@ -153,18 +152,14 @@ const Queues: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-lg p-4">
             <h4 className="font-semibold text-orange-700 mb-2">Enqueue</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              Add an element to the rear of the queue.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Add an element to the rear of the queue.</p>
             <div className="text-xs text-orange-600 font-mono bg-gray-50 p-2 rounded">
               queue.enqueue(element)
             </div>
           </div>
           <div className="bg-white rounded-lg p-4">
             <h4 className="font-semibold text-blue-700 mb-2">Dequeue</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              Remove and return the front element.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Remove and return the front element.</p>
             <div className="text-xs text-blue-600 font-mono bg-gray-50 p-2 rounded">
               element = queue.dequeue()
             </div>
@@ -180,9 +175,7 @@ const Queues: React.FC = () => {
           </div>
           <div className="bg-white rounded-lg p-4">
             <h4 className="font-semibold text-purple-700 mb-2">Is Empty</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              Check if the queue contains any elements.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Check if the queue contains any elements.</p>
             <div className="text-xs text-purple-600 font-mono bg-gray-50 p-2 rounded">
               bool = queue.isEmpty()
             </div>
@@ -199,36 +192,28 @@ const Queues: React.FC = () => {
               <Database className="w-5 h-5 text-orange-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Task Scheduling</h4>
-            <p className="text-sm text-gray-600">
-              Fair scheduling of jobs or processes
-            </p>
+            <p className="text-sm text-gray-600">Fair scheduling of jobs or processes</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <Zap className="w-5 h-5 text-blue-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Buffering</h4>
-            <p className="text-sm text-gray-600">
-              Managing data flow between components
-            </p>
+            <p className="text-sm text-gray-600">Managing data flow between components</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <Code className="w-5 h-5 text-green-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">BFS Algorithms</h4>
-            <p className="text-sm text-gray-600">
-              Breadth-first search implementations
-            </p>
+            <p className="text-sm text-gray-600">Breadth-first search implementations</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <ArrowRight className="w-5 h-5 text-purple-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Request Handling</h4>
-            <p className="text-sm text-gray-600">
-              Processing requests in order received
-            </p>
+            <p className="text-sm text-gray-600">Processing requests in order received</p>
           </div>
         </div>
       </ThemeCard>

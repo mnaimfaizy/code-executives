@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { ArrowRight, Hash, Zap, Users, Search } from 'lucide-react';
+import { Hash, Search, Zap, Users } from 'lucide-react';
 import HashTableVisualization from '../../components/models2d/datastructures/hash/HashTableVisualization';
 import CollisionHandling from '../../components/models2d/datastructures/hash/CollisionHandling';
 import { getSectionTheme } from '../../utils/theme';
+import SectionLayout from '../../components/shared/SectionLayout';
+import ThemeCard from '../../components/shared/ThemeCard';
+import NavigationCard from '../../components/shared/NavigationCard';
+import CTASection from '../../components/shared/CTASection';
 
-interface HashTablesProps {
-  onNavigate: (section: string) => void;
-}
-
-const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
+const HashTables: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<'basic' | 'collision'>('basic');
   const [hashFunction, setHashFunction] = useState<'simple' | 'djb2' | 'fnv1a'>('simple');
   const [collisionStrategy, setCollisionStrategy] = useState<
@@ -16,31 +16,30 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
   >('chaining');
   const theme = getSectionTheme('datastructures');
 
-  return (
-    <section
-      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-white to-${theme.secondary}-50`}
-    >
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div
-            className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-${theme.primary}-600 to-${theme.secondary}-600 rounded-2xl mb-6 shadow-lg`}
-          >
-            <Hash className="w-10 h-10 text-white" />
-          </div>
-          <h1
-            className={`text-5xl font-bold bg-gradient-to-r from-${theme.primary}-600 via-${theme.secondary}-600 to-${theme.accent}-600 bg-clip-text text-transparent mb-6`}
-          >
-            Hash Tables
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Hash tables provide average O(1) time complexity for insertions, deletions, and lookups
-            by using hash functions to map keys directly to array indices.
-          </p>
+  // Hero content
+  const heroContent = (
+    <div className="max-w-4xl mx-auto">
+      <div className="text-center mb-8">
+        <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-${theme.primary}-600 to-${theme.secondary}-600 rounded-2xl mb-6 shadow-lg`}>
+          <Hash className="w-10 h-10 text-white" />
         </div>
+        <h1 className={`text-5xl font-bold bg-gradient-to-r from-${theme.primary}-600 via-${theme.secondary}-600 to-${theme.accent}-600 bg-clip-text text-transparent mb-6`}>
+          Hash Tables
+        </h1>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Hash tables provide average O(1) time complexity for insertions, deletions, and lookups
+          by using hash functions to map keys directly to array indices.
+        </p>
+      </div>
+    </div>
+  );
 
-        {/* Demo Selection */}
-        <div className="flex justify-center mb-12">
+  // Main content
+  const mainContent = (
+    <>
+      {/* Demo Selection */}
+      <ThemeCard>
+        <div className="flex justify-center mb-8">
           <div className="bg-white border border-blue-200 rounded-xl p-2 shadow-sm">
             <div className="flex space-x-2">
               <button
@@ -104,14 +103,12 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* Interactive Visualization - Full Width */}
-        <div className="mb-16">
-          <div className="mb-8">
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">Interactive Hash Table Demo</h3>
-            <p className="text-gray-600">
-              Explore how hash functions map keys to indices and handle collisions.
-            </p>
-          </div>
+        {/* Interactive Visualization */}
+        <div className="mb-8">
+          <h3 className="text-3xl font-bold text-gray-900 mb-4">Interactive Hash Table Demo</h3>
+          <p className="text-gray-600 mb-6">
+            Explore how hash functions map keys to indices and handle collisions.
+          </p>
 
           {activeDemo === 'basic' ? (
             <HashTableVisualization
@@ -131,7 +128,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         </div>
 
         {/* Core Concepts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Hash Functions */}
           <div className="bg-white border border-blue-200 rounded-xl p-8 shadow-sm">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">Hash Functions</h3>
@@ -238,7 +235,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         </div>
 
         {/* Hash Function Types */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-8">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
             Popular Hash Functions
           </h3>
@@ -301,7 +298,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         </div>
 
         {/* Real-World Applications */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-8">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             Real-World Applications
           </h3>
@@ -364,7 +361,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         </div>
 
         {/* Implementation Examples */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-12">
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-8">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             Language Implementations
           </h3>
@@ -437,7 +434,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* When to Use Hash Tables */}
         <div
-          className={`bg-gradient-to-r from-${theme.primary}-50 to-${theme.secondary}-50 dark:from-${theme.primary}-900/20 dark:to-${theme.secondary}-900/20 rounded-xl p-8 mb-12`}
+          className={`bg-gradient-to-r from-${theme.primary}-50 to-${theme.secondary}-50 dark:from-${theme.primary}-900/20 dark:to-${theme.secondary}-900/20 rounded-xl p-8 mb-8`}
         >
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
             When to Use Hash Tables
@@ -501,27 +498,48 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
+      </ThemeCard>
+    </>
+  );
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center pt-8 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={() => onNavigate('Queues')}
-            className="flex items-center space-x-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-          >
-            <ArrowRight className="w-4 h-4 rotate-180" />
-            <span>Queues</span>
-          </button>
+  // Sidebar content
+  const sidebarContent = (
+    <>
+      <ThemeCard>
+        <NavigationCard
+          title="Previous: Queues"
+          description="Learn about FIFO data structures and their implementations"
+          colorScheme="primary"
+          onClick={() => window.history.back()}
+        />
+      </ThemeCard>
+      <ThemeCard>
+        <NavigationCard
+          title="Next: Tree Structures"
+          description="Explore hierarchical data structures and tree algorithms"
+          colorScheme="primary"
+          onClick={() => window.location.href = '/data-structures?section=tree-structures'}
+        />
+      </ThemeCard>
+    </>
+  );
 
-          <button
-            onClick={() => onNavigate('tree-structures')}
-            className={`flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-${theme.primary}-600 to-${theme.secondary}-600 text-white rounded-lg hover:from-${theme.primary}-700 hover:to-${theme.secondary}-700 transition-all duration-200 shadow-lg hover:shadow-xl`}
-          >
-            <span>Tree Structures</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </section>
+  return (
+    <>
+      <SectionLayout
+        section="datastructures"
+        hero={heroContent}
+        mainContent={mainContent}
+        sidebar={sidebarContent}
+      />
+      <CTASection
+        title="Ready to Explore More Data Structures?"
+        description="Continue your journey through data structures and algorithms with tree structures and graph algorithms."
+        buttonText="Explore Tree Structures"
+        onButtonClick={() => window.location.href = '/data-structures?section=tree-structures'}
+        colorScheme="primary"
+      />
+    </>
   );
 };
 

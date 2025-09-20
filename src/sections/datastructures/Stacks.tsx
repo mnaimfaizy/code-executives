@@ -21,9 +21,7 @@ const Stacks: React.FC = () => {
           <Layers className="w-16 h-16 text-indigo-600" />
         </div>
       </div>
-      <h1 className="text-4xl font-bold text-gray-900 mb-4">
-        Stacks: LIFO Data Structures
-      </h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">Stacks: LIFO Data Structures</h1>
       <p className="text-xl text-gray-700 mb-6 leading-relaxed">
         Stacks are fundamental data structures that follow the Last In, First Out (LIFO) principle,
         enabling efficient push and pop operations for managing data in a specific order.
@@ -53,7 +51,8 @@ const Stacks: React.FC = () => {
         <div className="mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Interactive Stack Demo</h3>
           <p className="text-gray-600 mb-6">
-            Watch how elements are pushed and popped following the LIFO (Last In, First Out) principle.
+            Watch how elements are pushed and popped following the LIFO (Last In, First Out)
+            principle.
           </p>
           <StackVisualization isActive={true} className="w-full" />
         </div>
@@ -125,36 +124,28 @@ const Stacks: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-gradient-to-br from-purple-50 to-violet-50 rounded-lg p-4">
             <h4 className="font-semibold text-purple-700 mb-2">Push</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              Add an element to the top of the stack.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Add an element to the top of the stack.</p>
             <div className="text-xs text-purple-600 font-mono bg-white p-2 rounded">
               stack.push(element)
             </div>
           </div>
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4">
             <h4 className="font-semibold text-blue-700 mb-2">Pop</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              Remove and return the top element.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Remove and return the top element.</p>
             <div className="text-xs text-blue-600 font-mono bg-white p-2 rounded">
               element = stack.pop()
             </div>
           </div>
           <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4">
             <h4 className="font-semibold text-green-700 mb-2">Peek/Top</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              View the top element without removing it.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">View the top element without removing it.</p>
             <div className="text-xs text-green-600 font-mono bg-white p-2 rounded">
               element = stack.peek()
             </div>
           </div>
           <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-lg p-4">
             <h4 className="font-semibold text-orange-700 mb-2">Is Empty</h4>
-            <p className="text-sm text-gray-600 mb-2">
-              Check if the stack contains any elements.
-            </p>
+            <p className="text-sm text-gray-600 mb-2">Check if the stack contains any elements.</p>
             <div className="text-xs text-orange-600 font-mono bg-white p-2 rounded">
               bool = stack.isEmpty()
             </div>
@@ -171,36 +162,28 @@ const Stacks: React.FC = () => {
               <Layers className="w-5 h-5 text-purple-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Function Calls</h4>
-            <p className="text-sm text-gray-600">
-              Managing call stack in programming languages
-            </p>
+            <p className="text-sm text-gray-600">Managing call stack in programming languages</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <Layers className="w-5 h-5 text-blue-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Undo Operations</h4>
-            <p className="text-sm text-gray-600">
-              Implementing undo/redo functionality
-            </p>
+            <p className="text-sm text-gray-600">Implementing undo/redo functionality</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <Code className="w-5 h-5 text-green-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Expression Parsing</h4>
-            <p className="text-sm text-gray-600">
-              Evaluating mathematical expressions
-            </p>
+            <p className="text-sm text-gray-600">Evaluating mathematical expressions</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <ArrowRight className="w-5 h-5 text-orange-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Backtracking</h4>
-            <p className="text-sm text-gray-600">
-              Algorithms that need to reverse decisions
-            </p>
+            <p className="text-sm text-gray-600">Algorithms that need to reverse decisions</p>
           </div>
         </div>
       </ThemeCard>

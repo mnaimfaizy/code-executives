@@ -53,7 +53,8 @@ const LinkedLists: React.FC = () => {
         <div className="mb-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Interactive Linked List Demo</h3>
           <p className="text-gray-600 mb-6">
-            Observe how nodes are connected through pointers, enabling dynamic insertion and deletion.
+            Observe how nodes are connected through pointers, enabling dynamic insertion and
+            deletion.
           </p>
           <LinkedListVisualization isActive={true} className="w-full" />
         </div>
@@ -135,14 +136,18 @@ const LinkedLists: React.FC = () => {
             <p className="text-sm text-gray-600 mb-2">
               Each node has pointers to both next and previous nodes.
             </p>
-            <div className="text-xs text-blue-600 font-mono">NULL ← Node ↔ Node ↔ Node → NULL</div>
+            <div className="text-xs text-blue-600 font-mono">
+              NULL ← Node ↔ Node ↔ Node → NULL
+            </div>
           </div>
           <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4">
             <h4 className="font-semibold text-purple-700 mb-2">Circular Linked List</h4>
             <p className="text-sm text-gray-600 mb-2">
               Last node points back to the first node, forming a circle.
             </p>
-            <div className="text-xs text-purple-600 font-mono">Node → Node → Node → (back to first)</div>
+            <div className="text-xs text-purple-600 font-mono">
+              Node → Node → Node → (back to first)
+            </div>
           </div>
         </div>
       </ThemeCard>
@@ -174,18 +179,14 @@ const LinkedLists: React.FC = () => {
               <Code className="w-5 h-5 text-purple-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Memory Efficiency</h4>
-            <p className="text-sm text-gray-600">
-              When memory usage should be optimized
-            </p>
+            <p className="text-sm text-gray-600">When memory usage should be optimized</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-3">
               <ArrowRight className="w-5 h-5 text-orange-600" />
             </div>
             <h4 className="font-semibold text-gray-900 mb-2">Unknown Size</h4>
-            <p className="text-sm text-gray-600">
-              When the final size is not known in advance
-            </p>
+            <p className="text-sm text-gray-600">When the final size is not known in advance</p>
           </div>
         </div>
       </ThemeCard>

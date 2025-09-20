@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Introduction from '../sections/datastructures/Introduction';
 import LinearStructures from '../sections/datastructures/LinearStructures';
 import Arrays from '../sections/datastructures/Arrays';
@@ -30,14 +30,9 @@ function useQuery() {
  */
 const DataStructuresPage: React.FC = () => {
   const query = useQuery();
-  const navigate = useNavigate();
   const rawSection = query.get('section') || 'introduction';
   // Normalize section name to handle URL encoding and different formats
   const section = rawSection.toLowerCase().replace(/\s+/g, '-');
-
-  const handleNavigate = (newSection: string) => {
-    navigate(`/data-structures?section=${newSection}`);
-  };
 
   const renderSection = () => {
     switch (section) {
@@ -54,7 +49,7 @@ const DataStructuresPage: React.FC = () => {
       case 'queues':
         return <Queues />;
       case 'hash-tables':
-        return <HashTables onNavigate={handleNavigate} />;
+        return <HashTables />;
       case 'tree-structures':
         return <TreeStructures />;
       case 'binary-trees':
