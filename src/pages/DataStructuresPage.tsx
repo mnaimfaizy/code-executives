@@ -48,11 +48,11 @@ const DataStructuresPage: React.FC = () => {
       case 'arrays':
         return <Arrays />;
       case 'linked-lists':
-        return <LinkedLists onNavigate={handleNavigate} />;
+        return <LinkedLists />;
       case 'stacks':
-        return <Stacks onNavigate={handleNavigate} />;
+        return <Stacks />;
       case 'queues':
-        return <Queues onNavigate={handleNavigate} />;
+        return <Queues />;
       case 'hash-tables':
         return <HashTables onNavigate={handleNavigate} />;
       case 'tree-structures':
