@@ -292,26 +292,26 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
   const svgHeight = showMemoryAddresses ? 200 : 150;
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl p-6 space-y-6 ${className}`}>
+    <div
+      className={`bg-white border border-blue-200 rounded-xl p-8 space-y-8 shadow-sm ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Array Visualization</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Interactive array with memory layout demonstration
-          </p>
+          <h3 className="text-2xl font-bold text-gray-900">Array Visualization</h3>
+          <p className="text-gray-600 mt-1">Interactive array with memory layout demonstration</p>
         </div>
 
         {/* Current Operation Status */}
         {currentOperation && (
-          <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+          <div className="px-4 py-2 bg-blue-100 text-blue-800 rounded-full">
             {currentOperation}...
           </div>
         )}
       </div>
 
       {/* Array Visualization */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-900">
+      <div className="border border-gray-200 rounded-lg p-6 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
         <svg width={svgWidth} height={svgHeight} className="w-full h-auto">
           {/* Memory Layout Background */}
           <defs>
@@ -400,17 +400,15 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
       {/* Operation Controls */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Insert Operation */}
-        <form onSubmit={handleInsertSubmit} className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Insert Element
-          </label>
+        <form onSubmit={handleInsertSubmit} className="space-y-3">
+          <label className="block font-medium text-gray-800">Insert Element</label>
           <div className="flex space-x-2">
             <input
               type="number"
               value={newValue}
               onChange={(e) => setNewValue(e.target.value)}
               placeholder="Value"
-              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={!!currentOperation}
             />
             <input
@@ -420,14 +418,14 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
               placeholder="Index"
               min={0}
               max={state.data.length}
-              className="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+              className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               disabled={!!currentOperation}
             />
           </div>
           <button
             type="submit"
             disabled={!!currentOperation || state.data.length >= maxSize}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-sm rounded transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Insert</span>
@@ -435,10 +433,8 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
         </form>
 
         {/* Access Operation */}
-        <form onSubmit={handleAccessSubmit} className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Access Element
-          </label>
+        <form onSubmit={handleAccessSubmit} className="space-y-3">
+          <label className="block font-medium text-gray-800">Access Element</label>
           <input
             type="number"
             value={accessIndex}
@@ -446,13 +442,13 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
             placeholder="Index"
             min={0}
             max={state.data.length - 1}
-            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={!!currentOperation}
           />
           <button
             type="submit"
             disabled={!!currentOperation || state.data.length === 0}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white text-sm rounded transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
           >
             <Search className="w-4 h-4" />
             <span>Access</span>
@@ -460,22 +456,20 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
         </form>
 
         {/* Search Operation */}
-        <form onSubmit={handleSearchSubmit} className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Search Element
-          </label>
+        <form onSubmit={handleSearchSubmit} className="space-y-3">
+          <label className="block font-medium text-gray-800">Search Element</label>
           <input
             type="number"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Value"
-            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={!!currentOperation}
           />
           <button
             type="submit"
             disabled={!!currentOperation || state.data.length === 0}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white text-sm rounded transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
           >
             <Search className="w-4 h-4" />
             <span>Search</span>
@@ -483,11 +477,9 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
         </form>
 
         {/* Delete Operation */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Delete Element
-          </label>
-          <p className="text-xs text-gray-500">Click an element to delete it</p>
+        <div className="space-y-3">
+          <label className="block font-medium text-gray-800">Delete Element</label>
+          <p className="text-sm text-gray-600">Click an element to delete it</p>
           <button
             onClick={() => {
               if (selectedElement) {
@@ -499,7 +491,7 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
               }
             }}
             disabled={!!currentOperation || !selectedElement}
-            className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white text-sm rounded transition-colors"
+            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
           >
             <Minus className="w-4 h-4" />
             <span>Delete Selected</span>
@@ -509,24 +501,22 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
 
       {/* Complexity Information */}
       {state.currentOperation && (
-        <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-semibold text-blue-900">
               Operation: {state.currentOperation.description}
             </h4>
           </div>
-          <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-2 gap-6">
             <div>
-              <span className="font-medium text-blue-800 dark:text-blue-200">Time Complexity:</span>
-              <span className="ml-2 font-mono text-blue-900 dark:text-blue-100">
+              <span className="font-medium text-blue-800">Time Complexity:</span>
+              <span className="ml-2 font-mono text-blue-900 text-lg">
                 {state.currentOperation.complexity.time}
               </span>
             </div>
             <div>
-              <span className="font-medium text-blue-800 dark:text-blue-200">
-                Space Complexity:
-              </span>
-              <span className="ml-2 font-mono text-blue-900 dark:text-blue-100">
+              <span className="font-medium text-blue-800">Space Complexity:</span>
+              <span className="ml-2 font-mono text-blue-900 text-lg">
                 {state.currentOperation.complexity.space}
               </span>
             </div>
@@ -535,8 +525,8 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
       )}
 
       {/* Settings */}
-      <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-        <label className="flex items-center space-x-2">
+      <div className="flex flex-wrap gap-6 pt-6 border-t border-gray-200">
+        <label className="flex items-center space-x-3">
           <input
             type="checkbox"
             checked={showIndices}
@@ -545,9 +535,9 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
             }}
             className="rounded"
           />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Show Indices</span>
+          <span className="text-gray-700">Show Indices</span>
         </label>
-        <label className="flex items-center space-x-2">
+        <label className="flex items-center space-x-3">
           <input
             type="checkbox"
             checked={showMemoryAddresses}
@@ -556,9 +546,9 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
             }}
             className="rounded"
           />
-          <span className="text-sm text-gray-700 dark:text-gray-300">Show Memory Addresses</span>
+          <span className="text-gray-700">Show Memory Addresses</span>
         </label>
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-gray-600">
           Size: {state.data.length}/{maxSize}
         </div>
       </div>

@@ -171,7 +171,7 @@ const Introduction: React.FC = () => {
           {keyFeatures.map((feature, index) => (
             <div
               key={index}
-              className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow"
+              className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200 hover:shadow-md transition-shadow"
             >
               <div className="mb-4">{feature.icon}</div>
               <h4 className="text-lg font-semibold text-gray-800 mb-2">{feature.title}</h4>
@@ -220,7 +220,7 @@ const Introduction: React.FC = () => {
 
         <div className="grid md:grid-cols-3 gap-8">
           {benefits.map((category, index) => (
-            <div key={index} className="bg-white rounded-lg p-6 shadow-sm">
+            <div key={index} className="bg-white border border-blue-200 rounded-lg p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 {index === 0 && <Database className={`w-6 h-6 text-${theme.primary}-600 mr-2`} />}
                 {index === 1 && <Code className={`w-6 h-6 text-${theme.secondary}-600 mr-2`} />}
@@ -229,7 +229,7 @@ const Introduction: React.FC = () => {
               </h3>
               <ul className="space-y-2">
                 {category.benefits.map((benefit, benefitIndex) => (
-                  <li key={benefitIndex} className="text-sm text-gray-700 flex items-start">
+                  <li key={benefitIndex} className="text-gray-700 flex items-start">
                     <span className="text-blue-500 mr-2 mt-1">•</span>
                     <span>{benefit}</span>
                   </li>

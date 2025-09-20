@@ -18,7 +18,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
   return (
     <section
-      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-${theme.secondary}-50 to-${theme.accent}-50 dark:from-gray-900 dark:via-${theme.primary}-900/20 dark:to-${theme.accent}-900/20`}
+      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-white to-${theme.secondary}-50`}
     >
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
         {/* Header */}
@@ -33,7 +33,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
           >
             Hash Tables
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Hash tables provide average O(1) time complexity for insertions, deletions, and lookups
             by using hash functions to map keys directly to array indices.
           </p>
@@ -41,14 +41,14 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* Demo Selection */}
         <div className="flex justify-center mb-12">
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-2">
+          <div className="bg-white border border-blue-200 rounded-xl p-2 shadow-sm">
             <div className="flex space-x-2">
               <button
                 onClick={() => setActiveDemo('basic')}
                 className={`px-4 py-2 rounded-lg transition-colors font-medium ${
                   activeDemo === 'basic'
                     ? `bg-${theme.primary}-600 text-white shadow-md`
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 Basic Operations
@@ -58,7 +58,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 className={`px-4 py-2 rounded-lg transition-colors font-medium ${
                   activeDemo === 'collision'
                     ? `bg-${theme.primary}-600 text-white shadow-md`
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                    : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 Collision Resolution
@@ -69,19 +69,15 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
 
         {/* Hash Function & Strategy Controls */}
         {activeDemo === 'basic' && (
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              Configuration
-            </h3>
+          <div className="bg-white border border-blue-200 rounded-xl p-8 mb-8 shadow-sm">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Configuration</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Hash Function
-                </label>
+                <label className="block font-medium text-gray-800 mb-3">Hash Function</label>
                 <select
                   value={hashFunction}
                   onChange={(e) => setHashFunction(e.target.value as 'simple' | 'djb2' | 'fnv1a')}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="simple">Simple (ASCII Sum)</option>
                   <option value="djb2">DJB2 Hash</option>
@@ -89,9 +85,7 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Collision Strategy
-                </label>
+                <label className="block font-medium text-gray-800 mb-3">Collision Strategy</label>
                 <select
                   value={collisionStrategy}
                   onChange={(e) =>
@@ -110,21 +104,28 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* Interactive Visualization */}
-        <div
-          className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-${theme.primary}-200 dark:border-${theme.primary}-800 rounded-2xl p-8 mb-12`}
-        >
+        {/* Interactive Visualization - Full Width */}
+        <div className="mb-16">
+          <div className="mb-8">
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">Interactive Hash Table Demo</h3>
+            <p className="text-gray-600">
+              Explore how hash functions map keys to indices and handle collisions.
+            </p>
+          </div>
+
           {activeDemo === 'basic' ? (
             <HashTableVisualization
               hashFunction={hashFunction}
               collisionStrategy={collisionStrategy}
               showHashCalculation={true}
               tableSize={7}
+              className="w-full"
             />
           ) : (
             <CollisionHandling
               strategy={collisionStrategy}
               onStrategyChange={setCollisionStrategy}
+              className="w-full"
             />
           )}
         </div>
@@ -132,57 +133,39 @@ const HashTables: React.FC<HashTablesProps> = ({ onNavigate }) => {
         {/* Core Concepts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Hash Functions */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Hash Functions
-            </h3>
+          <div className="bg-white border border-blue-200 rounded-xl p-8 shadow-sm">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Hash Functions</h3>
 
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
-                    Deterministic
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Same input always produces the same hash value.
-                  </p>
+                  <h4 className="font-semibold text-purple-700 mb-2">Deterministic</h4>
+                  <p className="text-gray-600">Same input always produces the same hash value.</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                    Uniform Distribution
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Distributes keys evenly across the hash table.
-                  </p>
+                  <h4 className="font-semibold text-blue-700 mb-2">Uniform Distribution</h4>
+                  <p className="text-gray-600">Distributes keys evenly across the hash table.</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">
-                    Fast Computation
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Quick to calculate to maintain O(1) performance.
-                  </p>
+                  <h4 className="font-semibold text-green-700 mb-2">Fast Computation</h4>
+                  <p className="text-gray-600">Quick to calculate to maintain O(1) performance.</p>
                 </div>
               </div>
 
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-orange-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2">
-                    Avalanche Effect
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    Small input changes create large hash changes.
-                  </p>
+                  <h4 className="font-semibold text-orange-700 mb-2">Avalanche Effect</h4>
+                  <p className="text-gray-600">Small input changes create large hash changes.</p>
                 </div>
               </div>
             </div>

@@ -13,7 +13,7 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
 
   return (
     <section
-      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-${theme.secondary}-50 to-${theme.accent}-50 dark:from-gray-900 dark:via-${theme.primary}-900/20 dark:to-${theme.accent}-900/20`}
+      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-white to-${theme.secondary}-50`}
     >
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
         {/* Header */}
@@ -28,20 +28,22 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
           >
             Linked Lists
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Linked lists are dynamic data structures where elements are connected through pointers,
             allowing efficient insertion and deletion operations with flexible memory usage.
           </p>
         </div>
 
-        {/* Interactive Visualization */}
-        <div
-          className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-${theme.primary}-200 dark:border-${theme.primary}-800 rounded-2xl p-8 mb-12`}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Interactive Linked List Demo
-            </h3>
+        {/* Interactive Visualization - Full Width */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-3xl font-bold text-gray-900">Interactive Linked List Demo</h3>
+              <p className="text-gray-600 mt-2">
+                Observe how nodes are connected through pointers, enabling dynamic insertion and
+                deletion.
+              </p>
+            </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
@@ -57,32 +59,21 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="h-64 mb-6">
-            <LinkedListVisualization isActive={true} />
-          </div>
-
-          <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-            Observe how nodes are connected through pointers, enabling dynamic insertion and
-            deletion.
-          </p>
+          <LinkedListVisualization isActive={true} className="w-full" />
         </div>
 
         {/* Key Concepts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Properties */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Linked List Properties
-            </h3>
+          <div className="bg-white border border-blue-200 rounded-xl p-8 shadow-sm">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Linked List Properties</h3>
 
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-green-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">
-                    Dynamic Size
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h4 className="font-semibold text-green-700 mb-2">Dynamic Size</h4>
+                  <p className="text-gray-600">
                     Can grow or shrink during runtime, limited only by available memory.
                   </p>
                 </div>
@@ -91,10 +82,8 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                    Pointer-Based
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h4 className="font-semibold text-blue-700 mb-2">Pointer-Based</h4>
+                  <p className="text-gray-600">
                     Each node contains data and a reference to the next node in the sequence.
                   </p>
                 </div>
@@ -103,10 +92,8 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
-                    Memory Efficient
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h4 className="font-semibold text-purple-700 mb-2">Memory Efficient</h4>
+                  <p className="text-gray-600">
                     Allocates memory only when needed, no wasted space for unused elements.
                   </p>
                 </div>
@@ -115,10 +102,8 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-orange-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-orange-700 dark:text-orange-300 mb-2">
-                    Sequential Access
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h4 className="font-semibold text-orange-700 mb-2">Sequential Access</h4>
+                  <p className="text-gray-600">
                     Elements must be accessed sequentially from the head node.
                   </p>
                 </div>
@@ -127,28 +112,22 @@ const LinkedLists: React.FC<LinkedListsProps> = ({ onNavigate }) => {
           </div>
 
           {/* Operations & Complexity */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Time Complexity
-            </h3>
+          <div className="bg-white border border-blue-200 rounded-xl p-8 shadow-sm">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Time Complexity</h3>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <span className="font-medium text-gray-900 dark:text-white">Insert at Head</span>
-                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">
-                  O(1)
-                </span>
+              <div className="flex justify-between items-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                <span className="font-medium text-gray-900">Insert at Head</span>
+                <span className="text-green-600 font-mono font-semibold text-lg">O(1)</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <span className="font-medium text-gray-900 dark:text-white">Delete at Head</span>
-                <span className="text-green-600 dark:text-green-400 font-mono font-semibold">
-                  O(1)
-                </span>
+              <div className="flex justify-between items-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                <span className="font-medium text-gray-900">Delete at Head</span>
+                <span className="text-green-600 font-mono font-semibold text-lg">O(1)</span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <span className="font-medium text-gray-900 dark:text-white">Search</span>
+              <div className="flex justify-between items-center p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <span className="font-medium text-gray-900">Search</span>
                 <span className="text-yellow-600 dark:text-yellow-400 font-mono font-semibold">
                   O(n)
                 </span>

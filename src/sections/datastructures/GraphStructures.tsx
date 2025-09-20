@@ -16,13 +16,13 @@ const GraphStructures: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6 space-y-12">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2 text-blue-600 dark:text-blue-400">
+        <div className="flex items-center justify-center space-x-2 text-blue-600">
           <Network className="w-8 h-8" />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Graph Structures
           </h1>
         </div>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Complex network structures that model relationships between entities. Perfect for
           representing social networks, maps, dependencies, and countless real-world connections.
         </p>
@@ -31,20 +31,20 @@ const GraphStructures: React.FC = () => {
       {/* Introduction */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-blue-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
               <Network className="w-6 h-6 mr-2 text-blue-600" />
               What are Graph Structures?
             </h2>
             <div className="space-y-4">
-              <p className="text-gray-700 dark:text-gray-300">
+              <p className="text-gray-700">
                 Graphs are collections of vertices (nodes) connected by edges (links). They're
                 incredibly versatile structures that can model virtually any relationship.
               </p>
 
               <div className="space-y-3">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Key Terminology:</h3>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <h3 className="font-semibold text-gray-900">Key Terminology:</h3>
+                <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-center">
                     <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
                     <strong>Vertex/Node:</strong> A single point in the graph
@@ -152,7 +152,7 @@ const GraphStructures: React.FC = () => {
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   activeDemo === 'mst'
                     ? 'bg-teal-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 MST
@@ -162,32 +162,107 @@ const GraphStructures: React.FC = () => {
             {/* Active Demo */}
             <div className="min-h-[400px]">
               {activeDemo === 'representation' && (
-                <GraphVisualization directed={false} weighted={false} />
+                <GraphVisualization directed={false} weighted={false} className="w-full" />
               )}
-              {activeDemo === 'bfs' && <BFSVisualization />}
-              {activeDemo === 'dfs' && <DFSVisualization />}
-              {activeDemo === 'dijkstra' && <DijkstraVisualization />}
-              {activeDemo === 'mst' && <KruskalVisualization />}
+              {activeDemo === 'bfs' && <BFSVisualization className="w-full" />}
+              {activeDemo === 'dfs' && <DFSVisualization className="w-full" />}
+              {activeDemo === 'dijkstra' && <DijkstraVisualization className="w-full" />}
+              {activeDemo === 'mst' && <KruskalVisualization className="w-full" />}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Full-Width Interactive Graph Visualization */}
+      <div className="w-full mb-16">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 text-center mb-2">
+            Interactive Graph Algorithms
+          </h2>
+          <p className="text-gray-600 text-center">
+            Explore graph algorithms and traversal techniques with live visualizations.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-blue-200 p-6 shadow-sm">
+          <div className="flex flex-wrap gap-2 mb-6 justify-center">
+            <button
+              onClick={() => setActiveDemo('representation')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeDemo === 'representation'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Graph Representation
+            </button>
+            <button
+              onClick={() => setActiveDemo('bfs')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeDemo === 'bfs'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Breadth-First Search
+            </button>
+            <button
+              onClick={() => setActiveDemo('dfs')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeDemo === 'dfs'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Depth-First Search
+            </button>
+            <button
+              onClick={() => setActiveDemo('dijkstra')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeDemo === 'dijkstra'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Dijkstra's Algorithm
+            </button>
+            <button
+              onClick={() => setActiveDemo('mst')}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                activeDemo === 'mst'
+                  ? 'bg-teal-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Minimum Spanning Tree
+            </button>
+          </div>
+
+          <div className="w-full min-h-[500px]">
+            {activeDemo === 'representation' && (
+              <GraphVisualization directed={false} weighted={false} className="w-full" />
+            )}
+            {activeDemo === 'bfs' && <BFSVisualization className="w-full" />}
+            {activeDemo === 'dfs' && <DFSVisualization className="w-full" />}
+            {activeDemo === 'dijkstra' && <DijkstraVisualization className="w-full" />}
+            {activeDemo === 'mst' && <KruskalVisualization className="w-full" />}
           </div>
         </div>
       </div>
 
       {/* Graph Types Comparison */}
       <div className="space-y-6">
-        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white">
-          Types of Graphs
-        </h2>
+        <h2 className="text-3xl font-bold text-center text-gray-900">Types of Graphs</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Directed Graph */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-blue-200">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-4">
-                <ArrowRight className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                <ArrowRight className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Directed Graph</h3>
+                <h3 className="text-xl font-bold text-gray-900">Directed Graph</h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Edges have direction</p>
               </div>
             </div>

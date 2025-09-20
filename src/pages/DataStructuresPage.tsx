@@ -8,6 +8,12 @@ import Stacks from '../sections/datastructures/Stacks';
 import Queues from '../sections/datastructures/Queues';
 import HashTables from '../sections/datastructures/HashTables';
 import TreeStructures from '../sections/datastructures/TreeStructures';
+import BinaryTrees from '../sections/datastructures/BinaryTrees';
+import BinarySearchTrees from '../sections/datastructures/BinarySearchTrees';
+import AVLTrees from '../sections/datastructures/AVLTrees';
+import RedBlackTrees from '../sections/datastructures/RedBlackTrees';
+import Heaps from '../sections/datastructures/Heaps';
+import BTrees from '../sections/datastructures/BTrees';
 import GraphStructures from '../sections/datastructures/GraphStructures';
 import ComplexityAnalysis from '../sections/datastructures/ComplexityAnalysis';
 import RealWorldApplications from '../sections/datastructures/RealWorldApplications';
@@ -38,9 +44,9 @@ const DataStructuresPage: React.FC = () => {
       case 'introduction':
         return <Introduction />;
       case 'linear-structures':
-        return <LinearStructures onNavigate={handleNavigate} />;
+        return <LinearStructures />;
       case 'arrays':
-        return <Arrays onNavigate={handleNavigate} />;
+        return <Arrays />;
       case 'linked-lists':
         return <LinkedLists onNavigate={handleNavigate} />;
       case 'stacks':
@@ -50,13 +56,19 @@ const DataStructuresPage: React.FC = () => {
       case 'hash-tables':
         return <HashTables onNavigate={handleNavigate} />;
       case 'tree-structures':
-      case 'binary-trees':
-      case 'binary-search-trees':
-      case 'avl-trees':
-      case 'red-black-trees':
-      case 'heaps':
-      case 'b-trees':
         return <TreeStructures />;
+      case 'binary-trees':
+        return <BinaryTrees />;
+      case 'binary-search-trees':
+        return <BinarySearchTrees />;
+      case 'avl-trees':
+        return <AVLTrees />;
+      case 'red-black-trees':
+        return <RedBlackTrees />;
+      case 'heaps':
+        return <Heaps />;
+      case 'b-trees':
+        return <BTrees />;
       case 'graph-structures':
         return <GraphStructures />;
       case 'complexity-analysis':

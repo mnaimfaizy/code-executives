@@ -343,21 +343,19 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
 
       {/* Hash Calculation Display */}
       {hashSteps && showHashCalculation && (
-        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
+        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-blue-700 mb-2">
             Hash Calculation for "{hashSteps.key}"
           </h4>
-          <p className="text-sm text-gray-600 dark:text-gray-300 font-mono">
-            {hashSteps.calculation}
-          </p>
-          <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mt-2">
+          <p className="text-sm text-gray-600 font-mono">{hashSteps.calculation}</p>
+          <p className="text-sm font-semibold text-blue-600 mt-2">
             Result: Index {hashSteps.result}
           </p>
         </div>
       )}
 
       {/* Hash Table Visualization */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="relative bg-white rounded-lg border border-gray-200 p-4">
         <svg
           width={tableWidth}
           height={tableHeight + 100}
@@ -371,7 +369,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
                 x={50 + i * 80}
                 y={30}
                 textAnchor="middle"
-                className="text-sm font-medium fill-gray-600 dark:fill-gray-400"
+                className="text-sm font-medium fill-gray-600"
               >
                 [{i}]
               </text>
@@ -415,7 +413,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
                     x={50 + i * 80}
                     y={65}
                     textAnchor="middle"
-                    className="text-xs font-medium fill-gray-700 dark:fill-gray-300"
+                    className="text-xs font-medium fill-gray-700"
                   >
                     {table[i]!.key}
                   </text>
@@ -423,7 +421,7 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
                     x={50 + i * 80}
                     y={78}
                     textAnchor="middle"
-                    className="text-xs fill-gray-500 dark:fill-gray-500"
+                    className="text-xs fill-gray-500"
                   >
                     {table[i]!.value}
                   </text>
@@ -466,14 +464,10 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
               strokeWidth={1}
               rx={8}
             />
-            <text
-              x={50}
-              y={tableHeight - 8}
-              className="text-sm font-medium fill-gray-700 dark:fill-gray-300"
-            >
+            <text x={50} y={tableHeight - 8} className="text-sm font-medium fill-gray-700">
               Hash Function: {hashFunction.toUpperCase()}
             </text>
-            <text x={50} y={tableHeight + 8} className="text-sm fill-gray-500 dark:fill-gray-500">
+            <text x={50} y={tableHeight + 8} className="text-sm fill-gray-500">
               Collision Resolution: {collisionStrategy.replace('-', ' ')}
             </text>
           </g>
@@ -482,31 +476,29 @@ const HashTableVisualization: React.FC<HashTableVisualizationProps> = ({
 
       {/* Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
-            {entries.length}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Entries</div>
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="text-lg font-semibold text-gray-900">{entries.length}</div>
+          <div className="text-sm text-gray-600">Entries</div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="text-lg font-semibold text-gray-900">
             {table.filter((slot) => slot !== null).length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Occupied Slots</div>
+          <div className="text-sm text-gray-600">Occupied Slots</div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="text-lg font-semibold text-gray-900">
             {Math.round((entries.length / tableSize) * 100)}%
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Load Factor</div>
+          <div className="text-sm text-gray-600">Load Factor</div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <div className="text-lg font-semibold text-gray-900">
             {collisionStrategy === 'chaining'
               ? entries.reduce((acc, entry) => acc + (entry.collisionChain?.length || 0), 0)
               : 0}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Collisions</div>
+          <div className="text-sm text-gray-600">Collisions</div>
         </div>
       </div>
     </div>

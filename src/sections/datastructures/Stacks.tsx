@@ -13,7 +13,7 @@ const Stacks: React.FC<StacksProps> = ({ onNavigate }) => {
 
   return (
     <section
-      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-${theme.secondary}-50 to-${theme.accent}-50 dark:from-gray-900 dark:via-${theme.primary}-900/20 dark:to-${theme.accent}-900/20`}
+      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-white to-${theme.secondary}-50`}
     >
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
         {/* Header */}
@@ -28,20 +28,22 @@ const Stacks: React.FC<StacksProps> = ({ onNavigate }) => {
           >
             Stacks
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Stacks follow the Last In, First Out (LIFO) principle, making them perfect for managing
             function calls, undo operations, and any scenario where order matters.
           </p>
         </div>
 
-        {/* Interactive Visualization */}
-        <div
-          className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-${theme.primary}-200 dark:border-${theme.primary}-800 rounded-2xl p-8 mb-12`}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Interactive Stack Demo
-            </h3>
+        {/* Interactive Visualization - Full Width */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="text-3xl font-bold text-gray-900">Interactive Stack Demo</h3>
+              <p className="text-gray-600 mt-2">
+                Watch how elements are pushed and popped following the LIFO (Last In, First Out)
+                principle.
+              </p>
+            </div>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
@@ -57,32 +59,21 @@ const Stacks: React.FC<StacksProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="h-64 mb-6">
-            <StackVisualization isActive={true} />
-          </div>
-
-          <p className="text-sm text-gray-600 dark:text-gray-300 text-center">
-            Watch how elements are pushed and popped following the LIFO (Last In, First Out)
-            principle.
-          </p>
+          <StackVisualization isActive={true} className="w-full" />
         </div>
 
         {/* Key Concepts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Properties */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Stack Properties
-            </h3>
+          <div className="bg-white border border-blue-200 rounded-xl p-8 shadow-sm">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Stack Properties</h3>
 
             <div className="space-y-6">
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-purple-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
-                    LIFO Principle
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h4 className="font-semibold text-purple-700 mb-2">LIFO Principle</h4>
+                  <p className="text-gray-600">
                     Last In, First Out - the most recently added element is the first to be removed.
                   </p>
                 </div>
@@ -91,10 +82,8 @@ const Stacks: React.FC<StacksProps> = ({ onNavigate }) => {
               <div className="flex items-start space-x-4">
                 <div className="w-3 h-3 bg-blue-500 rounded-full mt-1.5"></div>
                 <div>
-                  <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                    Single Access Point
-                  </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <h4 className="font-semibold text-blue-700 mb-2">Single Access Point</h4>
+                  <p className="text-gray-600">
                     Elements can only be added or removed from the top of the stack.
                   </p>
                 </div>

@@ -154,10 +154,8 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
   return (
     <div className={`collision-handling ${className}`}>
       {/* Strategy Selection */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 mb-6">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          Collision Resolution Strategies
-        </h3>
+      <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Collision Resolution Strategies</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
@@ -172,15 +170,13 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
               }
               className={`p-4 rounded-lg border-2 transition-all ${
                 selectedStrategy === key
-                  ? `border-${color}-500 bg-${color}-50 dark:bg-${color}-900/20`
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                  ? `border-${color}-500 bg-${color}-50`
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <div
                 className={`text-sm font-medium ${
-                  selectedStrategy === key
-                    ? `text-${color}-700 dark:text-${color}-300`
-                    : 'text-gray-700 dark:text-gray-300'
+                  selectedStrategy === key ? `text-${color}-700` : 'text-gray-700'
                 }`}
               >
                 {label}
@@ -190,14 +186,12 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
         </div>
 
         {/* Strategy Explanation */}
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+        <div className="bg-gray-50 rounded-lg p-4">
           <button
             onClick={() => setShowExplanation(!showExplanation)}
             className="flex items-center justify-between w-full text-left"
           >
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {strategyInfo.title}
-            </h4>
+            <h4 className="text-lg font-semibold text-gray-900">{strategyInfo.title}</h4>
             {showExplanation ? (
               <ChevronDown className="w-5 h-5 text-gray-500" />
             ) : (
@@ -207,14 +201,12 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
 
           {showExplanation && (
             <div className="mt-4 space-y-4">
-              <p className="text-gray-600 dark:text-gray-300">{strategyInfo.description}</p>
+              <p className="text-gray-600">{strategyInfo.description}</p>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h5 className="font-medium text-green-700 dark:text-green-300 mb-2">
-                    Advantages
-                  </h5>
-                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                  <h5 className="font-medium text-green-700 mb-2">Advantages</h5>
+                  <ul className="text-sm text-gray-600 space-y-1">
                     {strategyInfo.pros.map((pro, index) => (
                       <li key={index} className="flex items-start">
                         <span className="text-green-500 mr-2">•</span>
@@ -225,8 +217,8 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                 </div>
 
                 <div>
-                  <h5 className="font-medium text-red-700 dark:text-red-300 mb-2">Disadvantages</h5>
-                  <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                  <h5 className="font-medium text-red-700 mb-2">Disadvantages</h5>
+                  <ul className="text-sm text-gray-600 space-y-1">
                     {strategyInfo.cons.map((con, index) => (
                       <li key={index} className="flex items-start">
                         <span className="text-red-500 mr-2">•</span>
@@ -237,13 +229,9 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                 </div>
               </div>
 
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <h5 className="font-medium text-blue-700 dark:text-blue-300 mb-1">
-                  Time Complexity
-                </h5>
-                <p className="text-sm text-gray-600 dark:text-gray-300 font-mono">
-                  {strategyInfo.complexity}
-                </p>
+              <div className="bg-blue-50 rounded-lg p-3">
+                <h5 className="font-medium text-blue-700 mb-1">Time Complexity</h5>
+                <p className="text-sm text-gray-600 font-mono">{strategyInfo.complexity}</p>
               </div>
             </div>
           )}
@@ -251,9 +239,9 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
       </div>
 
       {/* Interactive Demo */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h4 className="text-lg font-semibold text-gray-900">
             Collision Demo: {strategyInfo.title}
           </h4>
           <button
@@ -275,7 +263,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                 x={50 + i * 80}
                 y={20}
                 textAnchor="middle"
-                className="text-sm font-medium fill-gray-600 dark:fill-gray-400"
+                className="text-sm font-medium fill-gray-600"
               >
                 [{i}]
               </text>
@@ -313,7 +301,7 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
                       x={50 + i * 80}
                       y={45}
                       textAnchor="middle"
-                      className="text-xs font-medium fill-gray-700 dark:fill-gray-300"
+                      className="text-xs font-medium fill-gray-700"
                     >
                       {demoTable[i]!.key}
                     </text>
@@ -353,28 +341,21 @@ const CollisionHandling: React.FC<CollisionHandlingProps> = ({
             ))}
 
             {/* Demo explanation */}
-            <text
-              x={280}
-              y={100}
-              textAnchor="middle"
-              className="text-sm text-gray-600 dark:text-gray-400"
-            >
+            <text x={280} y={100} textAnchor="middle" className="text-sm text-gray-600">
               All demo keys hash to index 2 - watch how collisions are resolved!
             </text>
           </svg>
         </div>
 
         {/* Animation Progress */}
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+        <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Demo Progress
-            </span>
+            <span className="text-sm font-medium text-gray-700">Demo Progress</span>
             <span className="text-sm text-gray-500">
               {animationStep} / {demoData.length}
             </span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-500"
               style={{ width: `${(animationStep / demoData.length) * 100}%` }}

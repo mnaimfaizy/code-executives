@@ -245,16 +245,12 @@ export const StackVisualization: React.FC<StackVisualizationProps> = ({
   const elementPositions = getElementPositions();
 
   return (
-    <div
-      className={`bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 ${className}`}
-    >
+    <div className={`bg-white border border-blue-200 rounded-xl p-8 shadow-sm ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Stack Visualization
-          </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">
+          <h3 className="text-2xl font-bold text-gray-900">Stack Visualization</h3>
+          <p className="text-gray-600 mt-1">
             LIFO (Last In, First Out) - Elements added and removed from the top
           </p>
         </div>
@@ -267,9 +263,9 @@ export const StackVisualization: React.FC<StackVisualizationProps> = ({
       </div>
 
       {/* Control Panel */}
-      <div className="flex flex-wrap items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
+      <div className="flex flex-wrap items-center gap-4 p-6 bg-gradient-to-br from-blue-50 via-white to-indigo-50 border border-gray-200 rounded-lg mb-8">
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Value:</label>
+          <label className="font-medium text-gray-800">Value:</label>
           <input
             type="number"
             value={inputValue}
