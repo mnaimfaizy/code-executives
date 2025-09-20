@@ -15,6 +15,11 @@ import RedBlackTrees from '../sections/datastructures/RedBlackTrees';
 import Heaps from '../sections/datastructures/Heaps';
 import BTrees from '../sections/datastructures/BTrees';
 import GraphStructures from '../sections/datastructures/GraphStructures';
+import GraphRepresentation from '../sections/datastructures/GraphRepresentation';
+import GraphTraversal from '../sections/datastructures/GraphTraversal';
+import ShortestPath from '../sections/datastructures/ShortestPath';
+import MinimumSpanningTree from '../sections/datastructures/MinimumSpanningTree';
+import GraphTypes from '../sections/datastructures/GraphTypes';
 import ComplexityAnalysis from '../sections/datastructures/ComplexityAnalysis';
 import RealWorldApplications from '../sections/datastructures/RealWorldApplications';
 import PracticeProblems from '../sections/datastructures/PracticeProblems';
@@ -66,6 +71,18 @@ const DataStructuresPage: React.FC = () => {
         return <BTrees />;
       case 'graph-structures':
         return <GraphStructures />;
+      case 'graphs':
+        return <GraphStructures />;
+      case 'graph-representation':
+        return <GraphRepresentation />;
+      case 'graph-traversal':
+        return <GraphTraversal />;
+      case 'shortest-path':
+        return <ShortestPath />;
+      case 'minimum-spanning-tree':
+        return <MinimumSpanningTree />;
+      case 'graph-types':
+        return <GraphTypes />;
       case 'complexity-analysis':
         return <ComplexityAnalysis />;
       case 'real-world-applications':

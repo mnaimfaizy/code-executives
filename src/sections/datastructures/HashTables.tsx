@@ -20,15 +20,19 @@ const HashTables: React.FC = () => {
   const heroContent = (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-8">
-        <div className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-${theme.primary}-600 to-${theme.secondary}-600 rounded-2xl mb-6 shadow-lg`}>
+        <div
+          className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-${theme.primary}-600 to-${theme.secondary}-600 rounded-2xl mb-6 shadow-lg`}
+        >
           <Hash className="w-10 h-10 text-white" />
         </div>
-        <h1 className={`text-5xl font-bold bg-gradient-to-r from-${theme.primary}-600 via-${theme.secondary}-600 to-${theme.accent}-600 bg-clip-text text-transparent mb-6`}>
+        <h1
+          className={`text-5xl font-bold bg-gradient-to-r from-${theme.primary}-600 via-${theme.secondary}-600 to-${theme.accent}-600 bg-clip-text text-transparent mb-6`}
+        >
           Hash Tables
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          Hash tables provide average O(1) time complexity for insertions, deletions, and lookups
-          by using hash functions to map keys directly to array indices.
+          Hash tables provide average O(1) time complexity for insertions, deletions, and lookups by
+          using hash functions to map keys directly to array indices.
         </p>
       </div>
     </div>
@@ -518,7 +522,7 @@ const HashTables: React.FC = () => {
           title="Next: Tree Structures"
           description="Explore hierarchical data structures and tree algorithms"
           colorScheme="primary"
-          onClick={() => window.location.href = '/data-structures?section=tree-structures'}
+          onClick={() => (window.location.href = '/data-structures?section=tree-structures')}
         />
       </ThemeCard>
     </>
@@ -536,7 +540,7 @@ const HashTables: React.FC = () => {
         title="Ready to Explore More Data Structures?"
         description="Continue your journey through data structures and algorithms with tree structures and graph algorithms."
         buttonText="Explore Tree Structures"
-        onButtonClick={() => window.location.href = '/data-structures?section=tree-structures'}
+        onButtonClick={() => (window.location.href = '/data-structures?section=tree-structures')}
         colorScheme="primary"
       />
     </>
