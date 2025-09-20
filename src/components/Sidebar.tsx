@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { getSectionTheme } from '../utils/theme';
 
 interface SidebarItem {
   label: string;
@@ -151,6 +152,18 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
+
+  // Determine section from pathname
+  const getSectionFromPath = (path: string): 'javascript' | 'git' | 'datastructures' | 'rxjs' => {
+    if (path.includes('javascript')) return 'javascript';
+    if (path.includes('git')) return 'git';
+    if (path.includes('datastructures')) return 'datastructures';
+    if (path.includes('rxjs')) return 'rxjs';
+    return 'javascript'; // default
+  };
+
+  const section = getSectionFromPath(location.pathname);
+  const theme = getSectionTheme(section);
   const [expandedItems, setExpandedItems] = useState<string[]>([
     'JavaScript Engine',
     'JavaScript Runtime',
@@ -186,7 +199,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           <Link
             to={item.path}
             onClick={onClose}
-            className={`flex-1 block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 ${
+            className={`flex-1 block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-[${theme.primary}10] hover:text-[${theme.primary}] ${
               isSubItem ? 'ml-4 text-xs' : ''
             }`}
           >
@@ -195,7 +208,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
           {hasSubItems && (
             <button
               onClick={() => toggleExpanded(item.label)}
-              className="p-1 text-gray-500 hover:text-gray-700 rounded"
+              className={`p-1 text-gray-500 hover:text-[${theme.primary}] rounded`}
               aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
             >
               <svg
@@ -228,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       aria-hidden={!open}
       className={[
         // Base drawer behavior for small/medium screens
-        'fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 border-r bg-white shadow-sm transition-transform duration-200 ease-out',
+        `fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 border-r border-[${theme.border}] bg-white shadow-sm transition-transform duration-200 ease-out`,
         open ? 'translate-x-0' : '-translate-x-full',
         // On large screens and up, make it always visible and static (no translate)
         'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)]',

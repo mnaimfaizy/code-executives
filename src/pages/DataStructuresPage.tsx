@@ -36,7 +36,7 @@ const DataStructuresPage: React.FC = () => {
   const renderSection = () => {
     switch (section) {
       case 'introduction':
-        return <Introduction onNavigate={handleNavigate} />;
+        return <Introduction />;
       case 'linear-structures':
         return <LinearStructures onNavigate={handleNavigate} />;
       case 'arrays':
@@ -68,7 +68,7 @@ const DataStructuresPage: React.FC = () => {
       case '3d-visualizations':
         return <Visualizations3D />;
       default:
-        return <Introduction onNavigate={handleNavigate} />;
+        return <Introduction />;
     }
   };
 

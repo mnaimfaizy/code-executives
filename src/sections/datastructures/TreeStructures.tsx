@@ -7,19 +7,25 @@ import RedBlackTreeVisualization from '../../components/models2d/datastructures/
 import HeapVisualization from '../../components/models2d/datastructures/tree/HeapVisualization';
 import BTreeVisualization from '../../components/models2d/datastructures/tree/BTreeVisualization';
 import ComplexityIndicator from '../../components/models2d/datastructures/shared/ComplexityIndicator';
+import { getSectionTheme } from '../../utils/theme';
 
 const TreeStructures: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<'binary' | 'bst' | 'avl' | 'rb' | 'heap' | 'btree'>(
     'binary'
   );
+  const theme = getSectionTheme('datastructures');
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-12">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400">
+        <div
+          className={`flex items-center justify-center space-x-2 text-${theme.primary}-600 dark:text-${theme.primary}-400`}
+        >
           <TreePine className="w-8 h-8" />
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+          <h1
+            className={`text-4xl font-bold bg-gradient-to-r from-${theme.primary}-600 to-${theme.secondary}-600 bg-clip-text text-transparent`}
+          >
             Tree Structures
           </h1>
         </div>
@@ -68,7 +74,9 @@ const TreeStructures: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl p-6">
+          <div
+            className={`bg-gradient-to-br from-${theme.primary}-50 to-${theme.secondary}-50 dark:from-${theme.primary}-900/20 dark:to-${theme.secondary}-900/20 rounded-xl p-6`}
+          >
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
               <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
               Why Use Trees?
@@ -113,7 +121,7 @@ const TreeStructures: React.FC = () => {
                 onClick={() => setActiveDemo('binary')}
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   activeDemo === 'binary'
-                    ? 'bg-green-600 text-white'
+                    ? `bg-${theme.primary}-600 text-white`
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -123,7 +131,7 @@ const TreeStructures: React.FC = () => {
                 onClick={() => setActiveDemo('bst')}
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   activeDemo === 'bst'
-                    ? 'bg-blue-600 text-white'
+                    ? `bg-${theme.secondary}-600 text-white`
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -133,7 +141,7 @@ const TreeStructures: React.FC = () => {
                 onClick={() => setActiveDemo('avl')}
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   activeDemo === 'avl'
-                    ? 'bg-purple-600 text-white'
+                    ? `bg-${theme.accent}-600 text-white`
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -163,7 +171,7 @@ const TreeStructures: React.FC = () => {
                 onClick={() => setActiveDemo('btree')}
                 className={`px-3 py-2 rounded-lg font-medium transition-colors text-sm ${
                   activeDemo === 'btree'
-                    ? 'bg-indigo-600 text-white'
+                    ? `bg-${theme.secondary}-600 text-white`
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               >
@@ -204,8 +212,12 @@ const TreeStructures: React.FC = () => {
           {/* Binary Tree */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-4">
-                <TreePine className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <div
+                className={`w-12 h-12 bg-${theme.primary}-100 dark:bg-${theme.primary}-900/30 rounded-lg flex items-center justify-center mr-4`}
+              >
+                <TreePine
+                  className={`w-6 h-6 text-${theme.primary}-600 dark:text-${theme.primary}-400`}
+                />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">Binary Tree</h3>
@@ -245,8 +257,12 @@ const TreeStructures: React.FC = () => {
           {/* Binary Search Tree */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="flex items-center mb-4">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-4">
-                <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div
+                className={`w-12 h-12 bg-${theme.secondary}-100 dark:bg-${theme.secondary}-900/30 rounded-lg flex items-center justify-center mr-4`}
+              >
+                <BarChart3
+                  className={`w-6 h-6 text-${theme.secondary}-600 dark:text-${theme.secondary}-400`}
+                />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -288,9 +304,11 @@ const TreeStructures: React.FC = () => {
       </div>
 
       {/* Tree Traversals */}
-      <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-8">
+      <div
+        className={`bg-gradient-to-br from-${theme.primary}-50 to-${theme.accent}-50 dark:from-${theme.primary}-900/20 dark:to-${theme.accent}-900/20 rounded-xl p-8`}
+      >
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-          <Zap className="w-6 h-6 mr-2 text-purple-600" />
+          <Zap className={`w-6 h-6 mr-2 text-${theme.primary}-600`} />
           Tree Traversal Methods
         </h2>
 
@@ -350,8 +368,12 @@ const TreeStructures: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="space-y-3">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-              <TreePine className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <div
+              className={`w-12 h-12 bg-${theme.primary}-100 dark:bg-${theme.primary}-900/30 rounded-lg flex items-center justify-center`}
+            >
+              <TreePine
+                className={`w-6 h-6 text-${theme.primary}-600 dark:text-${theme.primary}-400`}
+              />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white">File Systems</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -361,8 +383,12 @@ const TreeStructures: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div
+              className={`w-12 h-12 bg-${theme.secondary}-100 dark:bg-${theme.secondary}-900/30 rounded-lg flex items-center justify-center`}
+            >
+              <BarChart3
+                className={`w-6 h-6 text-${theme.secondary}-600 dark:text-${theme.secondary}-400`}
+              />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white">Database Indexes</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -372,8 +398,10 @@ const TreeStructures: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-              <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+            <div
+              className={`w-12 h-12 bg-${theme.accent}-100 dark:bg-${theme.accent}-900/30 rounded-lg flex items-center justify-center`}
+            >
+              <Zap className={`w-6 h-6 text-${theme.accent}-600 dark:text-${theme.accent}-400`} />
             </div>
             <h3 className="font-semibold text-gray-900 dark:text-white">Expression Parsing</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -385,7 +413,9 @@ const TreeStructures: React.FC = () => {
       </div>
 
       {/* Performance Insights */}
-      <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-8">
+      <div
+        className={`bg-gradient-to-r from-${theme.secondary}-50 to-${theme.accent}-50 dark:from-${theme.secondary}-900/20 dark:to-${theme.accent}-900/20 rounded-xl p-8`}
+      >
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           Performance Considerations
         </h2>
@@ -397,13 +427,13 @@ const TreeStructures: React.FC = () => {
             </h3>
             <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300">
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                <div className={`w-3 h-3 bg-${theme.primary}-500 rounded-full mr-3`}></div>
                 <span>
                   <strong>Balanced Tree:</strong> Height ≈ log n, optimal performance
                 </span>
               </div>
               <div className="flex items-center">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                <div className={`w-3 h-3 bg-${theme.secondary}-500 rounded-full mr-3`}></div>
                 <span>
                   <strong>Slightly Unbalanced:</strong> Still good performance
                 </span>
@@ -423,15 +453,21 @@ const TreeStructures: React.FC = () => {
             </h3>
             <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
               <div className="flex items-start">
-                <ArrowRight className="w-4 h-4 mr-2 mt-0.5 text-green-600 flex-shrink-0" />
+                <ArrowRight
+                  className={`w-4 h-4 mr-2 mt-0.5 text-${theme.primary}-600 flex-shrink-0`}
+                />
                 <span>Need hierarchical data representation</span>
               </div>
               <div className="flex items-start">
-                <ArrowRight className="w-4 h-4 mr-2 mt-0.5 text-blue-600 flex-shrink-0" />
+                <ArrowRight
+                  className={`w-4 h-4 mr-2 mt-0.5 text-${theme.secondary}-600 flex-shrink-0`}
+                />
                 <span>Frequent search operations required</span>
               </div>
               <div className="flex items-start">
-                <ArrowRight className="w-4 h-4 mr-2 mt-0.5 text-purple-600 flex-shrink-0" />
+                <ArrowRight
+                  className={`w-4 h-4 mr-2 mt-0.5 text-${theme.accent}-600 flex-shrink-0`}
+                />
                 <span>Data needs to be kept in sorted order</span>
               </div>
               <div className="flex items-start">

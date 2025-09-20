@@ -32,6 +32,92 @@ src/
 
 ## 🎨 Design System Guidelines
 
+### **Shared Theme System**
+
+Code Executives uses a comprehensive shared theme system located in `src/utils/theme.ts` to ensure design consistency across all sections, pages, and components.
+
+#### **Color Schemes by Section**
+
+- **JavaScript**: Indigo/Purple/Blue theme (`theme.colors.javascript`)
+- **Git**: Orange/Red/Pink theme (`theme.colors.git`)
+- **Data Structures**: Blue/Indigo/Purple theme (`theme.colors.datastructures`)
+- **RxJS**: Purple/Violet/Indigo theme (`theme.colors.rxjs`)
+
+#### **Shared Components**
+
+Use these pre-built components for consistency:
+
+```typescript
+// Layout Components
+import SectionLayout from '../components/shared/SectionLayout';
+import ThemeCard from '../components/shared/ThemeCard';
+import NavigationCard from '../components/shared/NavigationCard';
+import StatsGrid from '../components/shared/StatsGrid';
+import CTASection from '../components/shared/CTASection';
+
+// Usage Example
+<SectionLayout
+  section="javascript" // Uses indigo/purple/blue theme
+  hero={heroContent}
+  mainContent={mainContent}
+  sidebar={sidebarContent}
+/>
+```
+
+#### **Standard Section Structure**
+
+All sections should follow this consistent pattern:
+
+```typescript
+const SectionIntroduction: React.FC = () => {
+  // Hero content with title, description, and stats
+  const heroContent = (
+    <div className="max-w-4xl mx-auto">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Section Title</h1>
+        <p className="text-xl text-gray-700 leading-relaxed">Description</p>
+      </div>
+      <StatsGrid stats={stats} colorScheme="primaryColor" />
+    </div>
+  );
+
+  // Main content with cards and information
+  const mainContent = (
+    <>
+      <ThemeCard>...</ThemeCard>
+      <ThemeCard>...</ThemeCard>
+    </>
+  );
+
+  // Sidebar with navigation cards
+  const sidebarContent = (
+    <>
+      <ThemeCard>
+        <NavigationCard title="..." colorScheme="primaryColor" onClick={...} />
+      </ThemeCard>
+    </>
+  );
+
+  return (
+    <>
+      <SectionLayout
+        section="sectionName"
+        hero={heroContent}
+        mainContent={mainContent}
+        sidebar={sidebarContent}
+      />
+      <CTASection
+        title="Call to Action"
+        description="Description"
+        buttonText="Action"
+        onButtonClick={...}
+        colorScheme="primaryColor"
+      />
+    </>
+  );
+};
+```
+
 ### **Component Patterns**
 
 1. **Functional Components**: Always use function components with hooks
@@ -46,6 +132,150 @@ src/
 - **Interactive Elements**: Hover states, click feedback, smooth transitions
 - **State Management**: Use `useState` and `useEffect` for animation timing
 - **Performance**: Optimize animations for 60fps, use `transform` properties
+
+### **Typography Scale**
+
+- **H1**: `text-4xl font-bold` (Hero titles)
+- **H2**: `text-3xl font-bold` (Section headers)
+- **H3**: `text-2xl font-bold` (Card titles)
+- **H4**: `text-xl font-bold` (Subsection headers)
+- **Body**: `text-gray-700 leading-relaxed` (Regular text)
+- **Caption**: `text-sm text-gray-600` (Small text)
+
+#### **Theme Utility Functions**
+
+```typescript
+// Get section-specific theme
+const theme = getSectionTheme('javascript'); // Returns indigo/purple/blue colors
+
+// Create consistent card classes
+const cardClass = createCardClass(); // Basic card
+const hoverCardClass = createCardClass('hover'); // Card with hover effects
+
+// Create navigation cards
+const navClass = createNavCardClass('indigo'); // indigo-200 bg-indigo-50 hover:bg-indigo-100
+
+// Create buttons
+const primaryButton = createButtonClass('primary'); // Blue primary button
+const secondaryButton = createButtonClass('secondary'); // Gray secondary button
+
+// Create CTA sections
+const ctaClass = createCTAClass('indigo'); // Gradient background for CTAs
+```
+
+#### **Adding New Sections**
+
+When adding a new section, follow these steps:
+
+1. **Add Color Scheme** to `theme.colors` in `src/utils/theme.ts`:
+
+```typescript
+colors: {
+  newsection: {
+    primary: 'emerald',
+    secondary: 'teal',
+    accent: 'cyan',
+    gradient: 'from-emerald-50 via-white to-teal-50',
+    border: 'emerald-100',
+    shadow: 'emerald-200',
+  },
+}
+```
+
+2. **Create Section Introduction** using the shared components
+3. **Update Navigation** in Header and Sidebar components
+4. **Add Routing** in App.tsx
+
+#### **Educational Content Structure**
+
+Each learning module follows this pattern:
+
+```typescript
+interface EducationalSection {
+  title: string;
+  description: string;
+  visualization: React.ComponentType;
+  content: {
+    introduction: string;
+    keyPoints: string[];
+    interactiveDemo?: React.ComponentType;
+    furtherReading?: string[];
+  };
+}
+```
+
+## 🧩 Component Development Guidelines
+
+### **2D Visualization Components (src/components/models2d/)**
+
+```typescript
+interface Visualization2DProps {
+  isActive?: boolean;
+  animationStep?: number;
+  onStepChange?: (step: number) => void;
+  className?: string;
+}
+
+// Example structure for 2D components
+const MyVisualization2D: React.FC<Visualization2DProps> = ({
+  isActive = false,
+  animationStep = 0,
+  onStepChange,
+  className = ""
+}) => {
+  // Animation state management
+  const [currentStep, setCurrentStep] = useState(animationStep);
+
+  // Interactive handlers
+  const handleElementClick = (elementId: string) => {
+    // Update animation state
+    // Trigger visual feedback
+  };
+
+  return (
+    <div className={`relative w-full h-96 ${className}`}>
+      <svg viewBox="0 0 800 400" className="w-full h-full">
+        {/* SVG content with animations */}
+      </svg>
+    </div>
+  );
+};
+```
+
+### **Educational Section Components (src/sections/)**
+
+```typescript
+interface SectionProps {
+  isActive?: boolean;
+  onNavigate?: (sectionId: string) => void;
+}
+
+const EducationalSection: React.FC<SectionProps> = ({ isActive, onNavigate }) => {
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left: Educational content */}
+        <div className="space-y-6">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Section Title
+          </h2>
+          <div className="prose dark:prose-invert">
+            {/* Educational content */}
+          </div>
+        </div>
+
+        {/* Right: Interactive visualization */}
+        <div className="space-y-4">
+          <VisualizationComponent isActive={isActive} />
+          <div className="flex gap-2">
+            {/* Demo controls */}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
 
 ### **Educational Content Structure**
 

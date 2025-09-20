@@ -49,6 +49,49 @@ export interface BaseVisualizationProps {
   animationSpeed?: number;
   showComplexity?: boolean;
   interactive?: boolean;
+}
+
+// Linked List specific types
+
+export interface DataStructureOperation {
+  type: 'insert' | 'delete' | 'search' | 'access' | 'traverse' | 'sort' | 'custom';
+  target?: string | number;
+  value?: number | string;
+  index?: number;
+  description: string;
+  complexity: {
+    time: string;
+    space: string;
+  };
+}
+
+export interface AnimationStep {
+  id: string;
+  description: string;
+  duration: number;
+  elements: DataStructureElement[];
+  highlightedElements?: string[];
+  activeOperation?: string;
+}
+
+export interface VisualizationState<T = DataStructureElement> {
+  data: T[];
+  currentStep: number;
+  totalSteps: number;
+  isPlaying: boolean;
+  isCompleted: boolean;
+  speed: number;
+  history: T[][];
+  operations: DataStructureOperation[];
+}
+
+export interface BaseVisualizationProps {
+  isActive?: boolean;
+  data?: DataStructureElement[];
+  onDataChange?: (newData: DataStructureElement[]) => void;
+  animationSpeed?: number;
+  showComplexity?: boolean;
+  interactive?: boolean;
   autoPlay?: boolean;
   className?: string;
   onOperationComplete?: (operation: DataStructureOperation) => void;
@@ -96,7 +139,7 @@ export interface ArrayElement extends DataStructureElement {
 export interface LinkedListNode extends DataStructureElement {
   next: string | null;
   prev?: string | null; // for doubly linked lists
-  memoryAddress?: string;
+  memoryAddress: string;
 }
 
 export interface StackElement extends DataStructureElement {

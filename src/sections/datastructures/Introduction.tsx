@@ -1,340 +1,337 @@
-import React, { useState } from 'react';
-import { Database, BookOpen, Clock, Code, ArrowRight } from 'lucide-react';
+import React from 'react';
+import { Database, BookOpen, Clock, Code } from 'lucide-react';
+import SectionLayout from '../../components/shared/SectionLayout';
+import ThemeCard from '../../components/shared/ThemeCard';
+import NavigationCard from '../../components/shared/NavigationCard';
+import StatsGrid from '../../components/shared/StatsGrid';
+import CTASection from '../../components/shared/CTASection';
+import { getSectionTheme } from '../../utils/theme';
 
-interface IntroductionProps {
-  onNavigate: (section: string) => void;
-}
+const Introduction: React.FC = () => {
+  const theme = getSectionTheme('datastructures');
 
-const Introduction: React.FC<IntroductionProps> = ({ onNavigate }) => {
-  const [activeDemo, setActiveDemo] = useState<string>('overview');
+  const navigateToSection = (sectionName: string) => {
+    // Navigate using the existing URL structure
+    const baseUrl = '/datastructures?section=';
+    const encodedSection = encodeURIComponent(sectionName);
+    window.location.href = baseUrl + encodedSection;
+  };
 
-  const demos = [
+  const stats = [
+    { value: '100+', label: 'Data Structures Covered' },
+    { value: 'O(n)', label: 'Complexity Analysis' },
+    { value: 'Real-World', label: 'Practical Examples' },
+  ];
+
+  const keyFeatures = [
     {
-      id: 'overview',
-      title: 'Data Structure Overview',
-      description: 'Understand the fundamental concepts',
-      icon: Database,
-      color: 'text-blue-600',
+      icon: <Database className={`w-8 h-8 text-${theme.primary}-600`} />,
+      title: 'Comprehensive Coverage',
+      description: 'From basic arrays to advanced tree structures and graph algorithms.',
     },
     {
-      id: 'comparison',
-      title: 'Performance Comparison',
-      description: 'Compare time and space complexities',
-      icon: Clock,
-      color: 'text-green-600',
+      icon: <Clock className={`w-8 h-8 text-${theme.secondary}-600`} />,
+      title: 'Performance Analysis',
+      description:
+        'Understand Big O notation and time/space complexity for optimal implementations.',
     },
     {
-      id: 'usage',
-      title: 'Real-World Usage',
-      description: 'Practical applications in software',
-      icon: Code,
-      color: 'text-purple-600',
+      icon: <Code className={`w-8 h-8 text-${theme.accent}-600`} />,
+      title: 'Practical Applications',
+      description: 'Real-world use cases from web development to system design and algorithms.',
     },
     {
-      id: 'timeline',
-      title: 'Historical Timeline',
-      description: 'Evolution of data structures',
-      icon: BookOpen,
-      color: 'text-orange-600',
+      icon: <BookOpen className={`w-8 h-8 text-${theme.primary}-600`} />,
+      title: 'Interactive Learning',
+      description:
+        'Visualize data structures with interactive diagrams and step-by-step animations.',
     },
   ];
 
-  return (
-    <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
-      <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl mb-6 shadow-lg">
-            <Database className="w-10 h-10 text-white" />
+  const benefits = [
+    {
+      category: 'For Developers',
+      benefits: [
+        'Master fundamental computer science concepts',
+        'Optimize code performance with efficient data structures',
+        'Solve complex algorithmic problems',
+        'Build scalable and maintainable applications',
+      ],
+    },
+    {
+      category: 'For Interviews',
+      benefits: [
+        'Prepare for technical interviews at top companies',
+        'Understand common data structure questions',
+        'Learn problem-solving patterns and techniques',
+        'Build confidence in algorithmic thinking',
+      ],
+    },
+    {
+      category: 'For Projects',
+      benefits: [
+        'Choose the right data structure for your use case',
+        'Implement efficient algorithms and data processing',
+        'Design scalable system architectures',
+        'Optimize memory usage and performance',
+      ],
+    },
+  ];
+
+  const complexityComparison = [
+    {
+      structure: 'Array',
+      access: 'O(1)',
+      search: 'O(n)',
+      insert: 'O(n)',
+      delete: 'O(n)',
+    },
+    {
+      structure: 'Linked List',
+      access: 'O(n)',
+      search: 'O(n)',
+      insert: 'O(1)',
+      delete: 'O(1)',
+    },
+    {
+      structure: 'Hash Table',
+      access: 'O(1)',
+      search: 'O(1)',
+      insert: 'O(1)',
+      delete: 'O(1)',
+    },
+    {
+      structure: 'Binary Tree',
+      access: 'O(log n)',
+      search: 'O(log n)',
+      insert: 'O(log n)',
+      delete: 'O(log n)',
+    },
+  ];
+
+  // Hero content
+  const heroContent = (
+    <div className="max-w-4xl mx-auto">
+      <div className="text-center mb-8">
+        <div className="flex justify-center mb-6">
+          <div className={`bg-${theme.primary}-100 p-4 rounded-full`}>
+            <Database className={`w-16 h-16 text-${theme.primary}-600`} />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-6">
-            Data Structures: The Building Blocks of Programming
-          </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            Data structures are specialized formats for organizing, processing, retrieving, and
-            storing data. They form the foundation of efficient algorithms and are essential for
-            solving complex computational problems.
+        </div>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Data Structures: The Building Blocks of Programming
+        </h1>
+        <p className="text-xl text-gray-700 leading-relaxed max-w-3xl mx-auto">
+          Data structures are specialized formats for organizing, processing, retrieving, and
+          storing data. They form the foundation of efficient algorithms and are essential for
+          solving complex computational problems.
+        </p>
+      </div>
+
+      <StatsGrid stats={stats} colorScheme={theme.primary} />
+    </div>
+  );
+
+  // Main content
+  const mainContent = (
+    <>
+      {/* What are Data Structures? */}
+      <ThemeCard>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
+          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+            <span className="text-white font-bold text-sm">DS</span>
+          </div>
+          What are Data Structures?
+        </h2>
+        <div className="space-y-4 text-gray-700 leading-relaxed">
+          <p>
+            Data structures are systematic ways of organizing and storing data in computer memory to
+            enable efficient access and modification. They provide the blueprint for how data
+            elements relate to each other and the operations that can be performed on it.
           </p>
+          <p>
+            Choosing the right data structure is crucial for writing efficient algorithms and
+            building performant applications. Each data structure has its own strengths and
+            trade-offs in terms of time complexity, space complexity, and ease of implementation.
+          </p>
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+            <p className="text-blue-800">
+              <strong>Key Insight:</strong> The choice of data structure can make or break your
+              application's performance. Understanding these fundamental building blocks is
+              essential for any serious programmer.
+            </p>
+          </div>
         </div>
+      </ThemeCard>
 
-        {/* Demo Tabs */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {demos.map((demo) => {
-            const IconComponent = demo.icon;
-            const isActive = activeDemo === demo.id;
-
-            return (
-              <button
-                key={demo.id}
-                onClick={() => setActiveDemo(demo.id)}
-                className={`
-                  flex items-center space-x-3 px-6 py-3 rounded-xl transition-all duration-200
-                  ${
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }
-                `}
-              >
-                <IconComponent className="w-5 h-5" />
-                <div className="text-left">
-                  <div className="font-medium">{demo.title}</div>
-                  <div className="text-xs opacity-75">{demo.description}</div>
-                </div>
-              </button>
-            );
-          })}
+      {/* Key Features Grid */}
+      <ThemeCard>
+        <h3 className="text-xl font-bold text-gray-900 mb-6">Why Data Structures Matter</h3>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {keyFeatures.map((feature, index) => (
+            <div
+              key={index}
+              className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow"
+            >
+              <div className="mb-4">{feature.icon}</div>
+              <h4 className="text-lg font-semibold text-gray-800 mb-2">{feature.title}</h4>
+              <p className="text-sm text-gray-600">{feature.description}</p>
+            </div>
+          ))}
         </div>
+      </ThemeCard>
 
-        {/* Demo Content */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-2xl p-8 mb-12">
-          {activeDemo === 'overview' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  What are Data Structures?
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Data structures are systematic ways of organizing and storing data in computer
-                  memory to enable efficient access and modification. They provide the blueprint for
-                  how data is arranged and the operations that can be performed on it.
-                </p>
+      {/* Performance Comparison */}
+      <ThemeCard>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Performance Comparison</h2>
 
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Organization</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        How data elements relate to each other
-                      </p>
-                    </div>
-                  </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-4 px-4 font-semibold text-gray-800">Structure</th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-800">Access</th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-800">Search</th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-800">Insert</th>
+                <th className="text-left py-4 px-4 font-semibold text-gray-800">Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {complexityComparison.map((comparison, index) => (
+                <tr
+                  key={index}
+                  className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
+                >
+                  <td className="py-4 px-4 font-medium text-blue-600">{comparison.structure}</td>
+                  <td className="py-4 px-4 text-green-600">{comparison.access}</td>
+                  <td className="py-4 px-4 text-orange-600">{comparison.search}</td>
+                  <td className="py-4 px-4 text-orange-600">{comparison.insert}</td>
+                  <td className="py-4 px-4 text-orange-600">{comparison.delete}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </ThemeCard>
 
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">
-                        Access Patterns
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Rules governing how data can be retrieved
-                      </p>
-                    </div>
-                  </div>
+      {/* Benefits for Different Audiences */}
+      <ThemeCard>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Benefits for Different Roles</h2>
 
-                  <div className="flex items-start space-x-3">
-                    <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Operations</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Available methods for manipulating the data
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Categories of Data Structures
-                </h4>
-                <div className="space-y-3">
-                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <h5 className="font-medium text-blue-700 dark:text-blue-300">Linear</h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      Arrays, Lists, Stacks, Queues
-                    </p>
-                  </div>
-                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <h5 className="font-medium text-green-700 dark:text-green-300">Non-Linear</h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      Trees, Graphs, Hash Tables
-                    </p>
-                  </div>
-                  <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
-                    <h5 className="font-medium text-purple-700 dark:text-purple-300">Abstract</h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      Sets, Maps, Priority Queues
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeDemo === 'comparison' && (
-            <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Performance Comparison
+        <div className="grid md:grid-cols-3 gap-8">
+          {benefits.map((category, index) => (
+            <div key={index} className="bg-white rounded-lg p-6 shadow-sm">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                {index === 0 && <Database className={`w-6 h-6 text-${theme.primary}-600 mr-2`} />}
+                {index === 1 && <Code className={`w-6 h-6 text-${theme.secondary}-600 mr-2`} />}
+                {index === 2 && <Clock className={`w-6 h-6 text-${theme.accent}-600 mr-2`} />}
+                {category.category}
               </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                        Structure
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                        Access
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                        Search
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                        Insert
-                      </th>
-                      <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                        Delete
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    <tr className="border-b border-gray-100 dark:border-gray-800">
-                      <td className="py-3 px-4 font-medium text-blue-600 dark:text-blue-400">
-                        Array
-                      </td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                      <td className="py-3 px-4 text-orange-600 dark:text-orange-400">O(n)</td>
-                      <td className="py-3 px-4 text-orange-600 dark:text-orange-400">O(n)</td>
-                      <td className="py-3 px-4 text-orange-600 dark:text-orange-400">O(n)</td>
-                    </tr>
-                    <tr className="border-b border-gray-100 dark:border-gray-800">
-                      <td className="py-3 px-4 font-medium text-green-600 dark:text-green-400">
-                        Linked List
-                      </td>
-                      <td className="py-3 px-4 text-orange-600 dark:text-orange-400">O(n)</td>
-                      <td className="py-3 px-4 text-orange-600 dark:text-orange-400">O(n)</td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                    </tr>
-                    <tr className="border-b border-gray-100 dark:border-gray-800">
-                      <td className="py-3 px-4 font-medium text-purple-600 dark:text-purple-400">
-                        Hash Table
-                      </td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                      <td className="py-3 px-4 text-green-600 dark:text-green-400">O(1)</td>
-                    </tr>
-                    <tr>
-                      <td className="py-3 px-4 font-medium text-indigo-600 dark:text-indigo-400">
-                        Binary Tree
-                      </td>
-                      <td className="py-3 px-4 text-yellow-600 dark:text-yellow-400">O(log n)</td>
-                      <td className="py-3 px-4 text-yellow-600 dark:text-yellow-400">O(log n)</td>
-                      <td className="py-3 px-4 text-yellow-600 dark:text-yellow-400">O(log n)</td>
-                      <td className="py-3 px-4 text-yellow-600 dark:text-yellow-400">O(log n)</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+              <ul className="space-y-2">
+                {category.benefits.map((benefit, benefitIndex) => (
+                  <li key={benefitIndex} className="text-sm text-gray-700 flex items-start">
+                    <span className="text-blue-500 mr-2 mt-1">•</span>
+                    <span>{benefit}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          )}
+          ))}
+        </div>
+      </ThemeCard>
+    </>
+  );
 
-          {activeDemo === 'usage' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                  Real-World Applications
-                </h3>
-                <div className="space-y-4">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-700 dark:text-blue-300 mb-2">
-                      Web Browsers
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Browser history (Stack), Page cache (Hash Table), DOM structure (Tree)
-                    </p>
-                  </div>
+  // Sidebar content
+  const sidebarContent = (
+    <>
+      {/* Exploration Navigation */}
+      <ThemeCard>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Explore Data Structures</h3>
+        <div className="space-y-3">
+          <NavigationCard
+            title="Linear Structures"
+            description="Arrays, Lists, Stacks, Queues"
+            colorScheme={theme.primary}
+            onClick={() => navigateToSection('Linear Structures')}
+          />
+          <NavigationCard
+            title="Hash Tables"
+            description="Key-value storage and lookup"
+            colorScheme={theme.secondary}
+            onClick={() => navigateToSection('Hash Tables')}
+          />
+          <NavigationCard
+            title="Tree Structures"
+            description="Hierarchical data organization"
+            colorScheme={theme.accent}
+            onClick={() => navigateToSection('Tree Structures')}
+          />
+          <NavigationCard
+            title="Graph Structures"
+            description="Complex relationships and networks"
+            colorScheme={theme.primary}
+            onClick={() => navigateToSection('Graph Structures')}
+          />
+          <NavigationCard
+            title="Complexity Analysis"
+            description="Big O notation and performance"
+            colorScheme={theme.secondary}
+            onClick={() => navigateToSection('Complexity Analysis')}
+          />
+        </div>
+      </ThemeCard>
 
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                    <h4 className="font-semibold text-green-700 dark:text-green-300 mb-2">
-                      Operating Systems
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Process scheduling (Queue), File system (Tree), Memory management (Heap)
-                    </p>
-                  </div>
-
-                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
-                    <h4 className="font-semibold text-purple-700 dark:text-purple-300 mb-2">
-                      Databases
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      Indexing (B-Trees), Caching (Hash Tables), Query optimization (Graphs)
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                  Choose the Right Structure
-                </h3>
-                <div className="space-y-3">
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                    <h5 className="font-medium text-gray-900 dark:text-white">
-                      For frequent searches
-                    </h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      Hash Tables, Binary Search Trees
-                    </p>
-                  </div>
-
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                    <h5 className="font-medium text-gray-900 dark:text-white">For ordered data</h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">
-                      Arrays, Linked Lists, Trees
-                    </p>
-                  </div>
-
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                    <h5 className="font-medium text-gray-900 dark:text-white">
-                      For hierarchical data
-                    </h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Trees, Graphs</p>
-                  </div>
-
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                    <h5 className="font-medium text-gray-900 dark:text-white">
-                      For LIFO/FIFO operations
-                    </h5>
-                    <p className="text-xs text-gray-600 dark:text-gray-300">Stacks, Queues</p>
-                  </div>
-                </div>
-              </div>
+      {/* Key Concepts */}
+      <ThemeCard>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Key Concepts</h3>
+        <div className="space-y-4">
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
+            <div>
+              <p className="font-medium text-gray-900 text-sm">Time Complexity</p>
+              <p className="text-xs text-gray-600">How execution time scales with input size</p>
             </div>
-          )}
-
-          {activeDemo === 'timeline' && (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-full mb-4">
-                <BookOpen className="w-8 h-8 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                History Timeline - Coming Soon
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                An interactive timeline showing the evolution of data structures from the 1950s to
-                today.
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+            <div>
+              <p className="font-medium text-gray-900 text-sm">Space Complexity</p>
+              <p className="text-xs text-gray-600">Memory usage patterns and trade-offs</p>
+            </div>
+          </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+            <div>
+              <p className="font-medium text-gray-900 text-sm">Trade-offs</p>
+              <p className="text-xs text-gray-600">
+                Balancing different performance characteristics
               </p>
             </div>
-          )}
+          </div>
         </div>
+      </ThemeCard>
+    </>
+  );
 
-        {/* Navigation */}
-        <div className="flex justify-end">
-          <button
-            onClick={() => onNavigate('linear-structures')}
-            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl"
-          >
-            <span>Linear Structures</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-    </section>
+  return (
+    <>
+      <SectionLayout
+        section="datastructures"
+        hero={heroContent}
+        mainContent={mainContent}
+        sidebar={sidebarContent}
+      />
+
+      {/* Bottom CTA */}
+      <CTASection
+        title="Ready to Master Data Structures?"
+        description="Dive into interactive visualizations that will transform how you think about organizing and processing data in your applications."
+        buttonText="Start Learning"
+        onButtonClick={() => navigateToSection('Linear Structures')}
+        colorScheme={theme.primary}
+      />
+    </>
   );
 };
 

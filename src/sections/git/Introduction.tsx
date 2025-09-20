@@ -1,15 +1,9 @@
 import React from 'react';
-import {
-  GitBranch,
-  Server,
-  Shield,
-  Zap,
-  Users,
-  Database,
-  Clock,
-  GitFork,
-  CheckCircle,
-} from 'lucide-react';
+import SectionLayout from '../../components/shared/SectionLayout';
+import ThemeCard from '../../components/shared/ThemeCard';
+import NavigationCard from '../../components/shared/NavigationCard';
+import CTASection from '../../components/shared/CTASection';
+import { GitBranch, Shield, Zap, Users, Database, GitFork, CheckCircle } from 'lucide-react';
 
 const Introduction: React.FC = () => {
   const navigateToSection = (sectionName: string) => {
@@ -18,145 +12,45 @@ const Introduction: React.FC = () => {
     window.location.href = baseUrl + encodedSection;
   };
 
-  // Learning progress tracking
-  const learningPath = [
-    { name: 'Introduction', completed: true, current: true },
-    { name: 'Git Architecture', completed: false, current: false },
-    { name: 'Three-Tree Model', completed: false, current: false },
-    { name: 'Object Model', completed: false, current: false },
-    { name: 'Core Workflow', completed: false, current: false },
-    { name: 'Branching & Merging', completed: false, current: false },
-    { name: 'Professional Workflows', completed: false, current: false },
-    { name: 'History Management', completed: false, current: false },
-  ];
-
-  const keyFeatures = [
-    {
-      icon: <GitBranch className="w-8 h-8 text-orange-600" />,
-      title: 'Distributed Architecture',
-      description:
-        'Every developer has a complete copy of the project history, enabling offline work and powerful collaboration.',
-    },
-    {
-      icon: <Shield className="w-8 h-8 text-orange-600" />,
-      title: 'Cryptographic Security',
-      description:
-        'SHA-1 hashing ensures data integrity and makes it impossible to alter history without detection.',
-    },
-    {
-      icon: <Zap className="w-8 h-8 text-orange-600" />,
-      title: 'Lightning Fast',
-      description: 'Local operations are incredibly fast since most commands work with local data.',
-    },
-    {
-      icon: <GitFork className="w-8 h-8 text-orange-600" />,
-      title: 'Powerful Branching',
-      description:
-        'Lightweight branches enable parallel development and experimental features without risk.',
-    },
-  ];
-
-  const gitBenefits = [
-    {
-      category: 'For Developers',
-      benefits: [
-        'Work offline with full version control capabilities',
-        'Experiment with features using lightweight branches',
-        'Powerful tools for code archaeology and debugging',
-        'Fast, local operations for improved productivity',
-      ],
-    },
-    {
-      category: 'For Teams',
-      benefits: [
-        'Flexible workflows that adapt to team structure',
-        'Parallel development without conflicts',
-        'Comprehensive audit trail and accountability',
-        'Seamless integration with modern development tools',
-      ],
-    },
-    {
-      category: 'For Projects',
-      benefits: [
-        'Complete project history preservation',
-        'Reliable backup through distributed copies',
-        'Support for multiple release strategies',
-        'Integration with CI/CD and automation tools',
-      ],
-    },
-  ];
-
-  const compareVCS = [
-    {
-      feature: 'Architecture',
-      git: 'Distributed - Everyone has full history',
-      traditional: 'Centralized - Single point of failure',
-      advantage: 'git',
-    },
-    {
-      feature: 'Offline Work',
-      git: 'Full functionality offline',
-      traditional: 'Limited or no offline capability',
-      advantage: 'git',
-    },
-    {
-      feature: 'Branching',
-      git: 'Lightweight, fast, encouraged',
-      traditional: 'Heavy, slow, often avoided',
-      advantage: 'git',
-    },
-    {
-      feature: 'Merging',
-      git: 'Sophisticated merge algorithms',
-      traditional: 'Basic or manual merging',
-      advantage: 'git',
-    },
-    {
-      feature: 'Performance',
-      git: 'Fast local operations',
-      traditional: 'Network dependent',
-      advantage: 'git',
-    },
-  ];
-
-  return (
-    <section className="mb-8">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 rounded-2xl p-8 mb-8 border border-orange-200 shadow-lg">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            <div className="bg-orange-100 p-4 rounded-full">
-              <GitBranch className="w-16 h-16 text-orange-600" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Master Git: The Foundation of Modern Development
-          </h1>
-          <p className="text-xl text-gray-700 mb-6 leading-relaxed">
-            Git is the world's most popular distributed version control system, powering millions of
-            projects from small scripts to massive enterprise applications. Learn how Git
-            revolutionized software development through its innovative architecture and powerful
-            collaboration features.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <span className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🌐 Distributed VCS
-            </span>
-            <span className="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🔒 Cryptographic Security
-            </span>
-            <span className="bg-pink-100 text-pink-800 px-4 py-2 rounded-full text-sm font-semibold">
-              ⚡ Lightning Fast
-            </span>
-            <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🚀 Powerful Workflows
-            </span>
-          </div>
+  // Hero content with title, description, and stats
+  const heroContent = (
+    <div className="max-w-4xl mx-auto text-center">
+      <div className="flex justify-center mb-6">
+        <div className="bg-orange-100 p-4 rounded-full">
+          <GitBranch className="w-16 h-16 text-orange-600" />
         </div>
       </div>
+      <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        Master Git: The Foundation of Modern Development
+      </h1>
+      <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+        Git is the world's most popular distributed version control system, powering millions of
+        projects from small scripts to massive enterprise applications. Learn how Git revolutionized
+        software development through its innovative architecture and powerful collaboration
+        features.
+      </p>
+      <div className="flex flex-wrap justify-center gap-3">
+        <span className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
+          🌐 Distributed VCS
+        </span>
+        <span className="bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-semibold">
+          🔒 Cryptographic Security
+        </span>
+        <span className="bg-pink-100 text-pink-800 px-4 py-2 rounded-full text-sm font-semibold">
+          ⚡ Lightning Fast
+        </span>
+        <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
+          🚀 Powerful Workflows
+        </span>
+      </div>
+    </div>
+  );
 
+  // Main content with cards and information
+  const mainContent = (
+    <>
       {/* What is Git? */}
-      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+      <ThemeCard>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">What is Git?</h2>
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
@@ -207,7 +101,32 @@ const Introduction: React.FC = () => {
 
         {/* Key Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {keyFeatures.map((feature, index) => (
+          {[
+            {
+              icon: <GitBranch className="w-8 h-8 text-orange-600" />,
+              title: 'Distributed Architecture',
+              description:
+                'Every developer has a complete copy of the project history, enabling offline work and powerful collaboration.',
+            },
+            {
+              icon: <Shield className="w-8 h-8 text-orange-600" />,
+              title: 'Cryptographic Security',
+              description:
+                'SHA-1 hashing ensures data integrity and makes it impossible to alter history without detection.',
+            },
+            {
+              icon: <Zap className="w-8 h-8 text-orange-600" />,
+              title: 'Lightning Fast',
+              description:
+                'Local operations are incredibly fast since most commands work with local data.',
+            },
+            {
+              icon: <GitFork className="w-8 h-8 text-orange-600" />,
+              title: 'Powerful Branching',
+              description:
+                'Lightweight branches enable parallel development and experimental features without risk.',
+            },
+          ].map((feature, index) => (
             <div
               key={index}
               className="bg-gradient-to-br from-gray-50 to-orange-50 rounded-lg p-6 border border-gray-200 hover:shadow-md transition-shadow"
@@ -218,10 +137,10 @@ const Introduction: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </ThemeCard>
 
       {/* Git vs Traditional VCS Comparison */}
-      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+      <ThemeCard>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">
           Git vs Traditional Version Control
         </h2>
@@ -238,7 +157,38 @@ const Introduction: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {compareVCS.map((comparison, index) => (
+              {[
+                {
+                  feature: 'Architecture',
+                  git: 'Distributed - Everyone has full history',
+                  traditional: 'Centralized - Single point of failure',
+                  advantage: 'git',
+                },
+                {
+                  feature: 'Offline Work',
+                  git: 'Full functionality offline',
+                  traditional: 'Limited or no offline capability',
+                  advantage: 'git',
+                },
+                {
+                  feature: 'Branching',
+                  git: 'Lightweight, fast, encouraged',
+                  traditional: 'Heavy, slow, often avoided',
+                  advantage: 'git',
+                },
+                {
+                  feature: 'Merging',
+                  git: 'Sophisticated merge algorithms',
+                  traditional: 'Basic or manual merging',
+                  advantage: 'git',
+                },
+                {
+                  feature: 'Performance',
+                  git: 'Fast local operations',
+                  traditional: 'Network dependent',
+                  advantage: 'git',
+                },
+              ].map((comparison, index) => (
                 <tr
                   key={index}
                   className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
@@ -256,19 +206,48 @@ const Introduction: React.FC = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </ThemeCard>
 
       {/* Benefits for Different Audiences */}
-      <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-8 mb-8 border border-orange-200">
+      <ThemeCard>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Why Git Matters</h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {gitBenefits.map((category, index) => (
+          {[
+            {
+              category: 'For Developers',
+              icon: <Users className="w-6 h-6 text-orange-600 mr-2" />,
+              benefits: [
+                'Work offline with full version control capabilities',
+                'Experiment with features using lightweight branches',
+                'Powerful tools for code archaeology and debugging',
+                'Fast, local operations for improved productivity',
+              ],
+            },
+            {
+              category: 'For Teams',
+              icon: <GitFork className="w-6 h-6 text-orange-600 mr-2" />,
+              benefits: [
+                'Flexible workflows that adapt to team structure',
+                'Parallel development without conflicts',
+                'Comprehensive audit trail and accountability',
+                'Seamless integration with modern development tools',
+              ],
+            },
+            {
+              category: 'For Projects',
+              icon: <Database className="w-6 h-6 text-orange-600 mr-2" />,
+              benefits: [
+                'Complete project history preservation',
+                'Reliable backup through distributed copies',
+                'Support for multiple release strategies',
+                'Integration with CI/CD and automation tools',
+              ],
+            },
+          ].map((category, index) => (
             <div key={index} className="bg-white rounded-lg p-6 shadow-sm">
               <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                {index === 0 && <Users className="w-6 h-6 text-orange-600 mr-2" />}
-                {index === 1 && <GitFork className="w-6 h-6 text-orange-600 mr-2" />}
-                {index === 2 && <Database className="w-6 h-6 text-orange-600 mr-2" />}
+                {category.icon}
                 {category.category}
               </h3>
               <ul className="space-y-2">
@@ -282,10 +261,10 @@ const Introduction: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </ThemeCard>
 
       {/* Git Adoption Stats */}
-      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+      <ThemeCard>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Git's Global Impact</h2>
 
         <div className="grid md:grid-cols-4 gap-6 mb-8">
@@ -332,10 +311,10 @@ const Introduction: React.FC = () => {
             </span>
           </div>
         </div>
-      </div>
+      </ThemeCard>
 
       {/* Learning Progress */}
-      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+      <ThemeCard>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">📚 Your Git Learning Path</h2>
         <p className="text-gray-700 mb-6">
           Follow our structured curriculum to build Git expertise step by step. Each section builds
@@ -343,7 +322,16 @@ const Introduction: React.FC = () => {
         </p>
 
         <div className="space-y-3">
-          {learningPath.map((step, index) => (
+          {[
+            { name: 'Introduction', completed: true, current: true },
+            { name: 'Git Architecture', completed: false, current: false },
+            { name: 'Three-Tree Model', completed: false, current: false },
+            { name: 'Object Model', completed: false, current: false },
+            { name: 'Core Workflow', completed: false, current: false },
+            { name: 'Branching & Merging', completed: false, current: false },
+            { name: 'Professional Workflows', completed: false, current: false },
+            { name: 'History Management', completed: false, current: false },
+          ].map((step, index) => (
             <div
               key={step.name}
               className={`flex items-center p-4 rounded-lg border transition-colors ${
@@ -392,97 +380,73 @@ const Introduction: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </ThemeCard>
+    </>
+  );
 
-      {/* Learning Path */}
-      <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-8 border border-orange-200">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">🚀 Interactive Learning Modules</h2>
-        <p className="text-xl text-gray-700 mb-6">
-          Master Git through our comprehensive, interactive tutorials designed to take you from
-          beginner to expert with hands-on visualizations and real-world examples.
-        </p>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button
+  // Sidebar with navigation cards
+  const sidebarContent = (
+    <>
+      <ThemeCard>
+        <h3 className="text-lg font-bold text-gray-900 mb-4">🚀 Interactive Learning Modules</h3>
+        <div className="space-y-3">
+          <NavigationCard
+            title="Git Architecture"
+            description="Understand distributed vs centralized systems"
+            colorScheme="orange"
             onClick={() => navigateToSection('Git Architecture')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors group"
-          >
-            <div className="flex items-center mb-2">
-              <Server className="w-6 h-6 text-orange-600 mr-2" />
-              <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                Git Architecture
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600">Understand distributed vs centralized systems</p>
-          </button>
-
-          <button
+          />
+          <NavigationCard
+            title="Three-Tree Model"
+            description="Working Directory, Staging Area, Repository"
+            colorScheme="orange"
             onClick={() => navigateToSection('Three-Tree Model')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors group"
-          >
-            <div className="flex items-center mb-2">
-              <GitBranch className="w-6 h-6 text-orange-600 mr-2" />
-              <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                Three-Tree Model
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600">Working Directory, Staging Area, Repository</p>
-          </button>
-
-          <button
+          />
+          <NavigationCard
+            title="Core Workflow"
+            description="Essential Git commands and operations"
+            colorScheme="orange"
             onClick={() => navigateToSection('Core Workflow')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors group"
-          >
-            <div className="flex items-center mb-2">
-              <Clock className="w-6 h-6 text-orange-600 mr-2" />
-              <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                Core Workflow
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600">Essential Git commands and operations</p>
-          </button>
-
-          <button
+          />
+          <NavigationCard
+            title="Branching & Merging"
+            description="Powerful parallel development techniques"
+            colorScheme="orange"
             onClick={() => navigateToSection('Branching & Merging')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors group"
-          >
-            <div className="flex items-center mb-2">
-              <GitFork className="w-6 h-6 text-orange-600 mr-2" />
-              <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                Branching & Merging
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600">Powerful parallel development techniques</p>
-          </button>
-
-          <button
+          />
+          <NavigationCard
+            title="Team Workflows"
+            description="Git Flow, GitHub Flow, and collaboration"
+            colorScheme="orange"
             onClick={() => navigateToSection('Professional Workflows')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors group"
-          >
-            <div className="flex items-center mb-2">
-              <Users className="w-6 h-6 text-orange-600 mr-2" />
-              <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                Team Workflows
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600">Git Flow, GitHub Flow, and collaboration</p>
-          </button>
-
-          <button
+          />
+          <NavigationCard
+            title="Interactive Playground"
+            description="Practice Git concepts safely"
+            colorScheme="orange"
             onClick={() => navigateToSection('Visualization')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors group"
-          >
-            <div className="flex items-center mb-2">
-              <Zap className="w-6 h-6 text-orange-600 mr-2" />
-              <h3 className="font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
-                Interactive Playground
-              </h3>
-            </div>
-            <p className="text-sm text-gray-600">Practice Git concepts safely</p>
-          </button>
+          />
         </div>
-      </div>
-    </section>
+      </ThemeCard>
+    </>
+  );
+
+  return (
+    <>
+      <SectionLayout
+        section="git"
+        hero={heroContent}
+        mainContent={mainContent}
+        sidebar={sidebarContent}
+      />
+      <CTASection
+        title="Ready to Master Git?"
+        description="Dive into interactive visualizations that will transform how you understand version control and collaboration in software development."
+        buttonText="Start Learning"
+        onButtonClick={() => navigateToSection('Git Architecture')}
+        colorScheme="orange"
+      />
+    </>
   );
 };
 

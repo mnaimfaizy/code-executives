@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, GitBranch, Database, Play, RotateCcw } from 'lucide-react';
+import { getSectionTheme } from '../../../utils/theme';
 
 interface ThreeTree2DProps {
   activeStep: number;
@@ -7,6 +8,7 @@ interface ThreeTree2DProps {
 }
 
 const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) => {
+  const theme = getSectionTheme('git');
   const [animationStep, setAnimationStep] = useState(activeStep);
   const [isAnimating, setIsAnimating] = useState(false);
   const [fileStates, setFileStates] = useState({
@@ -20,27 +22,27 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
       id: 'working',
       title: 'Working Directory',
       icon: <FileText className="w-8 h-8" />,
-      color: 'bg-blue-500',
-      lightColor: 'bg-blue-100',
-      borderColor: 'border-blue-300',
+      color: `bg-[${theme.primary}]`,
+      lightColor: `bg-[${theme.primary}10]`,
+      borderColor: `border-[${theme.border}]`,
       description: 'Your local files that you edit',
     },
     {
       id: 'staging',
       title: 'Staging Area',
       icon: <GitBranch className="w-8 h-8" />,
-      color: 'bg-yellow-500',
-      lightColor: 'bg-yellow-100',
-      borderColor: 'border-yellow-300',
+      color: `bg-[${theme.secondary}]`,
+      lightColor: `bg-[${theme.secondary}10]`,
+      borderColor: `border-[${theme.border}]`,
       description: 'Files prepared for next commit',
     },
     {
       id: 'repository',
       title: 'Repository',
       icon: <Database className="w-8 h-8" />,
-      color: 'bg-green-500',
-      lightColor: 'bg-green-100',
-      borderColor: 'border-green-300',
+      color: `bg-[${theme.accent}]`,
+      lightColor: `bg-[${theme.accent}10]`,
+      borderColor: `border-[${theme.border}]`,
       description: 'Committed versions of files',
     },
   ];
@@ -166,7 +168,7 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
         <button
           onClick={startAnimation}
           disabled={isAnimating}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className={`flex items-center gap-2 px-4 py-2 bg-[${theme.primary}] text-white rounded-lg hover:bg-[${theme.secondary}] disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
         >
           <Play className="w-4 h-4" />
           Start Animation
@@ -277,7 +279,7 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
                         <polygon
                           points="0 0, 10 3.5, 0 7"
                           className={`${
-                            animationStep === index ? 'fill-orange-500' : 'fill-gray-400'
+                            animationStep === index ? `fill-[${theme.primary}]` : 'fill-gray-400'
                           } transition-colors duration-300`}
                         />
                       </marker>
@@ -290,7 +292,7 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
                       y2={y + 125}
                       className={`${
                         animationStep === index
-                          ? 'stroke-orange-500 stroke-2'
+                          ? `stroke-[${theme.primary}] stroke-2`
                           : 'stroke-gray-400 stroke-1'
                       } transition-all duration-300`}
                       markerEnd={`url(#arrowhead-${index})`}
@@ -304,7 +306,7 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
                       height={20}
                       className={`${
                         animationStep === index
-                          ? 'fill-orange-100 stroke-orange-300'
+                          ? `fill-[${theme.primary}10] stroke-[${theme.primary}]`
                           : 'fill-gray-100 stroke-gray-300'
                       } transition-all duration-300`}
                       rx="4"
@@ -315,7 +317,7 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
                       y={y + 118}
                       textAnchor="middle"
                       className={`text-xs font-mono ${
-                        animationStep === index ? 'fill-orange-700' : 'fill-gray-600'
+                        animationStep === index ? `fill-[${theme.primary}]` : 'fill-gray-600'
                       } transition-colors duration-300`}
                     >
                       {operations[index]?.command}
@@ -335,12 +337,14 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
             key={index}
             className={`p-4 rounded-lg border-2 transition-all duration-300 ${
               animationStep === index
-                ? 'border-orange-300 bg-orange-50 shadow-lg'
+                ? `border-[${theme.primary}] bg-[${theme.primary}10] shadow-lg`
                 : 'border-gray-200 bg-white'
             }`}
           >
             <div className="flex items-center gap-2 mb-2">
-              <code className="bg-gray-900 text-orange-400 px-2 py-1 rounded text-xs font-mono">
+              <code
+                className={`bg-gray-900 text-[${theme.primary}] px-2 py-1 rounded text-xs font-mono`}
+              >
                 {op.command}
               </code>
             </div>
@@ -358,7 +362,9 @@ const ThreeTree2D: React.FC<ThreeTree2DProps> = ({ activeStep, onStepChange }) =
               onClick={() => handleStepClick(step)}
               disabled={isAnimating}
               className={`w-3 h-3 rounded-full transition-all duration-300 disabled:cursor-not-allowed ${
-                animationStep === step ? 'bg-orange-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'
+                animationStep === step
+                  ? `bg-[${theme.primary}] scale-125`
+                  : 'bg-gray-300 hover:bg-gray-400'
               }`}
               title={`Step ${step + 1}`}
             />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BarChart3, ArrowRight, Play, Pause, RotateCcw } from 'lucide-react';
 import ArrayVisualization from '../../components/models2d/datastructures/linear/ArrayVisualization';
+import { getSectionTheme } from '../../utils/theme';
 
 interface ArraysProps {
   onNavigate: (section: string) => void;
@@ -8,16 +9,23 @@ interface ArraysProps {
 
 const Arrays: React.FC<ArraysProps> = ({ onNavigate }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const theme = getSectionTheme('datastructures');
 
   return (
-    <section className="relative min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+    <section
+      className={`relative min-h-screen bg-gradient-to-br from-${theme.primary}-50 via-${theme.secondary}-50 to-${theme.accent}-50 dark:from-gray-900 dark:via-${theme.primary}-900/20 dark:to-${theme.accent}-900/20`}
+    >
       <div className="relative z-10 max-w-7xl mx-auto px-6 pt-20 pb-12">
         {/* Header */}
         <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl mb-6 shadow-lg">
+          <div
+            className={`inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-${theme.primary}-600 to-${theme.primary}-800 rounded-2xl mb-6 shadow-lg`}
+          >
             <BarChart3 className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent mb-6">
+          <h1
+            className={`text-5xl font-bold bg-gradient-to-r from-${theme.primary}-600 via-${theme.secondary}-700 to-${theme.accent}-800 bg-clip-text text-transparent mb-6`}
+          >
             Arrays
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
@@ -28,7 +36,9 @@ const Arrays: React.FC<ArraysProps> = ({ onNavigate }) => {
         </div>
 
         {/* Interactive Visualization */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-blue-200 dark:border-blue-800 rounded-2xl p-8 mb-12">
+        <div
+          className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-${theme.primary}-200 dark:border-${theme.primary}-800 rounded-2xl p-8 mb-12`}
+        >
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
               Interactive Array Demo
@@ -36,7 +46,7 @@ const Arrays: React.FC<ArraysProps> = ({ onNavigate }) => {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className={`flex items-center space-x-2 px-4 py-2 bg-${theme.primary}-600 text-white rounded-lg hover:bg-${theme.primary}-700 transition-colors`}
               >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 <span>{isPlaying ? 'Pause' : 'Play'}</span>
@@ -274,7 +284,7 @@ const Arrays: React.FC<ArraysProps> = ({ onNavigate }) => {
 
           <button
             onClick={() => onNavigate('Linked Lists')}
-            className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-200 shadow-lg hover:shadow-xl"
+            className={`flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-${theme.primary}-600 to-${theme.secondary}-600 text-white rounded-lg hover:from-${theme.primary}-700 hover:to-${theme.secondary}-700 transition-all duration-200 shadow-lg hover:shadow-xl`}
           >
             <span>Linked Lists</span>
             <ArrowRight className="w-4 h-4" />

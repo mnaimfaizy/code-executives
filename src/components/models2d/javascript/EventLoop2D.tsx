@@ -1,4 +1,5 @@
 import React from 'react';
+import { getSectionTheme } from '../../../utils/theme';
 
 const VIEWBOX_W = 800;
 const VIEWBOX_H = 420;
@@ -24,12 +25,14 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
   activeLight,
   activeBlock,
 }) => {
+  const theme = getSectionTheme('javascript');
+
   return (
     <div
       style={{
         width: '100%',
         height: '100%',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: `linear-gradient(135deg, ${theme.primary}20, ${theme.secondary}20)`,
         borderRadius: '0.5rem',
         boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
         overflow: 'hidden',
@@ -68,7 +71,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
           y={48}
           fontSize="32"
           fontWeight="700"
-          fill="#6366f1"
+          fill={theme.primary}
           style={{ letterSpacing: 1 }}
         >
           Event Loop
@@ -101,13 +104,13 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   height={blockH * 4}
                   rx={18}
                   fill="#eef2ff"
-                  stroke={activeBlock === 'stack' ? '#22c55e' : '#6366f1'}
+                  stroke={activeBlock === 'stack' ? '#22c55e' : theme.primary}
                   strokeWidth={activeBlock === 'stack' ? 6 : 3}
                   style={{
                     filter:
                       activeBlock === 'stack'
                         ? 'drop-shadow(0 0 16px #22c55e88)'
-                        : 'drop-shadow(0 2px 8px #6366f133)',
+                        : `drop-shadow(0 2px 8px ${theme.primary}33)`,
                   }}
                   onMouseOver={(e) => {
                     const tooltip = document.getElementById('eventloop-tooltip');
@@ -130,7 +133,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   textAnchor="middle"
                   fontSize="22"
                   fontWeight="700"
-                  fill="#6366f1"
+                  fill={theme.primary}
                   style={{ letterSpacing: 1 }}
                 >
                   Call Stack
@@ -143,7 +146,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                       width={blockW - 16}
                       height={blockH - 16}
                       rx={10}
-                      fill="#6366f1"
+                      fill={theme.primary}
                       opacity={
                         animating?.type === 'pop' && animating.label === item
                           ? 0.3
@@ -403,13 +406,13 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   height={80}
                   rx={24}
                   fill="#e0e7ff"
-                  stroke={activeBlock === 'eventloop' ? '#22c55e' : '#6366f1'}
+                  stroke={activeBlock === 'eventloop' ? '#22c55e' : theme.primary}
                   strokeWidth={activeBlock === 'eventloop' ? 6 : 4}
                   style={{
                     filter:
                       activeBlock === 'eventloop'
                         ? 'drop-shadow(0 0 16px #22c55e88)'
-                        : 'drop-shadow(0 2px 8px #6366f133)',
+                        : `drop-shadow(0 2px 8px ${theme.primary}33)`,
                   }}
                   onMouseOver={(e) => {
                     const tooltip = document.getElementById('eventloop-tooltip');
@@ -434,7 +437,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   width={120}
                   height={20}
                   rx={10}
-                  fill="#6366f1"
+                  fill={theme.primary}
                   opacity={0.15}
                 />
                 {/* Gears */}
@@ -443,14 +446,14 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                     cx={eventLoopX - 30}
                     cy={eventLoopY + 30}
                     r={10}
-                    fill="#6366f1"
+                    fill={theme.primary}
                     opacity={0.25}
                   />
                   <circle
                     cx={eventLoopX + 30}
                     cy={eventLoopY + 30}
                     r={8}
-                    fill="#6366f1"
+                    fill={theme.primary}
                     opacity={0.18}
                   />
                   {/* Simple gear teeth */}
@@ -460,7 +463,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                     width={20}
                     height={4}
                     rx={2}
-                    fill="#6366f1"
+                    fill={theme.primary}
                     opacity={0.18}
                   />
                   <rect
@@ -469,7 +472,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                     width={16}
                     height={4}
                     rx={2}
-                    fill="#6366f1"
+                    fill={theme.primary}
                     opacity={0.12}
                   />
                 </g>
@@ -479,7 +482,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   cy={eventLoopY - 16}
                   r={10}
                   fill={activeLight === 'green' ? '#22c55e' : '#a7f3d0'}
-                  stroke="#6366f1"
+                  stroke={theme.primary}
                   strokeWidth="2"
                   style={{
                     filter: activeLight === 'green' ? 'drop-shadow(0 0 8px #22c55e)' : undefined,
@@ -490,7 +493,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   cy={eventLoopY}
                   r={10}
                   fill={activeLight === 'yellow' ? '#f59e0b' : '#fef9c3'}
-                  stroke="#6366f1"
+                  stroke={theme.primary}
                   strokeWidth="2"
                   style={{
                     filter: activeLight === 'yellow' ? 'drop-shadow(0 0 8px #f59e0b)' : undefined,
@@ -501,7 +504,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   cy={eventLoopY + 16}
                   r={10}
                   fill={activeLight === 'red' ? '#ef4444' : '#fee2e2'}
-                  stroke="#6366f1"
+                  stroke={theme.primary}
                   strokeWidth="2"
                   style={{
                     filter: activeLight === 'red' ? 'drop-shadow(0 0 8px #ef4444)' : undefined,
@@ -514,7 +517,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   textAnchor="middle"
                   fontSize="18"
                   fontWeight="700"
-                  fill="#6366f1"
+                  fill={theme.primary}
                   style={{ letterSpacing: 1 }}
                 >
                   Event Loop
@@ -544,7 +547,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                 {/* EventLoop to CallStack */}
                 <path
                   d={`M${eventLoopX - 30},${eventLoopY} Q${eventLoopX - 60},${eventLoopY} ${stackX + blockW + 20},${stackY + blockH * 2}`}
-                  stroke="#6366f1"
+                  stroke={theme.primary}
                   strokeWidth="3"
                   fill="none"
                   markerEnd="url(#arrowhead-stack)"
@@ -585,7 +588,7 @@ const EventLoop2D: React.FC<EventLoop2DProps> = ({
                   orient="auto"
                   markerUnits="strokeWidth"
                 >
-                  <polygon points="0,0 10,5 0,10" fill="#6366f1" />
+                  <polygon points="0,0 10,5 0,10" fill={theme.primary} />
                 </marker>
               </defs>
             </g>
