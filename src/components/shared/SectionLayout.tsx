@@ -21,6 +21,7 @@ const SectionLayout: React.FC<SectionLayoutProps> = ({
 }) => {
   const theme = getSectionTheme(section);
 
+  const hasSidebar = !!sidebar;
   return (
     <section className={`${sectionClasses.container} ${className}`}>
       {/* Hero Section */}
@@ -30,14 +31,17 @@ const SectionLayout: React.FC<SectionLayoutProps> = ({
         {hero}
       </div>
 
-      {/* Main Content Grid */}
-      <div className={sectionClasses.contentGrid}>
-        {/* Left Column - Main Content */}
-        <div className={sectionClasses.mainContent}>{mainContent}</div>
-
-        {/* Right Column - Navigation & Quick Links */}
-        <div className={sectionClasses.sidebar}>{sidebar}</div>
-      </div>
+      {/* Main Content Layout */}
+      {hasSidebar ? (
+        <div className={sectionClasses.contentGrid}>
+          {/* Left Column - Main Content */}
+          <div className={sectionClasses.mainContent}>{mainContent}</div>
+          {/* Right Column - Navigation & Quick Links */}
+          <div className={sectionClasses.sidebar}>{sidebar}</div>
+        </div>
+      ) : (
+        <div className="w-full">{mainContent}</div>
+      )}
     </section>
   );
 };

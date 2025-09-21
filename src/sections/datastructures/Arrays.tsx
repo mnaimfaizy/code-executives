@@ -66,37 +66,17 @@ const Arrays: React.FC = () => {
               </ul>
             </div>
           </div>
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <ArrayVisualization className="w-full" />
-          </div>
         </div>
       </ThemeCard>
+      {/* Visualization truly full width */}
+      <div className="w-full px-0 mt-8">
+        <ArrayVisualization className="w-full" />
+      </div>
     </>
   );
 
-  const sidebarContent = (
-    <>
-      <ThemeCard>
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Linear Structures</h3>
-        <div className="space-y-3">
-          <NavigationCard
-            title="Linked Lists"
-            description="Dynamic pointer-based lists"
-            icon={<ArrowRight className="w-5 h-5" />}
-            onClick={() => navigateToSection('Linked Lists')}
-            colorScheme="indigo"
-          />
-          <NavigationCard
-            title="Stacks"
-            description="LIFO data structure"
-            icon={<Database className="w-5 h-5" />}
-            onClick={() => navigateToSection('Stacks')}
-            colorScheme="purple"
-          />
-        </div>
-      </ThemeCard>
-    </>
-  );
+  // No sidebar for full width visualization
+  const sidebarContent = undefined;
 
   return (
     <>
@@ -106,6 +86,28 @@ const Arrays: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      {/* Navigation cards and CTA below visualization */}
+      <div className="max-w-4xl mx-auto mt-8">
+        <ThemeCard>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Linear Structures</h3>
+          <div className="space-y-3">
+            <NavigationCard
+              title="Linked Lists"
+              description="Dynamic pointer-based lists"
+              icon={<ArrowRight className="w-5 h-5" />}
+              onClick={() => navigateToSection('Linked Lists')}
+              colorScheme="indigo"
+            />
+            <NavigationCard
+              title="Stacks"
+              description="LIFO data structure"
+              icon={<Database className="w-5 h-5" />}
+              onClick={() => navigateToSection('Stacks')}
+              colorScheme="purple"
+            />
+          </div>
+        </ThemeCard>
+      </div>
       <CTASection
         title="Master Array Operations"
         description="Understanding arrays is crucial for efficient programming."
