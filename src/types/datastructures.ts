@@ -136,6 +136,17 @@ export interface ArrayElement extends DataStructureElement {
   index: number;
 }
 
+export interface Array2DElement extends DataStructureElement {
+  row: number;
+  col: number;
+  index: number; // flattened index
+}
+
+export interface SparseArrayElement extends DataStructureElement {
+  index: number;
+  originalIndex: number; // position in original array
+}
+
 export interface LinkedListNode extends DataStructureElement {
   next: string | null;
   prev?: string | null; // for doubly linked lists
