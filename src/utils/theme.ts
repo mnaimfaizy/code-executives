@@ -36,9 +36,15 @@ export const theme = {
       border: 'blue-200',
       shadow: 'blue-200',
     },
+    react: {
+      primary: 'blue',
+      secondary: 'indigo',
+      accent: 'cyan',
+      gradient: 'from-blue-50 via-white to-indigo-50',
+      border: 'blue-100',
+      shadow: 'blue-200',
+    },
   },
-
-  // Layout patterns
   layout: {
     // Standard section layout with hero + content grid
     section: 'mb-8',
@@ -125,7 +131,7 @@ export const createStatsCardClass = (colorScheme: string) =>
   `${theme.components.stats.card} border-${colorScheme}-100`;
 
 export const createCTAClass = (colorScheme: string) =>
-  `${theme.components.cta.container} from-${colorScheme}-600 to-${colorScheme === 'purple' ? 'violet' : colorScheme === 'orange' ? 'red' : colorScheme === 'indigo' ? 'purple' : 'indigo'}-600`;
+  `${theme.components.cta.container} from-${colorScheme}-600 to-${colorScheme === 'purple' ? 'violet' : colorScheme === 'orange' ? 'red' : colorScheme === 'indigo' ? 'purple' : colorScheme === 'react' ? 'indigo' : 'indigo'}-600`;
 
 // Pre-built component classes for common patterns
 export const sectionClasses = {

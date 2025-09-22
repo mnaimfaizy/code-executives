@@ -152,6 +152,16 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Practice Problems', path: '/datastructures?section=Practice%20Problems' },
     { label: '3D Visualizations', path: '/datastructures?section=3D%20Visualizations' },
   ],
+  '/react': [
+    { label: 'Introduction', path: '/react?section=Introduction' },
+    { label: 'JSX', path: '/react?section=JSX' },
+    { label: 'Components', path: '/react?section=Components' },
+    { label: 'State & Props', path: '/react?section=State%20%26%20Props' },
+    { label: 'Hooks', path: '/react?section=Hooks' },
+    { label: 'DOM Fundamentals', path: '/react?section=DOM%20Fundamentals' },
+    { label: 'Virtual DOM', path: '/react?section=Virtual%20DOM' },
+    { label: 'Reconciliation', path: '/react?section=Reconciliation' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -165,8 +175,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   const location = useLocation();
 
   // Determine section from pathname
-  const getSectionFromPath = (path: string): 'javascript' | 'git' | 'datastructures' | 'rxjs' => {
+  const getSectionFromPath = (
+    path: string
+  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' => {
     if (path.includes('javascript')) return 'javascript';
+    if (path.includes('react')) return 'react';
     if (path.includes('git')) return 'git';
     if (path.includes('datastructures')) return 'datastructures';
     if (path.includes('rxjs')) return 'rxjs';

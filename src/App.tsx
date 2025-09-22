@@ -9,6 +9,7 @@ import JavaScriptPage from './pages/JavaScriptPage';
 import RxJSPage from './pages/RxJSPage';
 import GitPage from './pages/GitPage';
 import DataStructuresPage from './pages/DataStructuresPage';
+import ReactPage from './pages/ReactPage';
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -27,6 +28,7 @@ const App: React.FC = () => {
             <Route path="/rxjs" element={<RxJSPage />} />
             <Route path="/git" element={<GitPage />} />
             <Route path="/datastructures" element={<DataStructuresPage />} />
+            <Route path="/react" element={<ReactPage />} />
           </Routes>
         </main>
       </div>
