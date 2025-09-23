@@ -2,10 +2,13 @@
 
 **Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
 
+**✨ Now featuring 5 complete learning modules with 50+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, and Next.js.**
+
 ## 🌟 Features
 
 ### 📚 **Interactive Learning Modules**
 
+- **Next.js Mastery**: Complete App Router tutorial with 24 interactive visualizations
 - **Git Mastery**: Complete Git tutorial with 7 interactive 2D visualizations
 - **JavaScript Engine**: Deep dive into V8 runtime, memory management, and execution flow
 - **RxJS Reactive Programming**: Observable streams and reactive patterns
@@ -14,7 +17,7 @@
 
 ### 🎮 **Interactive Visualizations**
 
-- **2D SVG Models**: Smooth animations explaining complex concepts (20+ components)
+- **2D SVG Models**: Smooth animations explaining complex concepts (30+ components)
 - **3D Three.js Models**: Immersive 3D representations of programming constructs
 - **Algorithm Animations**: Step-by-step execution of sorting, searching, and traversal algorithms
 - **Data Structure Demos**: Interactive models for arrays, trees, graphs, and hash tables
@@ -51,22 +54,28 @@
 src/
 ├── components/           # Reusable UI components
 │   ├── models2d/        # 2D visualization components
+│   │   ├── nextjs/      # Next.js tutorial visualizations (24 components)
 │   │   ├── git/         # Git tutorial visualizations
+│   │   ├── javascript/  # JavaScript engine visualizations
+│   │   ├── rxjs/        # RxJS reactive programming visualizations
 │   │   └── datastructures/ # Data structure visualizations
 │   ├── models3d/        # 3D visualization components
 │   └── shared/          # Shared UI components
 ├── pages/               # Main application pages
+│   ├── NextjsPage.tsx   # Next.js tutorial page
 │   ├── GitPage.tsx      # Git tutorial page
 │   ├── JavaScriptPage.tsx
 │   ├── RxJSPage.tsx
 │   └── DataStructuresPage.tsx # Data structures module
 ├── sections/            # Educational content sections
+│   ├── nextjs/          # Next.js learning modules (7 sections)
 │   ├── git/            # Git learning modules
 │   ├── javascript/     # JavaScript concepts
 │   ├── rxjs/           # RxJS tutorials
 │   └── datastructures/ # Data structure concepts
 ├── hooks/              # Custom React hooks
 ├── types/              # TypeScript type definitions
+│   └── nextjs.ts       # Next.js type definitions
 ├── utils/              # Utility functions
 └── three/              # Three.js 3D models and scenes
 ```
@@ -163,6 +172,19 @@ Comprehensive guide to fundamental data structures with interactive visualizatio
 - **Real-world Applications**: Industry use cases from social media to database systems
 - **Performance Analysis**: Big O notation, complexity comparisons, and optimization strategies
 
+### ⚛️ **Next.js Mastery (Complete)**
+
+Complete App Router tutorial with 24 interactive visualizations covering modern Next.js development:
+
+- **App Router Fundamentals**: File-system routing, nested layouts, and shared UI patterns
+- **Rendering Strategies**: SSR, SSG, CSR, ISR with performance comparisons and Core Web Vitals
+- **Server & Client Components**: Component composition, hydration flow, and code splitting
+- **Data Fetching & Mutations**: Server Actions, caching strategies, and request memoization
+- **Middleware & Route Handlers**: Request processing pipeline, edge runtime, and API routes
+- **Performance Optimization**: Bundle analysis, image optimization, and caching strategies
+- **Interactive Visualizations**: 24+ components including flow diagrams, performance dashboards, and code playgrounds
+- **Real-world Patterns**: Progressive enhancement, error boundaries, and production best practices
+
 ## 🛠️ Development
 
 ### **Available Scripts**
@@ -184,17 +206,19 @@ The project maintains high code quality through:
 
 ### **Adding New Modules**
 
-To add a new learning module (following the Data Structures module pattern):
+To add a new learning module (following the Next.js and Data Structures module patterns):
 
-1. **Create section components** in `src/sections/[module-name]/`
-2. **Add 2D visualizations** in `src/components/models2d/[module-name]/`
-3. **Add 3D visualizations** in `src/components/models3d/` (if needed)
-4. **Create page component** in `src/pages/[ModuleName]Page.tsx`
-5. **Define TypeScript interfaces** in `src/types/[module-name].ts`
-6. **Create custom hooks** in `src/hooks/use[ModuleName].ts`
-7. **Update navigation** in `src/components/Header.tsx` and `src/components/Sidebar.tsx`
-8. **Add routing** in `src/App.tsx`
-9. **Document the module** in `docs/[Module-Name]-Implementation-Plan.md`
+1. **Create implementation plan** in `docs/[Module-Name]-Implementation-Plan.md`
+2. **Define TypeScript interfaces** in `src/types/[module-name].ts`
+3. **Create section components** in `src/sections/[module-name]/`
+4. **Add 2D visualizations** in `src/components/models2d/[module-name]/`
+5. **Add 3D visualizations** in `src/components/models3d/` (if needed)
+6. **Create page component** in `src/pages/[ModuleName]Page.tsx`
+7. **Create custom hooks** in `src/hooks/use[ModuleName].ts`
+8. **Update theme colors** in `src/utils/theme.ts`
+9. **Update navigation** in `src/components/Header.tsx` and `src/components/Sidebar.tsx`
+10. **Add routing** in `src/App.tsx`
+11. **Update README.md** with module information
 
 ## 🤝 Contributing
 
@@ -223,22 +247,26 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
+- **Next.js Team** for the incredible App Router and modern React framework
 - **Three.js** community for 3D visualization capabilities
-- **React** team for the amazing framework
+- **React** team for the amazing framework ecosystem
 - **Vite** for lightning-fast development experience
 - **Tailwind CSS** for utility-first styling approach
+- **Vercel** for hosting and deployment platform
+- **Open Source Community** for the tools and libraries that make this possible
 
 ## 📞 Support
 
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
+- 🎓 **Learning Modules**: 5 complete interactive modules with 50+ visualizations
 
 ---
 
 **Built with ❤️ for developers, by developers**
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning._
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, and Data Structures modules._
 
 ## 3D/2D Visualization Architecture
 

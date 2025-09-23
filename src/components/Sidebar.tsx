@@ -162,6 +162,27 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Virtual DOM', path: '/react?section=Virtual%20DOM' },
     { label: 'Reconciliation', path: '/react?section=Reconciliation' },
   ],
+  '/nextjs': [
+    { label: 'Introduction', path: '/nextjs?section=Introduction' },
+    { label: 'Routing Systems', path: '/nextjs?section=Routing%20Systems' },
+    { label: 'Rendering Strategies', path: '/nextjs?section=Rendering%20Strategies' },
+    {
+      label: 'Server & Client Components',
+      path: '/nextjs?section=Server%20%26%20Client%20Components',
+    },
+    {
+      label: 'Data Fetching & Mutations',
+      path: '/nextjs?section=Data%20Fetching%20%26%20Mutations',
+    },
+    {
+      label: 'Middleware & Route Handlers',
+      path: '/nextjs?section=Middleware%20%26%20Route%20Handlers',
+    },
+    {
+      label: 'Optimization & Performance',
+      path: '/nextjs?section=Optimization%20%26%20Performance',
+    },
+  ],
   '/': [],
   '/about': [],
 };
@@ -177,9 +198,10 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   // Determine section from pathname
   const getSectionFromPath = (
     path: string
-  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' => {
+  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' | 'nextjs' => {
     if (path.includes('javascript')) return 'javascript';
     if (path.includes('react')) return 'react';
+    if (path.includes('nextjs')) return 'nextjs';
     if (path.includes('git')) return 'git';
     if (path.includes('datastructures')) return 'datastructures';
     if (path.includes('rxjs')) return 'rxjs';

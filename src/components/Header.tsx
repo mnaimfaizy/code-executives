@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Code, GitBranch, Database, Atom } from 'lucide-react';
+import { Menu, Code, GitBranch, Database, Atom, Globe } from 'lucide-react';
 
 interface HeaderProps {
   onSidebarToggle?: () => void;
@@ -26,6 +26,11 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
       icon: <Atom className="w-4 h-4" />,
     },
     {
+      label: 'Next.js',
+      path: '/nextjs',
+      icon: <Globe className="w-4 h-4" />,
+    },
+    {
       label: 'Git',
       path: '/git',
       icon: <GitBranch className="w-4 h-4" />,
@@ -45,6 +50,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
   const getActiveColor = (path: string) => {
     if (path === '/javascript') return 'text-indigo-600 bg-indigo-50';
     if (path === '/react') return 'text-blue-600 bg-blue-50';
+    if (path === '/nextjs') return 'text-blue-600 bg-blue-50';
     if (path === '/git') return 'text-orange-600 bg-orange-50';
     if (path === '/datastructures') return 'text-blue-600 bg-blue-50';
     return 'text-gray-700 hover:bg-gray-50';

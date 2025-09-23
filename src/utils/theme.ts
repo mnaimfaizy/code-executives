@@ -44,6 +44,14 @@ export const theme = {
       border: 'blue-100',
       shadow: 'blue-200',
     },
+    nextjs: {
+      primary: 'blue',
+      secondary: 'indigo',
+      accent: 'cyan',
+      gradient: 'from-blue-50 via-white to-indigo-50',
+      border: 'blue-100',
+      shadow: 'blue-200',
+    },
   },
   layout: {
     // Standard section layout with hero + content grid

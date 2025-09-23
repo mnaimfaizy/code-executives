@@ -5,7 +5,7 @@ import React from 'react';
 import { getSectionTheme, sectionClasses } from '../../utils/theme';
 
 interface SectionLayoutProps {
-  section: 'rxjs' | 'git' | 'javascript' | 'datastructures' | 'react';
+  section: 'rxjs' | 'git' | 'javascript' | 'datastructures' | 'react' | 'nextjs';
   hero: React.ReactNode;
   mainContent: React.ReactNode;
   sidebar: React.ReactNode;
