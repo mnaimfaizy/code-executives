@@ -2,7 +2,7 @@
 
 **Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
 
-**✨ Now featuring 7 complete learning modules with 70+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, and Python Programming.**
+**✨ Now featuring 7 complete learning modules with 70+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, and a LeetCode-style playground with advanced debugging and gamification.**
 
 ## 🌟 Features
 
@@ -15,6 +15,7 @@
 - **Data Structures**: Comprehensive guide to fundamental data structures with interactive visualizations
 - **Big-O Notation**: Complete algorithmic complexity analysis with 10+ interactive tools and metaphors
 - **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
+- **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
 - **More modules coming soon**: Algorithms, system design, design patterns
 
 ### 🎮 **Interactive Visualizations**
@@ -25,6 +26,19 @@
 - **Data Structure Demos**: Interactive models for arrays, trees, graphs, and hash tables
 - **Real-time Interactions**: Click, drag, and explore concepts dynamically
 - **Step-by-Step Guidance**: Progressive learning with animated tutorials
+- **Debug Visualizations**: Live data structure state during code execution
+
+### 🎯 **LeetCode-Style Playground**
+
+- **Interactive Coding Environment**: Monaco editor with syntax highlighting and IntelliSense
+- **Step-by-Step Debugging**: Pause execution, inspect variables, and watch data structures change in real-time
+- **Data Structure Visualizations**: Array, LinkedList, Queue, Stack, and HashTable with live updates
+- **Performance Analysis**: Big-O complexity analysis and execution time monitoring
+- **Gamification System**: Scoring, achievements, and progress tracking
+- **Educational Tooltips**: Explanations for each operation and debugging concept
+- **Keyboard Shortcuts**: F10 (step), F5 (continue/pause), F11 (reset), Space (pause/resume)
+- **Session Persistence**: Auto-save and restore debugging sessions
+- **Problem Database**: Curated coding challenges with test cases and solutions
 
 ### 🎨 **Modern User Experience**
 
@@ -61,18 +75,28 @@ src/
 │   │   ├── javascript/  # JavaScript engine visualizations
 │   │   ├── rxjs/        # RxJS reactive programming visualizations
 │   │   ├── datastructures/ # Data structure visualizations
+│   │   │   ├── hash/    # HashTable visualization
 │   │   ├── bigo/        # Big-O notation visualizations (10+ components)
 │   │   └── python/      # Python programming visualizations
 │   ├── models3d/        # 3D visualization components
 │   │   └── python/      # Python 3D models (VM, memory profiler, call graph)
+│   ├── playground/      # LeetCode-style playground components
+│   │   ├── Playground.tsx          # Main playground component
+│   │   ├── ProblemDisplay.tsx      # Problem statement and examples
+│   │   ├── CodeEditor.tsx          # Monaco-based code editor
+│   │   ├── VisualizationSelector.tsx # Data structure selection
+│   │   ├── TestRunner.tsx          # Test case execution
+│   │   ├── PerformanceAnalyzer.tsx # Big-O analysis
+│   │   ├── ExecutionEngine.tsx     # Advanced debugging engine
+│   │   └── ScoringSystem.tsx       # Gamification system
 │   └── shared/          # Shared UI components
 ├── pages/               # Main application pages
 │   ├── NextjsPage.tsx   # Next.js tutorial page
 │   ├── GitPage.tsx      # Git tutorial page
 │   ├── JavaScriptPage.tsx
 │   ├── RxJSPage.tsx
-│   ├── DataStructuresPage.tsx # Data structures module
-│   ├── BigOPage.tsx     # Big-O notation module
+│   ├── DataStructuresPage.tsx # Data structures module with playground
+│   ├── BigOPage.tsx     # Big-O notation module with playground
 │   └── PythonPage.tsx   # Python programming module
 ├── sections/            # Educational content sections
 │   ├── nextjs/          # Next.js learning modules (7 sections)
@@ -87,8 +111,14 @@ src/
 │   ├── nextjs.ts       # Next.js type definitions
 │   ├── datastructures.ts # Data structures type definitions
 │   ├── bigo.ts         # Big-O notation type definitions
-│   └── python.ts       # Python programming type definitions
+│   ├── python.ts       # Python programming type definitions
+│   └── playground.ts   # Playground type definitions
 ├── utils/              # Utility functions
+│   ├── instrument.ts   # Code instrumentation for debugging
+│   ├── memoryMonitor.ts # Performance monitoring
+│   └── theme.ts        # Theme and styling utilities
+├── data/               # Static data and problem sets
+│   └── problems.ts     # LeetCode-style coding problems
 └── three/              # Three.js 3D models and scenes
 ```
 
@@ -226,6 +256,21 @@ Complete Python tutorial covering the fundamental concepts that make Python uniq
 - **Performance Analysis**: GIL impact, memory optimization, and concurrency alternatives
 - **Real-world Applications**: Best practices for CPU-bound vs I/O-bound tasks, memory profiling, and optimization techniques
 
+### 🎯 **LeetCode-Style Playground (Complete)**
+
+Interactive coding environment that transforms algorithm learning through visual debugging and gamification:
+
+- **Interactive Problem Solving**: Curated coding challenges with real-time test case validation and performance analysis
+- **Advanced Debugging Engine**: Step-by-step execution with pause/resume, variable inspection, and call stack visualization
+- **Live Data Structure Visualization**: Watch arrays, linked lists, stacks, queues, and hash tables change in real-time during execution
+- **Educational Debugging**: Comprehensive tooltips explaining each operation, data structure behavior, and algorithmic concepts
+- **Keyboard Shortcuts**: Professional debugging experience with F10 (step), F5 (continue/pause), F11 (reset), and Space (pause/resume)
+- **Performance Monitoring**: Real-time Big-O complexity analysis, memory usage tracking, and execution time profiling
+- **Gamification System**: Achievement unlocks, scoring system, and progress tracking to motivate learning
+- **Session Persistence**: Auto-save debugging sessions and restore work across browser sessions
+- **Multiple Data Structures**: Complete implementations with collision handling, hash calculations, and performance comparisons
+- **Code Instrumentation**: Advanced code analysis with function call/return tracking and operation-level insights
+
 ## 🛠️ Development
 
 ### **Available Scripts**
@@ -293,6 +338,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React** team for the amazing framework ecosystem
 - **Vite** for lightning-fast development experience
 - **Tailwind CSS** for utility-first styling approach
+- **Monaco Editor** for the professional code editing experience in the playground
 - **Vercel** for hosting and deployment platform
 - **Open Source Community** for the tools and libraries that make this possible
 
@@ -302,12 +348,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
 - 🎓 **Learning Modules**: 7 complete interactive modules with 70+ visualizations
+- 🎯 **Playground**: LeetCode-style coding environment with debugging and gamification
 
 ---
 
 **Built with ❤️ for developers, by developers**
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, and Python Programming modules._
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, and Python Programming modules. Practice algorithms with our LeetCode-style playground featuring advanced debugging, real-time visualizations, and gamification._
 
 ## 3D/2D Visualization Architecture
 

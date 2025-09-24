@@ -10,6 +10,7 @@ import CommonComplexities from '../sections/bigo/CommonComplexities';
 import AlgorithmAnalysis from '../sections/bigo/AlgorithmAnalysis';
 import RealWorldApplications from '../sections/bigo/RealWorldApplications';
 import AdvancedTopics from '../sections/bigo/AdvancedTopics';
+import Playground from '../components/playground/Playground';
 // import AlgorithmAnalysis from '../sections/bigo/AlgorithmAnalysis';
 // import RealWorldApplications from '../sections/bigo/RealWorldApplications';
 // import PracticeChallenges from '../sections/bigo/PracticeChallenges';
@@ -48,6 +49,8 @@ const BigOPage: React.FC = () => {
         return <CodingChallenges />;
       case 'gamification-hub':
         return <GamificationHub />;
+      case 'playground':
+        return <Playground />;
       default:
         return <Introduction />;
     }

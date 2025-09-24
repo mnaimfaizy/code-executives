@@ -199,6 +199,15 @@ const Introduction: React.FC = () => {
             onClick={() => console.log('Navigate to Practice Challenges')}
           />
         </ThemeCard>
+
+        <ThemeCard>
+          <NavigationCard
+            title="Interactive Playground"
+            description="Solve LeetCode-style problems with real-time visualizations and performance analysis."
+            colorScheme="purple"
+            onClick={() => (window.location.href = '/bigo?section=playground')}
+          />
+        </ThemeCard>
       </div>
 
       {/* Why Big-O Matters */}

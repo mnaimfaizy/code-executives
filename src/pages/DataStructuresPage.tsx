@@ -24,6 +24,7 @@ import ComplexityAnalysis from '../sections/datastructures/ComplexityAnalysis';
 import RealWorldApplications from '../sections/datastructures/RealWorldApplications';
 import PracticeProblems from '../sections/datastructures/PracticeProblems';
 import Visualizations3D from '../sections/datastructures/Visualizations3D';
+import Playground from '../components/playground/Playground';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -91,6 +92,8 @@ const DataStructuresPage: React.FC = () => {
         return <PracticeProblems />;
       case '3d-visualizations':
         return <Visualizations3D />;
+      case 'playground':
+        return <Playground />;
       default:
         return <Introduction />;
     }

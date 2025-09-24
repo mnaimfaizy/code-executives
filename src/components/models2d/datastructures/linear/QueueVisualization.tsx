@@ -17,23 +17,37 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
   orientation = 'horizontal',
   showPointers = true,
   className = '',
+  debugState,
 }) => {
   // State for queue elements
-  const [queue, setQueue] = useState<QueueElement[]>(() =>
-    initialData.map((value: number, index: number) => ({
+  const [queue, setQueue] = useState<QueueElement[]>(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.currentElements) {
+      return debugState.dataStructureState.currentElements;
+    }
+    return initialData.map((value: number, index: number) => ({
       id: `queue-${index}`,
       value,
       position: { x: 0, y: 0 },
       queueIndex: index,
       isFront: index === 0,
       isRear: index === initialData.length - 1,
-    }))
-  );
+    }));
+  });
 
   const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [inputValue, setInputValue] = useState<string>('');
   const [lastOperation, setLastOperation] = useState<string>('');
+
+  // Update queue when debug state changes
+  React.useEffect(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.currentElements) {
+      setQueue(debugState.dataStructureState.currentElements);
+      if (debugState.currentOperation) {
+        setLastOperation(debugState.currentOperation);
+      }
+    }
+  }, [debugState]);
 
   // Get current operation complexity
   const getCurrentComplexity = useCallback((operation: string): { time: string; space: string } => {
@@ -204,20 +218,24 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
 
   // Reset the queue
   const resetQueue = useCallback(() => {
-    const resetQueue = initialData.map((value: number, index: number) => ({
-      id: `queue-${index}`,
-      value,
-      position: { x: 0, y: 0 },
-      queueIndex: index,
-      isFront: index === 0,
-      isRear: index === initialData.length - 1,
-    }));
+    if (debugState?.isDebugging && debugState.dataStructureState.currentElements) {
+      setQueue(debugState.dataStructureState.currentElements);
+    } else {
+      const resetQueue = initialData.map((value: number, index: number) => ({
+        id: `queue-${index}`,
+        value,
+        position: { x: 0, y: 0 },
+        queueIndex: index,
+        isFront: index === 0,
+        isRear: index === initialData.length - 1,
+      }));
 
-    setQueue(resetQueue);
+      setQueue(resetQueue);
+    }
     setHighlightedElement(null);
     setIsAnimating(false);
     setLastOperation('Queue reset to initial state');
-  }, [initialData]);
+  }, [initialData, debugState]);
 
   // Handle operations
   const handleOperation = useCallback(

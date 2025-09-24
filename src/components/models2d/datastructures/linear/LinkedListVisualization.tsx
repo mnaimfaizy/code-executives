@@ -20,6 +20,7 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
   maxSize = 6,
   showMemoryAddresses = true,
   className = '',
+  debugState,
 }) => {
   // State for linked list nodes
   const [nodes, setNodes] = useState<LinkedListNode[]>(() =>
@@ -37,6 +38,37 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
   const [animationStep, setAnimationStep] = useState(0);
   const [inputValue, setInputValue] = useState<string>('');
   const [selectedPosition, setSelectedPosition] = useState<number>(0);
+
+  // Use debug state if debugging is active
+  const currentNodes = React.useMemo(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.linkedList) {
+      const debugList = debugState.dataStructureState.linkedList as LinkedListNode[];
+      if (Array.isArray(debugList)) {
+        return debugList.map((node, index) => ({
+          ...node,
+          id: `debug-node-${index}`,
+          highlighted: debugState.currentOperation?.indices?.includes(index) || false,
+        }));
+      }
+    }
+    return nodes;
+  }, [debugState, nodes]);
+
+  // Update visualization when debug state changes
+  React.useEffect(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.linkedList) {
+      const debugList = debugState.dataStructureState.linkedList as LinkedListNode[];
+      if (Array.isArray(debugList)) {
+        const debugNodes = debugList.map((node, index) => ({
+          ...node,
+          id: `debug-node-${index}`,
+          highlighted: debugState.currentOperation?.indices?.includes(index) || false,
+        }));
+        setNodes(debugNodes);
+        setHead(debugNodes.length > 0 ? debugNodes[0].id : null);
+      }
+    }
+  }, [debugState]);
 
   // Get current operation complexity
   const getCurrentComplexity = useCallback((operation: string): { time: string; space: string } => {
@@ -373,12 +405,12 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
           </defs>
 
           {/* Render nodes and connections */}
-          {nodes.map((node) => {
+          {currentNodes.map((node) => {
             const position = nodePositions[node.id];
             if (!position) return null;
 
             const isHighlighted = highlightedNode === node.id;
-            const nextNode = nodes.find((n) => n.id === node.next);
+            const nextNode = currentNodes.find((n) => n.id === node.next);
             const nextPosition = nextNode ? nodePositions[nextNode.id] : null;
 
             return (
@@ -492,14 +524,14 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                   textAnchor="middle"
                   className="text-xs fill-gray-600 dark:fill-gray-400"
                 >
-                  Node {nodes.findIndex((n) => n.id === node.id)}
+                  Node {currentNodes.findIndex((n) => n.id === node.id)}
                 </text>
               </g>
             );
           })}
 
           {/* Empty list indicator */}
-          {nodes.length === 0 && (
+          {currentNodes.length === 0 && (
             <text
               x="400"
               y="150"

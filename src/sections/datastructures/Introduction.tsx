@@ -279,6 +279,12 @@ const Introduction: React.FC = () => {
             colorScheme={theme.secondary}
             onClick={() => navigateToSection('Complexity Analysis')}
           />
+          <NavigationCard
+            title="Interactive Playground"
+            description="Solve algorithmic problems with visualizations"
+            colorScheme={theme.accent}
+            onClick={() => (window.location.href = '/datastructures?section=playground')}
+          />
         </div>
       </ThemeCard>
 

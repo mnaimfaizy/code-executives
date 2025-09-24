@@ -17,22 +17,36 @@ export const StackVisualization: React.FC<StackVisualizationProps> = ({
   orientation = 'vertical',
   showStackPointer = true,
   className = '',
+  debugState,
 }) => {
   // State for stack elements
-  const [stack, setStack] = useState<StackElement[]>(() =>
-    initialData.map((value: number, index: number) => ({
+  const [stack, setStack] = useState<StackElement[]>(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.currentElements) {
+      return debugState.dataStructureState.currentElements;
+    }
+    return initialData.map((value: number, index: number) => ({
       id: `stack-${index}`,
       value,
       position: { x: 0, y: 0 },
       stackIndex: index,
       isTop: index === initialData.length - 1,
-    }))
-  );
+    }));
+  });
 
   const [highlightedElement, setHighlightedElement] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [inputValue, setInputValue] = useState<string>('');
   const [lastOperation, setLastOperation] = useState<string>('');
+
+  // Update stack when debug state changes
+  React.useEffect(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.currentElements) {
+      setStack(debugState.dataStructureState.currentElements);
+      if (debugState.currentOperation) {
+        setLastOperation(debugState.currentOperation);
+      }
+    }
+  }, [debugState]);
 
   // Get current operation complexity
   const getCurrentComplexity = useCallback((operation: string): { time: string; space: string } => {
@@ -172,19 +186,23 @@ export const StackVisualization: React.FC<StackVisualizationProps> = ({
 
   // Reset the stack
   const resetStack = useCallback(() => {
-    const resetStack = initialData.map((value: number, index: number) => ({
-      id: `stack-${index}`,
-      value,
-      position: { x: 0, y: 0 },
-      stackIndex: index,
-      isTop: index === initialData.length - 1,
-    }));
+    if (debugState?.isDebugging && debugState.dataStructureState.currentElements) {
+      setStack(debugState.dataStructureState.currentElements);
+    } else {
+      const resetStack = initialData.map((value: number, index: number) => ({
+        id: `stack-${index}`,
+        value,
+        position: { x: 0, y: 0 },
+        stackIndex: index,
+        isTop: index === initialData.length - 1,
+      }));
 
-    setStack(resetStack);
+      setStack(resetStack);
+    }
     setHighlightedElement(null);
     setIsAnimating(false);
     setLastOperation('Stack reset to initial state');
-  }, [initialData]);
+  }, [initialData, debugState]);
 
   // Handle operations
   const handleOperation = useCallback(

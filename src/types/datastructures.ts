@@ -228,6 +228,15 @@ export interface LinkedListVisualizationProps extends BaseVisualizationProps {
   initialData?: number[];
   maxSize?: number;
   showMemoryAddresses?: boolean;
+  debugState?: {
+    isDebugging: boolean;
+    dataStructureState: Record<string, unknown>;
+    currentOperation?: {
+      type: string;
+      indices?: number[];
+      values?: unknown[];
+    };
+  };
 }
 
 export interface StackVisualizationProps extends BaseVisualizationProps {
@@ -235,6 +244,15 @@ export interface StackVisualizationProps extends BaseVisualizationProps {
   maxSize?: number;
   orientation?: 'vertical' | 'horizontal';
   showStackPointer?: boolean;
+  debugState?: {
+    isDebugging: boolean;
+    dataStructureState: {
+      currentElements: StackElement[];
+      top: number;
+      size: number;
+    };
+    currentOperation: string;
+  };
 }
 
 export interface QueueVisualizationProps extends BaseVisualizationProps {
@@ -242,6 +260,16 @@ export interface QueueVisualizationProps extends BaseVisualizationProps {
   maxSize?: number;
   orientation?: 'horizontal' | 'vertical';
   showPointers?: boolean;
+  debugState?: {
+    isDebugging: boolean;
+    dataStructureState: {
+      currentElements: QueueElement[];
+      front: number;
+      rear: number;
+      size: number;
+    };
+    currentOperation: string;
+  };
 }
 
 // Learning and assessment types

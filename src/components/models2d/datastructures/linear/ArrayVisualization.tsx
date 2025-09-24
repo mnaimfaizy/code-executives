@@ -30,6 +30,15 @@ interface ArrayVisualizationProps {
   showIndices?: boolean;
   showMemoryAddresses?: boolean;
   className?: string;
+  debugState?: {
+    isDebugging: boolean;
+    dataStructureState: Record<string, unknown>;
+    currentOperation?: {
+      type: string;
+      indices?: number[];
+      values?: unknown[];
+    };
+  };
 }
 
 /**
@@ -42,6 +51,7 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
   showIndices = true,
   showMemoryAddresses = false,
   className = '',
+  debugState,
 }) => {
   // Component state
   const [newValue, setNewValue] = useState<string>('');
@@ -132,6 +142,42 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
 
   const { state, actions } = useVisualizationState(initialElements);
   const { selectedElement, handleElementClick, clearSelection } = useVisualizationInteraction();
+
+  // Use debug state if debugging is active
+  const currentData = useMemo(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.array) {
+      const debugArray = debugState.dataStructureState.array as number[];
+      if (Array.isArray(debugArray)) {
+        return debugArray.map((value, index) => ({
+          id: `debug-element-${index}`,
+          value,
+          index,
+          position: { x: index * 80, y: 0 },
+          highlighted: debugState.currentOperation?.indices?.includes(index) || false,
+          color: debugState.currentOperation?.indices?.includes(index) ? '#F59E0B' : '#3B82F6',
+        })) as ArrayElement[];
+      }
+    }
+    return state.data;
+  }, [debugState, state.data]);
+
+  // Update visualization when debug state changes
+  React.useEffect(() => {
+    if (debugState?.isDebugging && debugState.dataStructureState.array) {
+      const debugArray = debugState.dataStructureState.array as number[];
+      if (Array.isArray(debugArray)) {
+        const debugElements = debugArray.map((value, index) => ({
+          id: `debug-element-${index}`,
+          value,
+          index,
+          position: { x: index * 80, y: 0 },
+          highlighted: debugState.currentOperation?.indices?.includes(index) || false,
+          color: debugState.currentOperation?.indices?.includes(index) ? '#F59E0B' : '#3B82F6',
+        })) as ArrayElement[];
+        actions.updateData(debugElements);
+      }
+    }
+  }, [debugState, actions]);
 
   // Preset examples
   const examples = useMemo(
@@ -715,7 +761,7 @@ console.log(${arrayName}.length); // ${currentData.length}`;
             <>
               {/* Show original array indices */}
               {Array.from({ length: sparseSize }, (_, i) => i).map((originalIndex) => {
-                const sparseElement = state.data.find(
+                const sparseElement = currentData.find(
                   (el) => (el as SparseArrayElement).originalIndex === originalIndex
                 ) as SparseArrayElement;
                 const hasValue = sparseElement !== undefined;
@@ -796,13 +842,13 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                 y={showMemoryAddresses ? 90 : 70}
                 className="text-sm font-semibold fill-gray-700"
               >
-                Sparse Array: {state.data.length} stored values (default: {sparseDefaultValue})
+                Sparse Array: {currentData.length} stored values (default: {sparseDefaultValue})
               </text>
             </>
           ) : (
             /* 1D Array (Static/Dynamic) Visualization */
             <>
-              {state.data.map((element, index) => {
+              {currentData.map((element, index) => {
                 const x = 30 + index * (cellWidth + 10);
                 const y = showMemoryAddresses ? 55 : 35;
                 const isAnimating = animatingElements.has(element.id);
@@ -847,7 +893,7 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                           Type: <span className="font-bold capitalize">{arrayType}</span>
                         </span>
                         <span>
-                          Size: <span className="font-bold">{state.data.length}</span>
+                          Size: <span className="font-bold">{currentData.length}</span>
                         </span>
                         <span>
                           Max Size: <span className="font-bold">{maxSize}</span>
@@ -1301,7 +1347,7 @@ console.log(${arrayName}.length); // ${currentData.length}`;
           <span className="text-gray-700">Show Memory Addresses</span>
         </label>
         <div className="text-gray-600">
-          Size: {state.data.length}/{maxSize}
+          Size: {currentData.length}/{maxSize}
         </div>
       </div>
     </div>
