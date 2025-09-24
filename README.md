@@ -2,7 +2,7 @@
 
 **Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
 
-**✨ Now featuring 5 complete learning modules with 50+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, and Next.js.**
+**✨ Now featuring 6 complete learning modules with 60+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, and Big-O Notation.**
 
 ## 🌟 Features
 
@@ -13,6 +13,7 @@
 - **JavaScript Engine**: Deep dive into V8 runtime, memory management, and execution flow
 - **RxJS Reactive Programming**: Observable streams and reactive patterns
 - **Data Structures**: Comprehensive guide to fundamental data structures with interactive visualizations
+- **Big-O Notation**: Complete algorithmic complexity analysis with 10+ interactive tools and metaphors
 - **More modules coming soon**: Algorithms, system design, design patterns
 
 ### 🎮 **Interactive Visualizations**
@@ -58,7 +59,8 @@ src/
 │   │   ├── git/         # Git tutorial visualizations
 │   │   ├── javascript/  # JavaScript engine visualizations
 │   │   ├── rxjs/        # RxJS reactive programming visualizations
-│   │   └── datastructures/ # Data structure visualizations
+│   │   ├── datastructures/ # Data structure visualizations
+│   │   └── bigo/        # Big-O notation visualizations (10+ components)
 │   ├── models3d/        # 3D visualization components
 │   └── shared/          # Shared UI components
 ├── pages/               # Main application pages
@@ -66,16 +68,20 @@ src/
 │   ├── GitPage.tsx      # Git tutorial page
 │   ├── JavaScriptPage.tsx
 │   ├── RxJSPage.tsx
-│   └── DataStructuresPage.tsx # Data structures module
+│   ├── DataStructuresPage.tsx # Data structures module
+│   └── BigOPage.tsx     # Big-O notation module
 ├── sections/            # Educational content sections
 │   ├── nextjs/          # Next.js learning modules (7 sections)
 │   ├── git/            # Git learning modules
 │   ├── javascript/     # JavaScript concepts
 │   ├── rxjs/           # RxJS tutorials
-│   └── datastructures/ # Data structure concepts
+│   ├── datastructures/ # Data structure concepts
+│   └── bigo/           # Big-O notation concepts (8 sections)
 ├── hooks/              # Custom React hooks
 ├── types/              # TypeScript type definitions
-│   └── nextjs.ts       # Next.js type definitions
+│   ├── nextjs.ts       # Next.js type definitions
+│   ├── datastructures.ts # Data structures type definitions
+│   └── bigo.ts         # Big-O notation type definitions
 ├── utils/              # Utility functions
 └── three/              # Three.js 3D models and scenes
 ```
@@ -185,6 +191,21 @@ Complete App Router tutorial with 24 interactive visualizations covering modern 
 - **Interactive Visualizations**: 24+ components including flow diagrams, performance dashboards, and code playgrounds
 - **Real-world Patterns**: Progressive enhancement, error boundaries, and production best practices
 
+### 📊 **Big-O Notation Mastery (Complete)**
+
+Complete algorithmic complexity analysis module with 10+ interactive tools and educational metaphors:
+
+- **Core Concepts**: Understanding time and space complexity with intuitive visualizations
+- **Common Complexities**: Interactive exploration of O(1), O(log n), O(n), O(n log n), O(n²), O(2^n), O(n!) complexities
+- **Algorithm Analysis**: Step-by-step complexity analysis with code visualization and performance profiling
+- **Real-World Applications**: 3D complexity landscape showing algorithms in complexity space with industry case studies
+- **Advanced Topics**: Amortized analysis, complexity hierarchies, and optimization techniques
+- **Practice Challenges**: Interactive coding challenges with Big-O analysis and performance comparisons
+- **Gamification Hub**: Achievement system with progress tracking and learning milestones
+- **Interactive Metaphors**: 10+ visual metaphors including teleporter, librarian, conveyor belt, turtle, population explosion, and combinatorial explosion
+- **Algorithm Comparison**: Side-by-side performance analysis with real-time execution simulation
+- **Performance Profiling**: Code analyzer and optimization coach with complexity recommendations
+
 ## 🛠️ Development
 
 ### **Available Scripts**
@@ -206,7 +227,7 @@ The project maintains high code quality through:
 
 ### **Adding New Modules**
 
-To add a new learning module (following the Next.js and Data Structures module patterns):
+To add a new learning module (following the Next.js, Data Structures, and Big-O Notation module patterns):
 
 1. **Create implementation plan** in `docs/[Module-Name]-Implementation-Plan.md`
 2. **Define TypeScript interfaces** in `src/types/[module-name].ts`
@@ -260,13 +281,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 5 complete interactive modules with 50+ visualizations
+- 🎓 **Learning Modules**: 6 complete interactive modules with 60+ visualizations
 
 ---
 
 **Built with ❤️ for developers, by developers**
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, and Data Structures modules._
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, and Big-O Notation modules._
 
 ## 3D/2D Visualization Architecture
 

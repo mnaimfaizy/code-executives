@@ -11,6 +11,7 @@ import GitPage from './pages/GitPage';
 import DataStructuresPage from './pages/DataStructuresPage';
 import ReactPage from './pages/ReactPage';
 import NextJSPage from './pages/NextjsPage';
+import BigOPage from './pages/BigOPage';
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -31,6 +32,7 @@ const App: React.FC = () => {
             <Route path="/datastructures" element={<DataStructuresPage />} />
             <Route path="/react" element={<ReactPage />} />
             <Route path="/nextjs" element={<NextJSPage />} />
+            <Route path="/bigo" element={<BigOPage />} />
           </Routes>
         </main>
       </div>

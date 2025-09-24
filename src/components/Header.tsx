@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Code, GitBranch, Database, Atom, Globe } from 'lucide-react';
+import { Menu, Code, GitBranch, Database, Atom, Globe, TrendingUp } from 'lucide-react';
 
 interface HeaderProps {
   onSidebarToggle?: () => void;
@@ -39,6 +39,11 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
       label: 'Data Structures',
       path: '/datastructures',
       icon: <Database className="w-4 h-4" />,
+    },
+    {
+      label: 'Big-O Notation',
+      path: '/bigo',
+      icon: <TrendingUp className="w-4 h-4" />,
     },
     {
       label: 'About',

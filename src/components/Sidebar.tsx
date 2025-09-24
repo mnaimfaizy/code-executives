@@ -183,6 +183,16 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
       path: '/nextjs?section=Optimization%20%26%20Performance',
     },
   ],
+  '/bigo': [
+    { label: 'Introduction', path: '/bigo?section=introduction' },
+    { label: 'Core Concepts', path: '/bigo?section=core-concepts' },
+    { label: 'Common Complexities', path: '/bigo?section=common-complexities' },
+    { label: 'Algorithm Analysis', path: '/bigo?section=algorithm-analysis' },
+    { label: 'Advanced Concepts', path: '/bigo?section=advanced-concepts' },
+    { label: 'Practice Challenges', path: '/bigo?section=practice-challenges' },
+    { label: 'Gamification Hub', path: '/bigo?section=gamification-hub' },
+    { label: 'Real-World Applications', path: '/bigo?section=real-world-applications' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -198,13 +208,14 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   // Determine section from pathname
   const getSectionFromPath = (
     path: string
-  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' | 'nextjs' => {
+  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' | 'nextjs' | 'bigo' => {
     if (path.includes('javascript')) return 'javascript';
     if (path.includes('react')) return 'react';
     if (path.includes('nextjs')) return 'nextjs';
     if (path.includes('git')) return 'git';
     if (path.includes('datastructures')) return 'datastructures';
     if (path.includes('rxjs')) return 'rxjs';
+    if (path.includes('bigo')) return 'bigo';
     return 'javascript'; // default
   };
 

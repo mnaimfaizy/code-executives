@@ -52,6 +52,14 @@ export const theme = {
       border: 'blue-100',
       shadow: 'blue-200',
     },
+    bigo: {
+      primary: 'emerald',
+      secondary: 'teal',
+      accent: 'cyan',
+      gradient: 'from-emerald-50 via-white to-teal-50',
+      border: 'emerald-100',
+      shadow: 'emerald-200',
+    },
   },
   layout: {
     // Standard section layout with hero + content grid
