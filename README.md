@@ -2,7 +2,7 @@
 
 **Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
 
-**✨ Now featuring 6 complete learning modules with 60+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, and Big-O Notation.**
+**✨ Now featuring 7 complete learning modules with 70+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, and Python Programming.**
 
 ## 🌟 Features
 
@@ -14,6 +14,7 @@
 - **RxJS Reactive Programming**: Observable streams and reactive patterns
 - **Data Structures**: Comprehensive guide to fundamental data structures with interactive visualizations
 - **Big-O Notation**: Complete algorithmic complexity analysis with 10+ interactive tools and metaphors
+- **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
 - **More modules coming soon**: Algorithms, system design, design patterns
 
 ### 🎮 **Interactive Visualizations**
@@ -60,8 +61,10 @@ src/
 │   │   ├── javascript/  # JavaScript engine visualizations
 │   │   ├── rxjs/        # RxJS reactive programming visualizations
 │   │   ├── datastructures/ # Data structure visualizations
-│   │   └── bigo/        # Big-O notation visualizations (10+ components)
+│   │   ├── bigo/        # Big-O notation visualizations (10+ components)
+│   │   └── python/      # Python programming visualizations
 │   ├── models3d/        # 3D visualization components
+│   │   └── python/      # Python 3D models (VM, memory profiler, call graph)
 │   └── shared/          # Shared UI components
 ├── pages/               # Main application pages
 │   ├── NextjsPage.tsx   # Next.js tutorial page
@@ -69,19 +72,22 @@ src/
 │   ├── JavaScriptPage.tsx
 │   ├── RxJSPage.tsx
 │   ├── DataStructuresPage.tsx # Data structures module
-│   └── BigOPage.tsx     # Big-O notation module
+│   ├── BigOPage.tsx     # Big-O notation module
+│   └── PythonPage.tsx   # Python programming module
 ├── sections/            # Educational content sections
 │   ├── nextjs/          # Next.js learning modules (7 sections)
 │   ├── git/            # Git learning modules
 │   ├── javascript/     # JavaScript concepts
 │   ├── rxjs/           # RxJS tutorials
 │   ├── datastructures/ # Data structure concepts
-│   └── bigo/           # Big-O notation concepts (8 sections)
+│   ├── bigo/           # Big-O notation concepts (8 sections)
+│   └── python/         # Python programming concepts (5 sections)
 ├── hooks/              # Custom React hooks
 ├── types/              # TypeScript type definitions
 │   ├── nextjs.ts       # Next.js type definitions
 │   ├── datastructures.ts # Data structures type definitions
-│   └── bigo.ts         # Big-O notation type definitions
+│   ├── bigo.ts         # Big-O notation type definitions
+│   └── python.ts       # Python programming type definitions
 ├── utils/              # Utility functions
 └── three/              # Three.js 3D models and scenes
 ```
@@ -206,6 +212,20 @@ Complete algorithmic complexity analysis module with 10+ interactive tools and e
 - **Algorithm Comparison**: Side-by-side performance analysis with real-time execution simulation
 - **Performance Profiling**: Code analyzer and optimization coach with complexity recommendations
 
+### 🐍 **Python Programming Mastery (Complete)**
+
+Complete Python tutorial covering the fundamental concepts that make Python unique, from philosophy to practical implementation:
+
+- **Python Philosophy**: The Zen of Python (PEP 20) with 19 guiding principles, interactive principle exploration, and Pythonic vs non-Pythonic code comparisons
+- **Execution Model**: Interactive 3-phase execution flow (Source → Bytecode → PVM) with step-by-step compilation visualization and bytecode examples
+- **Memory Management**: Interactive reference counting demo and cyclic garbage collection visualization showing object lifecycle and memory allocation strategies
+- **Global Interpreter Lock**: Interactive threading demo showing GIL behavior, thread blocking, and alternatives like multiprocessing and asyncio
+- **Advanced Concepts**: Generators, decorators, metaclasses, and context managers with interactive visualizations
+- **2D Visualizations**: Execution flow diagrams, memory models, GIL threading demonstrations, and decorator patterns
+- **3D Visualizations**: Python VM internals, memory profiler, and call graph representations
+- **Performance Analysis**: GIL impact, memory optimization, and concurrency alternatives
+- **Real-world Applications**: Best practices for CPU-bound vs I/O-bound tasks, memory profiling, and optimization techniques
+
 ## 🛠️ Development
 
 ### **Available Scripts**
@@ -281,13 +301,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 6 complete interactive modules with 60+ visualizations
+- 🎓 **Learning Modules**: 7 complete interactive modules with 70+ visualizations
 
 ---
 
 **Built with ❤️ for developers, by developers**
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, and Big-O Notation modules._
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, and Python Programming modules._
 
 ## 3D/2D Visualization Architecture
 
@@ -298,6 +318,9 @@ We use Three.js for 3D models with a modular structure under `src/three/`:
 - `core/anim.ts`: Tiny tween scheduler for simple time-based animations.
 - `react/ThreeCanvas.tsx`: React bridge that mounts the engine in a div and registers provided models.
 - `models/CallStackAssemblyLine.ts`: First model visualizing the Call Stack as an assembly line (conveyor + lift). Exposes `pushFrame()` and `popFrame()`.
+- `models/python/PythonVM3D.ts`: 3D visualization of Python Virtual Machine internals and execution flow.
+- `models/python/MemoryProfiler3D.ts`: Interactive 3D memory heap visualization with object allocation tracking.
+- `models/python/CallGraph3D.ts`: 3D representation of Python function call relationships and execution paths.
 
 Add a new model:
 

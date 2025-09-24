@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import SectionLayout from '../../components/shared/SectionLayout';
 import ThemeCard from '../../components/shared/ThemeCard';
 import NavigationCard from '../../components/shared/NavigationCard';
@@ -6,11 +7,12 @@ import StatsGrid from '../../components/shared/StatsGrid';
 import CTASection from '../../components/shared/CTASection';
 
 const Introduction: React.FC = () => {
+  const navigate = useNavigate();
+
   const navigateToSection = (sectionName: string) => {
-    // Navigate using the existing URL structure
-    const baseUrl = '/javascript?section=';
+    // Use React Router navigation instead of window.location
     const encodedSection = encodeURIComponent(sectionName);
-    window.location.href = baseUrl + encodedSection;
+    navigate(`/javascript?section=${encodedSection}`);
   };
 
   // Hero content with title, description, and stats

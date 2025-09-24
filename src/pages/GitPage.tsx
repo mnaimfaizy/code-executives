@@ -11,17 +11,17 @@ import HistoryManagement from './../sections/git/HistoryManagement';
 import Troubleshooting from './../sections/git/Troubleshooting';
 import Visualization from './../sections/git/Visualization';
 
-const sectionComponents: Record<string, React.ReactNode> = {
-  Introduction: <Introduction />,
-  'Git Architecture': <Architecture />,
-  'Three-Tree Model': <ThreeTreeModel />,
-  'Object Model': <ObjectModel />,
-  'Core Workflow': <CoreWorkflow />,
-  'Branching & Merging': <BranchingMerging />,
-  'Professional Workflows': <ProfessionalWorkflows />,
-  'History Management': <HistoryManagement />,
-  Troubleshooting: <Troubleshooting />,
-  Visualization: <Visualization />,
+const sectionComponents: Record<string, React.ComponentType> = {
+  Introduction,
+  'Git Architecture': Architecture,
+  'Three-Tree Model': ThreeTreeModel,
+  'Object Model': ObjectModel,
+  'Core Workflow': CoreWorkflow,
+  'Branching & Merging': BranchingMerging,
+  'Professional Workflows': ProfessionalWorkflows,
+  'History Management': HistoryManagement,
+  Troubleshooting,
+  Visualization,
 };
 
 function useQuery() {
@@ -31,7 +31,12 @@ function useQuery() {
 const GitPage: React.FC = () => {
   const query = useQuery();
   const section = query.get('section') || 'Introduction';
-  return <div className="p-4 sm:p-6">{sectionComponents[section] || <Introduction />}</div>;
+  const Component = sectionComponents[section] || Introduction;
+  return (
+    <div className="p-4 sm:p-6">
+      <Component />
+    </div>
+  );
 };
 
 export default GitPage;

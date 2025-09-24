@@ -13,18 +13,18 @@ import RealWorldExamples from '../sections/rxjs/RealWorldExamples';
 import VisualizationTool from '../sections/rxjs/VisualizationTool';
 // More imports will be added as we create the sections
 
-const sectionComponents: Record<string, React.ReactNode> = {
-  Introduction: <Introduction />,
-  'Reactive Manifesto': <ReactiveManifesto />,
-  'Core Components': <CoreComponents />,
-  Observables: <Observables />,
-  Operators: <Operators />,
-  Subjects: <Subjects />,
-  'Advanced Operators': <AdvancedOperators />,
-  'Marble Diagrams': <MarbleDiagrams />,
-  'Error Handling': <ErrorHandling />,
-  'Real-World Examples': <RealWorldExamples />,
-  'Visualization Tool': <VisualizationTool />,
+const sectionComponents: Record<string, React.ComponentType> = {
+  Introduction,
+  'Reactive Manifesto': ReactiveManifesto,
+  'Core Components': CoreComponents,
+  Observables,
+  Operators,
+  Subjects,
+  'Advanced Operators': AdvancedOperators,
+  'Marble Diagrams': MarbleDiagrams,
+  'Error Handling': ErrorHandling,
+  'Real-World Examples': RealWorldExamples,
+  'Visualization Tool': VisualizationTool,
   // More sections will be added here as we implement them
 };
 
@@ -35,7 +35,12 @@ function useQuery() {
 const RxJSPage: React.FC = () => {
   const query = useQuery();
   const section = query.get('section') || 'Introduction';
-  return <div className="p-4 sm:p-6">{sectionComponents[section] || <Introduction />}</div>;
+  const Component = sectionComponents[section] || Introduction;
+  return (
+    <div className="p-4 sm:p-6">
+      <Component />
+    </div>
+  );
 };
 
 export default RxJSPage;

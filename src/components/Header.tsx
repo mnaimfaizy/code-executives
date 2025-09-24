@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Code, GitBranch, Database, Atom, Globe, TrendingUp } from 'lucide-react';
+import { Menu, Code, GitBranch, Database, Atom, Globe, TrendingUp, Terminal } from 'lucide-react';
 
 interface HeaderProps {
   onSidebarToggle?: () => void;
@@ -19,6 +19,11 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
       label: 'JavaScript',
       path: '/javascript',
       icon: <Code className="w-4 h-4" />,
+    },
+    {
+      label: 'Python',
+      path: '/python',
+      icon: <Terminal className="w-4 h-4" />,
     },
     {
       label: 'React',
@@ -54,6 +59,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
 
   const getActiveColor = (path: string) => {
     if (path === '/javascript') return 'text-indigo-600 bg-indigo-50';
+    if (path === '/python') return 'text-blue-600 bg-blue-50';
     if (path === '/react') return 'text-blue-600 bg-blue-50';
     if (path === '/nextjs') return 'text-blue-600 bg-blue-50';
     if (path === '/git') return 'text-orange-600 bg-orange-50';

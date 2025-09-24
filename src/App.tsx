@@ -12,6 +12,7 @@ import DataStructuresPage from './pages/DataStructuresPage';
 import ReactPage from './pages/ReactPage';
 import NextJSPage from './pages/NextjsPage';
 import BigOPage from './pages/BigOPage';
+import PythonPage from './pages/PythonPage';
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -33,6 +34,7 @@ const App: React.FC = () => {
             <Route path="/react" element={<ReactPage />} />
             <Route path="/nextjs" element={<NextJSPage />} />
             <Route path="/bigo" element={<BigOPage />} />
+            <Route path="/python" element={<PythonPage />} />
           </Routes>
         </main>
       </div>

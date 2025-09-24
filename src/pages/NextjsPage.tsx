@@ -8,14 +8,14 @@ import DataFetching from '../sections/nextjs/DataFetching';
 import Middleware from '../sections/nextjs/Middleware';
 import Optimization from '../sections/nextjs/Optimization';
 
-const sectionComponents: Record<string, React.ReactNode> = {
-  Introduction: <Introduction />,
-  'Routing Systems': <Routing />,
-  'Rendering Strategies': <RenderingStrategies />,
-  'Server & Client Components': <ServerClientComponents />,
-  'Data Fetching & Mutations': <DataFetching />,
-  'Middleware & Route Handlers': <Middleware />,
-  'Optimization & Performance': <Optimization />,
+const sectionComponents: Record<string, React.ComponentType> = {
+  Introduction,
+  'Routing Systems': Routing,
+  'Rendering Strategies': RenderingStrategies,
+  'Server & Client Components': ServerClientComponents,
+  'Data Fetching & Mutations': DataFetching,
+  'Middleware & Route Handlers': Middleware,
+  'Optimization & Performance': Optimization,
 };
 
 function useQuery() {
@@ -25,7 +25,12 @@ function useQuery() {
 const NextJSPage: React.FC = () => {
   const query = useQuery();
   const section = query.get('section') || 'Introduction';
-  return <div className="p-4 sm:p-6">{sectionComponents[section] || <Introduction />}</div>;
+  const Component = sectionComponents[section] || Introduction;
+  return (
+    <div className="p-4 sm:p-6">
+      <Component />
+    </div>
+  );
 };
 
 export default NextJSPage;

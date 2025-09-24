@@ -60,6 +60,14 @@ export const theme = {
       border: 'emerald-100',
       shadow: 'emerald-200',
     },
+    python: {
+      primary: 'blue',
+      secondary: 'indigo',
+      accent: 'cyan',
+      gradient: 'from-blue-50 via-indigo-50 to-cyan-50',
+      border: 'blue-100',
+      shadow: 'blue-200',
+    },
   },
   layout: {
     // Standard section layout with hero + content grid

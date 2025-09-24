@@ -18,27 +18,27 @@ import WebAPIs from '../sections/javascript/WebAPIs';
 import TaskQueues from '../sections/javascript/TaskQueues';
 import V8Runtime from '../sections/javascript/V8Runtime';
 
-const sectionComponents: Record<string, React.ReactNode> = {
-  Introduction: <Introduction />,
-  'JavaScript History': <JavaScriptHistory />,
-  'Engine & Runtime Comparison': <EngineRuntimeComparison />,
-  'JavaScript Engine': <Engine />,
+const sectionComponents: Record<string, React.ComponentType> = {
+  Introduction,
+  'JavaScript History': JavaScriptHistory,
+  'Engine & Runtime Comparison': EngineRuntimeComparison,
+  'JavaScript Engine': Engine,
   // Engine sub-sections
-  'Call Stack & Execution': <CallStack />,
-  'Memory Heap & Objects': <MemoryHeap />,
-  'Parser & AST Generation': <ParserAST />,
-  'JIT Compilation Pipeline': <JITCompilation />,
-  'Garbage Collection': <GarbageCollection />,
+  'Call Stack & Execution': CallStack,
+  'Memory Heap & Objects': MemoryHeap,
+  'Parser & AST Generation': ParserAST,
+  'JIT Compilation Pipeline': JITCompilation,
+  'Garbage Collection': GarbageCollection,
   // Runtime sections
-  'JavaScript Runtime': <JavaScriptRuntime />,
-  'Event Loop & Coordination': <EventLoop />,
-  'Web APIs & Platform': <WebAPIs />,
-  'Task Queues & Priority': <TaskQueues />,
-  'V8 Runtime Features': <V8Runtime />,
+  'JavaScript Runtime': JavaScriptRuntime,
+  'Event Loop & Coordination': EventLoop,
+  'Web APIs & Platform': WebAPIs,
+  'Task Queues & Priority': TaskQueues,
+  'V8 Runtime Features': V8Runtime,
   // Other sections
-  'Memory Management': <MemoryManagement />,
-  'Memory Leaks': <MemoryLeaks />,
-  Visualization: <Visualization />,
+  'Memory Management': MemoryManagement,
+  'Memory Leaks': MemoryLeaks,
+  Visualization,
 };
 
 function useQuery() {
@@ -48,7 +48,12 @@ function useQuery() {
 const JavaScriptPage: React.FC = () => {
   const query = useQuery();
   const section = query.get('section') || 'Introduction';
-  return <div className="p-4 sm:p-6">{sectionComponents[section] || <Introduction />}</div>;
+  const Component = sectionComponents[section] || Introduction;
+  return (
+    <div className="p-4 sm:p-6">
+      <Component />
+    </div>
+  );
 };
 
 export default JavaScriptPage;

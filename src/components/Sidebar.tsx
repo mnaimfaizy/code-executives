@@ -2,6 +2,60 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getSectionTheme } from '../utils/theme';
 
+// Helper function to get theme color classes
+const getThemeColorClass = (
+  theme: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    gradient: string;
+    border: string;
+    shadow: string;
+  },
+  type: 'active' | 'hover' | 'buttonActive' | 'buttonHover' | 'border'
+) => {
+  const colorMap: Record<string, Record<string, string>> = {
+    purple: {
+      active: 'bg-purple-100 text-purple-800 border-purple-500',
+      hover: 'hover:bg-purple-50 hover:text-purple-700',
+      buttonActive: 'text-purple-600 hover:text-purple-700',
+      buttonHover: 'hover:text-purple-600',
+      border: 'border-purple-100',
+    },
+    orange: {
+      active: 'bg-orange-100 text-orange-800 border-orange-500',
+      hover: 'hover:bg-orange-50 hover:text-orange-700',
+      buttonActive: 'text-orange-600 hover:text-orange-700',
+      buttonHover: 'hover:text-orange-600',
+      border: 'border-orange-200',
+    },
+    indigo: {
+      active: 'bg-indigo-100 text-indigo-800 border-indigo-500',
+      hover: 'hover:bg-indigo-50 hover:text-indigo-700',
+      buttonActive: 'text-indigo-600 hover:text-indigo-700',
+      buttonHover: 'hover:text-indigo-600',
+      border: 'border-indigo-100',
+    },
+    blue: {
+      active: 'bg-blue-100 text-blue-800 border-blue-500',
+      hover: 'hover:bg-blue-50 hover:text-blue-700',
+      buttonActive: 'text-blue-600 hover:text-blue-700',
+      buttonHover: 'hover:text-blue-600',
+      border: 'border-blue-100',
+    },
+    emerald: {
+      active: 'bg-emerald-100 text-emerald-800 border-emerald-500',
+      hover: 'hover:bg-emerald-50 hover:text-emerald-700',
+      buttonActive: 'text-emerald-600 hover:text-emerald-700',
+      buttonHover: 'hover:text-emerald-600',
+      border: 'border-emerald-100',
+    },
+  };
+
+  const colors = colorMap[theme.primary] || colorMap.blue;
+  return colors[type];
+};
+
 interface SidebarItem {
   label: string;
   path: string;
@@ -193,6 +247,14 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Gamification Hub', path: '/bigo?section=gamification-hub' },
     { label: 'Real-World Applications', path: '/bigo?section=real-world-applications' },
   ],
+  '/python': [
+    { label: 'Introduction', path: '/python?section=Introduction' },
+    { label: 'Python Philosophy', path: '/python?section=Python%20Philosophy' },
+    { label: 'Execution Model', path: '/python?section=Execution%20Model' },
+    { label: 'Memory Management', path: '/python?section=Memory%20Management' },
+    { label: 'Global Interpreter Lock', path: '/python?section=Global%20Interpreter%20Lock' },
+    { label: 'Advanced Concepts', path: '/python?section=Advanced%20Concepts' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -208,8 +270,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   // Determine section from pathname
   const getSectionFromPath = (
     path: string
-  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' | 'nextjs' | 'bigo' => {
+  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' | 'nextjs' | 'bigo' | 'python' => {
     if (path.includes('javascript')) return 'javascript';
+    if (path.includes('python')) return 'python';
     if (path.includes('react')) return 'react';
     if (path.includes('nextjs')) return 'nextjs';
     if (path.includes('git')) return 'git';
@@ -250,22 +313,34 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     const hasSubItems = item.subItems && item.subItems.length > 0;
     const expanded = isExpanded(item.label);
 
+    // Check if this item is active based on current section query param
+    const query = new URLSearchParams(location.search);
+    const currentSection = query.get('section') || 'Introduction'; // Default to Introduction
+    const isActive =
+      currentSection === item.label || item.subItems?.some((sub) => sub.label === currentSection);
+
     return (
       <li key={item.label}>
         <div className="flex items-center">
           <Link
             to={item.path}
             onClick={onClose}
-            className={`flex-1 block rounded-md px-3 py-2 text-sm text-gray-700 hover:bg-[${theme.primary}10] hover:text-[${theme.primary}] ${
-              isSubItem ? 'ml-4 text-xs' : ''
-            }`}
+            className={`flex-1 block rounded-md px-3 py-2 text-sm transition-colors border-l-4 ${
+              isActive
+                ? `${getThemeColorClass(theme, 'active')} font-medium`
+                : `text-gray-700 border-transparent ${getThemeColorClass(theme, 'hover')}`
+            } ${isSubItem ? 'ml-4 text-xs' : ''}`}
           >
             {item.label}
           </Link>
           {hasSubItems && (
             <button
               onClick={() => toggleExpanded(item.label)}
-              className={`p-1 text-gray-500 hover:text-[${theme.primary}] rounded`}
+              className={`p-1 rounded transition-colors ${
+                isActive
+                  ? getThemeColorClass(theme, 'buttonActive')
+                  : `text-gray-500 ${getThemeColorClass(theme, 'buttonHover')}`
+              }`}
               aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
             >
               <svg
@@ -298,10 +373,12 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
       aria-hidden={!open}
       className={[
         // Base drawer behavior for small/medium screens
-        `fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 border-r border-[${theme.border}] bg-white shadow-sm transition-transform duration-200 ease-out`,
+        `fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 bg-white shadow-sm transition-transform duration-200 ease-out border-r`,
         open ? 'translate-x-0' : '-translate-x-full',
         // On large screens and up, make it always visible and static (no translate)
         'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)]',
+        // Dynamic border color based on theme
+        getThemeColorClass(theme, 'border'),
       ].join(' ')}
     >
       <nav className="p-2">
