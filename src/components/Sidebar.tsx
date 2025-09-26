@@ -174,9 +174,12 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
         { label: 'Linked Lists', path: '/datastructures?section=Linked%20Lists' },
         { label: 'Stacks', path: '/datastructures?section=Stacks' },
         { label: 'Queues', path: '/datastructures?section=Queues' },
+        { label: 'Deques', path: '/datastructures?section=Deques' },
+        { label: 'Strings', path: '/datastructures?section=Strings' },
       ],
     },
     { label: 'Hash Tables', path: '/datastructures?section=Hash%20Tables' },
+    { label: 'Sets', path: '/datastructures?section=Sets' },
     {
       label: 'Tree Structures',
       path: '/datastructures?section=Tree%20Structures',

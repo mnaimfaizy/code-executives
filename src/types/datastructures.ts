@@ -342,3 +342,41 @@ export interface VisualizationTheme {
     slow: number;
   };
 }
+
+// Sets specific types
+export interface SetElement extends DataStructureElement {
+  hash: number;
+}
+
+export interface SetVisualizationProps extends BaseVisualizationProps {
+  initialData?: string[] | number[];
+  maxSize?: number;
+  allowDuplicates?: boolean;
+  showHashValues?: boolean;
+}
+
+// Deques specific types
+export interface DequeElement extends DataStructureElement {
+  isFront?: boolean;
+  isRear?: boolean;
+}
+
+export interface DequeVisualizationProps extends BaseVisualizationProps {
+  initialData?: string[] | number[];
+  maxSize?: number;
+  orientation?: 'horizontal' | 'vertical';
+  showPointers?: boolean;
+}
+
+// Strings specific types
+export interface StringElement extends DataStructureElement {
+  charIndex: number;
+  isHighlighted?: boolean;
+}
+
+export interface StringVisualizationProps extends BaseVisualizationProps {
+  initialString?: string;
+  maxLength?: number;
+  showIndices?: boolean;
+  showASCII?: boolean;
+}

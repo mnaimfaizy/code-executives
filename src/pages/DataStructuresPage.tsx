@@ -7,6 +7,9 @@ import LinkedLists from '../sections/datastructures/LinkedLists';
 import Stacks from '../sections/datastructures/Stacks';
 import Queues from '../sections/datastructures/Queues';
 import HashTables from '../sections/datastructures/HashTables';
+import Sets from '../sections/datastructures/Sets';
+import Deques from '../sections/datastructures/Deques';
+import Strings from '../sections/datastructures/Strings';
 import TreeStructures from '../sections/datastructures/TreeStructures';
 import BinaryTrees from '../sections/datastructures/BinaryTrees';
 import BinarySearchTrees from '../sections/datastructures/BinarySearchTrees';
@@ -56,6 +59,12 @@ const DataStructuresPage: React.FC = () => {
         return <Queues />;
       case 'hash-tables':
         return <HashTables />;
+      case 'sets':
+        return <Sets />;
+      case 'deques':
+        return <Deques />;
+      case 'strings':
+        return <Strings />;
       case 'tree-structures':
         return <TreeStructures />;
       case 'binary-trees':
