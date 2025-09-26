@@ -1,7 +1,6 @@
 import React from 'react';
 import SectionLayout from '../../components/shared/SectionLayout';
 import ThemeCard from '../../components/shared/ThemeCard';
-import NavigationCard from '../../components/shared/NavigationCard';
 import CTASection from '../../components/shared/CTASection';
 import LinkedListVisualization from '../../components/models2d/datastructures/linear/LinkedListVisualization';
 import { ArrowRight, Database, Zap, Code } from 'lucide-react';
@@ -193,46 +192,9 @@ const LinkedLists: React.FC = () => {
     </>
   );
 
-  // Sidebar with navigation cards
-  const sidebarContent = (
-    <>
-      <ThemeCard>
-        <NavigationCard
-          title="Arrays"
-          description="Fixed-size sequential data structures"
-          colorScheme="datastructures"
-          onClick={() => navigateToSection('Arrays')}
-        />
-      </ThemeCard>
-
-      <ThemeCard>
-        <NavigationCard
-          title="Stacks"
-          description="LIFO data structure operations"
-          colorScheme="datastructures"
-          onClick={() => navigateToSection('Stacks')}
-        />
-      </ThemeCard>
-
-      <ThemeCard>
-        <NavigationCard
-          title="Queues"
-          description="FIFO data structure operations"
-          colorScheme="datastructures"
-          onClick={() => navigateToSection('Queues')}
-        />
-      </ThemeCard>
-    </>
-  );
-
   return (
     <>
-      <SectionLayout
-        section="datastructures"
-        hero={heroContent}
-        mainContent={mainContent}
-        sidebar={sidebarContent}
-      />
+      <SectionLayout section="datastructures" hero={heroContent} mainContent={mainContent} />
       <CTASection
         title="Ready to Explore More Data Structures?"
         description="Continue your journey through fundamental data structures and algorithms."

@@ -8,7 +8,7 @@ interface SectionLayoutProps {
   section: keyof typeof import('../../utils/theme').theme.colors;
   hero: React.ReactNode;
   mainContent: React.ReactNode;
-  sidebar: React.ReactNode;
+  sidebar?: React.ReactNode;
   className?: string;
 }
 
