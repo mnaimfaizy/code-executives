@@ -168,7 +168,7 @@ const MetricsTracker: React.FC<MetricsTrackerProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [isTracking, updateInterval]);
+  }, [isTracking, updateInterval, collectMetrics]);
 
   // Get latest metrics
   const latestMetrics = metrics[metrics.length - 1];

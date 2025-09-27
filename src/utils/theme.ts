@@ -68,6 +68,14 @@ export const theme = {
       border: 'blue-100',
       shadow: 'blue-200',
     },
+    systemdesign: {
+      primary: 'blue',
+      secondary: 'indigo',
+      accent: 'purple',
+      gradient: 'from-blue-50 via-indigo-50 to-purple-50',
+      border: 'blue-100',
+      shadow: 'blue-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',

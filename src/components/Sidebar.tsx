@@ -260,6 +260,15 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Global Interpreter Lock', path: '/python?section=Global%20Interpreter%20Lock' },
     { label: 'Advanced Concepts', path: '/python?section=Advanced%20Concepts' },
   ],
+  '/systemdesign': [
+    { label: 'Introduction', path: '/systemdesign?section=Introduction' },
+    { label: 'Architecture Patterns', path: '/systemdesign?section=Architecture%20Patterns' },
+    { label: 'Distributed Systems', path: '/systemdesign?section=Distributed%20Systems' },
+    { label: 'Scaling Strategies', path: '/systemdesign?section=Scaling%20Strategies' },
+    { label: 'Design Principles', path: '/systemdesign?section=Design%20Principles' },
+    { label: 'Case Studies', path: '/systemdesign?section=Case%20Studies' },
+    { label: 'Visualization', path: '/systemdesign?section=Visualization' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -275,7 +284,16 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
   // Determine section from pathname
   const getSectionFromPath = (
     path: string
-  ): 'javascript' | 'git' | 'datastructures' | 'rxjs' | 'react' | 'nextjs' | 'bigo' | 'python' => {
+  ):
+    | 'javascript'
+    | 'git'
+    | 'datastructures'
+    | 'rxjs'
+    | 'react'
+    | 'nextjs'
+    | 'bigo'
+    | 'python'
+    | 'systemdesign' => {
     if (path.includes('javascript')) return 'javascript';
     if (path.includes('python')) return 'python';
     if (path.includes('react')) return 'react';
@@ -284,6 +302,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     if (path.includes('datastructures')) return 'datastructures';
     if (path.includes('rxjs')) return 'rxjs';
     if (path.includes('bigo')) return 'bigo';
+    if (path.includes('systemdesign')) return 'systemdesign';
     return 'javascript'; // default
   };
 

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import type { PlaygroundSession, UserProgress } from '../../types/playground';
 import { Play, RotateCcw, Code, Eye, BarChart3, Trophy, Lightbulb } from 'lucide-react';
 import SectionLayout from '../shared/SectionLayout';
 import ThemeCard from '../shared/ThemeCard';
@@ -52,8 +53,8 @@ const Playground: React.FC<PlaygroundProps> = ({
   const [testResults, setTestResults] = useState<TestCaseResult[]>([]);
   const [selectedVisualization, setSelectedVisualization] =
     useState<DataStructureType>(initialVisualization);
-  const [session] = useState<any>(null);
-  const [progress] = useState<any>(null);
+  const [session] = useState<PlaygroundSession | null>(null);
+  const [progress] = useState<UserProgress | null>(null);
   const [error] = useState<string | null>(null);
 
   // Mock functions

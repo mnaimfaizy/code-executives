@@ -1,6 +1,16 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, Code, GitBranch, Database, Atom, Globe, TrendingUp, Terminal } from 'lucide-react';
+import {
+  Menu,
+  Code,
+  GitBranch,
+  Database,
+  Atom,
+  Globe,
+  TrendingUp,
+  Terminal,
+  Network,
+} from 'lucide-react';
 
 interface HeaderProps {
   onSidebarToggle?: () => void;
@@ -46,6 +56,11 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
       icon: <Database className="w-4 h-4" />,
     },
     {
+      label: 'System Design',
+      path: '/systemdesign',
+      icon: <Network className="w-4 h-4" />,
+    },
+    {
       label: 'Big-O Notation',
       path: '/bigo',
       icon: <TrendingUp className="w-4 h-4" />,
@@ -64,6 +79,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
     if (path === '/nextjs') return 'text-blue-600 bg-blue-50';
     if (path === '/git') return 'text-orange-600 bg-orange-50';
     if (path === '/datastructures') return 'text-blue-600 bg-blue-50';
+    if (path === '/systemdesign') return 'text-blue-600 bg-blue-50';
     return 'text-gray-700 hover:bg-gray-50';
   };
 

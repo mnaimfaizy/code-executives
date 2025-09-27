@@ -59,56 +59,62 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
     []
   );
 
-  const splitChild = (parent: BTreeNode, index: number, fullChild: BTreeNode): BTreeNode => {
-    const newChild = createNode([], fullChild.isLeaf);
-    const midIndex = Math.floor(maxKeys / 2);
+  const splitChild = useCallback(
+    (parent: BTreeNode, index: number, fullChild: BTreeNode): BTreeNode => {
+      const newChild = createNode([], fullChild.isLeaf);
+      const midIndex = Math.floor(maxKeys / 2);
 
-    // Move second half of keys to new node
-    newChild.keys = fullChild.keys.splice(midIndex + 1);
+      // Move second half of keys to new node
+      newChild.keys = fullChild.keys.splice(midIndex + 1);
 
-    // Move second half of children if not leaf
-    if (!fullChild.isLeaf) {
-      newChild.children = fullChild.children.splice(midIndex + 1);
-    }
-
-    // Insert new child into parent
-    parent.children.splice(index + 1, 0, newChild);
-
-    // Move middle key up to parent
-    const middleKey = fullChild.keys.splice(midIndex, 1)[0];
-    parent.keys.splice(index, 0, middleKey);
-
-    return parent;
-  };
-
-  const insertNonFull = (node: BTreeNode, key: number): void => {
-    let i = node.keys.length - 1;
-
-    if (node.isLeaf) {
-      // Insert into leaf node
-      node.keys.push(0);
-      while (i >= 0 && node.keys[i] > key) {
-        node.keys[i + 1] = node.keys[i];
-        i--;
+      // Move second half of children if not leaf
+      if (!fullChild.isLeaf) {
+        newChild.children = fullChild.children.splice(midIndex + 1);
       }
-      node.keys[i + 1] = key;
-    } else {
-      // Find child to insert into
-      while (i >= 0 && node.keys[i] > key) {
-        i--;
-      }
-      i++;
 
-      // Check if child is full
-      if (node.children[i].keys.length === maxKeys) {
-        splitChild(node, i, node.children[i]);
-        if (node.keys[i] < key) {
-          i++;
+      // Insert new child into parent
+      parent.children.splice(index + 1, 0, newChild);
+
+      // Move middle key up to parent
+      const middleKey = fullChild.keys.splice(midIndex, 1)[0];
+      parent.keys.splice(index, 0, middleKey);
+
+      return parent;
+    },
+    [maxKeys]
+  );
+
+  const insertNonFull = useCallback(
+    (node: BTreeNode, key: number): void => {
+      let i = node.keys.length - 1;
+
+      if (node.isLeaf) {
+        // Insert into leaf node
+        node.keys.push(0);
+        while (i >= 0 && node.keys[i] > key) {
+          node.keys[i + 1] = node.keys[i];
+          i--;
         }
+        node.keys[i + 1] = key;
+      } else {
+        // Find child to insert into
+        while (i >= 0 && node.keys[i] > key) {
+          i--;
+        }
+        i++;
+
+        // Check if child is full
+        if (node.children[i].keys.length === maxKeys) {
+          splitChild(node, i, node.children[i]);
+          if (node.keys[i] < key) {
+            i++;
+          }
+        }
+        insertNonFull(node.children[i], key);
       }
-      insertNonFull(node.children[i], key);
-    }
-  };
+    },
+    [maxKeys, splitChild]
+  );
 
   const insert = useCallback(
     (key: number) => {
@@ -143,9 +149,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
 
         setIsAnimating(false);
       }, 500);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [root, maxKeys, calculatePositions]
+    [root, maxKeys, calculatePositions, insertNonFull, splitChild]
   );
 
   const handleInsert = () => {
