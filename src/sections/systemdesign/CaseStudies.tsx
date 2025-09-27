@@ -3,6 +3,7 @@ import SectionLayout from '../../components/shared/SectionLayout';
 import ThemeCard from '../../components/shared/ThemeCard';
 import NavigationCard from '../../components/shared/NavigationCard';
 import CTASection from '../../components/shared/CTASection';
+import NetflixArchitecture2D from '../../components/models2d/systemdesign/NetflixArchitecture2D';
 import {
   Building,
   Globe,
@@ -223,6 +224,23 @@ const CaseStudies: React.FC = () => {
               </ul>
             </div>
           </div>
+        </div>
+      </ThemeCard>
+
+      {/* Netflix Architecture Interactive Visualization */}
+      <ThemeCard>
+        <div className="mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            🎬 Interactive Netflix Architecture Explorer
+          </h2>
+          <p className="text-gray-600">
+            Explore Netflix's microservices ecosystem through an interactive visualization. Click on
+            components to see details, challenges, and solutions.
+          </p>
+        </div>
+
+        <div className="bg-gradient-to-br from-red-50 to-black rounded-2xl p-6">
+          <NetflixArchitecture2D />
         </div>
       </ThemeCard>
 
