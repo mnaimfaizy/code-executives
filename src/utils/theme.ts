@@ -76,6 +76,14 @@ export const theme = {
       border: 'blue-100',
       shadow: 'blue-200',
     },
+    typescript: {
+      primary: 'indigo',
+      secondary: 'purple',
+      accent: 'blue',
+      gradient: 'from-indigo-50 via-white to-purple-50',
+      border: 'indigo-100',
+      shadow: 'indigo-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',

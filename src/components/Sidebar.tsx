@@ -269,6 +269,34 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Case Studies', path: '/systemdesign?section=Case%20Studies' },
     { label: 'Visualization', path: '/systemdesign?section=Visualization' },
   ],
+  '/typescript': [
+    { label: 'Introduction', path: '/typescript?section=Introduction' },
+    { label: 'TypeScript vs JavaScript', path: '/typescript?section=TypeScript%20vs%20JavaScript' },
+    {
+      label: 'OOP Fundamentals',
+      path: '/typescript?section=OOP%20Fundamentals',
+      subItems: [
+        { label: 'Classes & Objects', path: '/typescript?section=Classes%20%26%20Objects' },
+        { label: 'Inheritance', path: '/typescript?section=Inheritance' },
+        { label: 'Polymorphism', path: '/typescript?section=Polymorphism' },
+        { label: 'Encapsulation', path: '/typescript?section=Encapsulation' },
+        { label: 'Abstraction', path: '/typescript?section=Abstraction' },
+      ],
+    },
+    {
+      label: 'Advanced TypeScript',
+      path: '/typescript?section=Advanced%20TypeScript',
+      subItems: [
+        { label: 'Generics', path: '/typescript?section=Generics' },
+        { label: 'Decorators', path: '/typescript?section=Decorators' },
+        { label: 'Advanced Types', path: '/typescript?section=Advanced%20Types' },
+        { label: 'Type Guards', path: '/typescript?section=Type%20Guards' },
+      ],
+    },
+    { label: 'TypeScript Visualization', path: '/typescript?section=TypeScript%20Visualization' },
+    { label: 'Best Practices', path: '/typescript?section=Best%20Practices' },
+    { label: 'Migration Guide', path: '/typescript?section=Migration%20Guide' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -293,7 +321,8 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     | 'nextjs'
     | 'bigo'
     | 'python'
-    | 'systemdesign' => {
+    | 'systemdesign'
+    | 'typescript' => {
     if (path.includes('javascript')) return 'javascript';
     if (path.includes('python')) return 'python';
     if (path.includes('react')) return 'react';
@@ -303,6 +332,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
     if (path.includes('rxjs')) return 'rxjs';
     if (path.includes('bigo')) return 'bigo';
     if (path.includes('systemdesign')) return 'systemdesign';
+    if (path.includes('typescript')) return 'typescript';
     return 'javascript'; // default
   };
 
