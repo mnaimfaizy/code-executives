@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { ChunkLoadError } from '../ChunkLoadError';
 
 interface Props {
   children: ReactNode;
@@ -63,10 +64,35 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.href = '/';
   };
 
+  isChunkLoadError = (error: Error | null): boolean => {
+    if (!error) return false;
+
+    return (
+      error.message?.includes('Failed to fetch dynamically imported module') ||
+      error.message?.includes('Loading chunk') ||
+      error.message?.includes('Importing a module script failed') ||
+      error.name === 'ChunkLoadError'
+    );
+  };
+
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
+      }
+
+      // Use specialized ChunkLoadError component for chunk loading failures
+      if (this.isChunkLoadError(this.state.error)) {
+        const { level = 'component' } = this.props;
+        return (
+          <ChunkLoadError
+            error={this.state.error || undefined}
+            resetErrorBoundary={this.handleReset}
+            onGoHome={this.handleGoHome}
+            variant={level === 'app' ? 'page' : 'section'}
+            maxRetries={3}
+          />
+        );
       }
 
       const { level = 'component' } = this.props;

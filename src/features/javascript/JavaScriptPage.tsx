@@ -1,5 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
+import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -53,16 +55,11 @@ const JavaScriptPage: React.FC = () => {
   const Component = sectionComponents[section] || Introduction;
   return (
     <div className="p-4 sm:p-6">
-      <Suspense
-        fallback={
-          <div className="space-y-6 animate-pulse">
-            <div className="h-48 bg-gray-200 rounded-xl" />
-            <div className="h-96 bg-gray-200 rounded-xl" />
-          </div>
-        }
-      >
-        <Component />
-      </Suspense>
+      <ErrorBoundary level="feature">
+        <Suspense fallback={<LoadingFallback variant="skeleton-page" />}>
+          <Component />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };

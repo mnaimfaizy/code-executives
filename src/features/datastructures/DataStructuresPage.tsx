@@ -1,5 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
+import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -112,25 +114,11 @@ const DataStructuresPage: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6">
-      <Suspense
-        fallback={
-          <div className="space-y-6 animate-pulse">
-            <div className="h-48 bg-gray-200 rounded-xl" />
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-4">
-                <div className="h-96 bg-gray-200 rounded-xl" />
-                <div className="h-64 bg-gray-200 rounded-xl" />
-              </div>
-              <div className="space-y-4">
-                <div className="h-48 bg-gray-200 rounded-xl" />
-                <div className="h-48 bg-gray-200 rounded-xl" />
-              </div>
-            </div>
-          </div>
-        }
-      >
-        {renderSection()}
-      </Suspense>
+      <ErrorBoundary level="feature">
+        <Suspense fallback={<LoadingFallback variant="skeleton-page" />}>
+          {renderSection()}
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
