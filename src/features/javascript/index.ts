@@ -1,11 +1,17 @@
-// JavaScript Feature - Public API
+/**
+ * JavaScript Feature Module
+ * Entry point for the JavaScript engine and runtime learning module
+ * 
+ * Covers JavaScript fundamentals including:
+ * - JavaScript history and evolution
+ * - JavaScript engine architecture
+ * - Event loop and runtime behavior
+ * - Memory management and garbage collection
+ * - Execution flow visualization
+ * 
+ * Note: Section components are lazy-loaded in JavaScriptPage for optimal performance.
+ * They should not be re-exported here to maintain code splitting benefits.
+ */
+
 export { default } from './JavaScriptPage';
 export { default as JavaScriptPage } from './JavaScriptPage';
-
-// Re-export section components if needed externally
-export { default as Introduction } from './components/sections/Introduction';
-export { default as JavaScriptHistory } from './components/sections/JavaScriptHistory';
-export { default as Engine } from './components/sections/Engine';
-export { default as EventLoop } from './components/sections/EventLoop';
-export { default as MemoryManagement } from './components/sections/MemoryManagement';
-export { default as Visualization } from './components/sections/Visualization';

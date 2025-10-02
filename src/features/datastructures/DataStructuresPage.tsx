@@ -1,33 +1,35 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
-import Introduction from './components/sections/Introduction';
-import LinearStructures from './components/sections/LinearStructures';
-import Arrays from './components/sections/Arrays';
-import LinkedLists from './components/sections/LinkedLists';
-import Stacks from './components/sections/Stacks';
-import Queues from './components/sections/Queues';
-import HashTables from './components/sections/HashTables';
-import Sets from './components/sections/Sets';
-import Deques from './components/sections/Deques';
-import Strings from './components/sections/Strings';
-import TreeStructures from './components/sections/TreeStructures';
-import BinaryTrees from './components/sections/BinaryTrees';
-import BinarySearchTrees from './components/sections/BinarySearchTrees';
-import AVLTrees from './components/sections/AVLTrees';
-import RedBlackTrees from './components/sections/RedBlackTrees';
-import Heaps from './components/sections/Heaps';
-import BTrees from './components/sections/BTrees';
-import GraphStructures from './components/sections/GraphStructures';
-import GraphRepresentation from './components/sections/GraphRepresentation';
-import GraphTraversal from './components/sections/GraphTraversal';
-import ShortestPath from './components/sections/ShortestPath';
-import MinimumSpanningTree from './components/sections/MinimumSpanningTree';
-import GraphTypes from './components/sections/GraphTypes';
-import ComplexityAnalysis from './components/sections/ComplexityAnalysis';
-import RealWorldApplications from './components/sections/RealWorldApplications';
-import PracticeProblems from './components/sections/PracticeProblems';
-import Visualizations3D from './components/sections/Visualizations3D';
-import Playground from '../../components/playground/Playground';
+
+// Lazy load all section components for better code splitting
+const Introduction = lazy(() => import('./components/sections/Introduction'));
+const LinearStructures = lazy(() => import('./components/sections/LinearStructures'));
+const Arrays = lazy(() => import('./components/sections/Arrays'));
+const LinkedLists = lazy(() => import('./components/sections/LinkedLists'));
+const Stacks = lazy(() => import('./components/sections/Stacks'));
+const Queues = lazy(() => import('./components/sections/Queues'));
+const HashTables = lazy(() => import('./components/sections/HashTables'));
+const Sets = lazy(() => import('./components/sections/Sets'));
+const Deques = lazy(() => import('./components/sections/Deques'));
+const Strings = lazy(() => import('./components/sections/Strings'));
+const TreeStructures = lazy(() => import('./components/sections/TreeStructures'));
+const BinaryTrees = lazy(() => import('./components/sections/BinaryTrees'));
+const BinarySearchTrees = lazy(() => import('./components/sections/BinarySearchTrees'));
+const AVLTrees = lazy(() => import('./components/sections/AVLTrees'));
+const RedBlackTrees = lazy(() => import('./components/sections/RedBlackTrees'));
+const Heaps = lazy(() => import('./components/sections/Heaps'));
+const BTrees = lazy(() => import('./components/sections/BTrees'));
+const GraphStructures = lazy(() => import('./components/sections/GraphStructures'));
+const GraphRepresentation = lazy(() => import('./components/sections/GraphRepresentation'));
+const GraphTraversal = lazy(() => import('./components/sections/GraphTraversal'));
+const ShortestPath = lazy(() => import('./components/sections/ShortestPath'));
+const MinimumSpanningTree = lazy(() => import('./components/sections/MinimumSpanningTree'));
+const GraphTypes = lazy(() => import('./components/sections/GraphTypes'));
+const ComplexityAnalysis = lazy(() => import('./components/sections/ComplexityAnalysis'));
+const RealWorldApplications = lazy(() => import('./components/sections/RealWorldApplications'));
+const PracticeProblems = lazy(() => import('./components/sections/PracticeProblems'));
+const Visualizations3D = lazy(() => import('./components/sections/Visualizations3D'));
+const Playground = lazy(() => import('../../components/playground/Playground'));
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -108,7 +110,29 @@ const DataStructuresPage: React.FC = () => {
     }
   };
 
-  return <div className="p-4 sm:p-6">{renderSection()}</div>;
+  return (
+    <div className="p-4 sm:p-6">
+      <Suspense
+        fallback={
+          <div className="space-y-6 animate-pulse">
+            <div className="h-48 bg-gray-200 rounded-xl" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-4">
+                <div className="h-96 bg-gray-200 rounded-xl" />
+                <div className="h-64 bg-gray-200 rounded-xl" />
+              </div>
+              <div className="space-y-4">
+                <div className="h-48 bg-gray-200 rounded-xl" />
+                <div className="h-48 bg-gray-200 rounded-xl" />
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {renderSection()}
+      </Suspense>
+    </div>
+  );
 };
 
 export default DataStructuresPage;

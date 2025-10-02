@@ -1,22 +1,24 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
-import Introduction from './components/sections/Introduction';
-import JavaScriptHistory from './components/sections/JavaScriptHistory';
-import EngineRuntimeComparison from './components/sections/EngineRuntimeComparison';
-import Engine from './components/sections/Engine';
-import EventLoop from './components/sections/EventLoop';
-import MemoryManagement from './components/sections/MemoryManagement';
-import MemoryLeaks from './components/sections/MemoryLeaks';
-import Visualization from './components/sections/Visualization';
-import CallStack from './components/sections/CallStack';
-import MemoryHeap from './components/sections/MemoryHeap';
-import ParserAST from './components/sections/ParserAST';
-import JITCompilation from './components/sections/JITCompilation';
-import GarbageCollection from './components/sections/GarbageCollection';
-import JavaScriptRuntime from './components/sections/JavaScriptRuntime';
-import WebAPIs from './components/sections/WebAPIs';
-import TaskQueues from './components/sections/TaskQueues';
-import V8Runtime from './components/sections/V8Runtime';
+
+// Lazy load all section components for better code splitting
+const Introduction = lazy(() => import('./components/sections/Introduction'));
+const JavaScriptHistory = lazy(() => import('./components/sections/JavaScriptHistory'));
+const EngineRuntimeComparison = lazy(() => import('./components/sections/EngineRuntimeComparison'));
+const Engine = lazy(() => import('./components/sections/Engine'));
+const EventLoop = lazy(() => import('./components/sections/EventLoop'));
+const MemoryManagement = lazy(() => import('./components/sections/MemoryManagement'));
+const MemoryLeaks = lazy(() => import('./components/sections/MemoryLeaks'));
+const Visualization = lazy(() => import('./components/sections/Visualization'));
+const CallStack = lazy(() => import('./components/sections/CallStack'));
+const MemoryHeap = lazy(() => import('./components/sections/MemoryHeap'));
+const ParserAST = lazy(() => import('./components/sections/ParserAST'));
+const JITCompilation = lazy(() => import('./components/sections/JITCompilation'));
+const GarbageCollection = lazy(() => import('./components/sections/GarbageCollection'));
+const JavaScriptRuntime = lazy(() => import('./components/sections/JavaScriptRuntime'));
+const WebAPIs = lazy(() => import('./components/sections/WebAPIs'));
+const TaskQueues = lazy(() => import('./components/sections/TaskQueues'));
+const V8Runtime = lazy(() => import('./components/sections/V8Runtime'));
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -51,7 +53,16 @@ const JavaScriptPage: React.FC = () => {
   const Component = sectionComponents[section] || Introduction;
   return (
     <div className="p-4 sm:p-6">
-      <Component />
+      <Suspense
+        fallback={
+          <div className="space-y-6 animate-pulse">
+            <div className="h-48 bg-gray-200 rounded-xl" />
+            <div className="h-96 bg-gray-200 rounded-xl" />
+          </div>
+        }
+      >
+        <Component />
+      </Suspense>
     </div>
   );
 };
