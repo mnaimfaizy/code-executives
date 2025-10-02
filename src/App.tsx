@@ -14,7 +14,7 @@ const JavaScriptPage = lazy(() => import('./features/javascript'));
 const RxJSPage = lazy(() => import('./pages/RxJSPage'));
 const GitPage = lazy(() => import('./features/git'));
 const DataStructuresPage = lazy(() => import('./pages/DataStructuresPage'));
-const ReactPage = lazy(() => import('./pages/ReactPage'));
+const ReactPage = lazy(() => import('./features/react'));
 const NextJSPage = lazy(() => import('./pages/NextjsPage'));
 const BigOPage = lazy(() => import('./pages/BigOPage'));
 const PythonPage = lazy(() => import('./pages/PythonPage'));
