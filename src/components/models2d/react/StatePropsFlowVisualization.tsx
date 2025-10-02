@@ -317,4 +317,5 @@ const StatePropsFlowVisualization: React.FC = () => {
   );
 };
 
-export default StatePropsFlowVisualization;
+// Memoize visualization component to avoid unnecessary re-renders
+export default React.memo(StatePropsFlowVisualization);

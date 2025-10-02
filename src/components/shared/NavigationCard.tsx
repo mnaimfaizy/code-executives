@@ -44,4 +44,6 @@ const NavigationCard: React.FC<NavigationCardProps> = ({
   );
 };
 
-export default NavigationCard;
+// Memoize to prevent re-renders when props are unchanged
+// onClick is expected to be stable (wrapped in useCallback by parent)
+export default React.memo(NavigationCard);

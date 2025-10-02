@@ -284,4 +284,5 @@ const VirtualDOMDiffing: React.FC<VirtualDOMDiffingProps> = ({
   );
 };
 
-export default VirtualDOMDiffing;
+// Memoize complex DOM diffing visualization
+export default React.memo(VirtualDOMDiffing);

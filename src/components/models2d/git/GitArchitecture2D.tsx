@@ -827,4 +827,5 @@ const GitArchitecture2D: React.FC<GitArchitecture2DProps> = ({
   );
 };
 
-export default GitArchitecture2D;
+// Memoize complex architecture diagram
+export default React.memo(GitArchitecture2D);

@@ -237,4 +237,6 @@ const ComponentLifecycle: React.FC<ComponentLifecycleProps> = ({
   );
 };
 
-export default ComponentLifecycle;
+// Memoize to prevent re-renders when props unchanged
+// Already optimized with useMemo for lifecyclePhases
+export default React.memo(ComponentLifecycle);

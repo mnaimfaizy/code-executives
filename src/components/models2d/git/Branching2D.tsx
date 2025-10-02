@@ -497,4 +497,5 @@ const Branching2D: React.FC<Branching2DProps> = ({
   );
 };
 
-export default Branching2D;
+// Memoize branching visualization to reduce re-renders
+export default React.memo(Branching2D);

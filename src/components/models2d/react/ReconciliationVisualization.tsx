@@ -345,4 +345,5 @@ const ReconciliationVisualization: React.FC<ReconciliationVisualizationProps> = 
   );
 };
 
-export default ReconciliationVisualization;
+// Memoize to optimize re-rendering of complex fiber tree visualizations
+export default React.memo(ReconciliationVisualization);

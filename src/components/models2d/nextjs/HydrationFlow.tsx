@@ -386,4 +386,5 @@ function Counter() {
   );
 };
 
-export default HydrationFlow;
+// Memoize hydration flow visualization
+export default React.memo(HydrationFlow);

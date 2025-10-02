@@ -302,4 +302,5 @@ const LayoutComposition: React.FC<LayoutCompositionProps> = ({
   );
 };
 
-export default LayoutComposition;
+// Memoize layout composition to reduce unnecessary re-renders
+export default React.memo(LayoutComposition);

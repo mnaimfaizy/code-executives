@@ -16,4 +16,5 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ children, hover = false, classNam
   return <div className={`${cardClass} ${className}`}>{children}</div>;
 };
 
-export default ThemeCard;
+// Memoize to prevent unnecessary re-renders when props haven't changed
+export default React.memo(ThemeCard);

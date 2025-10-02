@@ -96,4 +96,6 @@ const VisualizationControls: React.FC<VisualizationControlsProps> = ({
   );
 };
 
-export default VisualizationControls;
+// Memoize controls to prevent re-renders when props haven't changed
+// Callbacks should be wrapped in useCallback by parent component
+export default React.memo(VisualizationControls);

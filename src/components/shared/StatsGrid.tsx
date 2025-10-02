@@ -36,4 +36,5 @@ const StatsGrid: React.FC<StatsGridProps> = ({ stats, colorScheme, className = '
   );
 };
 
-export default StatsGrid;
+// Memoize to avoid re-rendering when stats haven't changed
+export default React.memo(StatsGrid);

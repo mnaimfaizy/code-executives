@@ -44,4 +44,6 @@ const CTASection: React.FC<CTASectionProps> = ({
   );
 };
 
-export default CTASection;
+// Memoize CTA section to prevent unnecessary re-renders
+// onButtonClick should be wrapped in useCallback by parent
+export default React.memo(CTASection);

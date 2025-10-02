@@ -572,4 +572,5 @@ const Collaboration2D: React.FC<Collaboration2DProps> = ({ activeWorkflow, onWor
   );
 };
 
-export default Collaboration2D;
+// Memoize to optimize animation-heavy collaboration visualization
+export default React.memo(Collaboration2D);

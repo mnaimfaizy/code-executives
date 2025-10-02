@@ -355,4 +355,5 @@ const CacheVisualization: React.FC<CacheVisualizationProps> = ({
   );
 };
 
-export default CacheVisualization;
+// Memoize cache visualization to optimize rendering
+export default React.memo(CacheVisualization);
