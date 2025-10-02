@@ -7,6 +7,7 @@ import { ErrorBoundary } from './shared/components/feedback/ErrorBoundary';
 import { SuspenseRoute } from './shared/components/routing';
 import { SkipLinks } from './shared/components/accessibility';
 import { UIProvider, ThemeProvider, AppProvider } from './shared/contexts';
+import { PerformanceDashboard } from './shared/components/performance';
 
 // Lazy load all pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -138,6 +139,11 @@ const App: React.FC = () => {
                 </main>
               </div>
               <Footer />
+              <PerformanceDashboard
+                enabled={import.meta.env.DEV}
+                position="bottom-right"
+                defaultOpen={false}
+              />
             </div>
           </UIProvider>
         </ThemeProvider>
