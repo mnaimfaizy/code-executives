@@ -1,49 +1,144 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';
-import Home from './pages/Home';
-import About from './pages/About';
-import JavaScriptPage from './pages/JavaScriptPage';
-import RxJSPage from './pages/RxJSPage';
-import GitPage from './pages/GitPage';
-import DataStructuresPage from './pages/DataStructuresPage';
-import ReactPage from './pages/ReactPage';
-import NextJSPage from './pages/NextjsPage';
-import BigOPage from './pages/BigOPage';
-import PythonPage from './pages/PythonPage';
-import SystemDesignPage from './pages/SystemDesignPage';
-import TypeScriptPage from './pages/TypeScriptPage';
+import { ErrorBoundary } from './shared/components/feedback/ErrorBoundary';
+import { SuspenseRoute } from './shared/components/routing';
+import { SkipLinks } from './shared/components/accessibility';
+
+// Lazy load all pages for better performance
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const JavaScriptPage = lazy(() => import('./pages/JavaScriptPage'));
+const RxJSPage = lazy(() => import('./pages/RxJSPage'));
+const GitPage = lazy(() => import('./pages/GitPage'));
+const DataStructuresPage = lazy(() => import('./pages/DataStructuresPage'));
+const ReactPage = lazy(() => import('./pages/ReactPage'));
+const NextJSPage = lazy(() => import('./pages/NextjsPage'));
+const BigOPage = lazy(() => import('./pages/BigOPage'));
+const PythonPage = lazy(() => import('./pages/PythonPage'));
+const SystemDesignPage = lazy(() => import('./pages/SystemDesignPage'));
+const TypeScriptPage = lazy(() => import('./pages/TypeScriptPage'));
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const handleSidebarToggle = () => setSidebarOpen((open) => !open);
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
-      <Header onSidebarToggle={handleSidebarToggle} />
-      <div className="flex flex-1">
-        <Sidebar open={sidebarOpen} onClose={handleSidebarToggle} />
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/javascript" element={<JavaScriptPage />} />
-            <Route path="/rxjs" element={<RxJSPage />} />
-            <Route path="/git" element={<GitPage />} />
-            <Route path="/datastructures" element={<DataStructuresPage />} />
-            <Route path="/react" element={<ReactPage />} />
-            <Route path="/nextjs" element={<NextJSPage />} />
-            <Route path="/bigo" element={<BigOPage />} />
-            <Route path="/python" element={<PythonPage />} />
-            <Route path="/systemdesign" element={<SystemDesignPage />} />
-            <Route path="/typescript" element={<TypeScriptPage />} />
-          </Routes>
-        </main>
+    <ErrorBoundary level="app">
+      <SkipLinks />
+      <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900">
+        <Header onSidebarToggle={handleSidebarToggle} />
+        <div className="flex flex-1">
+          <Sidebar open={sidebarOpen} onClose={handleSidebarToggle} />
+          <main
+            id="main-content"
+            className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8"
+          >
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <SuspenseRoute>
+                    <Home />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/about"
+                element={
+                  <SuspenseRoute>
+                    <About />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/javascript"
+                element={
+                  <SuspenseRoute>
+                    <JavaScriptPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/rxjs"
+                element={
+                  <SuspenseRoute>
+                    <RxJSPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/git"
+                element={
+                  <SuspenseRoute>
+                    <GitPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/datastructures"
+                element={
+                  <SuspenseRoute>
+                    <DataStructuresPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/react"
+                element={
+                  <SuspenseRoute>
+                    <ReactPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/nextjs"
+                element={
+                  <SuspenseRoute>
+                    <NextJSPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/bigo"
+                element={
+                  <SuspenseRoute>
+                    <BigOPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/python"
+                element={
+                  <SuspenseRoute>
+                    <PythonPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/systemdesign"
+                element={
+                  <SuspenseRoute>
+                    <SystemDesignPage />
+                  </SuspenseRoute>
+                }
+              />
+              <Route
+                path="/typescript"
+                element={
+                  <SuspenseRoute>
+                    <TypeScriptPage />
+                  </SuspenseRoute>
+                }
+              />
+            </Routes>
+          </main>
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </ErrorBoundary>
   );
 };
 

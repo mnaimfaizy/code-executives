@@ -339,7 +339,7 @@ const C4ModelBuilder2D: React.FC<C4ModelBuilder2DProps> = React.memo(({ classNam
   }, []);
 
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
         // Animation logic removed for simplicity

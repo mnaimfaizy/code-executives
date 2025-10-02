@@ -60,7 +60,7 @@ const ScalingVisualization2D: React.FC<ScalingVisualization2DProps> = ({ classNa
 
   // Auto-animation for demo
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
         setUserLoad((prev) => {

@@ -38,7 +38,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
   const [step, setStep] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [shortestPath, setShortestPath] = useState<string[]>([]);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeGraph = useCallback(() => {
     const initialNodes: DijkstraNode[] = [

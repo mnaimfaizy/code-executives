@@ -366,7 +366,7 @@ const CAPTheorem2D: React.FC<CAPTheorem2DProps> = React.memo(({ className = '' }
   const unavailableProperty = getUnavailableProperty();
 
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isAnimating) {
       interval = setInterval(() => {
         setAnimationStep((prev) => (prev + 1) % 4);

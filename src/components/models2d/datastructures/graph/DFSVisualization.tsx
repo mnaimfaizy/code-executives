@@ -39,7 +39,7 @@ const DFSVisualization: React.FC<DFSVisualizationProps> = ({ className = '' }) =
   const [time, setTime] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
   const [traversalOrder, setTraversalOrder] = useState<string[]>([]);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeGraph = useCallback(() => {
     const initialNodes: DFSNode[] = [

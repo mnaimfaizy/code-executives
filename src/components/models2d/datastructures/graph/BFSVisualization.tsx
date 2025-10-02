@@ -35,7 +35,7 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
   const [startNode, setStartNode] = useState<string>('A');
   const [step, setStep] = useState(0);
   const [showInfo, setShowInfo] = useState(false);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const initializeGraph = useCallback(() => {
     const initialNodes: BFSNode[] = [

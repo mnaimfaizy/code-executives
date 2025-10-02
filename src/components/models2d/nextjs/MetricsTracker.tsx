@@ -45,7 +45,7 @@ const MetricsTracker: React.FC<MetricsTrackerProps> = ({
     new Set(['lcp', 'inp', 'cls', 'memoryUsage'])
   );
   const [viewMode, setViewMode] = useState<'realtime' | 'summary'>('realtime');
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Metric configurations
   const metricConfigs: Record<string, MetricConfig> = {

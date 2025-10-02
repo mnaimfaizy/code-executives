@@ -10,7 +10,7 @@ interface HookExample {
 const HooksVisualization: React.FC = () => {
   const [activeHook, setActiveHook] = useState<string>('useState');
   const [counter, setCounter] = useState(0);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // useEffect example
   useEffect(() => {

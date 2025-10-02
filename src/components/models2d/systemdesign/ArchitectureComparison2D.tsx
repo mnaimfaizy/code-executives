@@ -140,7 +140,7 @@ const ArchitectureComparison2D: React.FC<ArchitectureComparison2DProps> = ({ cla
   };
 
   useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
         setAnimationStep((prev) => (prev + 1) % 3);
