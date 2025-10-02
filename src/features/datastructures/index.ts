@@ -1,7 +1,7 @@
 /**
  * DataStructures Feature Module
  * Entry point for the DataStructures learning module
- * 
+ *
  * This module provides:
  * - 27 educational sections covering all major data structures
  * - 22 interactive 2D visualizations

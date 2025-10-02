@@ -11,15 +11,15 @@ import { SkipLinks } from './shared/components/accessibility';
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const JavaScriptPage = lazy(() => import('./features/javascript'));
-const RxJSPage = lazy(() => import('./pages/RxJSPage'));
+const RxJSPage = lazy(() => import('./features/rxjs'));
 const GitPage = lazy(() => import('./features/git'));
 const DataStructuresPage = lazy(() => import('./features/datastructures'));
 const ReactPage = lazy(() => import('./features/react'));
-const NextJSPage = lazy(() => import('./pages/NextjsPage'));
-const BigOPage = lazy(() => import('./pages/BigOPage'));
-const PythonPage = lazy(() => import('./pages/PythonPage'));
-const SystemDesignPage = lazy(() => import('./pages/SystemDesignPage'));
-const TypeScriptPage = lazy(() => import('./pages/TypeScriptPage'));
+const NextJSPage = lazy(() => import('./features/nextjs'));
+const BigOPage = lazy(() => import('./features/bigo'));
+const PythonPage = lazy(() => import('./features/python'));
+const SystemDesignPage = lazy(() => import('./features/systemdesign'));
+const TypeScriptPage = lazy(() => import('./features/typescript'));
 
 const App: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
