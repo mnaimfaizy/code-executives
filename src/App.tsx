@@ -13,7 +13,7 @@ const About = lazy(() => import('./pages/About'));
 const JavaScriptPage = lazy(() => import('./features/javascript'));
 const RxJSPage = lazy(() => import('./pages/RxJSPage'));
 const GitPage = lazy(() => import('./features/git'));
-const DataStructuresPage = lazy(() => import('./pages/DataStructuresPage'));
+const DataStructuresPage = lazy(() => import('./features/datastructures'));
 const ReactPage = lazy(() => import('./features/react'));
 const NextJSPage = lazy(() => import('./pages/NextjsPage'));
 const BigOPage = lazy(() => import('./pages/BigOPage'));
