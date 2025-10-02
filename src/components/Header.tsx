@@ -11,13 +11,11 @@ import {
   Terminal,
   Network,
 } from 'lucide-react';
+import { useUI } from '../shared/contexts';
 
-interface HeaderProps {
-  onSidebarToggle?: () => void;
-}
-
-const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
+const Header: React.FC = () => {
   const location = useLocation();
+  const { toggleSidebar } = useUI();
 
   const navigationItems = [
     {
@@ -94,7 +92,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
         <button
           aria-label="Open menu"
-          onClick={onSidebarToggle}
+          onClick={toggleSidebar}
           className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 lg:hidden transition-colors"
         >
           <Menu className="h-5 w-5 text-gray-600" />

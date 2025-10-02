@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { getSectionTheme } from '../utils/theme';
+import { useUI } from '../shared/contexts';
 
 // Helper function to get theme color classes
 const getThemeColorClass = (
@@ -301,13 +302,9 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
   '/about': [],
 };
 
-interface SidebarProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
+const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { sidebarOpen, closeSidebar } = useUI();
 
   // Determine section from pathname
   const getSectionFromPath = (
@@ -378,7 +375,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
         <div className="flex items-center">
           <Link
             to={item.path}
-            onClick={onClose}
+            onClick={closeSidebar}
             className={`flex-1 block rounded-md px-3 py-2 text-sm transition-colors border-l-4 ${
               isActive
                 ? `${getThemeColorClass(theme, 'active')} font-medium`
@@ -424,11 +421,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose }) => {
 
   return (
     <aside
-      aria-hidden={!open}
+      aria-hidden={!sidebarOpen}
       className={[
         // Base drawer behavior for small/medium screens
         `fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 bg-white shadow-sm transition-transform duration-200 ease-out border-r`,
-        open ? 'translate-x-0' : '-translate-x-full',
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         // On large screens and up, make it always visible and static (no translate)
         'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)]',
         // Dynamic border color based on theme

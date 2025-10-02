@@ -1,9 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import TwoDLayout from '../../../../components/TwoDLayout';
-import CallStack2D, {
-  type CallStack2DHandle,
-} from '../visualizations/2d/CallStack2D';
+import CallStack2D, { type CallStack2DHandle } from '../visualizations/2d/CallStack2D';
 import ThreeCanvas, { type ThreeCanvasHandle } from '../../../../three/react/ThreeCanvas';
 import { CallStackAssemblyLine } from '../../../../three/models/CallStackAssemblyLine';
 import { RestaurantKitchen } from '../../../../three/models/RestaurantKitchen';
