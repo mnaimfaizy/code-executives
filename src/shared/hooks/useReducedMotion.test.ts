@@ -22,7 +22,7 @@ describe('useReducedMotion', () => {
       dispatchEvent: vi.fn(),
     };
 
-    window.matchMedia = vi.fn().mockImplementation((_query: string) => matchMediaMock);
+    window.matchMedia = vi.fn().mockImplementation(() => matchMediaMock);
   });
 
   afterEach(() => {
@@ -60,10 +60,12 @@ describe('useReducedMotion', () => {
   });
 
   it('should update when media query changes', () => {
-    let changeHandler: any;
-    matchMediaMock.addEventListener = vi.fn((_event: string, handler: EventListener) => {
-      changeHandler = handler;
-    });
+    let changeHandler: ((event: Partial<MediaQueryListEvent>) => void) | undefined;
+    matchMediaMock.addEventListener = vi.fn(
+      (_event: string, handler: (event: Partial<MediaQueryListEvent>) => void) => {
+        changeHandler = handler;
+      }
+    );
     matchMediaMock.matches = false;
 
     const { result, rerender } = renderHook(() => useReducedMotion());
@@ -72,7 +74,9 @@ describe('useReducedMotion', () => {
 
     // Simulate media query change
     matchMediaMock.matches = true;
-    changeHandler({ matches: true });
+    if (changeHandler) {
+      changeHandler({ matches: true } as MediaQueryListEvent);
+    }
     rerender();
 
     expect(result.current).toBe(true);
@@ -80,7 +84,7 @@ describe('useReducedMotion', () => {
 
   it('should handle legacy addListener API', () => {
     // Simulate browser without addEventListener
-    matchMediaMock.addEventListener = undefined;
+    delete (matchMediaMock as Partial<MediaQueryList>).addEventListener;
     matchMediaMock.addListener = vi.fn();
 
     renderHook(() => useReducedMotion());
@@ -90,8 +94,8 @@ describe('useReducedMotion', () => {
 
   it('should handle legacy removeListener on unmount', () => {
     // Simulate browser without removeEventListener
-    matchMediaMock.addEventListener = undefined;
-    matchMediaMock.removeEventListener = undefined;
+    delete (matchMediaMock as Partial<MediaQueryList>).addEventListener;
+    delete (matchMediaMock as Partial<MediaQueryList>).removeEventListener;
     matchMediaMock.addListener = vi.fn();
     matchMediaMock.removeListener = vi.fn();
 

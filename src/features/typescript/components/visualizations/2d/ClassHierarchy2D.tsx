@@ -69,7 +69,7 @@ const ClassHierarchy2D = React.forwardRef<ClassHierarchy2DHandle, ClassHierarchy
     const positions = useMemo(() => {
       const pos = new Map<string, { x: number; y: number; level: number }>();
       const levelWidth = width / Math.max(hierarchy.roots.length, 1);
-      let currentY = 80;
+      const currentY = 80;
 
       const calculatePositions = (classNames: string[], level: number, startX: number) => {
         const spacing = width / (classNames.length + 1);

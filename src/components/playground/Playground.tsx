@@ -12,11 +12,11 @@ import VisualizationSelector from './VisualizationSelector';
 import ExecutionEngine, { type DebugState } from './ExecutionEngine';
 import TestRunner from './TestRunner';
 import ScoringSystem from './ScoringSystem';
-import { ArrayVisualization } from '../models2d/datastructures/linear/ArrayVisualization';
-import { LinkedListVisualization } from '../models2d/datastructures/linear/LinkedListVisualization';
-import { QueueVisualization } from '../models2d/datastructures/linear/QueueVisualization';
-import { StackVisualization } from '../models2d/datastructures/linear/StackVisualization';
-import HashTableVisualization from '../models2d/datastructures/hash/HashTableVisualization';
+import { ArrayVisualization } from '../../features/datastructures/components/visualizations/2d/linear/ArrayVisualization';
+import { LinkedListVisualization } from '../../features/datastructures/components/visualizations/2d/linear/LinkedListVisualization';
+import { QueueVisualization } from '../../features/datastructures/components/visualizations/2d/linear/QueueVisualization';
+import { StackVisualization } from '../../features/datastructures/components/visualizations/2d/linear/StackVisualization';
+import HashTableVisualization from '../../features/datastructures/components/visualizations/2d/hash/HashTableVisualization';
 import { getScoringSystem } from '../../utils/scoring';
 import type {
   PlaygroundProblem,
@@ -25,7 +25,11 @@ import type {
   SubmissionResult,
   TestCaseResult,
 } from '../../types/playground';
-import type { QueueElement, StackElement } from '../../types/datastructures';
+import type {
+  QueueElement,
+  StackElement,
+  DataStructureOperation,
+} from '../../types/datastructures';
 
 interface PlaygroundProps {
   problemId?: string;
@@ -559,7 +563,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                   hashFunction="simple"
                   collisionStrategy="chaining"
                   showHashCalculation={true}
-                  onOperationComplete={(operation) =>
+                  onOperationComplete={(operation: DataStructureOperation) =>
                     console.log('HashTable operation:', operation)
                   }
                 />
