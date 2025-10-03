@@ -2,6 +2,8 @@ export { useWebVitals, getMetricRating, WEB_VITALS_THRESHOLDS } from './useWebVi
 export { usePerformanceMarks } from './usePerformanceMarks';
 export { useDebounce, useDebouncedCallback } from './useDebounce';
 export { useThrottle, useThrottledCallback } from './useThrottle';
+export { useReducedMotion } from './useReducedMotion';
+export { useKeyboardNavigation } from './useKeyboardNavigation';
 
 export type {
   WebVitalsMetrics,
