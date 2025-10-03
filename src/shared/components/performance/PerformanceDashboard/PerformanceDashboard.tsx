@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Activity, Zap, Clock, TrendingUp, X } from 'lucide-react';
 import { useWebVitals, getMetricRating, WEB_VITALS_THRESHOLDS } from '../../../hooks/useWebVitals';
 
@@ -20,49 +20,70 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const { metrics, loading } = useWebVitals({ enabled });
 
-  // Don't render if disabled
-  if (!enabled) return null;
+  // Memoize position classes (constant, but demonstrates pattern)
+  const positionClasses = useMemo(
+    () => ({
+      'top-left': 'top-4 left-4',
+      'top-right': 'top-4 right-4',
+      'bottom-left': 'bottom-4 left-4',
+      'bottom-right': 'bottom-4 right-4',
+    }),
+    []
+  );
 
-  const positionClasses = {
-    'top-left': 'top-4 left-4',
-    'top-right': 'top-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-  };
+  // Memoize metric descriptions (constant)
+  const metricDescriptions = useMemo<Record<string, string>>(
+    () => ({
+      LCP: 'Largest Contentful Paint - Loading performance',
+      FID: 'First Input Delay - Interactivity (deprecated)',
+      CLS: 'Cumulative Layout Shift - Visual stability',
+      FCP: 'First Contentful Paint - Initial render',
+      TTFB: 'Time to First Byte - Server response',
+      INP: 'Interaction to Next Paint - Responsiveness',
+    }),
+    []
+  );
 
-  const getMetricColor = (metricName: keyof typeof WEB_VITALS_THRESHOLDS, value?: number) => {
-    if (value === undefined) return 'text-gray-400';
+  // Memoize helper functions with useCallback
+  const getMetricColor = useCallback(
+    (metricName: keyof typeof WEB_VITALS_THRESHOLDS, value?: number) => {
+      if (value === undefined) return 'text-gray-400';
 
-    const rating = getMetricRating(metricName, value);
-    switch (rating) {
-      case 'good':
-        return 'text-green-600';
-      case 'needs-improvement':
-        return 'text-yellow-600';
-      case 'poor':
-        return 'text-red-600';
-      default:
-        return 'text-gray-400';
-    }
-  };
+      const rating = getMetricRating(metricName, value);
+      switch (rating) {
+        case 'good':
+          return 'text-green-600';
+        case 'needs-improvement':
+          return 'text-yellow-600';
+        case 'poor':
+          return 'text-red-600';
+        default:
+          return 'text-gray-400';
+      }
+    },
+    []
+  );
 
-  const getMetricBgColor = (metricName: keyof typeof WEB_VITALS_THRESHOLDS, value?: number) => {
-    if (value === undefined) return 'bg-gray-100';
+  const getMetricBgColor = useCallback(
+    (metricName: keyof typeof WEB_VITALS_THRESHOLDS, value?: number) => {
+      if (value === undefined) return 'bg-gray-100';
 
-    const rating = getMetricRating(metricName, value);
-    switch (rating) {
-      case 'good':
-        return 'bg-green-100';
-      case 'needs-improvement':
-        return 'bg-yellow-100';
-      case 'poor':
-        return 'bg-red-100';
-      default:
-        return 'bg-gray-100';
-    }
-  };
+      const rating = getMetricRating(metricName, value);
+      switch (rating) {
+        case 'good':
+          return 'bg-green-100';
+        case 'needs-improvement':
+          return 'bg-yellow-100';
+        case 'poor':
+          return 'bg-red-100';
+        default:
+          return 'bg-gray-100';
+      }
+    },
+    []
+  );
 
-  const formatMetricValue = (metricName: string, value?: number) => {
+  const formatMetricValue = useCallback((metricName: string, value?: number) => {
     if (value === undefined) return '-';
 
     if (metricName === 'CLS') {
@@ -70,22 +91,20 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
     }
 
     return `${Math.round(value)}ms`;
-  };
+  }, []);
 
-  const metricDescriptions: Record<string, string> = {
-    LCP: 'Largest Contentful Paint - Loading performance',
-    FID: 'First Input Delay - Interactivity (deprecated)',
-    CLS: 'Cumulative Layout Shift - Visual stability',
-    FCP: 'First Contentful Paint - Initial render',
-    TTFB: 'Time to First Byte - Server response',
-    INP: 'Interaction to Next Paint - Responsiveness',
-  };
+  // Memoize toggle handlers
+  const handleOpen = useCallback(() => setIsOpen(true), []);
+  const handleClose = useCallback(() => setIsOpen(false), []);
+
+  // Don't render if disabled (after all hooks)
+  if (!enabled) return null;
 
   if (!isOpen) {
     return (
       <div className={`fixed ${positionClasses[position]} z-50`}>
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpen}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
           aria-label="Open performance dashboard"
         >
@@ -106,7 +125,7 @@ export const PerformanceDashboard: React.FC<PerformanceDashboardProps> = ({
             <h3 className="font-semibold">Performance Monitor</h3>
           </div>
           <button
-            onClick={() => setIsOpen(false)}
+            onClick={handleClose}
             className="text-white hover:bg-white/20 rounded p-1 transition-colors"
             aria-label="Close performance dashboard"
           >

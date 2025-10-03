@@ -1211,35 +1211,56 @@ A binary tree's maximum depth is the number of nodes along the longest path from
   },
 ];
 
-// Helper function to get problems by difficulty
+// Helper function to get problems by difficulty (memoization-friendly)
 export const getProblemsByDifficulty = (
   difficulty: 'Easy' | 'Medium' | 'Hard'
 ): PlaygroundProblem[] => {
   return PROBLEM_DATABASE.filter((problem) => problem.difficulty === difficulty);
 };
 
-// Helper function to get problems by data structure
+// Helper function to get problems by data structure (memoization-friendly)
 export const getProblemsByDataStructure = (dataStructure: string): PlaygroundProblem[] => {
   return PROBLEM_DATABASE.filter((problem) => problem.dataStructure === dataStructure);
 };
 
-// Helper function to get problems by category
+// Helper function to get problems by category (memoization-friendly)
 export const getProblemsByCategory = (category: string): PlaygroundProblem[] => {
   return PROBLEM_DATABASE.filter((problem) => problem.category === category);
 };
 
-// Helper function to get a specific problem by ID
+// Helper function to get a specific problem by ID (O(n) lookup - consider Map for large datasets)
 export const getProblemById = (id: string): PlaygroundProblem | undefined => {
   return PROBLEM_DATABASE.find((problem) => problem.id === id);
 };
 
-// Get all problems
+// Get all problems (returns reference to constant array)
 export const getAllProblems = (): PlaygroundProblem[] => {
   return PROBLEM_DATABASE;
 };
 
-// Get random problems for practice
+// Get random problems for practice (creates new array, use sparingly)
 export const getRandomProblems = (count: number = 5): PlaygroundProblem[] => {
   const shuffled = [...PROBLEM_DATABASE].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, Math.min(count, PROBLEM_DATABASE.length));
+};
+
+// Create a Map for O(1) lookups if needed (use with useMemo in components)
+export const createProblemIdMap = (): Map<string, PlaygroundProblem> => {
+  return new Map(PROBLEM_DATABASE.map((problem) => [problem.id, problem]));
+};
+
+// Get unique values for filters (useful for dropdown options)
+export const getUniqueCategories = (): string[] => {
+  return Array.from(new Set(PROBLEM_DATABASE.map((p) => p.category)));
+};
+
+export const getUniqueDataStructures = (): string[] => {
+  const dataStructures = PROBLEM_DATABASE.map((p) => p.dataStructure).filter(
+    (ds) => ds !== undefined
+  );
+  return Array.from(new Set(dataStructures)) as string[];
+};
+
+export const getUniqueDifficulties = (): Array<'Easy' | 'Medium' | 'Hard'> => {
+  return ['Easy', 'Medium', 'Hard'];
 };
