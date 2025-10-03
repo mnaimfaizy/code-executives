@@ -2,12 +2,12 @@
  * useReducedMotion Hook Tests
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useReducedMotion } from './useReducedMotion';
 
 describe('useReducedMotion', () => {
-  let matchMediaMock: any;
+  let matchMediaMock: MediaQueryList;
 
   beforeEach(() => {
     // Reset matchMedia mock before each test
@@ -22,7 +22,7 @@ describe('useReducedMotion', () => {
       dispatchEvent: vi.fn(),
     };
 
-    window.matchMedia = vi.fn().mockImplementation((query) => matchMediaMock);
+    window.matchMedia = vi.fn().mockImplementation((_query: string) => matchMediaMock);
   });
 
   afterEach(() => {
@@ -61,7 +61,7 @@ describe('useReducedMotion', () => {
 
   it('should update when media query changes', () => {
     let changeHandler: any;
-    matchMediaMock.addEventListener = vi.fn((event, handler) => {
+    matchMediaMock.addEventListener = vi.fn((_event: string, handler: EventListener) => {
       changeHandler = handler;
     });
     matchMediaMock.matches = false;

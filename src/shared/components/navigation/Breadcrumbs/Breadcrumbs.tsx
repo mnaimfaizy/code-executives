@@ -19,7 +19,7 @@ import { ChevronRight, Home } from 'lucide-react';
  * - Accessible keyboard navigation
  * - ARIA labels for screen readers
  */
-export const Breadcrumbs: React.FC = () => {
+export const Breadcrumbs: React.FC<{ className?: string }> = ({ className = '' }) => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
 
@@ -38,7 +38,7 @@ export const Breadcrumbs: React.FC = () => {
   };
 
   return (
-    <nav aria-label="Breadcrumb" className="mb-4">
+    <nav aria-label="Breadcrumb" className={`mb-4 ${className}`}>
       <ol className="flex items-center space-x-2 text-sm">
         {/* Home Link */}
         <li>

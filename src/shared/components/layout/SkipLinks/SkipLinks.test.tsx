@@ -44,10 +44,10 @@ describe('SkipLinks', () => {
     expect(mainLink).toHaveAttribute('href');
   });
 
-  it('should render as nav element', () => {
+  it('should render as div with skip-links class', () => {
     const { container } = renderWithRouter(<SkipLinks />);
 
-    const nav = container.querySelector('nav');
-    expect(nav).toBeInTheDocument();
+    const skipLinksDiv = container.querySelector('.skip-links');
+    expect(skipLinksDiv).toBeInTheDocument();
   });
 });
