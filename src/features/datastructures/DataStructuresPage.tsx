@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
 import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
+import { SEO } from '../../shared/components/SEO/SEO';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -113,13 +114,30 @@ const DataStructuresPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6">
-      <ErrorBoundary level="feature">
-        <Suspense fallback={<LoadingFallback variant="skeleton-page" />}>
-          {renderSection()}
-        </Suspense>
-      </ErrorBoundary>
-    </div>
+    <>
+      <SEO
+        title="Data Structures & Algorithms"
+        description="Explore arrays, linked lists, trees, graphs, and hash tables with interactive visualizations. Master Big-O complexity analysis and algorithmic problem solving."
+        keywords={[
+          'data structures',
+          'algorithms',
+          'binary tree',
+          'linked list',
+          'hash table',
+          'graph algorithms',
+          'big o notation',
+          'complexity analysis',
+        ]}
+        canonicalUrl="https://code-executives.com/datastructures"
+      />
+      <div className="p-4 sm:p-6">
+        <ErrorBoundary level="feature">
+          <Suspense fallback={<LoadingFallback variant="skeleton-page" />}>
+            {renderSection()}
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </>
   );
 };
 

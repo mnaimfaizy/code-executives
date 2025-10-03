@@ -14,7 +14,7 @@ const renderWithRouter = (component: React.ReactElement) => {
 describe('SkipLinks', () => {
   it('should render skip to main content link', () => {
     renderWithRouter(<SkipLinks />);
-    
+
     const mainLink = screen.getByText('Skip to main content');
     expect(mainLink).toBeInTheDocument();
     expect(mainLink).toHaveAttribute('href', '#main-content');
@@ -22,7 +22,7 @@ describe('SkipLinks', () => {
 
   it('should render skip to navigation link', () => {
     renderWithRouter(<SkipLinks />);
-    
+
     const navLink = screen.getByText('Skip to navigation');
     expect(navLink).toBeInTheDocument();
     expect(navLink).toHaveAttribute('href', '#navigation');
@@ -30,7 +30,7 @@ describe('SkipLinks', () => {
 
   it('should have skip-link class for styling', () => {
     renderWithRouter(<SkipLinks />);
-    
+
     const links = screen.getAllByRole('link');
     links.forEach((link) => {
       expect(link).toHaveClass('skip-link');
@@ -39,14 +39,14 @@ describe('SkipLinks', () => {
 
   it('should be keyboard accessible', () => {
     renderWithRouter(<SkipLinks />);
-    
+
     const mainLink = screen.getByText('Skip to main content');
     expect(mainLink).toHaveAttribute('href');
   });
 
   it('should render as nav element', () => {
     const { container } = renderWithRouter(<SkipLinks />);
-    
+
     const nav = container.querySelector('nav');
     expect(nav).toBeInTheDocument();
   });

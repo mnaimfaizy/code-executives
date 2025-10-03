@@ -22,12 +22,9 @@ describe('useThrottle', () => {
   });
 
   it('should throttle value changes', () => {
-    const { result, rerender } = renderHook(
-      ({ value, delay }) => useThrottle(value, delay),
-      {
-        initialProps: { value: 'initial', delay: 500 },
-      }
-    );
+    const { result, rerender } = renderHook(({ value, delay }) => useThrottle(value, delay), {
+      initialProps: { value: 'initial', delay: 500 },
+    });
 
     expect(result.current).toBe('initial');
 
@@ -56,12 +53,9 @@ describe('useThrottle', () => {
   });
 
   it('should allow updates after throttle delay', () => {
-    const { result, rerender } = renderHook(
-      ({ value, delay }) => useThrottle(value, delay),
-      {
-        initialProps: { value: 'initial', delay: 500 },
-      }
-    );
+    const { result, rerender } = renderHook(({ value, delay }) => useThrottle(value, delay), {
+      initialProps: { value: 'initial', delay: 500 },
+    });
 
     // First update - should apply immediately
     rerender({ value: 'update1', delay: 500 });
@@ -82,12 +76,9 @@ describe('useThrottle', () => {
   });
 
   it('should work with different delay values', () => {
-    const { result, rerender } = renderHook(
-      ({ value, delay }) => useThrottle(value, delay),
-      {
-        initialProps: { value: 'initial', delay: 1000 },
-      }
-    );
+    const { result, rerender } = renderHook(({ value, delay }) => useThrottle(value, delay), {
+      initialProps: { value: 'initial', delay: 1000 },
+    });
 
     rerender({ value: 'update1', delay: 1000 });
     expect(result.current).toBe('update1');
@@ -104,12 +95,9 @@ describe('useThrottle', () => {
   });
 
   it('should handle number values', () => {
-    const { result, rerender } = renderHook(
-      ({ value, delay }) => useThrottle(value, delay),
-      {
-        initialProps: { value: 0, delay: 500 },
-      }
-    );
+    const { result, rerender } = renderHook(({ value, delay }) => useThrottle(value, delay), {
+      initialProps: { value: 0, delay: 500 },
+    });
 
     expect(result.current).toBe(0);
 
@@ -128,12 +116,9 @@ describe('useThrottle', () => {
   });
 
   it('should handle rapid consecutive updates', () => {
-    const { result, rerender } = renderHook(
-      ({ value, delay }) => useThrottle(value, delay),
-      {
-        initialProps: { value: 0, delay: 500 },
-      }
-    );
+    const { result, rerender } = renderHook(({ value, delay }) => useThrottle(value, delay), {
+      initialProps: { value: 0, delay: 500 },
+    });
 
     // First update applies
     rerender({ value: 1, delay: 500 });
@@ -162,12 +147,9 @@ describe('useThrottle', () => {
     const obj2 = { count: 2 };
     const obj3 = { count: 3 };
 
-    const { result, rerender } = renderHook(
-      ({ value, delay }) => useThrottle(value, delay),
-      {
-        initialProps: { value: obj1, delay: 500 },
-      }
-    );
+    const { result, rerender } = renderHook(({ value, delay }) => useThrottle(value, delay), {
+      initialProps: { value: obj1, delay: 500 },
+    });
 
     expect(result.current).toBe(obj1);
 

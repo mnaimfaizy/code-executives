@@ -14,7 +14,7 @@ describe('useKeyboardNavigation', () => {
     // Create a container with focusable elements
     container = document.createElement('div');
     items = [];
-    
+
     for (let i = 0; i < 5; i++) {
       const button = document.createElement('button');
       button.textContent = `Item ${i}`;
@@ -130,9 +130,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should loop to beginning when reaching end (with loop enabled)', () => {
-    const { result } = renderHook(() => 
-      useKeyboardNavigation({ target: container, loop: true })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ target: container, loop: true }));
 
     // Move to last item
     act(() => {
@@ -152,9 +150,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should not loop when reaching end (with loop disabled)', () => {
-    const { result } = renderHook(() => 
-      useKeyboardNavigation({ target: container, loop: false })
-    );
+    const { result } = renderHook(() => useKeyboardNavigation({ target: container, loop: false }));
 
     // Move to last item
     act(() => {
@@ -175,9 +171,7 @@ describe('useKeyboardNavigation', () => {
 
   it('should call handleSelect with selected index on Enter', () => {
     const handleSelect = vi.fn();
-    renderHook(() => 
-      useKeyboardNavigation({ target: container, onSelect: handleSelect })
-    );
+    renderHook(() => useKeyboardNavigation({ target: container, onSelect: handleSelect }));
 
     act(() => {
       const event = new KeyboardEvent('keydown', { key: 'Enter' });
@@ -189,9 +183,7 @@ describe('useKeyboardNavigation', () => {
 
   it('should call handleSelect with selected index on Space', () => {
     const handleSelect = vi.fn();
-    renderHook(() => 
-      useKeyboardNavigation({ target: container, onSelect: handleSelect })
-    );
+    renderHook(() => useKeyboardNavigation({ target: container, onSelect: handleSelect }));
 
     act(() => {
       const event = new KeyboardEvent('keydown', { key: ' ' });
@@ -202,7 +194,7 @@ describe('useKeyboardNavigation', () => {
   });
 
   it('should not respond to keyboard when disabled', () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useKeyboardNavigation({ target: container, enabled: false })
     );
 
@@ -217,9 +209,7 @@ describe('useKeyboardNavigation', () => {
   it('should remove event listener on unmount', () => {
     const removeEventListenerSpy = vi.spyOn(container, 'removeEventListener');
 
-    const { unmount } = renderHook(() => 
-      useKeyboardNavigation({ target: container })
-    );
+    const { unmount } = renderHook(() => useKeyboardNavigation({ target: container }));
 
     unmount();
 

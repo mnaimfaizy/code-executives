@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
 import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
+import { SEO } from '../../shared/components/SEO/SEO';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -54,13 +55,30 @@ const JavaScriptPage: React.FC = () => {
   const section = query.get('section') || 'Introduction';
   const Component = sectionComponents[section] || Introduction;
   return (
-    <div className="p-4 sm:p-6">
-      <ErrorBoundary level="feature">
-        <Suspense fallback={<LoadingFallback variant="skeleton-page" />}>
-          <Component />
-        </Suspense>
-      </ErrorBoundary>
-    </div>
+    <>
+      <SEO
+        title="JavaScript Engine & Execution Flow"
+        description="Master JavaScript execution with interactive visualizations of the Call Stack, Event Loop, Memory Management, and V8 engine internals. Learn how JavaScript really works."
+        keywords={[
+          'javascript engine',
+          'event loop',
+          'call stack',
+          'memory management',
+          'v8 engine',
+          'javascript execution',
+          'asynchronous javascript',
+          'garbage collection',
+        ]}
+        canonicalUrl="https://code-executives.com/javascript"
+      />
+      <div className="p-4 sm:p-6">
+        <ErrorBoundary level="feature">
+          <Suspense fallback={<LoadingFallback variant="skeleton-page" />}>
+            <Component />
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </>
   );
 };
 

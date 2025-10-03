@@ -1,6 +1,6 @@
 /**
  * Environment Configuration
- * 
+ *
  * Centralized configuration for environment variables.
  * Provides type-safe access to environment variables with validation.
  */
@@ -60,7 +60,7 @@ function validateEnv(): void {
   if (missing.length > 0) {
     console.warn(
       `Missing required environment variables: ${missing.join(', ')}\n` +
-      'Please check your .env file and ensure all required variables are set.'
+        'Please check your .env file and ensure all required variables are set.'
     );
   }
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { SEO } from '../../shared/components/SEO/SEO';
 import Introduction from './components/sections/Introduction';
 import Architecture from './components/sections/Architecture';
 import ThreeTreeModel from './components/sections/ThreeTreeModel';
@@ -33,9 +34,26 @@ const GitPage: React.FC = () => {
   const section = query.get('section') || 'Introduction';
   const Component = sectionComponents[section] || Introduction;
   return (
-    <div className="p-4 sm:p-6">
-      <Component />
-    </div>
+    <>
+      <SEO
+        title="Git Version Control & Workflows"
+        description="Learn Git fundamentals with visual diagrams of branching, merging, and the Three-Tree architecture. Master professional Git workflows and troubleshooting."
+        keywords={[
+          'git tutorial',
+          'version control',
+          'git branching',
+          'git workflow',
+          'git merge',
+          'git rebase',
+          'distributed version control',
+          'git commands',
+        ]}
+        canonicalUrl="https://code-executives.com/git"
+      />
+      <div className="p-4 sm:p-6">
+        <Component />
+      </div>
+    </>
   );
 };
 
