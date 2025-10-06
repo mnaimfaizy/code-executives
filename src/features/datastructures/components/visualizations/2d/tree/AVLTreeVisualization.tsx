@@ -33,10 +33,10 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
   const [isOperating, setIsOperating] = useState(false);
 
   // Constants for layout
-  const SVG_WIDTH = 900;
-  const SVG_HEIGHT = 600;
-  const NODE_RADIUS = 25;
-  const LEVEL_HEIGHT = 80;
+  const SVG_WIDTH = 1000;
+  const SVG_HEIGHT = 500;
+  const NODE_RADIUS = 30;
+  const LEVEL_HEIGHT = 100;
 
   // Calculate height of a node
   const getHeight = useCallback((nodeId: string | null, nodeMap: Map<string, AVLNode>): number => {
@@ -443,15 +443,24 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
         const leftPos = nodePositions.get(node.left);
         if (leftPos) {
           const isHighlighted = searchPath.includes(node.id) && searchPath.includes(node.left);
+
+          // Calculate edge endpoints on circle perimeter
+          const angle = Math.atan2(leftPos.y - nodePos.y, leftPos.x - nodePos.x);
+          const x1 = nodePos.x + NODE_RADIUS * Math.cos(angle);
+          const y1 = nodePos.y + NODE_RADIUS * Math.sin(angle);
+          const x2 = leftPos.x - NODE_RADIUS * Math.cos(angle);
+          const y2 = leftPos.y - NODE_RADIUS * Math.sin(angle);
+
           edges.push(
             <line
               key={`edge-${node.id}-left`}
-              x1={nodePos.x}
-              y1={nodePos.y}
-              x2={leftPos.x}
-              y2={leftPos.y}
-              stroke={isHighlighted ? '#3b82f6' : '#6b7280'}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke={isHighlighted ? '#3b82f6' : '#94a3b8'}
               strokeWidth={isHighlighted ? 3 : 2}
+              strokeLinecap="round"
               className="transition-all duration-300"
             />
           );
@@ -462,15 +471,24 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
         const rightPos = nodePositions.get(node.right);
         if (rightPos) {
           const isHighlighted = searchPath.includes(node.id) && searchPath.includes(node.right);
+
+          // Calculate edge endpoints on circle perimeter
+          const angle = Math.atan2(rightPos.y - nodePos.y, rightPos.x - nodePos.x);
+          const x1 = nodePos.x + NODE_RADIUS * Math.cos(angle);
+          const y1 = nodePos.y + NODE_RADIUS * Math.sin(angle);
+          const x2 = rightPos.x - NODE_RADIUS * Math.cos(angle);
+          const y2 = rightPos.y - NODE_RADIUS * Math.sin(angle);
+
           edges.push(
             <line
               key={`edge-${node.id}-right`}
-              x1={nodePos.x}
-              y1={nodePos.y}
-              x2={rightPos.x}
-              y2={rightPos.y}
-              stroke={isHighlighted ? '#3b82f6' : '#6b7280'}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              stroke={isHighlighted ? '#3b82f6' : '#94a3b8'}
               strokeWidth={isHighlighted ? 3 : 2}
+              strokeLinecap="round"
               className="transition-all duration-300"
             />
           );
@@ -492,6 +510,28 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
 
       return (
         <g key={node.id} className="transition-all duration-500">
+          {/* Glow effect for highlighted nodes */}
+          {isHighlighted && (
+            <circle
+              cx={position.x}
+              cy={position.y}
+              r={NODE_RADIUS + 4}
+              fill="none"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              opacity={0.3}
+              className="animate-pulse"
+            />
+          )}
+
+          {/* Node shadow */}
+          <circle
+            cx={position.x + 2}
+            cy={position.y + 2}
+            r={NODE_RADIUS}
+            fill="rgba(0, 0, 0, 0.1)"
+          />
+
           {/* Node circle */}
           <circle
             cx={position.x}
@@ -504,7 +544,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
                   ? '#ef4444'
                   : node.isRoot
                     ? '#10b981'
-                    : '#f3f4f6'
+                    : '#ffffff'
             }
             stroke={
               isHighlighted
@@ -513,45 +553,74 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
                   ? '#dc2626'
                   : node.isRoot
                     ? '#059669'
-                    : '#9ca3af'
+                    : '#3b82f6'
             }
-            strokeWidth={isHighlighted || isImbalanced ? 3 : 2}
-            className="cursor-pointer hover:fill-blue-100 transition-colors"
+            strokeWidth={3}
+            className="cursor-pointer hover:opacity-90 transition-all"
           />
 
           {/* Node value */}
           <text
             x={position.x}
-            y={position.y + 4}
+            y={position.y + 6}
             textAnchor="middle"
-            className="text-sm font-medium fill-gray-700 pointer-events-none"
+            className={`text-base font-bold pointer-events-none ${
+              isHighlighted || node.isRoot ? 'fill-white' : 'fill-gray-700'
+            }`}
+            style={{ fontSize: '16px' }}
           >
             {node.value}
           </text>
 
-          {/* Balance factor */}
+          {/* Balance factor badge */}
           {showBalanceFactors && (
-            <text
-              x={position.x + NODE_RADIUS + 8}
-              y={position.y - NODE_RADIUS + 8}
-              textAnchor="middle"
-              className={`text-xs font-bold pointer-events-none ${
-                Math.abs(node.balanceFactor) > 1 ? 'fill-red-600' : 'fill-blue-600'
-              }`}
-            >
-              {node.balanceFactor > 0 ? `+${node.balanceFactor}` : node.balanceFactor}
-            </text>
+            <g>
+              {/* Badge background */}
+              <circle
+                cx={position.x + NODE_RADIUS - 5}
+                cy={position.y - NODE_RADIUS + 5}
+                r={12}
+                fill={Math.abs(node.balanceFactor) > 1 ? '#fee2e2' : '#dbeafe'}
+                stroke={Math.abs(node.balanceFactor) > 1 ? '#ef4444' : '#3b82f6'}
+                strokeWidth={1.5}
+              />
+              {/* Badge text */}
+              <text
+                x={position.x + NODE_RADIUS - 5}
+                y={position.y - NODE_RADIUS + 9}
+                textAnchor="middle"
+                className={`text-xs font-bold pointer-events-none ${
+                  Math.abs(node.balanceFactor) > 1 ? 'fill-red-600' : 'fill-blue-600'
+                }`}
+                style={{ fontSize: '11px' }}
+              >
+                {node.balanceFactor > 0 ? `+${node.balanceFactor}` : node.balanceFactor}
+              </text>
+            </g>
           )}
 
-          {/* Height indicator */}
-          <text
-            x={position.x - NODE_RADIUS - 8}
-            y={position.y - NODE_RADIUS + 8}
-            textAnchor="middle"
-            className="text-xs font-medium fill-green-600 pointer-events-none"
-          >
-            h:{node.height}
-          </text>
+          {/* Height indicator badge */}
+          <g>
+            {/* Badge background */}
+            <circle
+              cx={position.x - NODE_RADIUS + 5}
+              cy={position.y - NODE_RADIUS + 5}
+              r={12}
+              fill="#d1fae5"
+              stroke="#10b981"
+              strokeWidth={1.5}
+            />
+            {/* Badge text */}
+            <text
+              x={position.x - NODE_RADIUS + 5}
+              y={position.y - NODE_RADIUS + 9}
+              textAnchor="middle"
+              className="text-xs font-bold fill-green-700 pointer-events-none"
+              style={{ fontSize: '11px' }}
+            >
+              {node.height}
+            </text>
+          </g>
         </g>
       );
     });
@@ -572,14 +641,14 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
             placeholder="Value to insert"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-32"
+            className="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm w-36 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
             onKeyPress={(e) => e.key === 'Enter' && handleInsert()}
             disabled={isOperating}
           />
           <button
             onClick={handleInsert}
             disabled={nodes.size >= maxNodes || isOperating}
-            className="flex items-center space-x-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:from-green-700 hover:to-green-600 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg font-medium"
           >
             <Plus className="w-4 h-4" />
             <span className="text-sm">Insert</span>
@@ -592,12 +661,12 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
             placeholder="Value to search"
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-32"
+            className="px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-sm w-36 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           />
           <button
             onClick={handleSearch}
-            className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all shadow-md hover:shadow-lg font-medium"
           >
             <Search className="w-4 h-4" />
             <span className="text-sm">Search</span>
@@ -606,7 +675,7 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
 
         <button
           onClick={handleReset}
-          className="flex items-center space-x-1 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-500 text-white rounded-lg hover:from-gray-700 hover:to-gray-600 transition-all shadow-md hover:shadow-lg font-medium"
         >
           <RotateCcw className="w-4 h-4" />
           <span className="text-sm">Reset</span>
@@ -614,29 +683,33 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
       </div>
 
       {/* AVL Properties */}
-      <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-        <div className="flex items-center justify-between">
+      <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border-2 border-green-200 dark:border-green-800">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="text-sm">
-            <span className="font-medium text-green-700 dark:text-green-300">AVL Property: </span>
+            <span className="font-semibold text-green-800 dark:text-green-300">AVL Property: </span>
             <span
-              className={`font-semibold ${isTreeBalanced() ? 'text-green-600' : 'text-red-600'}`}
+              className={`font-bold text-lg ${
+                isTreeBalanced()
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-red-600 dark:text-red-400'
+              }`}
             >
               {isTreeBalanced() ? '✓ Balanced' : '✗ Imbalanced'}
             </span>
             {rotationAnimation && (
-              <span className="ml-4 text-blue-600 dark:text-blue-400 animate-pulse">
-                🔄 {rotationAnimation} rotation
+              <span className="ml-4 text-blue-600 dark:text-blue-400 animate-pulse font-medium">
+                🔄 Performing {rotationAnimation} rotation
               </span>
             )}
           </div>
-          <div className="text-xs text-green-600 dark:text-green-400">
+          <div className="text-xs text-green-700 dark:text-green-400 font-medium bg-white/50 dark:bg-black/20 px-3 py-1 rounded-full">
             Balance Factor ∈ [-1, 0, 1] for all nodes
           </div>
         </div>
       </div>
 
       {/* Tree Visualization */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="relative bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-inner">
         <svg
           width={SVG_WIDTH}
           height={SVG_HEIGHT}
@@ -649,11 +722,13 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
 
         {nodes.size === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-4xl mb-2">⚖️</div>
-              <p className="text-sm">Add nodes to build your AVL Tree</p>
-              <p className="text-xs text-gray-400 mt-1">
-                Watch automatic rebalancing maintain optimal height
+            <div className="text-center p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+              <div className="text-6xl mb-4">⚖️</div>
+              <p className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Build Your AVL Tree
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Add nodes to see automatic rebalancing in action
               </p>
             </div>
           </div>
@@ -661,51 +736,70 @@ const AVLTreeVisualization: React.FC<AVLVisualizationProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="mt-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Legend</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+      <div className="mt-4 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Legend</h4>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-            <span>Root Node</span>
+            <div className="w-6 h-6 bg-green-500 rounded-full border-2 border-green-600"></div>
+            <span className="text-gray-700 dark:text-gray-300">Root Node</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-            <span>Search Path</span>
+            <div className="w-6 h-6 bg-white rounded-full border-2 border-blue-500"></div>
+            <span className="text-gray-700 dark:text-gray-300">Regular Node</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-            <span>Imbalanced</span>
+            <div className="w-6 h-6 bg-blue-500 rounded-full border-2 border-blue-700 shadow-lg"></div>
+            <span className="text-gray-700 dark:text-gray-300">Search Path</span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-blue-600 font-bold">±2</span>
-            <span>Balance Factor</span>
+            <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-red-700"></div>
+            <span className="text-gray-700 dark:text-gray-300">Imbalanced</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="flex space-x-1">
+              <div className="w-5 h-5 bg-blue-100 rounded-full border border-blue-500 flex items-center justify-center">
+                <span className="text-[8px] font-bold text-blue-600">±1</span>
+              </div>
+              <div className="w-5 h-5 bg-green-100 rounded-full border border-green-500 flex items-center justify-center">
+                <span className="text-[8px] font-bold text-green-600">h</span>
+              </div>
+            </div>
+            <span className="text-gray-700 dark:text-gray-300">Balance & Height</span>
           </div>
         </div>
       </div>
 
       {/* Tree Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">{nodes.size}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Total Nodes</div>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 border-2 border-blue-200 dark:border-blue-800 shadow-sm">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{nodes.size}</div>
+          <div className="text-xs text-blue-700 dark:text-blue-300 font-medium mt-1">
+            Total Nodes
+          </div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-4 border-2 border-purple-200 dark:border-purple-800 shadow-sm">
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {Math.max(...Array.from(nodes.values()).map((n) => n.height), -1) + 1}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Actual Height</div>
+          <div className="text-xs text-purple-700 dark:text-purple-300 font-medium mt-1">
+            Actual Height
+          </div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-4 border-2 border-amber-200 dark:border-amber-800 shadow-sm">
+          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
             {nodes.size > 0 ? Math.ceil(Math.log2(nodes.size + 1)) : 0}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Optimal Height</div>
+          <div className="text-xs text-amber-700 dark:text-amber-300 font-medium mt-1">
+            Optimal Height
+          </div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-4 border-2 border-green-200 dark:border-green-800 shadow-sm">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {isTreeBalanced() ? '✓' : '✗'}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Balanced</div>
+          <div className="text-xs text-green-700 dark:text-green-300 font-medium mt-1">
+            Balanced
+          </div>
         </div>
       </div>
     </div>
