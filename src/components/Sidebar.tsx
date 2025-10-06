@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import { getSectionTheme } from '../utils/theme';
 import { useUI } from '../shared/contexts';
 
@@ -305,6 +306,9 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
 const Sidebar: React.FC = () => {
   const location = useLocation();
   const { sidebarOpen, closeSidebar } = useUI();
+  const sidebarRef = useRef<HTMLElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchCurrentX = useRef<number>(0);
 
   // Determine section from pathname
   const getSectionFromPath = (
@@ -335,18 +339,29 @@ const Sidebar: React.FC = () => {
 
   const section = getSectionFromPath(location.pathname);
   const theme = getSectionTheme(section);
-  const [expandedItems, setExpandedItems] = useState<string[]>([
-    'JavaScript Engine',
-    'JavaScript Runtime',
-    'Memory Management',
-    'Core Components',
-    'Advanced Concepts',
-    'Real-World Applications',
-    'Git Fundamentals',
-    'Advanced Git',
-    'Linear Structures',
-    'Tree Structures',
-  ]);
+
+  // Initialize expanded items based on current section
+  const getInitialExpandedItems = () => {
+    const query = new URLSearchParams(location.search);
+    const currentSection = query.get('section') || 'Introduction';
+    const basePath = location.pathname;
+    const sections = sidebarSections[basePath] || [];
+
+    const expanded: string[] = [];
+    sections.forEach((item) => {
+      if (item.subItems) {
+        const shouldExpand =
+          currentSection === item.label ||
+          item.subItems.some((sub) => sub.label === currentSection);
+        if (shouldExpand) {
+          expanded.push(item.label);
+        }
+      }
+    });
+    return expanded;
+  };
+
+  const [expandedItems, setExpandedItems] = useState<string[]>(getInitialExpandedItems);
 
   // Get the base path (e.g., '/javascript')
   const basePath = location.pathname;
@@ -360,6 +375,77 @@ const Sidebar: React.FC = () => {
 
   const isExpanded = (label: string) => expandedItems.includes(label);
 
+  // Swipe gesture handling for mobile
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      if (sidebarOpen && sidebarRef.current) {
+        touchStartX.current = e.touches[0].clientX;
+        touchCurrentX.current = e.touches[0].clientX;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (sidebarOpen && sidebarRef.current) {
+        touchCurrentX.current = e.touches[0].clientX;
+        const diff = touchCurrentX.current - touchStartX.current;
+
+        // Only allow left swipe (closing gesture)
+        if (diff < 0) {
+          const translateX = Math.max(diff, -256); // Limit to sidebar width (w-64 = 256px)
+          sidebarRef.current.style.transform = `translateX(${translateX}px)`;
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      if (sidebarOpen && sidebarRef.current) {
+        const diff = touchCurrentX.current - touchStartX.current;
+
+        // If swiped more than 50px to the left, close the sidebar
+        if (diff < -50) {
+          closeSidebar();
+        }
+
+        // Reset transform
+        sidebarRef.current.style.transform = '';
+      }
+    };
+
+    document.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [sidebarOpen, closeSidebar]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen && window.innerWidth < 1024) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        closeSidebar();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [sidebarOpen, closeSidebar]);
+
   const renderMenuItem = (item: SidebarItem, isSubItem = false) => {
     const hasSubItems = item.subItems && item.subItems.length > 0;
     const expanded = isExpanded(item.label);
@@ -371,47 +457,58 @@ const Sidebar: React.FC = () => {
       currentSection === item.label || item.subItems?.some((sub) => sub.label === currentSection);
 
     return (
-      <li key={item.label}>
-        <div className="flex items-center">
+      <li key={item.label} className="relative">
+        <div className="flex items-center group">
           <Link
             to={item.path}
-            onClick={closeSidebar}
-            className={`flex-1 block rounded-md px-3 py-2 text-sm transition-colors border-l-4 ${
+            onClick={() => {
+              closeSidebar();
+              // Auto-expand parent when clicking on it
+              if (hasSubItems && !expanded) {
+                toggleExpanded(item.label);
+              }
+            }}
+            className={`flex-1 block rounded-lg px-3 py-2.5 text-sm transition-all duration-200 border-l-4 ${
               isActive
-                ? `${getThemeColorClass(theme, 'active')} font-medium`
-                : `text-gray-700 border-transparent ${getThemeColorClass(theme, 'hover')}`
-            } ${isSubItem ? 'ml-4 text-xs' : ''}`}
+                ? `${getThemeColorClass(theme, 'active')} font-semibold shadow-sm`
+                : `text-gray-700 border-transparent ${getThemeColorClass(
+                    theme,
+                    'hover'
+                  )} hover:pl-4 hover:border-l-2 hover:border-gray-300`
+            } ${isSubItem ? 'ml-4 text-xs py-2' : ''}`}
+            aria-current={isActive ? 'page' : undefined}
           >
-            {item.label}
+            <span className="flex items-center justify-between">
+              {item.label}
+              {hasSubItems && !isSubItem && (
+                <span className="text-gray-400 text-xs ml-2">{item.subItems?.length}</span>
+              )}
+            </span>
           </Link>
-          {hasSubItems && (
+          {hasSubItems && !isSubItem && (
             <button
-              onClick={() => toggleExpanded(item.label)}
-              className={`p-1 rounded transition-colors ${
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpanded(item.label);
+              }}
+              className={`p-2 rounded-lg transition-all duration-200 ${
                 isActive
                   ? getThemeColorClass(theme, 'buttonActive')
-                  : `text-gray-500 ${getThemeColorClass(theme, 'buttonHover')}`
+                  : `text-gray-400 ${getThemeColorClass(theme, 'buttonHover')}`
               }`}
               aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
+              aria-expanded={expanded}
             >
-              <svg
-                className={`w-4 h-4 transition-transform ${expanded ? 'rotate-90' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+              {expanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
             </button>
           )}
         </div>
         {hasSubItems && expanded && (
-          <ul className="mt-1 space-y-1">
+          <ul className="mt-1 space-y-0.5 ml-2 animate-in slide-in-from-top-2 duration-200">
             {item.subItems?.map((subItem) => renderMenuItem(subItem, true))}
           </ul>
         )}
@@ -419,23 +516,58 @@ const Sidebar: React.FC = () => {
     );
   };
 
+  // Don't render sidebar if there are no sections
+  if (sections.length === 0) {
+    return null;
+  }
+
   return (
-    <aside
-      aria-hidden={!sidebarOpen}
-      className={[
-        // Base drawer behavior for small/medium screens
-        `fixed left-0 top-16 z-30 h-[calc(100vh-4rem)] w-60 bg-white shadow-sm transition-transform duration-200 ease-out border-r`,
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-        // On large screens and up, make it always visible and static (no translate)
-        'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)]',
-        // Dynamic border color based on theme
-        getThemeColorClass(theme, 'border'),
-      ].join(' ')}
-    >
-      <nav className="p-2">
-        <ul className="space-y-1">{sections.map((item) => renderMenuItem(item))}</ul>
-      </nav>
-    </aside>
+    <>
+      {/* Backdrop overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in duration-200"
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        ref={sidebarRef}
+        aria-hidden={!sidebarOpen}
+        aria-label="Sidebar navigation"
+        className={[
+          // Base styles
+          'fixed left-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 bg-white shadow-lg transition-transform duration-300 ease-out border-r overflow-y-auto',
+          // Mobile behavior
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          // Desktop behavior - always visible
+          'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)] lg:z-30 lg:shadow-sm',
+          // Dynamic border color
+          getThemeColorClass(theme, 'border'),
+          // Smooth scrolling
+          'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400',
+        ].join(' ')}
+      >
+        <nav className="p-4" role="navigation">
+          {/* Section title */}
+          <div className="mb-4 pb-3 border-b border-gray-200">
+            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3">
+              On This Page
+            </h2>
+          </div>
+
+          {/* Navigation items */}
+          <ul className="space-y-1">{sections.map((item) => renderMenuItem(item))}</ul>
+
+          {/* Footer hint for mobile gestures */}
+          <div className="mt-8 px-3 py-4 border-t border-gray-200 lg:hidden">
+            <p className="text-xs text-gray-500 text-center">💡 Swipe left to close sidebar</p>
+          </div>
+        </nav>
+      </aside>
+    </>
   );
 };
 
