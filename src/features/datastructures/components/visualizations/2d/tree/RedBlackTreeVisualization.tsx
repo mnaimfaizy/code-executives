@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Plus, RotateCcw, Search, Palette } from 'lucide-react';
+import { Plus, RotateCcw, Search, Palette, Trash2 } from 'lucide-react';
 import type { TreeNode, BaseVisualizationProps } from '../../../../../../types/datastructures';
 
 interface RBNode extends TreeNode {
@@ -16,6 +16,16 @@ interface TreePosition {
   y: number;
 }
 
+type AnimationState =
+  | 'idle'
+  | 'inserting'
+  | 'rotating-left'
+  | 'rotating-right'
+  | 'recoloring'
+  | 'deleting'
+  | 'searching'
+  | 'fixing-violations';
+
 const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
   maxNodes = 15,
   className = '',
@@ -26,15 +36,20 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
   const [nodePositions, setNodePositions] = useState<Map<string, TreePosition>>(new Map());
   const [inputValue, setInputValue] = useState('');
   const [searchValue, setSearchValue] = useState('');
+  const [deleteValue, setDeleteValue] = useState('');
   const [searchPath, setSearchPath] = useState<string[]>([]);
   const [violationNodes, setViolationNodes] = useState<string[]>([]);
   const [isOperating, setIsOperating] = useState(false);
+  const [animationState, setAnimationState] = useState<AnimationState>('idle');
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [rotatingNodes, setRotatingNodes] = useState<Set<string>>(new Set());
+  const [recoloringNodes, setRecoloringNodes] = useState<Set<string>>(new Set());
 
-  // Constants for layout
-  const SVG_WIDTH = 900;
-  const SVG_HEIGHT = 600;
-  const NODE_RADIUS = 25;
-  const LEVEL_HEIGHT = 80;
+  // Constants for layout - Increased for better visibility and consistency with Heap
+  const SVG_WIDTH = 1200;
+  const SVG_HEIGHT = 700; // Increased from 600 to accommodate trees up to height 7
+  const NODE_RADIUS = 28;
+  const LEVEL_HEIGHT = 90;
 
   // Red-Black Tree Properties Check
   const checkRBProperties = useCallback(
@@ -80,10 +95,13 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
   // Left rotation
   const rotateLeft = useCallback(
-    (nodeMap: Map<string, RBNode>, xId: string): [Map<string, RBNode>, string] => {
+    (nodeMap: Map<string, RBNode>, xId: string): [Map<string, RBNode>, string, Set<string>] => {
       const x = nodeMap.get(xId)!;
       const yId = x.right!;
       const y = nodeMap.get(yId)!;
+
+      // Track rotating nodes for visual highlighting
+      const rotatingNodesSet = new Set([xId, yId]);
 
       // Perform rotation
       x.right = y.left;
@@ -109,17 +127,20 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       };
       updateLevels(xId, y.level + 1);
 
-      return [nodeMap, yId];
+      return [nodeMap, yId, rotatingNodesSet];
     },
     []
   );
 
   // Right rotation
   const rotateRight = useCallback(
-    (nodeMap: Map<string, RBNode>, yId: string): [Map<string, RBNode>, string] => {
+    (nodeMap: Map<string, RBNode>, yId: string): [Map<string, RBNode>, string, Set<string>] => {
       const y = nodeMap.get(yId)!;
       const xId = y.left!;
       const x = nodeMap.get(xId)!;
+
+      // Track rotating nodes for visual highlighting
+      const rotatingNodesSet = new Set([xId, yId]);
 
       // Perform rotation
       y.left = x.right;
@@ -145,7 +166,7 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       };
       updateLevels(yId, x.level + 1);
 
-      return [nodeMap, xId];
+      return [nodeMap, xId, rotatingNodesSet];
     },
     []
   );
@@ -230,7 +251,10 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
           const uncle = uncleId ? nodeMap.get(uncleId) : null;
 
           if (uncle && uncle.color === 'red') {
-            // Case 1: Uncle is red
+            // Case 1: Uncle is red - recolor parent, uncle, and grandparent
+            const recoloringSet = new Set([parentNode.id, uncle.id, grandparentId]);
+            setRecoloringNodes(recoloringSet);
+
             parentNode.color = 'black';
             uncle.color = 'black';
             grandparent.color = 'red';
@@ -240,8 +264,9 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
             if (current === parentNode.right) {
               // Case 2: Node is right child
               current = parentNode.id;
-              const [newMap] = rotateLeft(nodeMap, current);
+              const [newMap, , rotatingNodesSet] = rotateLeft(nodeMap, current);
               nodeMap = newMap;
+              setRotatingNodes(rotatingNodesSet);
               const updatedNode = nodeMap.get(current)!;
               const updatedParent = updatedNode.parent ? nodeMap.get(updatedNode.parent) : null;
               if (updatedParent) {
@@ -260,8 +285,12 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
               currentParent.color = 'black';
               currentGrandparent.color = 'red';
 
-              const [newMap, newRoot] = rotateRight(nodeMap, currentGrandparent.id);
+              const [newMap, newRoot, rotatingNodesSet] = rotateRight(
+                nodeMap,
+                currentGrandparent.id
+              );
               nodeMap = newMap;
+              setRotatingNodes(rotatingNodesSet);
 
               if (currentGrandparent.id === currentRoot) {
                 currentRoot = newRoot;
@@ -275,7 +304,10 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
           const uncle = uncleId ? nodeMap.get(uncleId) : null;
 
           if (uncle && uncle.color === 'red') {
-            // Case 1: Uncle is red
+            // Case 1: Uncle is red - recolor parent, uncle, and grandparent
+            const recoloringSet = new Set([parentNode.id, uncle.id, grandparentId]);
+            setRecoloringNodes(recoloringSet);
+
             parentNode.color = 'black';
             uncle.color = 'black';
             grandparent.color = 'red';
@@ -285,8 +317,9 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
             if (current === parentNode.left) {
               // Case 2: Node is left child
               current = parentNode.id;
-              const [newMap] = rotateRight(nodeMap, current);
+              const [newMap, , rotatingNodesSet] = rotateRight(nodeMap, current);
               nodeMap = newMap;
+              setRotatingNodes(rotatingNodesSet);
               const updatedNode = nodeMap.get(current)!;
               const updatedParent = updatedNode.parent ? nodeMap.get(updatedNode.parent) : null;
               if (updatedParent) {
@@ -305,8 +338,12 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
               currentParent.color = 'black';
               currentGrandparent.color = 'red';
 
-              const [newMap, newRoot] = rotateLeft(nodeMap, currentGrandparent.id);
+              const [newMap, newRoot, rotatingNodesSet] = rotateLeft(
+                nodeMap,
+                currentGrandparent.id
+              );
               nodeMap = newMap;
+              setRotatingNodes(rotatingNodesSet);
 
               if (currentGrandparent.id === currentRoot) {
                 currentRoot = newRoot;
@@ -323,7 +360,310 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
       return [nodeMap, currentRoot];
     },
-    [rotateLeft, rotateRight]
+    [rotateLeft, rotateRight, setRotatingNodes, setRecoloringNodes]
+  );
+
+  // Helper: Find minimum node in subtree
+  const findMinimum = useCallback((nodeMap: Map<string, RBNode>, nodeId: string): string => {
+    let current = nodeId;
+    while (true) {
+      const node = nodeMap.get(current);
+      if (!node || !node.left) break;
+      current = node.left;
+    }
+    return current;
+  }, []);
+
+  // Helper: Transplant node
+  const transplant = useCallback(
+    (nodeMap: Map<string, RBNode>, rootNodeId: string, uId: string, vId: string | null): string => {
+      const u = nodeMap.get(uId)!;
+      let newRoot = rootNodeId;
+
+      if (!u.parent) {
+        // u is root
+        newRoot = vId!;
+      } else {
+        const parent = nodeMap.get(u.parent)!;
+        if (uId === parent.left) {
+          parent.left = vId || undefined;
+        } else {
+          parent.right = vId || undefined;
+        }
+      }
+
+      if (vId) {
+        const v = nodeMap.get(vId)!;
+        v.parent = u.parent;
+      }
+
+      return newRoot;
+    },
+    []
+  );
+
+  // Deletion fixup to restore Red-Black properties
+  const deleteFixup = useCallback(
+    (
+      nodeMap: Map<string, RBNode>,
+      rootNodeId: string,
+      xId: string | null
+    ): [Map<string, RBNode>, string] => {
+      let currentRoot = rootNodeId;
+      let x = xId;
+
+      while (x !== currentRoot && x) {
+        const xNode = nodeMap.get(x);
+        if (!xNode || xNode.color === 'red') break;
+
+        const xParentId = xNode.parent;
+        if (!xParentId) break;
+
+        const xParent = nodeMap.get(xParentId)!;
+
+        if (x === xParent.left) {
+          // Left child cases
+          let siblingId = xParent.right;
+          if (!siblingId) break;
+
+          let sibling = nodeMap.get(siblingId)!;
+
+          // Case 1: Sibling is red
+          if (sibling.color === 'red') {
+            sibling.color = 'black';
+            xParent.color = 'red';
+            const [newMap, newSubRoot, rotatingNodesSet] = rotateLeft(nodeMap, xParentId);
+            nodeMap = newMap;
+            setRotatingNodes(rotatingNodesSet);
+            if (xParentId === currentRoot) {
+              currentRoot = newSubRoot;
+            }
+            siblingId = xParent.right!;
+            sibling = nodeMap.get(siblingId)!;
+          }
+
+          const siblingLeft = sibling.left ? nodeMap.get(sibling.left) : null;
+          const siblingRight = sibling.right ? nodeMap.get(sibling.right) : null;
+
+          // Case 2: Sibling is black with two black children
+          if (
+            (!siblingLeft || siblingLeft.color === 'black') &&
+            (!siblingRight || siblingRight.color === 'black')
+          ) {
+            sibling.color = 'red';
+            x = xParentId;
+          } else {
+            // Case 3: Sibling is black, left child is red, right child is black
+            if (!siblingRight || siblingRight.color === 'black') {
+              if (siblingLeft) {
+                siblingLeft.color = 'black';
+              }
+              sibling.color = 'red';
+              const [newMap, newSubRoot, rotatingNodesSet] = rotateRight(nodeMap, siblingId);
+              nodeMap = newMap;
+              setRotatingNodes(rotatingNodesSet);
+              if (siblingId === currentRoot) {
+                currentRoot = newSubRoot;
+              }
+              siblingId = xParent.right!;
+              sibling = nodeMap.get(siblingId)!;
+            }
+
+            // Case 4: Sibling is black with red right child
+            sibling.color = xParent.color;
+            xParent.color = 'black';
+            const siblingRightNode = sibling.right ? nodeMap.get(sibling.right) : null;
+            if (siblingRightNode) {
+              siblingRightNode.color = 'black';
+            }
+            const [newMap, newSubRoot, rotatingNodesSet] = rotateLeft(nodeMap, xParentId);
+            nodeMap = newMap;
+            setRotatingNodes(rotatingNodesSet);
+            if (xParentId === currentRoot) {
+              currentRoot = newSubRoot;
+            }
+            x = currentRoot;
+          }
+        } else {
+          // Right child cases (symmetric)
+          let siblingId = xParent.left;
+          if (!siblingId) break;
+
+          let sibling = nodeMap.get(siblingId)!;
+
+          // Case 1: Sibling is red
+          if (sibling.color === 'red') {
+            sibling.color = 'black';
+            xParent.color = 'red';
+            const [newMap, newSubRoot, rotatingNodesSet] = rotateRight(nodeMap, xParentId);
+            nodeMap = newMap;
+            setRotatingNodes(rotatingNodesSet);
+            if (xParentId === currentRoot) {
+              currentRoot = newSubRoot;
+            }
+            siblingId = xParent.left!;
+            sibling = nodeMap.get(siblingId)!;
+          }
+
+          const siblingLeft = sibling.left ? nodeMap.get(sibling.left) : null;
+          const siblingRight = sibling.right ? nodeMap.get(sibling.right) : null;
+
+          // Case 2: Sibling is black with two black children
+          if (
+            (!siblingLeft || siblingLeft.color === 'black') &&
+            (!siblingRight || siblingRight.color === 'black')
+          ) {
+            sibling.color = 'red';
+            x = xParentId;
+          } else {
+            // Case 3: Sibling is black, right child is red, left child is black
+            if (!siblingLeft || siblingLeft.color === 'black') {
+              if (siblingRight) {
+                siblingRight.color = 'black';
+              }
+              sibling.color = 'red';
+              const [newMap, newSubRoot, rotatingNodesSet] = rotateLeft(nodeMap, siblingId);
+              nodeMap = newMap;
+              setRotatingNodes(rotatingNodesSet);
+              if (siblingId === currentRoot) {
+                currentRoot = newSubRoot;
+              }
+              siblingId = xParent.left!;
+              sibling = nodeMap.get(siblingId)!;
+            }
+
+            // Case 4: Sibling is black with red left child
+            sibling.color = xParent.color;
+            xParent.color = 'black';
+            const siblingLeftNode = sibling.left ? nodeMap.get(sibling.left) : null;
+            if (siblingLeftNode) {
+              siblingLeftNode.color = 'black';
+            }
+            const [newMap, newSubRoot, rotatingNodesSet] = rotateRight(nodeMap, xParentId);
+            nodeMap = newMap;
+            setRotatingNodes(rotatingNodesSet);
+            if (xParentId === currentRoot) {
+              currentRoot = newSubRoot;
+            }
+            x = currentRoot;
+          }
+        }
+      }
+
+      // Ensure x is black
+      if (x) {
+        const xNode = nodeMap.get(x);
+        if (xNode) {
+          xNode.color = 'black';
+        }
+      }
+
+      return [nodeMap, currentRoot];
+    },
+    [rotateLeft, rotateRight, setRotatingNodes, setRecoloringNodes]
+  );
+
+  // Red-Black Tree deletion
+  const deleteRB = useCallback(
+    (
+      nodeMap: Map<string, RBNode>,
+      rootNodeId: string | null,
+      value: number
+    ): [Map<string, RBNode>, string | null] => {
+      if (!rootNodeId) return [nodeMap, null];
+
+      // Find node to delete
+      let zId: string | null = null;
+      let currentId: string | null = rootNodeId;
+
+      while (currentId) {
+        const current: RBNode = nodeMap.get(currentId)!;
+        if (current.value === value) {
+          zId = currentId;
+          break;
+        } else if (value < (current.value as number)) {
+          currentId = current.left || null;
+        } else {
+          currentId = current.right || null;
+        }
+      }
+
+      if (!zId) return [nodeMap, rootNodeId]; // Node not found
+
+      const z = nodeMap.get(zId)!;
+      let yOriginalColor = z.color;
+      let xId: string | null;
+      let newRoot = rootNodeId;
+
+      if (!z.left) {
+        // Case 1: No left child
+        xId = z.right || null;
+        newRoot = transplant(nodeMap, rootNodeId, zId, z.right || null);
+      } else if (!z.right) {
+        // Case 2: No right child
+        xId = z.left;
+        newRoot = transplant(nodeMap, rootNodeId, zId, z.left);
+      } else {
+        // Case 3: Two children - find successor
+        const yId = findMinimum(nodeMap, z.right);
+        const y = nodeMap.get(yId)!;
+        yOriginalColor = y.color;
+        xId = y.right || null;
+
+        if (y.parent === zId) {
+          // Successor is direct child
+          if (xId) {
+            const x = nodeMap.get(xId)!;
+            x.parent = yId;
+          }
+        } else {
+          // Successor is not direct child
+          newRoot = transplant(nodeMap, newRoot, yId, y.right || null);
+          y.right = z.right;
+          const zRight = nodeMap.get(z.right)!;
+          zRight.parent = yId;
+        }
+
+        newRoot = transplant(nodeMap, newRoot, zId, yId);
+        y.left = z.left;
+        const zLeft = nodeMap.get(z.left)!;
+        zLeft.parent = yId;
+        y.color = z.color;
+
+        // Update levels
+        y.level = z.level;
+        const updateLevels = (nodeId: string, level: number) => {
+          const node = nodeMap.get(nodeId);
+          if (node) {
+            node.level = level;
+            if (node.left) updateLevels(node.left, level + 1);
+            if (node.right) updateLevels(node.right, level + 1);
+          }
+        };
+        if (y.left) updateLevels(y.left, y.level + 1);
+        if (y.right) updateLevels(y.right, y.level + 1);
+      }
+
+      // Remove node from map
+      nodeMap.delete(zId);
+
+      // Fix violations if deleted node was black
+      if (yOriginalColor === 'black' && xId) {
+        [nodeMap, newRoot] = deleteFixup(nodeMap, newRoot, xId);
+      }
+
+      // Ensure root is black
+      if (newRoot) {
+        const root = nodeMap.get(newRoot);
+        if (root) {
+          root.color = 'black';
+          root.isRoot = true;
+        }
+      }
+
+      return [nodeMap, newRoot];
+    },
+    [transplant, findMinimum, deleteFixup]
   );
 
   // Calculate positions for all nodes
@@ -380,13 +720,29 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
     if (isNaN(numValue)) return;
 
     setIsOperating(true);
+    setAnimationState('inserting');
+    setStatusMessage(`Inserting node ${numValue}...`);
 
-    const [newNodes, newRootId] = insertRB(new Map(nodes), rootId, numValue);
-    setNodes(newNodes);
-    setRootId(newRootId);
-    setInputValue('');
+    setTimeout(() => {
+      const [newNodes, newRootId] = insertRB(new Map(nodes), rootId, numValue);
+      setNodes(newNodes);
+      setRootId(newRootId);
+      setInputValue('');
 
-    setTimeout(() => setIsOperating(false), 1500);
+      setAnimationState('idle');
+      setStatusMessage('Insertion complete!');
+
+      // Clear rotating and recoloring nodes after a short delay to show final positions
+      setTimeout(() => {
+        setRotatingNodes(new Set());
+        setRecoloringNodes(new Set());
+      }, 400);
+
+      setTimeout(() => {
+        setIsOperating(false);
+        setStatusMessage('');
+      }, 800);
+    }, 500);
 
     onOperationComplete?.({
       type: 'insert',
@@ -396,12 +752,55 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
     });
   }, [inputValue, nodes, rootId, insertRB, isOperating, onOperationComplete]);
 
+  // Handle delete
+  const handleDelete = useCallback(() => {
+    if (!deleteValue.trim() || !rootId || isOperating) return;
+
+    const numValue = parseInt(deleteValue);
+    if (isNaN(numValue)) return;
+
+    setIsOperating(true);
+    setAnimationState('deleting');
+    setStatusMessage(`Deleting node ${numValue}...`);
+
+    setTimeout(() => {
+      const [newNodes, newRootId] = deleteRB(new Map(nodes), rootId, numValue);
+      setNodes(newNodes);
+      setRootId(newRootId);
+      setDeleteValue('');
+
+      setAnimationState('idle');
+      setStatusMessage('Deletion complete!');
+
+      // Clear rotating and recoloring nodes after a short delay to show final positions
+      setTimeout(() => {
+        setRotatingNodes(new Set());
+        setRecoloringNodes(new Set());
+      }, 400);
+
+      setTimeout(() => {
+        setIsOperating(false);
+        setStatusMessage('');
+      }, 800);
+    }, 700);
+
+    onOperationComplete?.({
+      type: 'delete',
+      target: numValue,
+      description: `Deleted ${numValue} from Red-Black tree with property preservation`,
+      complexity: { time: 'O(log n)', space: 'O(1)' },
+    });
+  }, [deleteValue, nodes, rootId, deleteRB, isOperating, onOperationComplete]);
+
   // Handle search
   const handleSearch = useCallback(() => {
     if (!searchValue.trim() || !rootId) return;
 
     const numValue = parseInt(searchValue);
     if (isNaN(numValue)) return;
+
+    setAnimationState('searching');
+    setStatusMessage(`Searching for node ${numValue}...`);
 
     const path: string[] = [];
     let currentId: string | null = rootId;
@@ -410,7 +809,12 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
     const searchStep = () => {
       if (!currentId) {
         setSearchPath(path);
-        setTimeout(() => setSearchPath([]), 2000);
+        setStatusMessage(`Node ${numValue} not found`);
+        setTimeout(() => {
+          setSearchPath([]);
+          setAnimationState('idle');
+          setStatusMessage('');
+        }, 2000);
         return;
       }
 
@@ -419,13 +823,18 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       setSearchPath([...path]);
 
       if (current.value === numValue) {
-        setTimeout(() => setSearchPath([]), 2000);
+        setStatusMessage(`Found node ${numValue}!`);
+        setTimeout(() => {
+          setSearchPath([]);
+          setAnimationState('idle');
+          setStatusMessage('');
+        }, 2000);
       } else if (numValue < (current.value as number)) {
         currentId = current.left || null;
-        setTimeout(searchStep, 600);
+        setTimeout(searchStep, 400);
       } else {
         currentId = current.right || null;
-        setTimeout(searchStep, 600);
+        setTimeout(searchStep, 400);
       }
     };
 
@@ -439,9 +848,12 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
     setNodePositions(new Map());
     setInputValue('');
     setSearchValue('');
+    setDeleteValue('');
     setSearchPath([]);
     setViolationNodes([]);
     setIsOperating(false);
+    setAnimationState('idle');
+    setStatusMessage('');
   }, []);
 
   // Render edges
@@ -455,7 +867,17 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       if (node.left) {
         const leftPos = nodePositions.get(node.left);
         if (leftPos) {
+          const leftNode = nodes.get(node.left);
           const isHighlighted = searchPath.includes(node.id) && searchPath.includes(node.left);
+          const isAnimating = animationState !== 'idle';
+
+          // Color based on parent and child colors for gradient effect
+          const edgeColor = isHighlighted
+            ? '#3b82f6'
+            : leftNode?.color === 'red'
+              ? '#ef4444'
+              : '#4b5563';
+
           edges.push(
             <line
               key={`edge-${node.id}-left`}
@@ -463,9 +885,11 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
               y1={nodePos.y}
               x2={leftPos.x}
               y2={leftPos.y}
-              stroke={isHighlighted ? '#3b82f6' : '#6b7280'}
-              strokeWidth={isHighlighted ? 3 : 2}
-              className="transition-all duration-300"
+              stroke={edgeColor}
+              strokeWidth={isHighlighted ? 4 : 3}
+              strokeDasharray={isAnimating ? '5,5' : 'none'}
+              className="transition-all duration-300 ease-in-out"
+              opacity={isHighlighted ? 1 : 0.6}
             />
           );
         }
@@ -474,7 +898,17 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       if (node.right) {
         const rightPos = nodePositions.get(node.right);
         if (rightPos) {
+          const rightNode = nodes.get(node.right);
           const isHighlighted = searchPath.includes(node.id) && searchPath.includes(node.right);
+          const isAnimating = animationState !== 'idle';
+
+          // Color based on parent and child colors for gradient effect
+          const edgeColor = isHighlighted
+            ? '#3b82f6'
+            : rightNode?.color === 'red'
+              ? '#ef4444'
+              : '#4b5563';
+
           edges.push(
             <line
               key={`edge-${node.id}-right`}
@@ -482,9 +916,11 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
               y1={nodePos.y}
               x2={rightPos.x}
               y2={rightPos.y}
-              stroke={isHighlighted ? '#3b82f6' : '#6b7280'}
-              strokeWidth={isHighlighted ? 3 : 2}
-              className="transition-all duration-300"
+              stroke={edgeColor}
+              strokeWidth={isHighlighted ? 4 : 3}
+              strokeDasharray={isAnimating ? '5,5' : 'none'}
+              className="transition-all duration-300 ease-in-out"
+              opacity={isHighlighted ? 1 : 0.6}
             />
           );
         }
@@ -502,34 +938,68 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
       const isHighlighted = searchPath.includes(node.id);
       const hasViolation = violationNodes.includes(node.id);
+      const isRotating = rotatingNodes.has(node.id);
+      const isRecoloring = recoloringNodes.has(node.id);
+      const isAnimating = animationState !== 'idle';
+
+      // Determine gradient and filters based on node state (priority: rotating > recoloring > search > violation > normal)
+      const gradientFill = isRotating
+        ? 'url(#rotatingGradient)'
+        : isRecoloring
+          ? 'url(#recoloringGradient)'
+          : isHighlighted
+            ? 'url(#searchGradient)'
+            : hasViolation
+              ? 'url(#violationGradient)'
+              : node.color === 'red'
+                ? 'url(#redNodeGradient)'
+                : 'url(#blackNodeGradient)';
+
+      const filters = [];
+      if (isRotating) {
+        filters.push('url(#rotatingGlow)');
+      } else if (isRecoloring) {
+        filters.push('url(#recoloringGlow)');
+      } else if (isAnimating || isHighlighted || hasViolation) {
+        filters.push('url(#nodeGlow)');
+      }
+      filters.push('url(#dropShadow)');
 
       return (
         <g key={node.id} className="transition-all duration-500">
-          {/* Node circle */}
+          {/* Node circle with gradient and filters */}
           <circle
             cx={position.x}
             cy={position.y}
             r={NODE_RADIUS}
-            fill={
-              isHighlighted
-                ? '#3b82f6'
-                : hasViolation
-                  ? '#f59e0b'
-                  : node.color === 'red'
-                    ? '#ef4444'
-                    : '#1f2937'
-            }
+            fill={gradientFill}
             stroke={
-              isHighlighted
-                ? '#1d4ed8'
-                : hasViolation
-                  ? '#d97706'
-                  : node.color === 'red'
-                    ? '#dc2626'
-                    : '#111827'
+              isRotating
+                ? '#a855f7'
+                : isRecoloring
+                  ? '#f59e0b'
+                  : isHighlighted
+                    ? '#1d4ed8'
+                    : hasViolation
+                      ? '#d97706'
+                      : node.color === 'red'
+                        ? '#dc2626'
+                        : '#111827'
             }
-            strokeWidth={isHighlighted || hasViolation ? 3 : 2}
-            className="cursor-pointer hover:opacity-80 transition-colors"
+            strokeWidth={isRotating || isRecoloring ? 4 : isHighlighted || hasViolation ? 3 : 2}
+            filter={filters.join(' ')}
+            className={`cursor-pointer hover:opacity-90 transition-all ${
+              isAnimating || isRotating || isRecoloring ? 'animate-pulse' : ''
+            }`}
+            style={
+              isRotating || isRecoloring
+                ? {
+                    transform: 'scale(1.1)',
+                    transformOrigin: `${position.x}px ${position.y}px`,
+                    transition: 'all 500ms ease-in-out',
+                  }
+                : undefined
+            }
           />
 
           {/* Node value */}
@@ -578,6 +1048,23 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
   return (
     <div className={`rb-tree-visualization ${className}`}>
+      {/* Status Message Bar */}
+      {statusMessage && (
+        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="flex items-center space-x-2">
+            <div className="animate-pulse">
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+            </div>
+            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+              {statusMessage}
+            </span>
+            <span className="text-xs text-blue-600 dark:text-blue-400 ml-auto">
+              {animationState !== 'idle' && `(${animationState})`}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Controls */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex items-center space-x-2">
@@ -593,10 +1080,30 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
           <button
             onClick={handleInsert}
             disabled={nodes.size >= maxNodes || isOperating}
-            className="flex items-center space-x-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors"
+            className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:shadow-lg"
           >
             <Plus className="w-4 h-4" />
-            <span className="text-sm">Insert</span>
+            <span className="text-sm font-medium">Insert</span>
+          </button>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <input
+            type="number"
+            placeholder="Value to delete"
+            value={deleteValue}
+            onChange={(e) => setDeleteValue(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm w-32"
+            onKeyPress={(e) => e.key === 'Enter' && handleDelete()}
+            disabled={isOperating || nodes.size === 0}
+          />
+          <button
+            onClick={handleDelete}
+            disabled={nodes.size === 0 || isOperating}
+            className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-pink-600 to-red-600 text-white rounded-lg hover:from-pink-700 hover:to-red-700 disabled:from-gray-400 disabled:to-gray-500 transition-all shadow-md hover:shadow-lg"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span className="text-sm font-medium">Delete</span>
           </button>
         </div>
 
@@ -611,19 +1118,19 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
           />
           <button
             onClick={handleSearch}
-            className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg"
           >
             <Search className="w-4 h-4" />
-            <span className="text-sm">Search</span>
+            <span className="text-sm font-medium">Search</span>
           </button>
         </div>
 
         <button
           onClick={handleReset}
-          className="flex items-center space-x-1 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+          className="flex items-center space-x-1 px-3 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all shadow-md hover:shadow-lg"
         >
           <RotateCcw className="w-4 h-4" />
-          <span className="text-sm">Reset</span>
+          <span className="text-sm font-medium">Reset</span>
         </button>
       </div>
 
@@ -657,16 +1164,109 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
           viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           className="w-full h-auto"
         >
+          {/* Gradient Definitions */}
+          <defs>
+            {/* Red Node Gradient */}
+            <radialGradient id="redNodeGradient" cx="30%" cy="30%">
+              <stop offset="0%" stopColor="#f87171" stopOpacity="1" />
+              <stop offset="50%" stopColor="#ef4444" stopOpacity="1" />
+              <stop offset="100%" stopColor="#dc2626" stopOpacity="1" />
+            </radialGradient>
+
+            {/* Black Node Gradient */}
+            <radialGradient id="blackNodeGradient" cx="30%" cy="30%">
+              <stop offset="0%" stopColor="#4b5563" stopOpacity="1" />
+              <stop offset="50%" stopColor="#1f2937" stopOpacity="1" />
+              <stop offset="100%" stopColor="#111827" stopOpacity="1" />
+            </radialGradient>
+
+            {/* Search Highlight Gradient */}
+            <radialGradient id="searchGradient" cx="30%" cy="30%">
+              <stop offset="0%" stopColor="#93c5fd" stopOpacity="1" />
+              <stop offset="50%" stopColor="#3b82f6" stopOpacity="1" />
+              <stop offset="100%" stopColor="#1d4ed8" stopOpacity="1" />
+            </radialGradient>
+
+            {/* Violation Gradient */}
+            <radialGradient id="violationGradient" cx="30%" cy="30%">
+              <stop offset="0%" stopColor="#fbbf24" stopOpacity="1" />
+              <stop offset="50%" stopColor="#f59e0b" stopOpacity="1" />
+              <stop offset="100%" stopColor="#d97706" stopOpacity="1" />
+            </radialGradient>
+
+            {/* Rotating Node Gradient (Purple-Pink) */}
+            <radialGradient id="rotatingGradient" cx="30%" cy="30%">
+              <stop offset="0%" stopColor="#c084fc" stopOpacity="1" />
+              <stop offset="50%" stopColor="#a855f7" stopOpacity="1" />
+              <stop offset="100%" stopColor="#ec4899" stopOpacity="1" />
+            </radialGradient>
+
+            {/* Recoloring Node Gradient (Amber-Yellow) */}
+            <radialGradient id="recoloringGradient" cx="30%" cy="30%">
+              <stop offset="0%" stopColor="#fcd34d" stopOpacity="1" />
+              <stop offset="50%" stopColor="#f59e0b" stopOpacity="1" />
+              <stop offset="100%" stopColor="#d97706" stopOpacity="1" />
+            </radialGradient>
+
+            {/* Glow Filter for Nodes */}
+            <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            {/* Rotating Glow Filter (Enhanced for rotations) */}
+            <filter id="rotatingGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.8" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            {/* Recoloring Glow Filter (For color transitions) */}
+            <filter id="recoloringGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.7" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+
+            {/* Drop Shadow Filter */}
+            <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="3" />
+              <feOffset dx="2" dy="2" result="offsetblur" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.3" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
           {renderEdges()}
           {renderNodes()}
         </svg>
 
         {nodes.size === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <div className="text-4xl mb-2">🔴⚫</div>
-              <p className="text-sm">Add nodes to build your Red-Black Tree</p>
-              <p className="text-xs text-gray-400 mt-1">
+            <div className="text-center backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-2xl p-8 border-4 border-gradient-to-r from-red-200 via-purple-200 to-blue-200 shadow-xl">
+              <div className="text-6xl mb-4 animate-pulse">🔴⚫</div>
+              <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Add nodes to build your Red-Black Tree
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Watch automatic recoloring and rotations maintain balance
               </p>
             </div>
@@ -675,27 +1275,27 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="mt-4 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center">
-          <Palette className="w-4 h-4 mr-2" />
-          Legend
+      <div className="mt-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <Palette className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+          Node Types & States
         </h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-            <span>Red Node</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-md"></div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">Red Node</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-gray-800 rounded-full"></div>
-            <span>Black Node</span>
+          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 shadow-md"></div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">Black Node</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-            <span>Search Path</span>
+          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md ring-2 ring-blue-300"></div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">Search Path</span>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
-            <span>Property Violation</span>
+          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 shadow-md animate-pulse"></div>
+            <span className="font-medium text-gray-700 dark:text-gray-300">Violation</span>
           </div>
         </div>
       </div>
@@ -718,27 +1318,85 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
       {/* Tree Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">{nodes.size}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Total Nodes</div>
+        <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-white/20 rounded-full p-2">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">{nodes.size}</div>
+          <div className="text-sm text-white/90 font-medium">Total Nodes</div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gradient-to-br from-red-500 to-orange-600 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-white/20 rounded-full p-2">
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="8" />
+              </svg>
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
             {Array.from(nodes.values()).filter((n) => n.color === 'red').length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Red Nodes</div>
+          <div className="text-sm text-white/90 font-medium">Red Nodes</div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gradient-to-br from-gray-700 to-gray-900 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-white/20 rounded-full p-2">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
             {Array.from(nodes.values()).filter((n) => n.color === 'black').length}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Black Nodes</div>
+          <div className="text-sm text-white/90 font-medium">Black Nodes</div>
         </div>
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <div className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow">
+          <div className="flex items-center justify-center mb-2">
+            <div className="bg-white/20 rounded-full p-2">
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                />
+              </svg>
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-white mb-1">
             {Math.max(...Array.from(nodes.values()).map((n) => n.level), -1) + 1}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Height</div>
+          <div className="text-sm text-white/90 font-medium">Height</div>
         </div>
       </div>
     </div>
