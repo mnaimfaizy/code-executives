@@ -16,5 +16,5 @@ export { useTheme } from './ThemeContext';
 export { useApp } from './AppContext';
 
 // Re-export types
-export type { SectionType, ColorMode } from './ThemeContext';
+export type { SectionType } from './ThemeContext';
 export type { AnimationSpeed, CodeStyle } from './AppContext';

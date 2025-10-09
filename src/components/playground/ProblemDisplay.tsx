@@ -15,42 +15,35 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Problem Description */}
-      <div className="prose dark:prose-invert max-w-none">
-        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{problem.description}</p>
+      <div className="prose max-w-none">
+        <p className="text-gray-700 leading-relaxed">{problem.description}</p>
       </div>
 
       {/* Examples */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Examples</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Examples</h3>
         {problem.examples.map((example, index) => (
-          <div
-            key={example.id}
-            className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
-          >
+          <div key={example.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
             <div className="flex items-center space-x-2 mb-2">
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Example {index + 1}:
-              </span>
+              <span className="text-sm font-medium text-gray-600">Example {index + 1}:</span>
             </div>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">Input:</span>
-                <code className="ml-2 px-2 py-1 bg-gray-200 dark:bg-gray-800 rounded text-gray-800 dark:text-gray-200">
+                <span className="font-medium text-gray-700">Input:</span>
+                <code className="ml-2 px-2 py-1 bg-gray-200 rounded text-gray-800">
                   {Array.isArray(example.input) ? JSON.stringify(example.input) : example.input}
                 </code>
               </div>
               <div>
-                <span className="font-medium text-gray-700 dark:text-gray-300">Output:</span>
-                <code className="ml-2 px-2 py-1 bg-gray-200 dark:bg-gray-800 rounded text-gray-800 dark:text-gray-200">
+                <span className="font-medium text-gray-700">Output:</span>
+                <code className="ml-2 px-2 py-1 bg-gray-200 rounded text-gray-800">
                   {JSON.stringify(example.expectedOutput)}
                 </code>
               </div>
               {example.explanation && (
                 <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Explanation:</span>
-                  <span className="ml-2 text-gray-600 dark:text-gray-400">
-                    {example.explanation}
-                  </span>
+                  <span className="font-medium text-gray-700">Explanation:</span>
+                  <span className="ml-2 text-gray-600">{example.explanation}</span>
                 </div>
               )}
             </div>
@@ -60,8 +53,8 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
 
       {/* Constraints */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Constraints</h3>
-        <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+        <h3 className="text-lg font-semibold text-gray-900">Constraints</h3>
+        <ul className="list-disc list-inside space-y-1 text-gray-700">
           {problem.constraints.map((constraint, index) => (
             <li key={index}>{constraint}</li>
           ))}
@@ -71,7 +64,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       {/* Hints */}
       {showHints && problem.hints.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+          <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
             <Lightbulb className="w-5 h-5 text-yellow-500" />
             <span>Hints</span>
           </h3>
@@ -82,24 +75,18 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
                 <div
                   key={hint.id}
                   className={`p-4 rounded-lg border transition-colors ${
-                    isUsed
-                      ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
-                      : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700'
+                    isUsed ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'
                   }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                          Hint {hint.order}
-                        </span>
+                        <span className="text-sm font-medium text-gray-600">Hint {hint.order}</span>
                         {hint.penalty && (
-                          <span className="text-xs text-red-600 dark:text-red-400">
-                            -{hint.penalty} points
-                          </span>
+                          <span className="text-xs text-red-600">-{hint.penalty} points</span>
                         )}
                       </div>
-                      <p className="text-gray-700 dark:text-gray-300">{hint.content}</p>
+                      <p className="text-gray-700">{hint.content}</p>
                     </div>
                     {!isUsed && onHintClick && (
                       <button
@@ -111,7 +98,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
                       </button>
                     )}
                     {isUsed && (
-                      <div className="ml-4 flex items-center space-x-1 text-yellow-600 dark:text-yellow-400">
+                      <div className="ml-4 flex items-center space-x-1 text-yellow-600">
                         <EyeOff className="w-4 h-4" />
                         <span className="text-sm">Used</span>
                       </div>
@@ -126,8 +113,8 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
 
       {/* Learning Objectives */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Objectives</h3>
-        <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
+        <h3 className="text-lg font-semibold text-gray-900">Learning Objectives</h3>
+        <ul className="list-disc list-inside space-y-1 text-gray-700">
           {problem.learningObjectives.map((objective, index) => (
             <li key={index}>{objective}</li>
           ))}
@@ -137,10 +124,7 @@ const ProblemDisplay: React.FC<ProblemDisplayProps> = ({
       {/* Tags */}
       <div className="flex flex-wrap gap-2">
         {problem.tags.map((tag) => (
-          <span
-            key={tag}
-            className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
-          >
+          <span key={tag} className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
             {tag}
           </span>
         ))}

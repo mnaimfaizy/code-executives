@@ -393,22 +393,22 @@ Output: 4`,
 
   const selectedProblemData = problems.find((p) => p.id === selectedProblem)!;
   const difficultyColors = {
-    Easy: 'text-green-600 dark:text-green-400',
-    Medium: 'text-yellow-600 dark:text-yellow-400',
-    Hard: 'text-red-600 dark:text-red-400',
+    Easy: 'text-green-600',
+    Medium: 'text-yellow-600',
+    Hard: 'text-red-600',
   };
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2 text-purple-600 dark:text-purple-400">
+        <div className="flex items-center justify-center space-x-2 text-purple-600">
           <Target className="w-8 h-8" />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Practice Problems
           </h1>
         </div>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Sharpen your data structure skills with curated coding challenges. Practice
           implementation, analyze complexity, and master problem-solving patterns.
         </p>
@@ -417,8 +417,8 @@ Output: 4`,
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Problem List Sidebar */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 sticky top-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 sticky top-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Code className="w-5 h-5 mr-2" />
               Problems
             </h3>
@@ -435,21 +435,17 @@ Output: 4`,
                   }}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     selectedProblem === problem.id
-                      ? 'bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800'
-                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                      ? 'bg-purple-50 border border-purple-200'
+                      : 'hover:bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-gray-900 dark:text-white text-sm">
-                      {problem.title}
-                    </span>
+                    <span className="font-medium text-gray-900 text-sm">{problem.title}</span>
                     <span className={`text-xs font-medium ${difficultyColors[problem.difficulty]}`}>
                       {problem.difficulty}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {problem.dataStructure}
-                  </div>
+                  <div className="text-xs text-gray-600">{problem.dataStructure}</div>
                 </button>
               ))}
             </div>
@@ -459,12 +455,10 @@ Output: 4`,
         {/* Main Content */}
         <div className="lg:col-span-3 space-y-6">
           {/* Problem Header */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {selectedProblemData.title}
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900">{selectedProblemData.title}</h2>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${difficultyColors[selectedProblemData.difficulty]}`}
                 >
@@ -472,7 +466,7 @@ Output: 4`,
                 </span>
               </div>
 
-              <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
                 <div className="flex items-center space-x-1">
                   <Clock className="w-4 h-4" />
                   <span>{selectedProblemData.timeComplexity}</span>
@@ -484,21 +478,21 @@ Output: 4`,
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
               <Target className="w-4 h-4" />
               <span>Data Structure: {selectedProblemData.dataStructure}</span>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="flex border-b border-gray-200">
               <button
                 onClick={() => setActiveTab('problem')}
                 className={`px-6 py-4 font-medium text-sm transition-colors ${
                   activeTab === 'problem'
-                    ? 'border-b-2 border-purple-500 text-purple-600 dark:text-purple-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'border-b-2 border-purple-500 text-purple-600'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 Problem
@@ -507,8 +501,8 @@ Output: 4`,
                 onClick={() => setActiveTab('hints')}
                 className={`px-6 py-4 font-medium text-sm transition-colors ${
                   activeTab === 'hints'
-                    ? 'border-b-2 border-purple-500 text-purple-600 dark:text-purple-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'border-b-2 border-purple-500 text-purple-600'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <HelpCircle className="w-4 h-4 inline mr-1" />
@@ -518,8 +512,8 @@ Output: 4`,
                 onClick={() => setActiveTab('solution')}
                 className={`px-6 py-4 font-medium text-sm transition-colors ${
                   activeTab === 'solution'
-                    ? 'border-b-2 border-purple-500 text-purple-600 dark:text-purple-400'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    ? 'border-b-2 border-purple-500 text-purple-600'
+                    : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
                 <Lightbulb className="w-4 h-4 inline mr-1" />
@@ -531,42 +525,34 @@ Output: 4`,
               {/* Problem Tab */}
               {activeTab === 'problem' && (
                 <div className="space-y-6">
-                  <div className="prose dark:prose-invert max-w-none">
-                    <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <div className="prose max-w-none">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-700 leading-relaxed">
                       {selectedProblemData.description}
                     </pre>
                   </div>
 
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                      Test Cases
-                    </h4>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Test Cases</h4>
                     <div className="space-y-3">
                       {selectedProblemData.testCases.map((testCase, index) => (
-                        <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                Input:
-                              </div>
-                              <code className="text-sm text-gray-900 dark:text-white">
-                                {testCase.input}
-                              </code>
+                              <div className="text-sm font-medium text-gray-600 mb-1">Input:</div>
+                              <code className="text-sm text-gray-900">{testCase.input}</code>
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                              <div className="text-sm font-medium text-gray-600 mb-1">
                                 Expected Output:
                               </div>
-                              <code className="text-sm text-gray-900 dark:text-white">
+                              <code className="text-sm text-gray-900">
                                 {testCase.expectedOutput}
                               </code>
                             </div>
                           </div>
                           {testCase.explanation && (
-                            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                              <div className="text-sm text-gray-600 dark:text-gray-400">
-                                {testCase.explanation}
-                              </div>
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <div className="text-sm text-gray-600">{testCase.explanation}</div>
                             </div>
                           )}
                         </div>
@@ -579,25 +565,18 @@ Output: 4`,
               {/* Hints Tab */}
               {activeTab === 'hints' && (
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 mb-4">
+                  <div className="flex items-center space-x-2 text-blue-600 mb-4">
                     <Lightbulb className="w-5 h-5" />
                     <h3 className="text-lg font-semibold">Hints to Guide Your Solution</h3>
                   </div>
 
                   {selectedProblemData.hints.map((hint, index) => (
-                    <div
-                      key={index}
-                      className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800"
-                    >
+                    <div key={index} className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                       <div className="flex items-start space-x-3">
-                        <div className="bg-blue-100 dark:bg-blue-800 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <span className="text-blue-600 dark:text-blue-400 text-sm font-medium">
-                            {index + 1}
-                          </span>
+                        <div className="bg-blue-100 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-blue-600 text-sm font-medium">{index + 1}</span>
                         </div>
-                        <p className="text-blue-800 dark:text-blue-200 text-sm leading-relaxed">
-                          {hint}
-                        </p>
+                        <p className="text-blue-800 text-sm leading-relaxed">{hint}</p>
                       </div>
                     </div>
                   ))}
@@ -607,20 +586,18 @@ Output: 4`,
               {/* Solution Tab */}
               {activeTab === 'solution' && (
                 <div className="space-y-6">
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                    <h3 className="text-lg font-semibold text-green-900 dark:text-green-100 mb-2 flex items-center">
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <h3 className="text-lg font-semibold text-green-900 mb-2 flex items-center">
                       <Trophy className="w-5 h-5 mr-2" />
                       Optimal Solution
                     </h3>
-                    <p className="text-green-800 dark:text-green-200 text-sm leading-relaxed">
+                    <p className="text-green-800 text-sm leading-relaxed">
                       {selectedProblemData.solutionExplanation}
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                      Implementation
-                    </h4>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Implementation</h4>
                     <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
                       <pre className="text-sm text-gray-100">
                         <code>{selectedProblemData.solution}</code>
@@ -633,9 +610,9 @@ Output: 4`,
           </div>
 
           {/* Code Editor */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                 <Code className="w-5 h-5 mr-2" />
                 Your Solution
               </h3>
@@ -643,8 +620,8 @@ Output: 4`,
               <div className="flex items-center space-x-2">
                 <button
                   onClick={resetCode}
-                  className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 
-                           hover:text-gray-900 dark:hover:text-white transition-colors
+                  className="px-3 py-2 text-sm font-medium text-gray-600 
+                           hover:text-gray-900 transition-colors
                            flex items-center space-x-1"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -677,9 +654,9 @@ Output: 4`,
               <textarea
                 value={userCode}
                 onChange={(e) => setUserCode(e.target.value)}
-                className="w-full h-64 font-mono text-sm bg-gray-50 dark:bg-gray-900 
-                         border border-gray-200 dark:border-gray-700 rounded-lg p-4
-                         text-gray-900 dark:text-white resize-none
+                className="w-full h-64 font-mono text-sm bg-gray-50 
+                         border border-gray-200 rounded-lg p-4
+                         text-gray-900 resize-none
                          focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Write your solution here..."
               />
@@ -691,31 +668,27 @@ Output: 4`,
             <div
               className={`rounded-xl p-6 shadow-sm border ${
                 submissionResult.passed
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-red-50 border-red-200'
               }`}
             >
               <div className="flex items-center space-x-3 mb-4">
                 {submissionResult.passed ? (
-                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  <CheckCircle className="w-6 h-6 text-green-600" />
                 ) : (
-                  <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                  <XCircle className="w-6 h-6 text-red-600" />
                 )}
                 <div>
                   <h3
                     className={`text-lg font-semibold ${
-                      submissionResult.passed
-                        ? 'text-green-900 dark:text-green-100'
-                        : 'text-red-900 dark:text-red-100'
+                      submissionResult.passed ? 'text-green-900' : 'text-red-900'
                     }`}
                   >
                     {submissionResult.passed ? 'Accepted!' : 'Runtime Error'}
                   </h3>
                   <p
                     className={`text-sm ${
-                      submissionResult.passed
-                        ? 'text-green-700 dark:text-green-300'
-                        : 'text-red-700 dark:text-red-300'
+                      submissionResult.passed ? 'text-green-700' : 'text-red-700'
                     }`}
                   >
                     {submissionResult.passedTests}/{submissionResult.totalTests} test cases passed
@@ -724,33 +697,25 @@ Output: 4`,
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Runtime
-                  </div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="bg-white rounded-lg p-4">
+                  <div className="text-sm font-medium text-gray-600 mb-1">Runtime</div>
+                  <div className="text-lg font-semibold text-gray-900">
                     {submissionResult.runtime}ms
                   </div>
                 </div>
 
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-4">
-                  <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
-                    Memory Usage
-                  </div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                <div className="bg-white rounded-lg p-4">
+                  <div className="text-sm font-medium text-gray-600 mb-1">Memory Usage</div>
+                  <div className="text-lg font-semibold text-gray-900">
                     {submissionResult.memoryUsage}
                   </div>
                 </div>
               </div>
 
               {submissionResult.error && (
-                <div className="mt-4 bg-red-100 dark:bg-red-900/20 rounded-lg p-4">
-                  <div className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
-                    Error Details:
-                  </div>
-                  <code className="text-sm text-red-700 dark:text-red-300">
-                    {submissionResult.error}
-                  </code>
+                <div className="mt-4 bg-red-100 rounded-lg p-4">
+                  <div className="text-sm font-medium text-red-800 mb-1">Error Details:</div>
+                  <code className="text-sm text-red-700">{submissionResult.error}</code>
                 </div>
               )}
             </div>

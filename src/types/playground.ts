@@ -245,7 +245,7 @@ export interface UserProgress {
   achievements: Achievement[];
   preferences: {
     defaultLanguage: Language;
-    theme: 'light' | 'dark';
+    theme: 'light';
     autoSave: boolean;
     showHints: boolean;
     visualizationSpeed: 'slow' | 'normal' | 'fast';

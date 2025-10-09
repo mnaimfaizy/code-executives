@@ -266,26 +266,24 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 ${className}`}>
+    <div className={`bg-white rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
             <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-gray-900">
               {directed ? 'Directed' : 'Undirected'} Graph {weighted && '(Weighted)'}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Interactive graph builder and visualizer
-            </p>
+            <p className="text-sm text-gray-600">Interactive graph builder and visualizer</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+          className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
         >
           <Info className="w-5 h-5" />
         </button>
@@ -293,11 +291,9 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
 
       {/* Info Panel */}
       {showInfo && (
-        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-            Graph Builder Instructions:
-          </h4>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+        <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h4 className="font-semibold text-blue-900 mb-2">Graph Builder Instructions:</h4>
+          <ul className="text-sm text-blue-800 space-y-1">
             <li>• Select "Add Node" mode and click on canvas to add nodes</li>
             <li>• Select "Add Edge" mode and click two nodes to connect them</li>
             <li>• Use "Select" mode to drag nodes around</li>
@@ -317,7 +313,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
             mode === 'select'
               ? 'bg-blue-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           <MousePointer className="w-4 h-4" />
@@ -332,7 +328,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
             mode === 'add-node'
               ? 'bg-green-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           <Plus className="w-4 h-4" />
@@ -347,7 +343,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
           className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
             mode === 'add-edge'
               ? 'bg-purple-600 text-white'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           <Minus className="w-4 h-4 rotate-90" />
@@ -376,8 +372,8 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
 
       {/* Status */}
       {mode === 'add-edge' && edgeStart && (
-        <div className="mb-4 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-          <p className="text-sm text-purple-800 dark:text-purple-200">
+        <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+          <p className="text-sm text-purple-800">
             Selected node: <strong>{nodes.find((n) => n.id === edgeStart)?.label}</strong>. Click
             another node to create an edge.
           </p>
@@ -385,11 +381,11 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       )}
 
       {/* Graph Visualization */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
         <svg
           ref={svgRef}
           viewBox="0 0 800 400"
-          className="w-full h-96 bg-gray-50 dark:bg-gray-900 cursor-pointer"
+          className="w-full h-96 bg-gray-50 cursor-pointer"
           onClick={handleSVGClick}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -488,12 +484,7 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
 
           {/* Empty state */}
           {nodes.length === 0 && (
-            <text
-              x="400"
-              y="200"
-              textAnchor="middle"
-              className="text-lg fill-gray-400 dark:fill-gray-500"
-            >
+            <text x="400" y="200" textAnchor="middle" className="text-lg fill-gray-400">
               Click "Sample Graph" or add nodes to build your graph
             </text>
           )}
@@ -503,26 +494,24 @@ const GraphVisualization: React.FC<GraphVisualizationProps> = ({
       {/* Graph Statistics */}
       {nodes.length > 0 && (
         <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-            <div className="font-semibold text-gray-900 dark:text-white">Vertices</div>
-            <div className="text-blue-600 dark:text-blue-400">{nodes.length}</div>
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="font-semibold text-gray-900">Vertices</div>
+            <div className="text-blue-600">{nodes.length}</div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-            <div className="font-semibold text-gray-900 dark:text-white">Edges</div>
-            <div className="text-blue-600 dark:text-blue-400">{edges.length}</div>
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="font-semibold text-gray-900">Edges</div>
+            <div className="text-blue-600">{edges.length}</div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-            <div className="font-semibold text-gray-900 dark:text-white">Type</div>
-            <div className="text-blue-600 dark:text-blue-400">
-              {directed ? 'Directed' : 'Undirected'}
-            </div>
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="font-semibold text-gray-900">Type</div>
+            <div className="text-blue-600">{directed ? 'Directed' : 'Undirected'}</div>
           </div>
 
-          <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-            <div className="font-semibold text-gray-900 dark:text-white">Density</div>
-            <div className="text-blue-600 dark:text-blue-400">
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="font-semibold text-gray-900">Density</div>
+            <div className="text-blue-600">
               {nodes.length > 1
                 ? (
                     (edges.length / ((nodes.length * (nodes.length - 1)) / (directed ? 1 : 2))) *

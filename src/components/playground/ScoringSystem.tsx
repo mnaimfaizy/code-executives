@@ -52,44 +52,38 @@ const ScoringSystem: React.FC<ScoringSystemProps> = ({
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg p-3 border border-gray-200">
           <div className="flex items-center space-x-2 mb-1">
             <Target className="w-4 h-4 text-blue-500" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Problems</span>
+            <span className="text-sm font-medium text-gray-900">Problems</span>
           </div>
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-            {score.stats.problemsSolved}
-          </div>
+          <div className="text-2xl font-bold text-blue-600">{score.stats.problemsSolved}</div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg p-3 border border-gray-200">
           <div className="flex items-center space-x-2 mb-1">
             <Zap className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">
-              Debug Sessions
-            </span>
+            <span className="text-sm font-medium text-gray-900">Debug Sessions</span>
           </div>
-          <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-            {score.stats.debugSessions}
-          </div>
+          <div className="text-2xl font-bold text-yellow-600">{score.stats.debugSessions}</div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg p-3 border border-gray-200">
           <div className="flex items-center space-x-2 mb-1">
             <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Best Score</span>
+            <span className="text-sm font-medium text-gray-900">Best Score</span>
           </div>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <div className="text-2xl font-bold text-green-600">
             {score.stats.bestPerformanceScore}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white rounded-lg p-3 border border-gray-200">
           <div className="flex items-center space-x-2 mb-1">
             <Star className="w-4 h-4 text-purple-500" />
-            <span className="text-sm font-medium text-gray-900 dark:text-white">Total Points</span>
+            <span className="text-sm font-medium text-gray-900">Total Points</span>
           </div>
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <div className="text-2xl font-bold text-purple-600">
             {score.totalPoints.toLocaleString()}
           </div>
         </div>
@@ -97,8 +91,8 @@ const ScoringSystem: React.FC<ScoringSystemProps> = ({
 
       {/* Recent Achievements */}
       {recentAchievements.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center space-x-2">
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
             <Award className="w-5 h-5" />
             <span>Recent Achievements</span>
           </h3>
@@ -107,16 +101,12 @@ const ScoringSystem: React.FC<ScoringSystemProps> = ({
               <button
                 key={achievement.id}
                 onClick={() => handleAchievementClick(achievement)}
-                className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 hover:shadow-md transition-shadow"
+                className="flex items-center space-x-3 p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200 hover:shadow-md transition-shadow"
               >
                 <div className="text-2xl">{achievement.icon}</div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-white text-sm">
-                    {achievement.name}
-                  </div>
-                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {achievement.description}
-                  </div>
+                  <div className="font-medium text-gray-900 text-sm">{achievement.name}</div>
+                  <div className="text-xs text-gray-600">{achievement.description}</div>
                 </div>
               </button>
             ))}
@@ -127,15 +117,11 @@ const ScoringSystem: React.FC<ScoringSystemProps> = ({
       {/* Achievement Modal */}
       {showAchievementModal && selectedAchievement && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div className="text-center mb-4">
               <div className="text-6xl mb-2">{selectedAchievement.icon}</div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                {selectedAchievement.name}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                {selectedAchievement.description}
-              </p>
+              <h3 className="text-xl font-bold text-gray-900">{selectedAchievement.name}</h3>
+              <p className="text-gray-600 mt-2">{selectedAchievement.description}</p>
             </div>
             <div className="flex justify-center">
               <button

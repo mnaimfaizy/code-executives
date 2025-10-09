@@ -34,7 +34,7 @@ export const DSControlPanel: React.FC<ControlPanelProps> = ({
   const progressPercentage = totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0;
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-4">
       {/* Main Controls */}
       <div className="flex items-center justify-center space-x-3">
         {/* Step Backward */}
@@ -80,13 +80,13 @@ export const DSControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* Progress Bar */}
       <div className="space-y-2">
-        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex justify-between text-sm text-gray-600">
           <span>
             Step {currentStep + 1} of {totalSteps}
           </span>
           <span>{Math.round(progressPercentage)}%</span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-full h-2">
           <div
             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${progressPercentage}%` }}
@@ -105,7 +105,7 @@ export const DSControlPanel: React.FC<ControlPanelProps> = ({
 
       {/* Speed Control */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label className="block text-sm font-medium text-gray-700">
           Animation Speed: {speed.toFixed(1)}x
         </label>
         <input
@@ -127,9 +127,7 @@ export const DSControlPanel: React.FC<ControlPanelProps> = ({
       {/* Operation Buttons */}
       {operations.length > 0 && (
         <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Operations
-          </label>
+          <label className="block text-sm font-medium text-gray-700">Operations</label>
           <div className="grid grid-cols-2 gap-2">
             {operations.map((operation: string) => (
               <button
@@ -146,7 +144,7 @@ export const DSControlPanel: React.FC<ControlPanelProps> = ({
       )}
 
       {/* Settings Button */}
-      <div className="flex justify-center pt-2 border-t border-gray-200 dark:border-gray-700">
+      <div className="flex justify-center pt-2 border-t border-gray-200">
         <button
           onClick={() => onOperation('settings')}
           className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"

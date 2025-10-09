@@ -326,7 +326,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Enter value"
-            className="w-24 px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="w-24 px-2 py-1 text-sm border border-gray-300 rounded bg-white text-gray-900"
             disabled={isAnimating}
           />
         </div>
@@ -376,7 +376,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+        <div className="flex items-center text-sm text-gray-600">
           <span>
             Size: {queue.length}/{maxSize}
           </span>
@@ -384,7 +384,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
       </div>
 
       {/* Queue Visualization */}
-      <div className="p-6 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-x-auto">
+      <div className="p-6 bg-gray-50 rounded-lg overflow-x-auto">
         <svg
           viewBox="0 0 600 300"
           className="w-full h-64 min-w-[500px]"
@@ -396,7 +396,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
             y="180"
             width={Math.max(400, queue.length * 65 + 20)}
             height="50"
-            className="fill-none stroke-gray-400 dark:stroke-gray-500 stroke-2 stroke-dashed"
+            className="fill-none stroke-gray-400 stroke-2 stroke-dashed"
             rx="4"
           />
 
@@ -407,7 +407,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
               <text
                 x={elementPositions[queue[0].id]?.x + 30 || 0}
                 y="170"
-                className="text-sm font-mono fill-blue-600 dark:fill-blue-400"
+                className="text-sm font-mono fill-blue-600"
                 textAnchor="middle"
               >
                 FRONT
@@ -417,7 +417,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
                 y1="175"
                 x2={elementPositions[queue[0].id]?.x + 30 || 0}
                 y2="180"
-                className="stroke-blue-600 dark:stroke-blue-400 stroke-2"
+                className="stroke-blue-600 stroke-2"
                 markerEnd="url(#frontArrow)"
               />
 
@@ -425,7 +425,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
               <text
                 x={elementPositions[queue[queue.length - 1].id]?.x + 30 || 0}
                 y="260"
-                className="text-sm font-mono fill-orange-600 dark:fill-orange-400"
+                className="text-sm font-mono fill-orange-600"
                 textAnchor="middle"
               >
                 REAR
@@ -435,7 +435,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
                 y1="255"
                 x2={elementPositions[queue[queue.length - 1].id]?.x + 30 || 0}
                 y2="230"
-                className="stroke-orange-600 dark:stroke-orange-400 stroke-2"
+                className="stroke-orange-600 stroke-2"
                 markerEnd="url(#rearArrow)"
               />
             </g>
@@ -451,10 +451,10 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
               refY="3"
               orient="auto"
             >
-              <polygon points="0 0, 8 3, 0 6" className="fill-blue-600 dark:fill-blue-400" />
+              <polygon points="0 0, 8 3, 0 6" className="fill-blue-600" />
             </marker>
             <marker id="rearArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-              <polygon points="0 0, 8 3, 0 6" className="fill-orange-600 dark:fill-orange-400" />
+              <polygon points="0 0, 8 3, 0 6" className="fill-orange-600" />
             </marker>
           </defs>
 
@@ -478,12 +478,12 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
                   rx="4"
                   className={`transition-all duration-300 ${
                     isHighlighted
-                      ? 'fill-yellow-100 dark:fill-yellow-900 stroke-yellow-500 stroke-3'
+                      ? 'fill-yellow-100 stroke-yellow-500 stroke-3'
                       : isFront
-                        ? 'fill-blue-100 dark:fill-blue-900 stroke-blue-500 stroke-2'
+                        ? 'fill-blue-100 stroke-blue-500 stroke-2'
                         : isRear
-                          ? 'fill-orange-100 dark:fill-orange-900 stroke-orange-500 stroke-2'
-                          : 'fill-white dark:fill-gray-700 stroke-gray-300 dark:stroke-gray-600 stroke-1'
+                          ? 'fill-orange-100 stroke-orange-500 stroke-2'
+                          : 'fill-white stroke-gray-300 stroke-1'
                   }`}
                 />
 
@@ -494,12 +494,12 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
                   textAnchor="middle"
                   className={`text-lg font-bold transition-colors duration-300 ${
                     isHighlighted
-                      ? 'fill-yellow-700 dark:fill-yellow-300'
+                      ? 'fill-yellow-700'
                       : isFront
-                        ? 'fill-blue-700 dark:fill-blue-300'
+                        ? 'fill-blue-700'
                         : isRear
-                          ? 'fill-orange-700 dark:fill-orange-300'
-                          : 'fill-gray-700 dark:fill-gray-300'
+                          ? 'fill-orange-700'
+                          : 'fill-gray-700'
                   }`}
                 >
                   {element.value}
@@ -510,7 +510,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
                   x={position.x + 30}
                   y={position.y - 30}
                   textAnchor="middle"
-                  className="text-xs fill-gray-500 dark:fill-gray-400 font-mono"
+                  className="text-xs fill-gray-500 font-mono"
                 >
                   [{index}]
                 </text>
@@ -539,12 +539,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
 
           {/* Empty queue indicator */}
           {queue.length === 0 && (
-            <text
-              x="300"
-              y="205"
-              textAnchor="middle"
-              className="text-lg fill-gray-400 dark:fill-gray-500"
-            >
+            <text x="300" y="205" textAnchor="middle" className="text-lg fill-gray-400">
               Empty Queue
             </text>
           )}
@@ -554,24 +549,19 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
             <text
               x="30"
               y="160"
-              className="text-sm fill-blue-600 dark:fill-blue-400 font-semibold"
+              className="text-sm fill-blue-600 font-semibold"
               textAnchor="middle"
             >
               Dequeue
             </text>
-            <text
-              x="30"
-              y="175"
-              className="text-xs fill-blue-500 dark:fill-blue-400"
-              textAnchor="middle"
-            >
+            <text x="30" y="175" className="text-xs fill-blue-500" textAnchor="middle">
               (Remove)
             </text>
 
             <text
               x={Math.max(450, queue.length * 65 + 60)}
               y="160"
-              className="text-sm fill-orange-600 dark:fill-orange-400 font-semibold"
+              className="text-sm fill-orange-600 font-semibold"
               textAnchor="middle"
             >
               Enqueue
@@ -579,7 +569,7 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
             <text
               x={Math.max(450, queue.length * 65 + 60)}
               y="175"
-              className="text-xs fill-orange-500 dark:fill-orange-400"
+              className="text-xs fill-orange-500"
               textAnchor="middle"
             >
               (Add)
@@ -589,41 +579,31 @@ export const QueueVisualization: React.FC<QueueVisualizationProps> = ({
 
         {/* Operation Status */}
         {lastOperation && (
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
-            <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">{lastOperation}</p>
+          <div className="mt-4 p-3 bg-blue-50 rounded border border-blue-200">
+            <p className="text-sm text-blue-800 font-medium">{lastOperation}</p>
           </div>
         )}
       </div>
 
       {/* Queue Information */}
-      <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-        <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
-          Queue Properties:
-        </h4>
+      <div className="mt-4 p-4 bg-orange-50 rounded-lg">
+        <h4 className="font-semibold text-orange-900 mb-2">Queue Properties:</h4>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <strong className="text-orange-800 dark:text-orange-200">FIFO Principle:</strong>
-            <span className="text-orange-700 dark:text-orange-300 ml-2">
-              First element added is first to be removed
-            </span>
+            <strong className="text-orange-800">FIFO Principle:</strong>
+            <span className="text-orange-700 ml-2">First element added is first to be removed</span>
           </div>
           <div>
-            <strong className="text-orange-800 dark:text-orange-200">Access Pattern:</strong>
-            <span className="text-orange-700 dark:text-orange-300 ml-2">
-              Front and rear elements accessible
-            </span>
+            <strong className="text-orange-800">Access Pattern:</strong>
+            <span className="text-orange-700 ml-2">Front and rear elements accessible</span>
           </div>
           <div>
-            <strong className="text-orange-800 dark:text-orange-200">Enqueue:</strong>
-            <span className="text-orange-700 dark:text-orange-300 ml-2">
-              Add element to rear of queue
-            </span>
+            <strong className="text-orange-800">Enqueue:</strong>
+            <span className="text-orange-700 ml-2">Add element to rear of queue</span>
           </div>
           <div>
-            <strong className="text-orange-800 dark:text-orange-200">Dequeue:</strong>
-            <span className="text-orange-700 dark:text-orange-300 ml-2">
-              Remove and return front element
-            </span>
+            <strong className="text-orange-800">Dequeue:</strong>
+            <span className="text-orange-700 ml-2">Remove and return front element</span>
           </div>
         </div>
       </div>

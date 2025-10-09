@@ -284,26 +284,22 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 ${className}`}>
+    <div className={`bg-white rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
             <div className="w-4 h-4 bg-green-600 rounded-full"></div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Breadth-First Search (BFS)
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Level-by-level graph traversal using a queue
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900">Breadth-First Search (BFS)</h3>
+            <p className="text-sm text-gray-600">Level-by-level graph traversal using a queue</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="p-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
+          className="p-2 text-gray-600 hover:text-green-600 transition-colors"
         >
           <Info className="w-5 h-5" />
         </button>
@@ -311,11 +307,9 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
 
       {/* Info Panel */}
       {showInfo && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <h4 className="font-semibold text-green-900 dark:text-green-100 mb-2">
-            BFS Algorithm Steps:
-          </h4>
-          <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
+        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+          <h4 className="font-semibold text-green-900 mb-2">BFS Algorithm Steps:</h4>
+          <ul className="text-sm text-green-800 space-y-1">
             <li>• Start from the selected node and mark it as visited</li>
             <li>• Add the start node to a queue</li>
             <li>• While queue is not empty:</li>
@@ -329,15 +323,13 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
       {/* Controls */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Start Node:
-          </label>
+          <label className="text-sm font-medium text-gray-700">Start Node:</label>
           <select
             value={startNode}
             onChange={(e) => setStartNode(e.target.value)}
             disabled={isPlaying || step > 0}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm
+                     bg-white text-gray-900
                      focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
             {nodes.map((node) => (
@@ -391,47 +383,43 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-6">
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Step:</span>
-            <span className="ml-1 text-green-600 dark:text-green-400">{step}</span>
+            <span className="font-medium text-gray-700">Step:</span>
+            <span className="ml-1 text-green-600">{step}</span>
           </div>
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Current:</span>
-            <span className="ml-1 text-green-600 dark:text-green-400">{currentNode || 'None'}</span>
+            <span className="font-medium text-gray-700">Current:</span>
+            <span className="ml-1 text-green-600">{currentNode || 'None'}</span>
           </div>
         </div>
 
-        {isComplete && (
-          <div className="text-sm text-green-600 dark:text-green-400 font-medium">
-            ✓ BFS Complete!
-          </div>
-        )}
+        {isComplete && <div className="text-sm text-green-600 font-medium">✓ BFS Complete!</div>}
       </div>
 
       {/* Queue Display */}
-      <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Queue (FIFO):</h4>
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <h4 className="text-sm font-semibold text-gray-900 mb-2">Queue (FIFO):</h4>
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-gray-600 dark:text-gray-400">Front →</span>
+          <span className="text-xs text-gray-600">Front →</span>
           {queue.length === 0 ? (
-            <span className="text-sm text-gray-500 dark:text-gray-400 italic">Empty</span>
+            <span className="text-sm text-gray-500 italic">Empty</span>
           ) : (
             queue.map((nodeId, index) => (
               <div
                 key={`${nodeId}-${index}`}
-                className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 
-                         rounded text-sm font-medium border border-green-200 dark:border-green-800"
+                className="px-3 py-1 bg-green-100 text-green-800 
+                         rounded text-sm font-medium border border-green-200"
               >
                 {nodeId}
               </div>
             ))
           )}
-          <span className="text-xs text-gray-600 dark:text-gray-400">← Rear</span>
+          <span className="text-xs text-gray-600">← Rear</span>
         </div>
       </div>
 
       {/* Graph Visualization */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg viewBox="0 0 600 400" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <svg viewBox="0 0 600 400" className="w-full h-96 bg-gray-50">
           {/* Background pattern */}
           <defs>
             <pattern id="bfs-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -485,7 +473,7 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
                   x={node.x}
                   y={node.y - 35}
                   textAnchor="middle"
-                  className="text-xs font-medium fill-green-600 dark:fill-green-400"
+                  className="text-xs font-medium fill-green-600"
                 >
                   d: {node.distance}
                 </text>
@@ -499,23 +487,23 @@ const BFSVisualization: React.FC<BFSVisualizationProps> = ({ className = '' }) =
       <div className="mt-4 flex flex-wrap gap-6 text-sm">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-gray-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Unvisited</span>
+          <span className="text-gray-700">Unvisited</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Visited</span>
+          <span className="text-gray-700">Visited</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Current</span>
+          <span className="text-gray-700">Current</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-green-500"></div>
-          <span className="text-gray-700 dark:text-gray-300">Traversed Edge</span>
+          <span className="text-gray-700">Traversed Edge</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-red-500"></div>
-          <span className="text-gray-700 dark:text-gray-300">Active Edge</span>
+          <span className="text-gray-700">Active Edge</span>
         </div>
       </div>
     </div>

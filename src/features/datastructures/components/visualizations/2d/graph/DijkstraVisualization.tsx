@@ -320,26 +320,22 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 ${className}`}>
+    <div className={`bg-white rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-            <MapPin className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+          <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+            <MapPin className="w-4 h-4 text-orange-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Dijkstra's Algorithm
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Find shortest paths in weighted graphs
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900">Dijkstra's Algorithm</h3>
+            <p className="text-sm text-gray-600">Find shortest paths in weighted graphs</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="p-2 text-gray-600 dark:text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+          className="p-2 text-gray-600 hover:text-orange-600 transition-colors"
         >
           <Info className="w-5 h-5" />
         </button>
@@ -347,11 +343,9 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
 
       {/* Info Panel */}
       {showInfo && (
-        <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-          <h4 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
-            Dijkstra's Algorithm Steps:
-          </h4>
-          <ul className="text-sm text-orange-800 dark:text-orange-200 space-y-1">
+        <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+          <h4 className="font-semibold text-orange-900 mb-2">Dijkstra's Algorithm Steps:</h4>
+          <ul className="text-sm text-orange-800 space-y-1">
             <li>• Initialize all distances to infinity, except source (distance = 0)</li>
             <li>• Add all nodes to a priority queue</li>
             <li>• While priority queue is not empty:</li>
@@ -366,13 +360,13 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
       {/* Controls */}
       <div className="flex flex-wrap gap-4 mb-6">
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Source:</label>
+          <label className="text-sm font-medium text-gray-700">Source:</label>
           <select
             value={sourceNode}
             onChange={(e) => setSourceNode(e.target.value)}
             disabled={isPlaying || step > 0}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm
+                     bg-white text-gray-900
                      focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           >
             {nodes.map((node) => (
@@ -384,13 +378,13 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
         </div>
 
         <div className="flex items-center space-x-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Target:</label>
+          <label className="text-sm font-medium text-gray-700">Target:</label>
           <select
             value={targetNode}
             onChange={(e) => setTargetNode(e.target.value)}
             disabled={isPlaying}
-            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm
+                     bg-white text-gray-900
                      focus:ring-2 focus:ring-orange-500 focus:border-transparent"
           >
             {nodes
@@ -446,21 +440,17 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-6">
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Step:</span>
-            <span className="ml-1 text-orange-600 dark:text-orange-400">{step}</span>
+            <span className="font-medium text-gray-700">Step:</span>
+            <span className="ml-1 text-orange-600">{step}</span>
           </div>
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Current:</span>
-            <span className="ml-1 text-orange-600 dark:text-orange-400">
-              {currentNode || 'None'}
-            </span>
+            <span className="font-medium text-gray-700">Current:</span>
+            <span className="ml-1 text-orange-600">{currentNode || 'None'}</span>
           </div>
           {isComplete && targetNode && (
             <div className="text-sm">
-              <span className="font-medium text-gray-700 dark:text-gray-300">
-                Distance to {targetNode}:
-              </span>
-              <span className="ml-1 text-green-600 dark:text-green-400 font-bold">
+              <span className="font-medium text-gray-700">Distance to {targetNode}:</span>
+              <span className="ml-1 text-green-600 font-bold">
                 {nodes.find((n) => n.id === targetNode)?.distance || '∞'}
               </span>
             </div>
@@ -468,28 +458,26 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
         </div>
 
         {isComplete && (
-          <div className="text-sm text-green-600 dark:text-green-400 font-medium">
-            ✓ Shortest path found!
-          </div>
+          <div className="text-sm text-green-600 font-medium">✓ Shortest path found!</div>
         )}
       </div>
 
       {/* Priority Queue */}
-      <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <h4 className="text-sm font-semibold text-gray-900 mb-2">
           Priority Queue (ordered by distance):
         </h4>
         <div className="flex items-center space-x-2 flex-wrap">
           {priorityQueue.length === 0 ? (
-            <span className="text-sm text-gray-500 dark:text-gray-400 italic">Empty</span>
+            <span className="text-sm text-gray-500 italic">Empty</span>
           ) : (
             [...priorityQueue]
               .sort((a, b) => a.distance - b.distance)
               .map((item, index) => (
                 <div
                   key={`${item.nodeId}-${index}`}
-                  className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-200 
-                           rounded text-sm font-medium border border-orange-200 dark:border-orange-800"
+                  className="px-3 py-1 bg-orange-100 text-orange-800 
+                           rounded text-sm font-medium border border-orange-200"
                 >
                   {item.nodeId}: {item.distance === Infinity ? '∞' : item.distance}
                 </div>
@@ -500,22 +488,20 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
 
       {/* Shortest Path */}
       {shortestPath.length > 0 && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <h4 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
+        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+          <h4 className="text-sm font-semibold text-green-900 mb-2">
             Shortest Path from {sourceNode} to {targetNode}:
           </h4>
           <div className="flex items-center space-x-2 flex-wrap">
             {shortestPath.map((nodeId, index) => (
               <div key={index} className="flex items-center">
                 <div
-                  className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 
-                             rounded text-sm font-medium border border-green-200 dark:border-green-800"
+                  className="px-3 py-1 bg-green-100 text-green-800 
+                             rounded text-sm font-medium border border-green-200"
                 >
                   {nodeId}
                 </div>
-                {index < shortestPath.length - 1 && (
-                  <span className="mx-2 text-green-600 dark:text-green-400">→</span>
-                )}
+                {index < shortestPath.length - 1 && <span className="mx-2 text-green-600">→</span>}
               </div>
             ))}
           </div>
@@ -523,8 +509,8 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
       )}
 
       {/* Graph Visualization */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg viewBox="0 0 650 300" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <svg viewBox="0 0 650 300" className="w-full h-96 bg-gray-50">
           {/* Background pattern */}
           <defs>
             <pattern id="dijkstra-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -564,7 +550,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
                   5
                 }
                 textAnchor="middle"
-                className="text-xs font-bold fill-gray-700 dark:fill-gray-300"
+                className="text-xs font-bold fill-gray-700"
                 style={{ pointerEvents: 'none' }}
               >
                 {edge.weight}
@@ -606,7 +592,7 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
                 x={node.x}
                 y={node.y - 45}
                 textAnchor="middle"
-                className="text-xs font-bold fill-orange-600 dark:fill-orange-400"
+                className="text-xs font-bold fill-orange-600"
               >
                 {node.distance === Infinity ? '∞' : node.distance}
               </text>
@@ -619,27 +605,27 @@ const DijkstraVisualization: React.FC<DijkstraVisualizationProps> = ({ className
       <div className="mt-4 flex flex-wrap gap-6 text-sm">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Source</span>
+          <span className="text-gray-700">Source</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-gray-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Unvisited</span>
+          <span className="text-gray-700">Unvisited</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Visited</span>
+          <span className="text-gray-700">Visited</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-          <span className="text-gray-700 dark:text-gray-300">Current</span>
+          <span className="text-gray-700">Current</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-green-500"></div>
-          <span className="text-gray-700 dark:text-gray-300">Shortest Path</span>
+          <span className="text-gray-700">Shortest Path</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-red-500"></div>
-          <span className="text-gray-700 dark:text-gray-300">Being Processed</span>
+          <span className="text-gray-700">Being Processed</span>
         </div>
       </div>
     </div>

@@ -211,10 +211,10 @@ const Playground: React.FC<PlaygroundProps> = ({
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading playground...</p>
+          <p className="text-gray-600">Loading playground...</p>
         </div>
       </div>
     );
@@ -223,13 +223,11 @@ const Playground: React.FC<PlaygroundProps> = ({
   // Error state
   if (error || !currentProblem) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center max-w-md">
           <div className="text-red-500 text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-            Error Loading Playground
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Error Loading Playground</h2>
+          <p className="text-gray-600 mb-4">
             {error || 'Unable to load the playground. Please try again.'}
           </p>
           <button
@@ -352,8 +350,8 @@ const Playground: React.FC<PlaygroundProps> = ({
       </ThemeCard>
 
       {/* Tab Navigation */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div className="flex border-b border-gray-200 overflow-x-auto">
           {[
             { id: 'problem' as const, label: 'Problem', icon: '📋' },
             { id: 'editor' as const, label: 'Code Editor', icon: '💻' },
@@ -368,8 +366,8 @@ const Playground: React.FC<PlaygroundProps> = ({
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center space-x-2 px-4 py-3 font-medium text-sm transition-colors whitespace-nowrap ${
                 activeTab === tab.id
-                  ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <span>{tab.icon}</span>
@@ -396,11 +394,11 @@ const Playground: React.FC<PlaygroundProps> = ({
           {activeTab === 'editor' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Code Editor</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Code Editor</h3>
                 <div className="flex items-center space-x-2">
                   {/* Debug Mode Toggle */}
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Debug</span>
+                    <span className="text-sm text-gray-600">Debug</span>
                     <button
                       onClick={() => setDebugMode(!debugMode)}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -417,8 +415,8 @@ const Playground: React.FC<PlaygroundProps> = ({
 
                   <button
                     onClick={resetCode}
-                    className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400
-                             hover:text-gray-900 dark:hover:text-white transition-colors
+                    className="px-3 py-2 text-sm font-medium text-gray-600
+                             hover:text-gray-900 transition-colors
                              flex items-center space-x-1"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -460,9 +458,7 @@ const Playground: React.FC<PlaygroundProps> = ({
           {activeTab === 'visualization' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Live Visualization
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900">Live Visualization</h3>
                 <VisualizationSelector
                   options={currentProblem.visualizationOptions}
                   selected={selectedVisualization}
@@ -568,7 +564,7 @@ const Playground: React.FC<PlaygroundProps> = ({
                   }
                 />
               ) : (
-                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 min-h-96 flex items-center justify-center">
+                <div className="bg-gray-50 rounded-lg p-4 min-h-96 flex items-center justify-center">
                   <div className="text-center text-gray-500">
                     <Eye className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p className="text-lg font-medium mb-2">Visualization Coming Soon</p>
@@ -596,10 +592,8 @@ const Playground: React.FC<PlaygroundProps> = ({
           {/* Scoring Tab */}
           {activeTab === 'scoring' && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Your Progress & Achievements
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-lg font-semibold text-gray-900">Your Progress & Achievements</h3>
+              <p className="text-sm text-gray-600">
                 Track your learning progress, earn achievements, and see your algorithm mastery
                 grow.
               </p>
@@ -617,10 +611,8 @@ const Playground: React.FC<PlaygroundProps> = ({
           {/* Debug Tab */}
           {activeTab === 'debug' && debugMode && (
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Step-by-Step Debugging
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h3 className="text-lg font-semibold text-gray-900">Step-by-Step Debugging</h3>
+              <p className="text-sm text-gray-600">
                 Debug your algorithm execution step by step. See how data structures change with
                 each operation.
               </p>
@@ -646,13 +638,13 @@ const Playground: React.FC<PlaygroundProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
           onClick={() => setActiveTab('editor')}
-          className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors text-left"
+          className="p-4 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-left"
         >
           <div className="flex items-center space-x-3">
             <Code className="w-6 h-6 text-blue-600" />
             <div>
-              <h4 className="font-medium text-blue-900 dark:text-blue-100">Write Code</h4>
-              <p className="text-sm text-blue-700 dark:text-blue-300">Start coding your solution</p>
+              <h4 className="font-medium text-blue-900">Write Code</h4>
+              <p className="text-sm text-blue-700">Start coding your solution</p>
             </div>
           </div>
         </button>
@@ -660,26 +652,26 @@ const Playground: React.FC<PlaygroundProps> = ({
         <button
           onClick={runTests}
           disabled={isExecuting}
-          className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors text-left disabled:opacity-50"
+          className="p-4 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors text-left disabled:opacity-50"
         >
           <div className="flex items-center space-x-3">
             <Play className="w-6 h-6 text-green-600" />
             <div>
-              <h4 className="font-medium text-green-900 dark:text-green-100">Run Tests</h4>
-              <p className="text-sm text-green-700 dark:text-green-300">Test your solution</p>
+              <h4 className="font-medium text-green-900">Run Tests</h4>
+              <p className="text-sm text-green-700">Test your solution</p>
             </div>
           </div>
         </button>
 
         <button
           onClick={handleSubmission}
-          className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors text-left"
+          className="p-4 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors text-left"
         >
           <div className="flex items-center space-x-3">
             <Trophy className="w-6 h-6 text-purple-600" />
             <div>
-              <h4 className="font-medium text-purple-900 dark:text-purple-100">Submit Solution</h4>
-              <p className="text-sm text-purple-700 dark:text-purple-300">Submit for grading</p>
+              <h4 className="font-medium text-purple-900">Submit Solution</h4>
+              <p className="text-sm text-purple-700">Submit for grading</p>
             </div>
           </div>
         </button>

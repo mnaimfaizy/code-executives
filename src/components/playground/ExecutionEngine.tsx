@@ -423,10 +423,8 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
 
   if (!debugMode) {
     return (
-      <div className={`p-4 bg-gray-50 dark:bg-gray-900 rounded-lg ${className}`}>
-        <p className="text-gray-600 dark:text-gray-400">
-          Execution Engine - Standard execution mode
-        </p>
+      <div className={`p-4 bg-gray-50 rounded-lg ${className}`}>
+        <p className="text-gray-600">Execution Engine - Standard execution mode</p>
         <button
           onClick={() => executeWithDebugging()}
           disabled={isExecuting}
@@ -442,8 +440,8 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Debug Controls */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
           <Eye className="w-5 h-5" />
           <span>Debug Controls</span>
         </h3>
@@ -494,13 +492,13 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
         {/* Debug Status */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <span className="text-gray-600 dark:text-gray-400">Step:</span>
-            <span className="ml-2 font-medium text-gray-900 dark:text-white">
+            <span className="text-gray-600">Step:</span>
+            <span className="ml-2 font-medium text-gray-900">
               {debugState.currentStep} / {debugState.totalSteps}
             </span>
           </div>
           <div>
-            <span className="text-gray-600 dark:text-gray-400">Status:</span>
+            <span className="text-gray-600">Status:</span>
             <span
               className={`ml-2 font-medium ${
                 debugState.isDebugging
@@ -514,14 +512,12 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
             </span>
           </div>
           <div>
-            <span className="text-gray-600 dark:text-gray-400">Call Stack:</span>
-            <span className="ml-2 font-medium text-gray-900 dark:text-white">
-              {debugState.callStack.length}
-            </span>
+            <span className="text-gray-600">Call Stack:</span>
+            <span className="ml-2 font-medium text-gray-900">{debugState.callStack.length}</span>
           </div>
           <div>
-            <span className="text-gray-600 dark:text-gray-400">Variables:</span>
-            <span className="ml-2 font-medium text-gray-900 dark:text-white">
+            <span className="text-gray-600">Variables:</span>
+            <span className="ml-2 font-medium text-gray-900">
               {Object.keys(debugState.variables).length}
             </span>
           </div>
@@ -530,11 +526,11 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
 
       {/* Current Operation */}
       {debugState.currentOperation && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2 flex items-center space-x-2">
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <h4 className="text-md font-semibold text-gray-900 mb-2 flex items-center space-x-2">
             <span>Current Operation</span>
             <div className="group relative">
-              <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <button className="text-gray-400 hover:text-gray-600">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
@@ -550,26 +546,26 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
           </h4>
           <div className="space-y-2 text-sm">
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Type:</span>
-              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Type:</span>
+              <span className="ml-2 font-medium text-gray-900">
                 {debugState.currentOperation.type}
               </span>
             </div>
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Data Structure:</span>
-              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Data Structure:</span>
+              <span className="ml-2 font-medium text-gray-900">
                 {debugState.currentOperation.dataStructure}
               </span>
             </div>
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Line:</span>
-              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Line:</span>
+              <span className="ml-2 font-medium text-gray-900">
                 {debugState.currentOperation.lineNumber}
               </span>
             </div>
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Function:</span>
-              <span className="ml-2 font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Function:</span>
+              <span className="ml-2 font-medium text-gray-900">
                 {debugState.currentOperation.functionName}
               </span>
             </div>
@@ -580,14 +576,14 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
       {/* Variables and Data Structures */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Variables */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">Variables</h4>
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <h4 className="text-md font-semibold text-gray-900 mb-2">Variables</h4>
           <div className="space-y-1 text-sm max-h-40 overflow-y-auto">
             {Object.entries(debugState.variables).length > 0 ? (
               Object.entries(debugState.variables).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="text-blue-600 dark:text-blue-400 font-medium">{key}:</span>
-                  <span className="text-gray-900 dark:text-white">{JSON.stringify(value)}</span>
+                  <span className="text-blue-600 font-medium">{key}:</span>
+                  <span className="text-gray-900">{JSON.stringify(value)}</span>
                 </div>
               ))
             ) : (
@@ -597,16 +593,14 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
         </div>
 
         {/* Data Structure State */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-          <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">
-            Data Structures
-          </h4>
+        <div className="bg-white rounded-lg p-4 border border-gray-200">
+          <h4 className="text-md font-semibold text-gray-900 mb-2">Data Structures</h4>
           <div className="space-y-1 text-sm max-h-40 overflow-y-auto">
             {Object.entries(debugState.dataStructureState).length > 0 ? (
               Object.entries(debugState.dataStructureState).map(([key, value]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="text-purple-600 dark:text-purple-400 font-medium">{key}:</span>
-                  <span className="text-gray-900 dark:text-white">{JSON.stringify(value)}</span>
+                  <span className="text-purple-600 font-medium">{key}:</span>
+                  <span className="text-gray-900">{JSON.stringify(value)}</span>
                 </div>
               ))
             ) : (
@@ -617,15 +611,15 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
       </div>
 
       {/* Educational Explanations */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-        <h4 className="text-md font-semibold text-blue-900 dark:text-blue-100 mb-3 flex items-center space-x-2">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+        <h4 className="text-md font-semibold text-blue-900 mb-3 flex items-center space-x-2">
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span>Debugging Guide</span>
         </h4>
-        <div className="space-y-3 text-sm text-blue-800 dark:text-blue-200">
-          <div className="bg-white dark:bg-gray-800 rounded p-3">
+        <div className="space-y-3 text-sm text-blue-800">
+          <div className="bg-white rounded p-3">
             <h5 className="font-medium mb-1">What is Debugging?</h5>
             <p>
               Debugging is the process of finding and fixing errors in your code. Step-by-step
@@ -633,7 +627,7 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
             </p>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded p-3">
+          <div className="bg-white rounded p-3">
             <h5 className="font-medium mb-1">Key Concepts:</h5>
             <ul className="space-y-1 ml-4">
               <li>
@@ -651,7 +645,7 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
             </ul>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded p-3">
+          <div className="bg-white rounded p-3">
             <h5 className="font-medium mb-1">Common Operations:</h5>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
@@ -670,7 +664,7 @@ const ExecutionEngine: React.FC<ExecutionEnginePropsExtended> = ({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded p-3">
+          <div className="bg-white rounded p-3">
             <h5 className="font-medium mb-1">Pro Tips:</h5>
             <ul className="space-y-1 ml-4">
               <li>• Watch how data structures change with each operation</li>

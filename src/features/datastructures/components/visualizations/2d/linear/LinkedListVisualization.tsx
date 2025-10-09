@@ -57,6 +57,7 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
   const [currentOperation, setCurrentOperation] = useState<string>('');
   const [inputValue, setInputValue] = useState<string>('');
   const [selectedPosition, setSelectedPosition] = useState<number>(0);
+  const [deletePosition, setDeletePosition] = useState<string>('');
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
 
   // State for drag functionality
@@ -120,6 +121,25 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
       }
     }
   }, [debugState]);
+
+  // Auto-fill delete position when a node is selected
+  React.useEffect(() => {
+    if (selectedNode) {
+      // Find the index of the selected node
+      let currentId = head;
+      let position = 0;
+
+      while (currentId) {
+        if (currentId === selectedNode) {
+          setDeletePosition(position.toString());
+          break;
+        }
+        const currentNode = nodes.find((n) => n.id === currentId);
+        currentId = currentNode?.next || null;
+        position++;
+      }
+    }
+  }, [selectedNode, head, nodes]);
 
   // Get current operation complexity
   const getCurrentComplexity = useCallback(
@@ -251,78 +271,94 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
   // Delete node at specific position
   const deleteNode = useCallback(
     async (position: number) => {
-      if (nodes.length === 0) return;
+      if (nodes.length === 0 || position < 0 || position >= nodes.length) return;
 
       setIsAnimating(true);
       setCurrentOperation(`Deleting node at position ${position}`);
 
-      const newNodes = [...nodes];
+      // Find the node to delete by traversing the list
+      let current = nodes.find((n) => n.id === head);
+      let currentIndex = 0;
+
+      // Traverse to find the node at the specified position
+      while (current && currentIndex < position) {
+        const nextId = current.next;
+        current = nextId ? nodes.find((n) => n.id === nextId) : undefined;
+        currentIndex++;
+      }
+
+      const nodeToDelete = current;
+
+      if (!nodeToDelete) {
+        setCurrentOperation('Node not found');
+        setIsAnimating(false);
+        return;
+      }
+
+      // Highlight the node to be deleted
+      await highlightNode(nodeToDelete.id, 600);
 
       if (position === 0 && head) {
         // Delete head
-        const headNode = newNodes.find((n) => n.id === head);
-        if (headNode) {
-          await highlightNode(head, 600);
-          const newHead = headNode.next;
-          setHead(newHead);
+        const newHead = nodeToDelete.next;
+        setHead(newHead);
 
-          if (newHead && listType === 'doubly') {
-            const newHeadNode = newNodes.find((n) => n.id === newHead);
-            if (newHeadNode) newHeadNode.prev = null;
+        if (newHead) {
+          // Update the new head's prev pointer for doubly linked list
+          if (listType === 'doubly') {
+            setNodes((prev) =>
+              prev
+                .map((n) => (n.id === newHead ? { ...n, prev: null } : n))
+                .filter((n) => n.id !== nodeToDelete!.id)
+            );
+          } else {
+            setNodes((prev) => prev.filter((n) => n.id !== nodeToDelete!.id));
           }
-
-          if (nodes.length === 1) setTail(null);
-          setNodes((prev) => prev.filter((n) => n.id !== head));
+        } else {
+          // List is now empty
+          setTail(null);
+          setNodes([]);
         }
       } else if (position === nodes.length - 1 && tail) {
         // Delete tail
-        const tailNode = newNodes.find((n) => n.id === tail);
-        if (tailNode) {
-          await highlightNode(tail, 600);
-          const newTail = tailNode.prev;
-          setTail(newTail || null);
+        const newTail = nodeToDelete.prev;
+        setTail(newTail || null);
 
-          if (newTail && listType === 'doubly') {
-            const newTailNode = newNodes.find((n) => n.id === newTail);
-            if (newTailNode) newTailNode.next = null;
-          }
-
-          setNodes((prev) => prev.filter((n) => n.id !== tail));
+        if (newTail) {
+          // Update the new tail's next pointer
+          setNodes((prev) =>
+            prev
+              .map((n) => (n.id === newTail ? { ...n, next: null } : n))
+              .filter((n) => n.id !== nodeToDelete!.id)
+          );
+        } else {
+          // List is now empty (should not happen as we check position === 0 first)
+          setHead(null);
+          setNodes([]);
         }
       } else {
-        // Delete at position
-        let current = newNodes.find((n) => n.id === head);
-        let currentIndex = 0;
+        // Delete at middle position
+        const prevId = nodeToDelete.prev;
+        const nextId = nodeToDelete.next;
 
-        while (current && currentIndex < position) {
-          await highlightNode(current.id, 300);
-          const nextId = current.next;
-          current = nextId ? newNodes.find((n) => n.id === nextId) : undefined;
-          currentIndex++;
-        }
-
-        if (current) {
-          await highlightNode(current.id, 600);
-
-          const prevId = current.prev;
-          const nextId = current.next;
-
-          if (prevId && listType === 'doubly') {
-            const prevNode = newNodes.find((n) => n.id === prevId);
-            if (prevNode) prevNode.next = nextId;
-          }
-
-          if (nextId && listType === 'doubly') {
-            const nextNode = newNodes.find((n) => n.id === nextId);
-            if (nextNode) nextNode.prev = prevId;
-          }
-
-          setNodes((prev) => prev.filter((n) => n.id !== current.id));
-        }
+        // Update pointers to skip the deleted node
+        setNodes((prev) =>
+          prev
+            .map((n) => {
+              if (n.id === prevId) {
+                return { ...n, next: nextId };
+              } else if (n.id === nextId && listType === 'doubly') {
+                return { ...n, prev: prevId };
+              }
+              return n;
+            })
+            .filter((n) => n.id !== nodeToDelete!.id)
+        );
       }
 
       setCurrentOperation('');
       setIsAnimating(false);
+      setDeletePosition(''); // Clear the delete input
     },
     [nodes, head, tail, listType, highlightNode]
   );
@@ -364,30 +400,69 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
     if (nodes.length <= 1) return;
 
     setIsAnimating(true);
-    setCurrentOperation('Reversing the linked list');
+    setCurrentOperation('Reversing the linked list - Step by step');
 
-    const newNodes = [...nodes].reverse();
+    // Create a working copy
+    const workingNodes = nodes.map((node) => ({ ...node }));
 
-    // Update pointers
-    newNodes.forEach((node, index) => {
-      node.next = index < newNodes.length - 1 ? newNodes[index + 1].id : null;
-      node.prev = index > 0 ? newNodes[index - 1].id : null;
-    });
+    // Store original head for the new tail
+    const originalHead = head;
 
-    // Animate the reversal
-    for (let i = 0; i < newNodes.length; i++) {
-      await highlightNode(newNodes[i].id, 400);
+    // For singly linked list reversal algorithm
+    let prevId: string | null = null;
+    let currentId: string | null = head;
+    let nextId: string | null = null;
+    let stepCount = 0;
+
+    // Animate each step of the reversal
+    while (currentId) {
+      stepCount++;
+
+      // Highlight current node being processed
+      setCurrentOperation(`Reversing step ${stepCount}: Reversing node pointers`);
+      await highlightNode(currentId, 700);
+
+      const currentNode = workingNodes.find((n) => n.id === currentId);
+      if (!currentNode) break;
+
+      // Store next before we change it
+      nextId = currentNode.next;
+
+      // Reverse the pointer - this is the key step
+      currentNode.next = prevId;
+
+      // Handle doubly linked list (swap prev with what will be the new prev)
+      if (currentNode.prev !== undefined) {
+        currentNode.prev = nextId;
+      }
+
+      // Update the nodes array to show the pointer changes
+      setNodes([...workingNodes]);
+
+      // Show the pointer reversal with a longer delay for visibility
+      await new Promise((resolve) => setTimeout(resolve, 900));
+
+      // Move pointers forward
+      prevId = currentId;
+      currentId = nextId;
     }
 
-    setNodes(newNodes);
-    setHead(newNodes[0].id);
-    setTail(newNodes[newNodes.length - 1].id);
+    // Final update: set the new head and tail
+    setCurrentOperation('Updating head and tail pointers...');
+    await new Promise((resolve) => setTimeout(resolve, 600));
 
-    setCurrentOperation('List reversed successfully');
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setHead(prevId); // Last processed node is the new head
+    setTail(originalHead); // Original head becomes the new tail
+    setNodes([...workingNodes]);
+
+    // Give time for the layout to update and show the reversed list
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    setCurrentOperation('List reversed successfully!');
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setCurrentOperation('');
     setIsAnimating(false);
-  }, [nodes, highlightNode]);
+  }, [nodes, head, highlightNode]);
 
   // Find middle element
   const findMiddle = useCallback(async () => {
@@ -430,43 +505,52 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
   }, [nodes, head, highlightNode, animateNode]);
 
   // Reset the list
-  const resetList = useCallback(() => {
-    const resetNodes = initialData.map((value, index) => ({
-      id: `node-${index}`,
-      value,
-      next: index < initialData.length - 1 ? `node-${index + 1}` : null,
-      prev: listType === 'doubly' && index > 0 ? `node-${index - 1}` : null,
-      memoryAddress: `0x${(1000 + index * 12).toString(16).toUpperCase()}`,
-    }));
+  const resetList = useCallback(
+    (targetListType?: ListType) => {
+      const effectiveListType = targetListType || listType;
+      const resetNodes = initialData.map((value, index) => ({
+        id: `node-${index}`,
+        value,
+        next: index < initialData.length - 1 ? `node-${index + 1}` : null,
+        prev: effectiveListType === 'doubly' && index > 0 ? `node-${index - 1}` : null,
+        memoryAddress: `0x${(1000 + index * 12).toString(16).toUpperCase()}`,
+      }));
 
-    setNodes(resetNodes);
-    setHead(resetNodes.length > 0 ? resetNodes[0].id : null);
-    setTail(resetNodes.length > 0 ? resetNodes[resetNodes.length - 1].id : null);
-    setHighlightedNodes(new Set());
-    setAnimatingNodes(new Set());
-    setIsAnimating(false);
-    setCurrentOperation('');
-    setSelectedNode(null);
-  }, [initialData, listType]);
+      setNodes(resetNodes);
+      setHead(resetNodes.length > 0 ? resetNodes[0].id : null);
+      setTail(resetNodes.length > 0 ? resetNodes[resetNodes.length - 1].id : null);
+      setHighlightedNodes(new Set());
+      setAnimatingNodes(new Set());
+      setIsAnimating(false);
+      setCurrentOperation('');
+      setSelectedNode(null);
+    },
+    [initialData, listType]
+  );
 
   // Handle operations
   const handleOperation = useCallback(
     async (operation: string) => {
       const value = parseInt(inputValue, 10);
+      const delPos = parseInt(deletePosition, 10);
 
       switch (operation) {
         case 'insert':
           if (!isNaN(value)) {
             await insertNode(value, selectedPosition);
             setInputValue('');
+            setSelectedPosition(0);
           }
           break;
         case 'delete':
-          await deleteNode(selectedPosition);
+          if (!isNaN(delPos) && delPos >= 0 && delPos < nodes.length) {
+            await deleteNode(delPos);
+          }
           break;
         case 'search':
           if (!isNaN(value)) {
             await searchValue(value);
+            setInputValue('');
           }
           break;
         case 'reverse':
@@ -482,7 +566,9 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
     },
     [
       inputValue,
+      deletePosition,
       selectedPosition,
+      nodes.length,
       insertNode,
       deleteNode,
       searchValue,
@@ -589,18 +675,89 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
   const nodePositions = getNodePositions();
 
   return (
-    <div className={`bg-white border border-blue-200 rounded-xl shadow-sm ${className}`}>
+    <div
+      className={`bg-white border border-blue-200 rounded-xl shadow-lg overflow-hidden ${className}`}
+    >
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-2xl font-bold text-gray-900">Linked List Visualization</h3>
-            <p className="text-gray-600 mt-1">
+      <div className="p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+          <div className="flex-1">
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
+              Linked List Visualization
+            </h3>
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               {listType === 'singly'
                 ? 'Dynamic memory allocation with unidirectional pointers'
                 : 'Bidirectional traversal with prev and next pointers'}
             </p>
           </div>
+          <div className="hidden lg:block">
+            <ComplexityIndicator
+              operation={currentOperation || 'Linked List Operations'}
+              timeComplexity={getCurrentComplexity('search').time}
+              spaceComplexity={getCurrentComplexity('search').space}
+              explanation={
+                listType === 'singly'
+                  ? 'Dynamic memory allocation with pointer traversal'
+                  : 'Bidirectional pointers enable efficient operations'
+              }
+            />
+          </div>
+        </div>
+
+        {/* List Type Selector and Size */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+          <div className="flex items-center space-x-3">
+            <span className="text-xs sm:text-sm font-medium text-gray-700 whitespace-nowrap">
+              List Type:
+            </span>
+            <div className="flex bg-white rounded-lg p-1 shadow-sm border border-gray-200">
+              <button
+                onClick={() => {
+                  setListType('singly');
+                  resetList('singly');
+                }}
+                disabled={isAnimating}
+                className={`px-3 py-1.5 text-xs sm:text-sm rounded-md transition-all duration-200 font-medium ${
+                  listType === 'singly'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-100'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                Singly Linked
+              </button>
+              <button
+                onClick={() => {
+                  setListType('doubly');
+                  resetList('doubly');
+                }}
+                disabled={isAnimating}
+                className={`px-3 py-1.5 text-xs sm:text-sm rounded-md transition-all duration-200 font-medium ${
+                  listType === 'doubly'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-100'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                Doubly Linked
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <div className="px-3 py-1.5 bg-white rounded-lg text-xs sm:text-sm text-gray-700 border border-gray-200 shadow-sm">
+              Size: <span className="font-bold text-blue-600">{currentNodes.length}</span> /{' '}
+              <span className="font-bold">{maxSize}</span>
+            </div>
+            {currentOperation && (
+              <div className="px-3 py-1.5 bg-blue-100 border border-blue-200 rounded-lg text-xs sm:text-sm text-blue-800 font-medium animate-pulse">
+                {currentOperation}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Complexity Indicator */}
+        <div className="lg:hidden mt-4">
           <ComplexityIndicator
             operation={currentOperation || 'Linked List Operations'}
             timeComplexity={getCurrentComplexity('search').time}
@@ -612,72 +769,33 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
             }
           />
         </div>
-
-        {/* List Type Selector */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-gray-700">List Type:</span>
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                onClick={() => {
-                  setListType('singly');
-                  resetList();
-                }}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  listType === 'singly'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Singly Linked
-              </button>
-              <button
-                onClick={() => {
-                  setListType('doubly');
-                  resetList();
-                }}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                  listType === 'doubly'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Doubly Linked
-              </button>
-            </div>
-          </div>
-
-          <div className="text-sm text-gray-600">
-            Size: <span className="font-bold">{currentNodes.length}</span> / {maxSize}
-          </div>
-        </div>
       </div>
 
-      {/* Main Content: Grid Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 p-6">
+      {/* Main Content: Responsive Grid Layout */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4 sm:gap-6 p-4 sm:p-6">
         {/* Left Side: Linked List Visualization */}
-        <div className="xl:col-span-3">
+        <div className="xl:col-span-3 order-1">
           <div
-            className={`border border-gray-200 rounded-lg p-6 ${
+            className={`border-2 border-gray-200 rounded-xl p-3 sm:p-6 shadow-sm ${
               listType === 'singly'
                 ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50'
                 : 'bg-gradient-to-br from-purple-50 via-white to-violet-50'
             }`}
           >
             {/* List Type Header */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <div className="flex items-center space-x-3">
                   <div
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    className={`px-3 py-1.5 rounded-full text-xs sm:text-sm font-semibold shadow-sm ${
                       listType === 'singly'
-                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                        : 'bg-purple-100 text-purple-800 border border-purple-200'
+                        ? 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+                        : 'bg-purple-100 text-purple-800 border-2 border-purple-300'
                     }`}
                   >
                     {listType === 'singly' ? '🔗 Singly Linked List' : '🔄 Doubly Linked List'}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs sm:text-sm text-gray-600 font-medium">
                     {currentNodes.length} nodes •{' '}
                     {listType === 'doubly' ? 'Bidirectional' : 'Unidirectional'}
                   </div>
@@ -686,10 +804,10 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
             </div>
 
             {/* SVG Visualization */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-hidden rounded-lg border-2 border-gray-200 bg-white shadow-inner">
               <svg
                 viewBox="0 0 1200 400"
-                className="w-full h-80 min-w-[1000px]"
+                className="w-full h-64 sm:h-72 md:h-80 lg:h-96 min-w-[800px] sm:min-w-[1000px]"
                 preserveAspectRatio="xMidYMid meet"
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
@@ -700,8 +818,31 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                   <pattern id="memoryGrid" width="100" height="25" patternUnits="userSpaceOnUse">
                     <rect width="100" height="25" fill="none" stroke="#E5E7EB" strokeWidth="0.5" />
                   </pattern>
+                  {/* Green arrowhead for forward pointers */}
                   <marker
                     id="arrowhead"
+                    markerWidth="12"
+                    markerHeight="8"
+                    refX="11"
+                    refY="4"
+                    orient="auto"
+                  >
+                    <polygon points="0 0, 12 4, 0 8" className="fill-green-600" />
+                  </marker>
+                  {/* Blue arrowhead for backward pointers (doubly linked) */}
+                  <marker
+                    id="arrowhead-reverse"
+                    markerWidth="12"
+                    markerHeight="8"
+                    refX="11"
+                    refY="4"
+                    orient="auto"
+                  >
+                    <polygon points="12 0, 0 4, 12 8" className="fill-blue-600" />
+                  </marker>
+                  {/* Gray arrowhead for head/tail pointers */}
+                  <marker
+                    id="arrowhead-gray"
                     markerWidth="12"
                     markerHeight="8"
                     refX="11"
@@ -711,10 +852,10 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                     <polygon points="0 0, 12 4, 0 8" className="fill-gray-600" />
                   </marker>
                   <marker
-                    id="arrowhead-reverse"
+                    id="arrowhead-reverse-gray"
                     markerWidth="12"
                     markerHeight="8"
-                    refX="1"
+                    refX="11"
                     refY="4"
                     orient="auto"
                   >
@@ -756,7 +897,7 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                       x2={nodePositions[head]?.x - 50 || 100}
                       y2={nodePositions[head]?.y || 180}
                       className="stroke-blue-600 stroke-2"
-                      markerEnd="url(#arrowhead)"
+                      markerEnd="url(#arrowhead-gray)"
                     />
                   </g>
                 )}
@@ -793,7 +934,7 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                       x2={nodePositions[tail]?.x + 50 || 900}
                       y2={nodePositions[tail]?.y || 180}
                       className="stroke-red-600 stroke-2"
-                      markerEnd="url(#arrowhead-reverse)"
+                      markerEnd="url(#arrowhead-reverse-gray)"
                     />
                   </g>
                 )}
@@ -863,48 +1004,25 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                         {node.value}
                       </text>
 
-                      {/* Next pointer */}
+                      {/* Next pointer label */}
                       <text
                         x={position.x + 22.5}
                         y={position.y - 5}
                         textAnchor="middle"
-                        className="text-sm fill-green-600 font-mono"
+                        className="text-xs fill-gray-500 font-mono"
                       >
-                        →
+                        {node.next ? 'next' : '∅'}
                       </text>
 
-                      {/* Prev pointer (doubly linked) */}
+                      {/* Prev pointer label (doubly linked) */}
                       {listType === 'doubly' && (
                         <text
                           x={position.x + 22.5}
                           y={position.y + 15}
                           textAnchor="middle"
-                          className="text-sm fill-blue-600 font-mono"
+                          className="text-xs fill-gray-500 font-mono"
                         >
-                          ←
-                        </text>
-                      )}
-
-                      {/* Null indicators */}
-                      {!node.next && (
-                        <text
-                          x={position.x + 22.5}
-                          y={position.y + 5}
-                          textAnchor="middle"
-                          className="text-sm fill-red-500 font-mono"
-                        >
-                          ∅
-                        </text>
-                      )}
-
-                      {listType === 'doubly' && !node.prev && index > 0 && (
-                        <text
-                          x={position.x + 22.5}
-                          y={position.y + 15}
-                          textAnchor="middle"
-                          className="text-sm fill-red-500 font-mono"
-                        >
-                          ∅
+                          {node.prev ? 'prev' : '∅'}
                         </text>
                       )}
 
@@ -912,9 +1030,9 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                       {nextPosition && (
                         <line
                           x1={position.x + 50}
-                          y1={position.y}
+                          y1={listType === 'doubly' ? position.y - 15 : position.y}
                           x2={nextPosition.x - 50}
-                          y2={nextPosition.y}
+                          y2={listType === 'doubly' ? nextPosition.y - 15 : nextPosition.y}
                           className="stroke-green-600 stroke-2"
                           markerEnd="url(#arrowhead)"
                         />
@@ -924,9 +1042,9 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                       {listType === 'doubly' && prevPosition && (
                         <line
                           x1={position.x - 50}
-                          y1={position.y}
+                          y1={position.y + 15}
                           x2={prevPosition.x + 50}
-                          y2={prevPosition.y}
+                          y2={prevPosition.y + 15}
                           className="stroke-blue-600 stroke-2"
                           markerEnd="url(#arrowhead-reverse)"
                         />
@@ -984,19 +1102,19 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
             </div>
 
             {/* Summary Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mt-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-3 text-blue-900 text-sm font-medium">
-                <span>
+            <div className="flex flex-wrap items-center justify-start sm:justify-between gap-2 sm:gap-4 mt-4 sm:mt-6 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg shadow-sm">
+              <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-3 text-blue-900 text-xs sm:text-sm font-medium w-full sm:w-auto">
+                <span className="bg-white px-2 py-1 rounded shadow-sm">
                   Type: <span className="font-bold capitalize">{listType}</span>
                 </span>
-                <span>
+                <span className="bg-white px-2 py-1 rounded shadow-sm">
                   Size: <span className="font-bold">{currentNodes.length}</span>
                 </span>
-                <span>
-                  Head: <span className="font-bold">{head ? 'Set' : 'Null'}</span>
+                <span className="bg-white px-2 py-1 rounded shadow-sm">
+                  Head: <span className="font-bold">{head ? '✓' : '✗'}</span>
                 </span>
-                <span>
-                  Tail: <span className="font-bold">{tail ? 'Set' : 'Null'}</span>
+                <span className="bg-white px-2 py-1 rounded shadow-sm">
+                  Tail: <span className="font-bold">{tail ? '✓' : '✗'}</span>
                 </span>
               </div>
             </div>
@@ -1004,34 +1122,42 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
         </div>
 
         {/* Right Side: Controls */}
-        <div className="xl:col-span-1 space-y-6">
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6 order-2">
           {/* Animation Controls */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-gray-800 mb-4 flex items-center">
-              <Play className="w-4 h-4 mr-2" />
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-300 rounded-xl p-3 sm:p-4 shadow-md">
+            <h4 className="text-xs sm:text-sm font-bold text-gray-800 mb-3 sm:mb-4 flex items-center">
+              <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-blue-600" />
               Animation Controls
             </h4>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-center space-x-2">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  disabled={isAnimating}
+                  className="p-2 sm:p-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed disabled:transform-none"
                   title={isPlaying ? 'Pause' : 'Play'}
                 >
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {isPlaying ? (
+                    <Pause className="w-3 h-3 sm:w-4 sm:h-4" />
+                  ) : (
+                    <Play className="w-3 h-3 sm:w-4 sm:h-4" />
+                  )}
                 </button>
                 <button
-                  onClick={resetList}
-                  className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
+                  onClick={() => resetList()}
+                  disabled={isAnimating}
+                  className="p-2 sm:p-3 rounded-lg bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   title="Reset"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700" />
                 </button>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 font-medium">Speed:</span>
-                <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+                <span className="text-xs sm:text-sm text-gray-700 font-medium whitespace-nowrap mr-2">
+                  Speed:
+                </span>
+                <div className="flex items-center space-x-2 flex-1">
                   <input
                     type="range"
                     min="0.1"
@@ -1039,18 +1165,21 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                     step="0.1"
                     value={animationSpeed}
                     onChange={(e) => setAnimationSpeed(parseFloat(e.target.value))}
-                    className="w-16 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    className="flex-1 h-2 bg-gradient-to-r from-blue-200 to-blue-400 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                    disabled={isAnimating}
                   />
-                  <span className="text-sm text-gray-600 min-w-[2rem]">{animationSpeed}x</span>
+                  <span className="text-xs sm:text-sm text-gray-700 font-bold min-w-[2.5rem] text-right">
+                    {animationSpeed}x
+                  </span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Operation Controls */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-800 flex items-center">
-              <Zap className="w-4 h-4 mr-2" />
+          <div className="space-y-3 sm:space-y-4">
+            <h4 className="text-xs sm:text-sm font-bold text-gray-800 flex items-center px-1">
+              <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-yellow-600" />
               List Operations
             </h4>
 
@@ -1060,16 +1189,18 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                 e.preventDefault();
                 handleOperation('insert');
               }}
-              className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+              className="bg-white border-2 border-gray-300 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3 shadow-md hover:shadow-lg transition-shadow"
             >
-              <label className="block font-medium text-gray-800 text-sm">Insert Element</label>
+              <label className="block font-bold text-gray-800 text-xs sm:text-sm">
+                Insert Element
+              </label>
               <div className="space-y-2">
                 <input
                   type="number"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="Value"
-                  className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   disabled={isAnimating}
                 />
                 <input
@@ -1079,39 +1210,41 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                   placeholder="Position"
                   min="0"
                   max={currentNodes.length}
-                  className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                   disabled={isAnimating}
                 />
               </div>
               <button
                 type="submit"
                 disabled={isAnimating || !inputValue || currentNodes.length >= maxSize}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none text-xs sm:text-sm"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>Insert</span>
               </button>
             </form>
 
             {/* Delete Operation */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-              <label className="block font-medium text-gray-800 text-sm">Delete Element</label>
+            <div className="bg-white border-2 border-gray-300 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3 shadow-md hover:shadow-lg transition-shadow">
+              <label className="block font-bold text-gray-800 text-xs sm:text-sm">
+                Delete Element
+              </label>
               <input
                 type="number"
-                value={selectedPosition}
-                onChange={(e) => setSelectedPosition(parseInt(e.target.value) || 0)}
-                placeholder="Position"
+                value={deletePosition}
+                onChange={(e) => setDeletePosition(e.target.value)}
+                placeholder="Position (0 to N-1)"
                 min="0"
                 max={currentNodes.length - 1}
-                className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 disabled={isAnimating}
               />
               <button
                 onClick={() => handleOperation('delete')}
-                disabled={isAnimating || currentNodes.length === 0}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                disabled={isAnimating || currentNodes.length === 0 || deletePosition === ''}
+                className="w-full flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none text-xs sm:text-sm"
               >
-                <Minus className="w-4 h-4" />
+                <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>Delete</span>
               </button>
             </div>
@@ -1122,44 +1255,46 @@ export const LinkedListVisualization: React.FC<LinkedListVisualizationProps> = (
                 e.preventDefault();
                 handleOperation('search');
               }}
-              className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+              className="bg-white border-2 border-gray-300 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3 shadow-md hover:shadow-lg transition-shadow"
             >
-              <label className="block font-medium text-gray-800 text-sm">Search Element</label>
+              <label className="block font-bold text-gray-800 text-xs sm:text-sm">
+                Search Element
+              </label>
               <input
                 type="number"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Value"
-                className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 disabled={isAnimating}
               />
               <button
                 type="submit"
                 disabled={isAnimating || !inputValue || currentNodes.length === 0}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none text-xs sm:text-sm"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>Search</span>
               </button>
             </form>
 
             {/* Advanced Operations */}
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <button
                 onClick={() => handleOperation('reverse')}
                 disabled={isAnimating || currentNodes.length <= 1}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>Reverse List</span>
               </button>
 
               <button
                 onClick={() => handleOperation('findMiddle')}
                 disabled={isAnimating || currentNodes.length === 0}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold rounded-lg shadow-md hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none text-xs sm:text-sm"
               >
-                <Target className="w-4 h-4" />
+                <Target className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>Find Middle</span>
               </button>
             </div>

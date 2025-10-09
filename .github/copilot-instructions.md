@@ -32,6 +32,10 @@ src/
 
 ## 🎨 Design System Guidelines
 
+### **Theme System**
+
+**⚠️ Important**: Code Executives operates exclusively in light mode. All dark theme functionality has been completely removed from the application. Use only light theme colors and classes.
+
 ### **Shared Theme System**
 
 Code Executives uses a comprehensive shared theme system located in `src/utils/theme.ts` to ensure design consistency across all sections, pages, and components.
@@ -256,10 +260,10 @@ const EducationalSection: React.FC<SectionProps> = ({ isActive, onNavigate }) =>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Educational content */}
         <div className="space-y-6">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-gray-900">
             Section Title
           </h2>
-          <div className="prose dark:prose-invert">
+          <div className="prose">
             {/* Educational content */}
           </div>
         </div>
@@ -347,10 +351,10 @@ const EducationalSection: React.FC<SectionProps> = ({ isActive, onNavigate }) =>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Left: Educational content */}
         <div className="space-y-6">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-gray-900">
             Section Title
           </h2>
-          <div className="prose dark:prose-invert">
+          <div className="prose">
             {/* Educational content */}
           </div>
         </div>
@@ -505,13 +509,10 @@ const primaryButton = `${buttonStyles} bg-blue-600 hover:bg-blue-700 text-white`
 const secondaryButton = `${buttonStyles} bg-gray-200 hover:bg-gray-300 text-gray-900`;
 
 // Group related classes
-const cardStyles = [
-  'bg-white dark:bg-gray-800',
-  'border border-gray-200 dark:border-gray-700',
-  'rounded-xl shadow-sm',
-  'p-6',
-].join(' ');
+const cardStyles = ['bg-white', 'border border-gray-200', 'rounded-xl shadow-sm', 'p-6'].join(' ');
 ```
+
+**⚠️ Important**: Code Executives operates exclusively in light mode. Do not use `dark:` prefixed Tailwind classes as they have been completely removed from the application.
 
 ## 🐛 Debugging and Troubleshooting
 

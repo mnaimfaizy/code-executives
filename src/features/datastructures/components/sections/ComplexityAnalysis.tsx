@@ -213,30 +213,28 @@ const ComplexityAnalysis: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6 space-y-12">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2 text-red-600 dark:text-red-400">
+        <div className="flex items-center justify-center space-x-2 text-red-600">
           <TrendingUp className="w-8 h-8" />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
             Complexity Analysis
           </h1>
         </div>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Master Big-O notation and understand how different data structures perform as your data
           grows. See why choosing the right data structure matters for performance.
         </p>
       </div>
 
       {/* Big-O Growth Curves */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-              <BarChart3 className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-red-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Big-O Growth Visualization
-              </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <h2 className="text-2xl font-bold text-gray-900">Big-O Growth Visualization</h2>
+              <p className="text-sm text-gray-600">
                 See how different complexities scale with input size
               </p>
             </div>
@@ -244,7 +242,7 @@ const ComplexityAnalysis: React.FC = () => {
 
           <button
             onClick={() => setShowInfo(!showInfo)}
-            className="p-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            className="p-2 text-gray-600 hover:text-red-600 transition-colors"
           >
             <Info className="w-5 h-5" />
           </button>
@@ -252,11 +250,9 @@ const ComplexityAnalysis: React.FC = () => {
 
         {/* Info Panel */}
         {showInfo && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
-            <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-              Understanding Big-O Notation:
-            </h4>
-            <ul className="text-sm text-red-800 dark:text-red-200 space-y-1">
+          <div className="mb-6 p-4 bg-red-50 rounded-lg border border-red-200">
+            <h4 className="font-semibold text-red-900 mb-2">Understanding Big-O Notation:</h4>
+            <ul className="text-sm text-red-800 space-y-1">
               <li>
                 • <strong>O(1)</strong> - Constant time: Always takes the same time
               </li>
@@ -309,13 +305,11 @@ const ComplexityAnalysis: React.FC = () => {
             <span>Reset</span>
           </button>
 
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Progress: {Math.round(animationProgress)}%
-          </div>
+          <div className="text-sm text-gray-600">Progress: {Math.round(animationProgress)}%</div>
         </div>
 
         {/* Growth Curves Chart */}
-        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6">
+        <div className="bg-gray-50 rounded-lg p-6">
           <svg viewBox="0 0 400 200" className="w-full h-64">
             {/* Grid lines */}
             <defs>
@@ -348,19 +342,14 @@ const ComplexityAnalysis: React.FC = () => {
             ))}
 
             {/* Labels */}
-            <text
-              x="200"
-              y="195"
-              textAnchor="middle"
-              className="text-xs fill-gray-600 dark:fill-gray-400"
-            >
+            <text x="200" y="195" textAnchor="middle" className="text-xs fill-gray-600">
               Input Size (n)
             </text>
             <text
               x="5"
               y="100"
               textAnchor="middle"
-              className="text-xs fill-gray-600 dark:fill-gray-400"
+              className="text-xs fill-gray-600"
               transform="rotate(-90 5 100)"
             >
               Time/Operations
@@ -375,7 +364,7 @@ const ComplexityAnalysis: React.FC = () => {
                   className="w-4 h-1 rounded"
                   style={{ backgroundColor: getComplexityColor(complexity) }}
                 ></div>
-                <span className="text-sm text-gray-700 dark:text-gray-300">{complexity}</span>
+                <span className="text-sm text-gray-700">{complexity}</span>
               </div>
             ))}
           </div>
@@ -383,18 +372,14 @@ const ComplexityAnalysis: React.FC = () => {
       </div>
 
       {/* Interactive Complexity Calculator */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-            <Calculator className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <Calculator className="w-4 h-4 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Complexity Calculator
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Calculate operations for different input sizes
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900">Complexity Calculator</h2>
+            <p className="text-sm text-gray-600">Calculate operations for different input sizes</p>
           </div>
         </div>
 
@@ -402,7 +387,7 @@ const ComplexityAnalysis: React.FC = () => {
           {/* Input Controls */}
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Input Size (n):
               </label>
               <input
@@ -411,24 +396,24 @@ const ComplexityAnalysis: React.FC = () => {
                 max="100"
                 value={inputSize}
                 onChange={(e) => setInputSize(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>1</span>
-                <span className="font-medium text-blue-600 dark:text-blue-400">{inputSize}</span>
+                <span className="font-medium text-blue-600">{inputSize}</span>
                 <span>100</span>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Complexity Function:
               </label>
               <select
                 value={selectedComplexity}
                 onChange={(e) => setSelectedComplexity(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                         bg-white text-gray-900
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="O(1)">O(1) - Constant</option>
@@ -443,19 +428,17 @@ const ComplexityAnalysis: React.FC = () => {
 
           {/* Results */}
           <div className="space-y-6">
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Calculation Results
-              </h3>
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Calculation Results</h3>
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Input Size:</span>
-                  <span className="font-bold text-gray-900 dark:text-white">{inputSize}</span>
+                  <span className="text-gray-600">Input Size:</span>
+                  <span className="font-bold text-gray-900">{inputSize}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600 dark:text-gray-400">Complexity:</span>
+                  <span className="text-gray-600">Complexity:</span>
                   <span
                     className="font-bold"
                     style={{ color: getComplexityColor(selectedComplexity) }}
@@ -464,9 +447,9 @@ const ComplexityAnalysis: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex justify-between items-center border-t border-gray-200 dark:border-gray-600 pt-3">
-                  <span className="text-gray-600 dark:text-gray-400">Operations:</span>
-                  <span className="font-bold text-xl text-gray-900 dark:text-white">
+                <div className="flex justify-between items-center border-t border-gray-200 pt-3">
+                  <span className="text-gray-600">Operations:</span>
+                  <span className="font-bold text-xl text-gray-900">
                     {Math.round(
                       calculateComplexity(selectedComplexity, inputSize)
                     ).toLocaleString()}
@@ -476,8 +459,8 @@ const ComplexityAnalysis: React.FC = () => {
             </div>
 
             {/* Comparison with other complexities */}
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-              <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-3">
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h4 className="text-md font-semibold text-gray-900 mb-3">
                 Comparison at n = {inputSize}
               </h4>
 
@@ -490,9 +473,7 @@ const ComplexityAnalysis: React.FC = () => {
                     <div
                       key={complexity}
                       className={`flex justify-between items-center px-3 py-2 rounded ${
-                        isSelected
-                          ? 'bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800'
-                          : ''
+                        isSelected ? 'bg-blue-100 border border-blue-200' : ''
                       }`}
                     >
                       <span
@@ -501,7 +482,7 @@ const ComplexityAnalysis: React.FC = () => {
                       >
                         {complexity}
                       </span>
-                      <span className="text-sm font-bold text-gray-900 dark:text-white">
+                      <span className="text-sm font-bold text-gray-900">
                         {operations.toLocaleString()}
                       </span>
                     </div>
@@ -514,16 +495,16 @@ const ComplexityAnalysis: React.FC = () => {
       </div>
 
       {/* Data Structure Complexity Comparison */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
         <div className="flex items-center space-x-3 mb-6">
-          <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-            <Clock className="w-4 h-4 text-green-600 dark:text-green-400" />
+          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <Clock className="w-4 h-4 text-green-600" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-2xl font-bold text-gray-900">
               Data Structure Performance Comparison
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600">
               Compare time complexities across different operations
             </p>
           </div>
@@ -536,7 +517,7 @@ const ComplexityAnalysis: React.FC = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeComparison === 'time'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             Time Complexity
@@ -546,7 +527,7 @@ const ComplexityAnalysis: React.FC = () => {
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeComparison === 'space'
                 ? 'bg-green-600 text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             Space Complexity
@@ -557,29 +538,17 @@ const ComplexityAnalysis: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-700">
-                <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                  Data Structure
-                </th>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Data Structure</th>
                 {activeComparison === 'time' ? (
                   <>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                      Access
-                    </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                      Search
-                    </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                      Insertion
-                    </th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                      Deletion
-                    </th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-900">Access</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-900">Search</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-900">Insertion</th>
+                    <th className="text-center py-3 px-4 font-semibold text-gray-900">Deletion</th>
                   </>
                 ) : (
-                  <th className="text-center py-3 px-4 font-semibold text-gray-900 dark:text-white">
-                    Space
-                  </th>
+                  <th className="text-center py-3 px-4 font-semibold text-gray-900">Space</th>
                 )}
               </tr>
             </thead>
@@ -587,9 +556,7 @@ const ComplexityAnalysis: React.FC = () => {
               {dataStructures.map((ds, index) => (
                 <tr
                   key={ds.name}
-                  className={`border-b border-gray-100 dark:border-gray-700 ${
-                    index % 2 === 0 ? 'bg-gray-50 dark:bg-gray-750' : ''
-                  }`}
+                  className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-gray-50' : ''}`}
                 >
                   <td className="py-3 px-4">
                     <div className="flex items-center space-x-3">
@@ -597,7 +564,7 @@ const ComplexityAnalysis: React.FC = () => {
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: ds.color }}
                       ></div>
-                      <span className="font-medium text-gray-900 dark:text-white">{ds.name}</span>
+                      <span className="font-medium text-gray-900">{ds.name}</span>
                     </div>
                   </td>
                   {activeComparison === 'time' ? (
@@ -668,53 +635,51 @@ const ComplexityAnalysis: React.FC = () => {
       </div>
 
       {/* Key Insights */}
-      <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Key Performance Insights
-        </h2>
+      <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Key Performance Insights</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <div className="w-6 h-6 bg-green-100 dark:bg-green-900/30 rounded mr-2 flex items-center justify-center">
-                <span className="text-xs font-bold text-green-600 dark:text-green-400">⚡</span>
+          <div className="bg-white rounded-lg p-6">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <div className="w-6 h-6 bg-green-100 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs font-bold text-green-600">⚡</span>
               </div>
               Constant Time O(1)
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm text-gray-600 mb-2">
               The holy grail of performance - execution time doesn't change with input size.
             </p>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-gray-500">
               <strong>Examples:</strong> Array access, Hash table operations
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900/30 rounded mr-2 flex items-center justify-center">
-                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">📈</span>
+          <div className="bg-white rounded-lg p-6">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <div className="w-6 h-6 bg-blue-100 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs font-bold text-blue-600">📈</span>
               </div>
               Logarithmic O(log n)
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm text-gray-600 mb-2">
               Excellent scalability - doubles input size, adds just one more step.
             </p>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-gray-500">
               <strong>Examples:</strong> Binary search, Balanced tree operations
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-              <div className="w-6 h-6 bg-red-100 dark:bg-red-900/30 rounded mr-2 flex items-center justify-center">
-                <span className="text-xs font-bold text-red-600 dark:text-red-400">⚠️</span>
+          <div className="bg-white rounded-lg p-6">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center">
+              <div className="w-6 h-6 bg-red-100 rounded mr-2 flex items-center justify-center">
+                <span className="text-xs font-bold text-red-600">⚠️</span>
               </div>
               Quadratic O(n²)
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm text-gray-600 mb-2">
               Performance degrades quickly - avoid for large datasets.
             </p>
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="text-xs text-gray-500">
               <strong>Examples:</strong> Nested loops, Bubble sort
             </div>
           </div>

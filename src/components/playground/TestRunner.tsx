@@ -38,8 +38,8 @@ const TestRunner: React.FC<TestRunnerProps> = ({
       return {
         icon: <Clock className="w-4 h-4" />,
         color: 'text-gray-400',
-        bgColor: 'bg-gray-100 dark:bg-gray-800',
-        borderColor: 'border-gray-200 dark:border-gray-700',
+        bgColor: 'bg-gray-100',
+        borderColor: 'border-gray-200',
         status: 'Not run',
       };
     }
@@ -47,17 +47,17 @@ const TestRunner: React.FC<TestRunnerProps> = ({
     if (result.passed) {
       return {
         icon: <CheckCircle className="w-4 h-4" />,
-        color: 'text-green-600 dark:text-green-400',
-        bgColor: 'bg-green-50 dark:bg-green-900/20',
-        borderColor: 'border-green-200 dark:border-green-800',
+        color: 'text-green-600',
+        bgColor: 'bg-green-50',
+        borderColor: 'border-green-200',
         status: 'Passed',
       };
     } else {
       return {
         icon: <XCircle className="w-4 h-4" />,
-        color: 'text-red-600 dark:text-red-400',
-        bgColor: 'bg-red-50 dark:bg-red-900/20',
-        borderColor: 'border-red-200 dark:border-red-800',
+        color: 'text-red-600',
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-200',
         status: 'Failed',
       };
     }
@@ -161,14 +161,14 @@ const TestRunner: React.FC<TestRunnerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Play className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          <span className="font-medium text-gray-900 dark:text-white">Test Results</span>
+          <Play className="w-5 h-5 text-gray-600" />
+          <span className="font-medium text-gray-900">Test Results</span>
         </div>
 
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+            className="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
           >
             {showDetails ? 'Hide Details' : 'Show Details'}
           </button>
@@ -194,17 +194,17 @@ const TestRunner: React.FC<TestRunnerProps> = ({
       </div>
 
       {/* Overall Progress */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="bg-white p-6 rounded-lg border border-gray-200">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Test Progress</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Test Progress</h3>
           <div className="text-right">
             <div className="text-2xl font-bold text-blue-600">{passRate.toFixed(1)}%</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Pass Rate</div>
+            <div className="text-sm text-gray-600">Pass Rate</div>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
           <div
             className="bg-green-600 h-3 rounded-full transition-all duration-300"
             style={{ width: `${passRate}%` }}
@@ -215,48 +215,44 @@ const TestRunner: React.FC<TestRunnerProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{passedTests}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Passed</div>
+            <div className="text-sm text-gray-600">Passed</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-red-600">{failedTests}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Failed</div>
+            <div className="text-sm text-gray-600">Failed</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-600">{notRunTests}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Not Run</div>
+            <div className="text-sm text-gray-600">Not Run</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{totalTests}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
+            <div className="text-sm text-gray-600">Total</div>
           </div>
         </div>
       </div>
 
       {/* Performance Summary */}
       {results.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
           <div className="flex items-center space-x-2 mb-4">
             <TrendingUp className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Performance Summary
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Performance Summary</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="text-center">
               <div className="text-xl font-bold text-blue-600">{avgExecutionTime.toFixed(2)}ms</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Avg Execution Time</div>
-              <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                Max: {maxExecutionTime.toFixed(2)}ms
-              </div>
+              <div className="text-sm text-gray-600">Avg Execution Time</div>
+              <div className="text-xs text-gray-500 mt-1">Max: {maxExecutionTime.toFixed(2)}ms</div>
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-green-600">{avgMemoryUsage.toFixed(2)}MB</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Avg Memory Usage</div>
+              <div className="text-sm text-gray-600">Avg Memory Usage</div>
             </div>
             <div className="text-center">
               <div className="text-xl font-bold text-purple-600">{results.length}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Tests Completed</div>
+              <div className="text-sm text-gray-600">Tests Completed</div>
             </div>
           </div>
         </div>
@@ -264,10 +260,10 @@ const TestRunner: React.FC<TestRunnerProps> = ({
 
       {/* Test Categories */}
       {showDetails && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="bg-white p-6 rounded-lg border border-gray-200">
           <div className="flex items-center space-x-2 mb-4">
             <Target className="w-5 h-5 text-orange-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Test Categories</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Test Categories</h3>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -277,14 +273,9 @@ const TestRunner: React.FC<TestRunnerProps> = ({
               ).length;
 
               return (
-                <div
-                  key={category}
-                  className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                >
-                  <div className="text-lg font-bold text-gray-900 dark:text-white capitalize">
-                    {category}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div key={category} className="text-center p-3 bg-gray-50 rounded-lg">
+                  <div className="text-lg font-bold text-gray-900 capitalize">{category}</div>
+                  <div className="text-sm text-gray-600">
                     {passedInCategory}/{tests.length} passed
                   </div>
                 </div>
@@ -297,15 +288,15 @@ const TestRunner: React.FC<TestRunnerProps> = ({
       {/* Test Case Details */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Test Cases</h3>
-          <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+          <h3 className="text-lg font-semibold text-gray-900">Test Cases</h3>
+          <div className="flex items-center space-x-2 text-sm text-gray-600">
             <BarChart3 className="w-4 h-4" />
             <span>Click test cases for details</span>
           </div>
         </div>
 
         {testCases.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-8 text-gray-500">
             <AlertTriangle className="w-12 h-12 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No test cases available</p>
           </div>
@@ -323,7 +314,7 @@ const TestRunner: React.FC<TestRunnerProps> = ({
                   className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                     isSelected
                       ? `${borderColor} ${bgColor}`
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
                   onClick={() => setSelectedTestCase(isSelected ? null : testCase.id)}
                 >
@@ -333,16 +324,14 @@ const TestRunner: React.FC<TestRunnerProps> = ({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            Test Case {index + 1}
-                          </span>
+                          <span className="font-medium text-gray-900">Test Case {index + 1}</span>
                           <span
                             className={`text-sm px-2 py-1 rounded-full ${color} ${bgColor} border ${borderColor}`}
                           >
                             {status}
                           </span>
                           {result && (
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className="text-xs text-gray-500">
                               {result.executionTime.toFixed(2)}ms
                             </span>
                           )}
@@ -350,10 +339,8 @@ const TestRunner: React.FC<TestRunnerProps> = ({
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-2">
                           <div>
-                            <span className="font-medium text-gray-600 dark:text-gray-400">
-                              Input:
-                            </span>
-                            <code className="ml-2 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-gray-800 dark:text-gray-200 text-xs break-all">
+                            <span className="font-medium text-gray-600">Input:</span>
+                            <code className="ml-2 px-2 py-1 bg-gray-100 rounded text-gray-800 text-xs break-all">
                               {Array.isArray(testCase.input)
                                 ? JSON.stringify(testCase.input)
                                 : String(testCase.input)}
@@ -361,10 +348,8 @@ const TestRunner: React.FC<TestRunnerProps> = ({
                           </div>
 
                           <div>
-                            <span className="font-medium text-gray-600 dark:text-gray-400">
-                              Expected:
-                            </span>
-                            <code className="ml-2 px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-gray-800 dark:text-gray-200 text-xs break-all">
+                            <span className="font-medium text-gray-600">Expected:</span>
+                            <code className="ml-2 px-2 py-1 bg-gray-100 rounded text-gray-800 text-xs break-all">
                               {JSON.stringify(testCase.expectedOutput)}
                             </code>
                           </div>
@@ -372,14 +357,12 @@ const TestRunner: React.FC<TestRunnerProps> = ({
 
                         {result && (
                           <div className="mb-2">
-                            <span className="font-medium text-gray-600 dark:text-gray-400">
-                              Actual:
-                            </span>
+                            <span className="font-medium text-gray-600">Actual:</span>
                             <code
                               className={`ml-2 px-2 py-1 rounded text-xs break-all ${
                                 result.passed
-                                  ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
-                                  : 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
                               }`}
                             >
                               {JSON.stringify(result.actualOutput)}
@@ -389,14 +372,14 @@ const TestRunner: React.FC<TestRunnerProps> = ({
 
                         {/* Hints for failed tests */}
                         {hints.length > 0 && (
-                          <div className="mt-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md border border-yellow-200 dark:border-yellow-800">
+                          <div className="mt-3 p-3 bg-yellow-50 rounded-md border border-yellow-200">
                             <div className="flex items-start space-x-2">
                               <Lightbulb className="w-4 h-4 text-yellow-600 mt-0.5 flex-shrink-0" />
                               <div>
-                                <div className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-1">
+                                <div className="text-sm font-medium text-yellow-800 mb-1">
                                   Hints for this test case:
                                 </div>
-                                <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                                <ul className="text-sm text-yellow-700 space-y-1">
                                   {hints.map((hint, hintIndex) => (
                                     <li key={hintIndex}>• {hint}</li>
                                   ))}
@@ -408,14 +391,14 @@ const TestRunner: React.FC<TestRunnerProps> = ({
 
                         {/* Error message */}
                         {result && result.executionResult.error && (
-                          <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-200 dark:border-red-800">
+                          <div className="mt-3 p-3 bg-red-50 rounded-md border border-red-200">
                             <div className="flex items-start space-x-2">
                               <AlertTriangle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
                               <div>
-                                <div className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
+                                <div className="text-sm font-medium text-red-800 mb-1">
                                   Runtime Error:
                                 </div>
-                                <div className="text-sm text-red-700 dark:text-red-300 font-mono">
+                                <div className="text-sm text-red-700 font-mono">
                                   {result.executionResult.error.message}
                                 </div>
                               </div>

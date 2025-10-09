@@ -683,26 +683,22 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 ${className}`}>
+    <div className={`bg-white rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
             <div className="w-4 h-4 bg-purple-600 rounded"></div>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              B-Tree (Degree {degree})
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Balanced multi-way search tree
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900">B-Tree (Degree {degree})</h3>
+            <p className="text-sm text-gray-600">Balanced multi-way search tree</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="p-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+          className="p-2 text-gray-600 hover:text-purple-600 transition-colors"
         >
           <Info className="w-5 h-5" />
         </button>
@@ -710,11 +706,11 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
 
       {/* Info Panel */}
       {showInfo && (
-        <div className="mb-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-          <h4 className="font-semibold text-purple-900 dark:text-purple-100 mb-2">
+        <div className="mb-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <h4 className="font-semibold text-purple-900 mb-2">
             B-Tree Properties (Degree {degree}):
           </h4>
-          <ul className="text-sm text-purple-800 dark:text-purple-200 space-y-1">
+          <ul className="text-sm text-purple-800 space-y-1">
             <li>• Min keys per node: {minKeys} (except root)</li>
             <li>• Max keys per node: {maxKeys}</li>
             <li>• All leaves at same level</li>
@@ -732,8 +728,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
             value={insertValue}
             onChange={(e) => setInsertValue(e.target.value)}
             placeholder="Insert value"
-            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+            className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm
+                     bg-white text-gray-900
                      focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             onKeyPress={(e) => e.key === 'Enter' && handleInsert()}
           />
@@ -756,8 +752,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
             value={deleteValue}
             onChange={(e) => setDeleteValue(e.target.value)}
             placeholder="Delete value"
-            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+            className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm
+                     bg-white text-gray-900
                      focus:ring-2 focus:ring-red-500 focus:border-transparent"
             onKeyPress={(e) => e.key === 'Enter' && handleDelete()}
           />
@@ -780,8 +776,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Search value"
-            className="w-28 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+            className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm
+                     bg-white text-gray-900
                      focus:ring-2 focus:ring-green-500 focus:border-transparent"
             onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
           />
@@ -828,31 +824,31 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
         <div
           className={`mb-4 p-3 rounded-lg border ${
             animationState === 'found'
-              ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+              ? 'bg-amber-50 border-amber-200'
               : animationState === 'searching'
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                ? 'bg-green-50 border-green-200'
                 : animationState === 'deleting'
-                  ? 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  ? 'bg-red-50 border-red-200'
                   : animationState === 'borrowing'
-                    ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                    ? 'bg-amber-50 border-amber-200'
                     : animationState === 'merging'
-                      ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
-                      : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+                      ? 'bg-orange-50 border-orange-200'
+                      : 'bg-blue-50 border-blue-200'
           }`}
         >
           <p
             className={`text-sm font-medium ${
               animationState === 'found'
-                ? 'text-amber-800 dark:text-amber-200'
+                ? 'text-amber-800'
                 : animationState === 'searching'
-                  ? 'text-green-800 dark:text-green-200'
+                  ? 'text-green-800'
                   : animationState === 'deleting'
-                    ? 'text-red-800 dark:text-red-200'
+                    ? 'text-red-800'
                     : animationState === 'borrowing'
-                      ? 'text-amber-800 dark:text-amber-200'
+                      ? 'text-amber-800'
                       : animationState === 'merging'
-                        ? 'text-orange-800 dark:text-orange-200'
-                        : 'text-blue-800 dark:text-blue-200'
+                        ? 'text-orange-800'
+                        : 'text-blue-800'
             }`}
           >
             {message}
@@ -861,10 +857,10 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
       )}
 
       {/* Tree Visualization */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-lg">
+      <div className="border border-gray-200 rounded-xl overflow-hidden shadow-lg">
         <svg
           viewBox={`0 0 ${CANVAS_WIDTH} ${CANVAS_HEIGHT}`}
-          className="w-full bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800"
+          className="w-full bg-gradient-to-br from-gray-50 to-white"
         >
           {/* Gradient definitions */}
           <defs>
@@ -971,8 +967,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
       </div>
 
       {/* Legend */}
-      <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
-        <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+      <div className="mt-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-200">
+        <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
           <span className="mr-2">🎨</span>
           Node States Legend
         </h4>
@@ -983,17 +979,15 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #9333EA, #7C3AED)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Root Node</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Tree root</div>
+              <div className="text-sm font-semibold text-gray-900">Root Node</div>
+              <div className="text-xs text-gray-600">Tree root</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <div className="w-16 h-10 bg-white dark:bg-gray-700 rounded-lg border-2 border-gray-400"></div>
+            <div className="w-16 h-10 bg-white rounded-lg border-2 border-gray-400"></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                Regular Node
-              </div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Normal node</div>
+              <div className="text-sm font-semibold text-gray-900">Regular Node</div>
+              <div className="text-xs text-gray-600">Normal node</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1002,8 +996,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #A855F7, #9333EA)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Inserting</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">During insert</div>
+              <div className="text-sm font-semibold text-gray-900">Inserting</div>
+              <div className="text-xs text-gray-600">During insert</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1012,8 +1006,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #10B981, #059669)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Searching</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Search path</div>
+              <div className="text-sm font-semibold text-gray-900">Searching</div>
+              <div className="text-xs text-gray-600">Search path</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1022,8 +1016,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #F59E0B, #D97706)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Found</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Target found</div>
+              <div className="text-sm font-semibold text-gray-900">Found</div>
+              <div className="text-xs text-gray-600">Target found</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1032,8 +1026,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #EF4444, #DC2626)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Deleting</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Being removed</div>
+              <div className="text-sm font-semibold text-gray-900">Deleting</div>
+              <div className="text-xs text-gray-600">Being removed</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1042,8 +1036,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #FBBF24, #F59E0B)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Borrowing</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Key borrowed</div>
+              <div className="text-sm font-semibold text-gray-900">Borrowing</div>
+              <div className="text-xs text-gray-600">Key borrowed</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1052,8 +1046,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #FB923C, #F97316)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Merging</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Nodes merged</div>
+              <div className="text-sm font-semibold text-gray-900">Merging</div>
+              <div className="text-xs text-gray-600">Nodes merged</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1062,8 +1056,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #F59E0B, #F97316)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Splitting</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Node split</div>
+              <div className="text-sm font-semibold text-gray-900">Splitting</div>
+              <div className="text-xs text-gray-600">Node split</div>
             </div>
           </div>
           <div className="flex items-center space-x-3">
@@ -1072,8 +1066,8 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
               style={{ background: 'linear-gradient(to bottom, #06B6D4, #0891B2)' }}
             ></div>
             <div>
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">Promoted</div>
-              <div className="text-xs text-gray-600 dark:text-gray-400">Key moved up</div>
+              <div className="text-sm font-semibold text-gray-900">Promoted</div>
+              <div className="text-xs text-gray-600">Key moved up</div>
             </div>
           </div>
         </div>

@@ -267,7 +267,7 @@ export interface NextJSConfig {
   showPerformance: boolean;
   showComplexity: boolean;
   animationSpeed: number;
-  colorScheme: 'default' | 'colorblind' | 'dark' | 'light';
+  colorScheme: 'default' | 'colorblind' | 'light';
   language: 'javascript' | 'typescript';
   theme: 'nextjs' | 'custom';
 }

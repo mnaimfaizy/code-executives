@@ -309,7 +309,7 @@ export interface DataStructureConfig {
   showPointers: boolean;
   showComplexity: boolean;
   animationSpeed: number;
-  colorScheme: 'default' | 'colorblind' | 'dark' | 'light';
+  colorScheme: 'default' | 'colorblind' | 'light';
   language: 'javascript' | 'python' | 'java' | 'typescript';
 }
 

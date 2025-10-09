@@ -197,13 +197,13 @@ const RealWorldApplications: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6 space-y-12">
       {/* Header */}
       <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400">
+        <div className="flex items-center justify-center space-x-2 text-green-600">
           <Code className="w-8 h-8" />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
             Real-World Applications
           </h1>
         </div>
-        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Discover how data structures power the applications you use every day. From social media
           to GPS navigation, see the practical impact of choosing the right structure.
         </p>
@@ -211,13 +211,13 @@ const RealWorldApplications: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="flex justify-center">
-        <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+        <div className="flex bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setActiveTab('showcase')}
             className={`px-6 py-3 rounded-md font-medium transition-colors ${
               activeTab === 'showcase'
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Industry Showcase
@@ -226,8 +226,8 @@ const RealWorldApplications: React.FC = () => {
             onClick={() => setActiveTab('benchmarks')}
             className={`px-6 py-3 rounded-md font-medium transition-colors ${
               activeTab === 'benchmarks'
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Performance Benchmarks
@@ -236,8 +236,8 @@ const RealWorldApplications: React.FC = () => {
             onClick={() => setActiveTab('recommender')}
             className={`px-6 py-3 rounded-md font-medium transition-colors ${
               activeTab === 'recommender'
-                ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ? 'bg-white text-gray-900 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
             }`}
           >
             Recommendation Engine
@@ -256,8 +256,8 @@ const RealWorldApplications: React.FC = () => {
                 onClick={() => setSelectedUseCase(useCase.id)}
                 className={`p-4 rounded-lg border-2 transition-all text-left ${
                   selectedUseCase === useCase.id
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
                 <div className="flex items-center space-x-3 mb-2">
@@ -265,10 +265,8 @@ const RealWorldApplications: React.FC = () => {
                     <div style={{ color: useCase.color }}>{useCase.icon}</div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">
-                      {useCase.title}
-                    </h3>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">{useCase.industry}</p>
+                    <h3 className="font-semibold text-gray-900 text-sm">{useCase.title}</h3>
+                    <p className="text-xs text-gray-600">{useCase.industry}</p>
                   </div>
                 </div>
               </button>
@@ -276,7 +274,7 @@ const RealWorldApplications: React.FC = () => {
           </div>
 
           {/* Selected Use Case Details */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column */}
               <div className="space-y-6">
@@ -288,75 +286,63 @@ const RealWorldApplications: React.FC = () => {
                     <div style={{ color: selectedCase.color }}>{selectedCase.icon}</div>
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {selectedCase.title}
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-400">{selectedCase.industry}</p>
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedCase.title}</h2>
+                    <p className="text-gray-600">{selectedCase.industry}</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Description
-                  </h3>
-                  <p className="text-gray-700 dark:text-gray-300">{selectedCase.description}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                  <p className="text-gray-700">{selectedCase.description}</p>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Data Structure Choice
                   </h3>
-                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                    <div className="font-mono text-lg font-bold text-blue-600 dark:text-blue-400 mb-2">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="font-mono text-lg font-bold text-blue-600 mb-2">
                       {selectedCase.dataStructure}
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {selectedCase.reasoning}
-                    </p>
+                    <p className="text-sm text-gray-600">{selectedCase.reasoning}</p>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Real Examples
-                  </h3>
-                  <p className="text-gray-700 dark:text-gray-300 italic">{selectedCase.example}</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Real Examples</h3>
+                  <p className="text-gray-700 italic">{selectedCase.example}</p>
                 </div>
               </div>
 
               {/* Right Column */}
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    Performance Analysis
-                  </h3>
-                  <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
-                    <div className="font-mono text-sm font-bold text-orange-600 dark:text-orange-400">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Performance Analysis</h3>
+                  <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
+                    <div className="font-mono text-sm font-bold text-orange-600">
                       {selectedCase.complexity}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Key Benefits
-                  </h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Key Benefits</h3>
                   <div className="space-y-2">
                     {selectedCase.benefits.map((benefit, index) => (
                       <div key={index} className="flex items-center space-x-3">
                         <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                        <span className="text-gray-700 dark:text-gray-300">{benefit}</span>
+                        <span className="text-gray-700">{benefit}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-lg p-6">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-2 flex items-center">
+                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-2 flex items-center">
                     <TrendingUp className="w-5 h-5 mr-2 text-green-600" />
                     Industry Impact
                   </h4>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <p className="text-sm text-gray-700">
                     This application pattern processes millions of operations daily, demonstrating
                     the critical importance of efficient data structure selection in production
                     systems.
@@ -371,94 +357,86 @@ const RealWorldApplications: React.FC = () => {
       {/* Performance Benchmarks Tab */}
       {activeTab === 'benchmarks' && (
         <div className="space-y-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <Zap className="w-6 h-6 mr-2 text-yellow-600" />
               Performance Benchmarks
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Small Dataset */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-                  Small Dataset (1K items)
-                </h3>
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Small Dataset (1K items)</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Array Access</span>
-                    <span className="font-mono text-green-600 dark:text-green-400">~1ns</span>
+                    <span className="text-sm text-gray-600">Array Access</span>
+                    <span className="font-mono text-green-600">~1ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Hash Lookup</span>
-                    <span className="font-mono text-green-600 dark:text-green-400">~5ns</span>
+                    <span className="text-sm text-gray-600">Hash Lookup</span>
+                    <span className="font-mono text-green-600">~5ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">BST Search</span>
-                    <span className="font-mono text-blue-600 dark:text-blue-400">~10ns</span>
+                    <span className="text-sm text-gray-600">BST Search</span>
+                    <span className="font-mono text-blue-600">~10ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Linear Search</span>
-                    <span className="font-mono text-orange-600 dark:text-orange-400">~500ns</span>
+                    <span className="text-sm text-gray-600">Linear Search</span>
+                    <span className="font-mono text-orange-600">~500ns</span>
                   </div>
                 </div>
               </div>
 
               {/* Medium Dataset */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-                  Medium Dataset (1M items)
-                </h3>
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Medium Dataset (1M items)</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Array Access</span>
-                    <span className="font-mono text-green-600 dark:text-green-400">~1ns</span>
+                    <span className="text-sm text-gray-600">Array Access</span>
+                    <span className="font-mono text-green-600">~1ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Hash Lookup</span>
-                    <span className="font-mono text-green-600 dark:text-green-400">~5ns</span>
+                    <span className="text-sm text-gray-600">Hash Lookup</span>
+                    <span className="font-mono text-green-600">~5ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">BST Search</span>
-                    <span className="font-mono text-blue-600 dark:text-blue-400">~20ns</span>
+                    <span className="text-sm text-gray-600">BST Search</span>
+                    <span className="font-mono text-blue-600">~20ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Linear Search</span>
-                    <span className="font-mono text-red-600 dark:text-red-400">~500μs</span>
+                    <span className="text-sm text-gray-600">Linear Search</span>
+                    <span className="font-mono text-red-600">~500μs</span>
                   </div>
                 </div>
               </div>
 
               {/* Large Dataset */}
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-4">
-                  Large Dataset (1B items)
-                </h3>
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Large Dataset (1B items)</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Array Access</span>
-                    <span className="font-mono text-green-600 dark:text-green-400">~1ns</span>
+                    <span className="text-sm text-gray-600">Array Access</span>
+                    <span className="font-mono text-green-600">~1ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Hash Lookup</span>
-                    <span className="font-mono text-green-600 dark:text-green-400">~5ns</span>
+                    <span className="text-sm text-gray-600">Hash Lookup</span>
+                    <span className="font-mono text-green-600">~5ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">BST Search</span>
-                    <span className="font-mono text-blue-600 dark:text-blue-400">~30ns</span>
+                    <span className="text-sm text-gray-600">BST Search</span>
+                    <span className="font-mono text-blue-600">~30ns</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">Linear Search</span>
-                    <span className="font-mono text-red-600 dark:text-red-400">~500ms</span>
+                    <span className="text-sm text-gray-600">Linear Search</span>
+                    <span className="font-mono text-red-600">~500ms</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
-              <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                Key Insights from Benchmarks:
-              </h4>
-              <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+            <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200">
+              <h4 className="font-semibold text-blue-900 mb-2">Key Insights from Benchmarks:</h4>
+              <ul className="text-sm text-blue-800 space-y-1">
                 <li>• Hash tables maintain O(1) performance regardless of dataset size</li>
                 <li>• Binary search trees scale logarithmically - ideal for sorted data</li>
                 <li>• Array access is unbeatable for indexed operations</li>
@@ -472,8 +450,8 @@ const RealWorldApplications: React.FC = () => {
       {/* Recommendation Engine Tab */}
       {activeTab === 'recommender' && (
         <div className="space-y-8">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
               <Brain className="w-6 h-6 mr-2 text-purple-600" />
               Data Structure Recommendation Engine
             </h2>
@@ -482,7 +460,7 @@ const RealWorldApplications: React.FC = () => {
               {/* Input Form */}
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Expected Data Size:
                   </label>
                   <select
@@ -493,8 +471,8 @@ const RealWorldApplications: React.FC = () => {
                         dataSize: e.target.value as 'small' | 'medium' | 'large',
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                             bg-white text-gray-900
                              focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="small">Small (&lt; 1K items)</option>
@@ -504,7 +482,7 @@ const RealWorldApplications: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Primary Operations (select multiple):
                   </label>
                   <div className="space-y-2">
@@ -527,16 +505,14 @@ const RealWorldApplications: React.FC = () => {
                           }}
                           className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                         />
-                        <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                          {op.label}
-                        </span>
+                        <span className="ml-2 text-sm text-gray-700">{op.label}</span>
                       </label>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Performance Priority:
                   </label>
                   <select
@@ -547,8 +523,8 @@ const RealWorldApplications: React.FC = () => {
                         performance: e.target.value as 'fast-read' | 'fast-write' | 'balanced',
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                             bg-white text-gray-900
                              focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="fast-read">Fast Read Operations</option>
@@ -558,7 +534,7 @@ const RealWorldApplications: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Memory Constraints:
                   </label>
                   <select
@@ -569,8 +545,8 @@ const RealWorldApplications: React.FC = () => {
                         memory: e.target.value as 'low' | 'medium' | 'high',
                       }))
                     }
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg
+                             bg-white text-gray-900
                              focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="low">Low Memory Available</option>
@@ -582,19 +558,19 @@ const RealWorldApplications: React.FC = () => {
 
               {/* Recommendation Results */}
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
-                  <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-100 mb-4 flex items-center">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-200">
+                  <h3 className="text-lg font-semibold text-purple-900 mb-4 flex items-center">
                     <ArrowRight className="w-5 h-5 mr-2" />
                     Recommended Data Structure
                   </h3>
 
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4">
-                    <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                  <div className="bg-white rounded-lg p-4 mb-4">
+                    <div className="text-xl font-bold text-purple-600">
                       {getRecommendation(recommendation)}
                     </div>
                   </div>
 
-                  <div className="space-y-3 text-sm text-purple-800 dark:text-purple-200">
+                  <div className="space-y-3 text-sm text-purple-800">
                     <div>
                       <strong>Based on your requirements:</strong>
                     </div>
@@ -609,11 +585,9 @@ const RealWorldApplications: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h4 className="font-semibold text-gray-900 dark:text-white mb-3">
-                    Alternative Considerations:
-                  </h4>
-                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="bg-gray-50 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-3">Alternative Considerations:</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
                     <div>• For read-heavy workloads, consider caching strategies</div>
                     <div>• For write-heavy workloads, consider append-only structures</div>
                     <div>• For concurrent access, consider thread-safe variants</div>

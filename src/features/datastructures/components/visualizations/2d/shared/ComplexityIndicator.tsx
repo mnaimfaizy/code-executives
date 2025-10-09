@@ -69,13 +69,13 @@ export const ComplexityIndicator: React.FC<ComplexityIndicatorProps> = ({
   const spaceColorClass = getComplexityColor(spaceComplexity);
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
+    <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Complexity Analysis</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Complexity Analysis</h3>
         <button
           onClick={() => setShowDetails(!showDetails)}
-          className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-1 rounded hover:bg-gray-100 transition-colors"
           title="Toggle Details"
         >
           <Info className="w-5 h-5 text-gray-500" />
@@ -83,7 +83,7 @@ export const ComplexityIndicator: React.FC<ComplexityIndicatorProps> = ({
       </div>
 
       {/* Current Operation */}
-      <div className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="text-sm text-gray-600">
         <span className="font-medium">Operation:</span> {operation}
       </div>
 
@@ -112,20 +112,18 @@ export const ComplexityIndicator: React.FC<ComplexityIndicatorProps> = ({
 
       {/* Explanation */}
       {explanation && (
-        <div className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-          {explanation}
-        </div>
+        <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{explanation}</div>
       )}
 
       {/* Detailed Analysis */}
       {showDetails && (bestCase || averageCase || worstCase) && (
-        <div className="space-y-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white">Detailed Analysis</h4>
+        <div className="space-y-3 pt-3 border-t border-gray-200">
+          <h4 className="text-sm font-medium text-gray-900">Detailed Analysis</h4>
 
           <div className="grid gap-2 text-sm">
             {bestCase && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Best Case:</span>
+                <span className="text-gray-600">Best Case:</span>
                 <span
                   className={`px-2 py-1 rounded border text-xs ${getComplexityColor(bestCase)}`}
                 >
@@ -136,7 +134,7 @@ export const ComplexityIndicator: React.FC<ComplexityIndicatorProps> = ({
 
             {averageCase && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Average Case:</span>
+                <span className="text-gray-600">Average Case:</span>
                 <span
                   className={`px-2 py-1 rounded border text-xs ${getComplexityColor(averageCase)}`}
                 >
@@ -147,7 +145,7 @@ export const ComplexityIndicator: React.FC<ComplexityIndicatorProps> = ({
 
             {worstCase && (
               <div className="flex justify-between items-center">
-                <span className="text-gray-600 dark:text-gray-400">Worst Case:</span>
+                <span className="text-gray-600">Worst Case:</span>
                 <span
                   className={`px-2 py-1 rounded border text-xs ${getComplexityColor(worstCase)}`}
                 >
@@ -161,10 +159,8 @@ export const ComplexityIndicator: React.FC<ComplexityIndicatorProps> = ({
 
       {/* Complexity Reference */}
       {showDetails && (
-        <div className="space-y-2 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-            Complexity Reference
-          </h4>
+        <div className="space-y-2 pt-3 border-t border-gray-200">
+          <h4 className="text-sm font-medium text-gray-900">Complexity Reference</h4>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>

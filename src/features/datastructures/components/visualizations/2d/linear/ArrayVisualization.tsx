@@ -77,6 +77,7 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
   // Display options state
   const [showIndices, setShowIndices] = useState<boolean>(true);
   const [showMemoryAddresses, setShowMemoryAddresses] = useState<boolean>(false);
+  const [showExamples, setShowExamples] = useState<boolean>(false);
 
   // Convert initial data to appropriate format based on array type
   const initialElements = useMemo(() => {
@@ -145,11 +146,12 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
   const { state, actions } = useVisualizationState(initialElements);
   const { selectedElement, handleElementClick, clearSelection } = useVisualizationInteraction();
 
-  // Update data when initialElements changes (e.g., when array type changes)
+  // Update data when array type changes
   React.useEffect(() => {
     actions.updateData(initialElements);
     clearSelection();
-  }, [initialElements, actions, clearSelection]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [arrayType, rows, cols, sparseDefaultValue, sparseSize]);
 
   // Use debug state if debugging is active
   const currentData = useMemo(() => {
@@ -452,6 +454,60 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
           actions.updateData(updatedElements);
           setCurrentOperation('');
         }, 1000);
+      } else if (arrayType === 'sparse') {
+        // Handle sparse array insert
+        if (index < 0 || index >= sparseSize) return;
+
+        setCurrentOperation('insert');
+        const newElements = [...state.data] as SparseArrayElement[];
+
+        // Find existing sparse element at this index
+        const existingElementIndex = newElements.findIndex(
+          (el) => (el as SparseArrayElement).originalIndex === index
+        );
+
+        if (existingElementIndex !== -1) {
+          // Update existing sparse element
+          newElements[existingElementIndex] = {
+            ...newElements[existingElementIndex],
+            value,
+            highlighted: true,
+            color: '#10B981',
+          };
+        } else {
+          // Add new sparse element
+          const newElement: SparseArrayElement = {
+            id: `sparse-${index}`,
+            value,
+            index: newElements.length, // Index in sparse array storage
+            originalIndex: index, // Original index in the conceptual array
+            position: { x: newElements.length * 80, y: 0 },
+            highlighted: true,
+            color: '#10B981',
+          };
+          newElements.push(newElement);
+        }
+
+        const operation: DataStructureOperation = {
+          type: 'insert',
+          index,
+          value,
+          description: `Insert ${value} at sparse index ${index}`,
+          complexity: { time: 'O(1)', space: 'O(1)' },
+        };
+
+        actions.updateData(newElements, operation);
+
+        // Clear highlight after animation
+        setTimeout(() => {
+          const updatedElements = newElements.map((el) => ({
+            ...el,
+            highlighted: false,
+            color: '#3B82F6',
+          }));
+          actions.updateData(updatedElements);
+          setCurrentOperation('');
+        }, 1000);
       } else {
         // Handle 1D array insert
         if (index < 0 || index > state.data.length || state.data.length >= maxSize) return;
@@ -511,7 +567,7 @@ export const ArrayVisualization: React.FC<ArrayVisualizationProps> = ({
         }, 500);
       }
     },
-    [state.data, maxSize, actions, arrayType, rows, cols]
+    [state.data, maxSize, actions, arrayType, rows, cols, sparseSize]
   );
 
   const handleDelete = useCallback(
@@ -850,24 +906,19 @@ console.log(${arrayName}.length); // ${currentData.length}`;
 
   return (
     <div
-      className={`bg-white border border-blue-200 rounded-xl p-4 sm:p-6 lg:p-8 space-y-6 ${className}`}
+      className={`bg-white border border-blue-200 rounded-xl p-4 space-y-4 ${className}`}
       aria-label="Array Visualization"
     >
-      {/* Sticky Header with Array Type Selection and Controls */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-blue-100 pb-2 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Compact Header with Array Type Selection and Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-blue-100">
         <div>
-          <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
-            Interactive Array Visualization
-          </h3>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">
-            Explore different array types and operations with real-time animations
-          </p>
+          <h3 className="text-lg font-bold text-gray-900">Interactive Array Visualization</h3>
         </div>
         <div className="flex items-center flex-wrap gap-2">
           <select
             value={arrayType}
             onChange={(e) => setArrayType(e.target.value as 'static' | 'dynamic' | '2d' | 'sparse')}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
             aria-label="Array Type"
           >
             <option value="static">Static Array</option>
@@ -876,145 +927,142 @@ console.log(${arrayName}.length); // ${currentData.length}`;
             <option value="sparse">Sparse Array</option>
           </select>
           {arrayType === '2d' && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Rows:</span>
+            <div className="flex items-center space-x-2 text-xs">
+              <span className="text-gray-600">Rows:</span>
               <input
                 type="number"
                 value={rows}
                 onChange={(e) => setRows(Math.max(1, parseInt(e.target.value) || 1))}
                 min={1}
                 max={10}
-                className="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                className="w-10 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                 aria-label="Rows"
               />
-              <span className="text-sm text-gray-600">Cols:</span>
+              <span className="text-gray-600">Cols:</span>
               <input
                 type="number"
                 value={cols}
                 onChange={(e) => setCols(Math.max(1, parseInt(e.target.value) || 1))}
                 min={1}
                 max={10}
-                className="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                className="w-10 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                 aria-label="Columns"
               />
             </div>
           )}
           {arrayType === 'sparse' && (
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Default:</span>
+            <div className="flex items-center space-x-2 text-xs">
+              <span className="text-gray-600">Default:</span>
               <input
                 type="number"
                 value={sparseDefaultValue}
                 onChange={(e) => setSparseDefaultValue(parseInt(e.target.value) || 0)}
-                className="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                className="w-10 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                 aria-label="Sparse Default Value"
               />
-              <span className="text-sm text-gray-600">Size:</span>
+              <span className="text-gray-600">Size:</span>
               <input
                 type="number"
                 value={sparseSize}
                 onChange={(e) => setSparseSize(Math.max(1, parseInt(e.target.value) || 1))}
                 min={1}
                 max={20}
-                className="w-12 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                className="w-10 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                 aria-label="Sparse Size"
               />
             </div>
           )}
           <button
             onClick={() => setShowCode(!showCode)}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+            className={`flex items-center space-x-1 px-2 py-1 rounded-md transition-colors text-xs ${
               showCode ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
             aria-label="Toggle Code Example"
           >
-            <Code className="w-4 h-4" />
+            <Code className="w-3 h-3" />
             <span>Code</span>
           </button>
         </div>
       </div>
 
-      {/* Enhanced Examples Section */}
-      <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-        <h4 className="text-base sm:text-lg font-semibold text-blue-900 mb-4 flex items-center">
-          <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-yellow-500" />
-          Real-World Examples - Click to Explore!
-        </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          {Object.entries(examples).map(([key, example]) => (
-            <button
-              key={key}
-              onClick={() => loadExample(key)}
-              className={`group p-3 sm:p-4 rounded-xl text-left transition-all duration-200 hover:scale-105 ${
-                currentExample === key
-                  ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg ring-2 ring-blue-300'
-                  : 'bg-white hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 border border-blue-200 hover:border-blue-300 hover:shadow-md'
-              }`}
-            >
-              <div className="flex items-center mb-2">
-                <span className="text-lg mr-2">{example.icon}</span>
-                <div
-                  className={`font-semibold text-sm capitalize ${
+      {/* Compact Examples Section - Collapsible */}
+      <div className="border border-blue-200 rounded-lg">
+        <button
+          onClick={() => setShowExamples(!showExamples)}
+          className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors rounded-lg"
+        >
+          <div className="flex items-center">
+            <Lightbulb className="w-4 h-4 mr-2 text-yellow-600" />
+            <span className="text-sm font-semibold text-blue-900">
+              Real-World Examples ({Object.keys(examples).length} available)
+            </span>
+          </div>
+          <span className="text-blue-600 text-sm">{showExamples ? '−' : '+'}</span>
+        </button>
+
+        {showExamples && (
+          <div className="p-3 space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              {Object.entries(examples).map(([key, example]) => (
+                <button
+                  key={key}
+                  onClick={() => loadExample(key)}
+                  className={`p-2 rounded-lg text-left transition-all text-xs ${
                     currentExample === key
-                      ? 'text-white'
-                      : 'text-gray-800 group-hover:text-blue-800'
+                      ? 'bg-blue-600 text-white shadow-md'
+                      : 'bg-white hover:bg-blue-50 border border-blue-200 hover:border-blue-300'
                   }`}
                 >
-                  {key}
-                </div>
-              </div>
-              <div
-                className={`text-xs leading-tight ${
-                  currentExample === key
-                    ? 'text-blue-100'
-                    : 'text-gray-600 group-hover:text-gray-700'
-                }`}
-              >
-                {example.analogy}
-              </div>
-              <div
-                className={`text-xs mt-1 font-medium ${
-                  currentExample === key ? 'text-blue-200' : 'text-blue-600'
-                }`}
-              >
-                {example.data.length} items
-              </div>
-            </button>
-          ))}
-        </div>
-        <div className="mt-4 p-3 bg-white/70 rounded-lg border border-blue-200">
-          <div className="flex items-center text-sm">
-            <span className="font-medium text-blue-900 mr-2">Current Example:</span>
-            <span className="text-blue-800">
-              {examples[currentExample as keyof typeof examples]?.analogy}
-            </span>
-            <span className="mx-2 text-blue-400">•</span>
-            <span className="text-blue-700">
-              {examples[currentExample as keyof typeof examples]?.description}
-            </span>
+                  <div className="flex items-center mb-1">
+                    <span className="text-sm mr-1">{example.icon}</span>
+                    <div
+                      className={`font-semibold capitalize ${
+                        currentExample === key ? 'text-white' : 'text-gray-800'
+                      }`}
+                    >
+                      {key}
+                    </div>
+                  </div>
+                  <div
+                    className={`leading-tight ${currentExample === key ? 'text-blue-100' : 'text-gray-600'}`}
+                  >
+                    {example.data.length} items
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="p-2 bg-white/70 rounded border border-blue-200 text-xs">
+              <span className="font-medium text-blue-900">Current:</span>{' '}
+              <span className="text-blue-800">
+                {examples[currentExample as keyof typeof examples]?.analogy}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Code Example Pane */}
+      {/* Compact Code Example Pane */}
       {showCode && (
-        <div className="bg-gray-900 text-gray-100 rounded-lg p-6 font-mono text-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold">JavaScript Code Example</h4>
-            <button onClick={() => setShowCode(false)} className="text-gray-400 hover:text-white">
-              ✕
+        <div className="bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-xs">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold">JavaScript Code</h4>
+            <button
+              onClick={() => setShowCode(false)}
+              className="text-gray-400 hover:text-white text-lg leading-none"
+            >
+              ×
             </button>
           </div>
-          <pre className="whitespace-pre-wrap">{getCodeExample()}</pre>
+          <pre className="whitespace-pre-wrap text-xs">{getCodeExample()}</pre>
         </div>
       )}
 
-      {/* Array Visualization with Controls */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* Array Visualization with Controls - More Compact */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Side: Array Visualization */}
-        <div className="xl:col-span-2">
+        <div className="lg:col-span-2">
           <div
-            className={`border border-gray-200 rounded-lg p-6 ${
+            className={`border border-gray-200 rounded-lg p-4 ${
               arrayType === 'static'
                 ? 'bg-gradient-to-br from-blue-50 via-white to-indigo-50'
                 : arrayType === 'dynamic'
@@ -1024,12 +1072,12 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                     : 'bg-gradient-to-br from-orange-50 via-white to-amber-50'
             }`}
           >
-            {/* Array Type Header with proper spacing */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
+            {/* Compact Array Type Header */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
                   <div
-                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
                       arrayType === 'static'
                         ? 'bg-blue-100 text-blue-800 border border-blue-200'
                         : arrayType === 'dynamic'
@@ -1040,377 +1088,370 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                     }`}
                   >
                     {arrayType === 'static'
-                      ? '🔒 Static Array'
+                      ? '🔒 Static'
                       : arrayType === 'dynamic'
-                        ? '🔄 Dynamic Array'
+                        ? '🔄 Dynamic'
                         : arrayType === '2d'
-                          ? '📊 2D Array'
-                          : '🎯 Sparse Array'}
+                          ? '📊 2D'
+                          : '🎯 Sparse'}
                   </div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-xs text-gray-600">
                     {arrayType === '2d'
-                      ? `${rows}×${cols} matrix`
+                      ? `${rows}×${cols}`
                       : arrayType === 'sparse'
-                        ? `${currentData.length} stored values (default: ${sparseDefaultValue})`
-                        : `${currentData.length} elements`}
+                        ? `${currentData.length} stored`
+                        : `${currentData.length} items`}
                   </div>
                 </div>
               </div>
             </div>
 
-            <svg
-              width={svgWidth}
-              height={svgHeight}
-              className="w-full h-auto"
-              aria-label="Array SVG"
-            >
-              {/* Memory Layout Background */}
-              <defs>
-                <pattern id="memoryGrid" width="80" height="20" patternUnits="userSpaceOnUse">
-                  <rect width="80" height="20" fill="none" stroke="#E5E7EB" strokeWidth="0.5" />
-                </pattern>
-              </defs>
+            <div className="overflow-x-auto">
+              <svg width={svgWidth} height={svgHeight} className="h-auto" aria-label="Array SVG">
+                {/* Memory Layout Background */}
+                <defs>
+                  <pattern id="memoryGrid" width="80" height="20" patternUnits="userSpaceOnUse">
+                    <rect width="80" height="20" fill="none" stroke="#E5E7EB" strokeWidth="0.5" />
+                  </pattern>
+                </defs>
 
-              <rect width={svgWidth} height={svgHeight} fill="url(#memoryGrid)" opacity="0.3" />
+                <rect width={svgWidth} height={svgHeight} fill="url(#memoryGrid)" opacity="0.3" />
 
-              {/* Render based on array type */}
-              {arrayType === '2d' ? (
-                /* 2D Array (Matrix) Visualization */
-                <>
-                  {/* Group elements by row for true matrix rendering */}
-                  {Array.from({ length: rows }).map((_, r) => (
-                    <g key={`row-${r}`}>
-                      {Array.from({ length: cols }).map((_, c) => {
-                        const el = state.data.find(
-                          (e) => (e as Array2DElement).row === r && (e as Array2DElement).col === c
-                        ) as Array2DElement | undefined;
-                        if (!el) return null;
-                        const x = 30 + c * (cellWidth + 10);
-                        const y = 40 + r * (cellHeight + 10);
-                        const isAnimating = animatingElements.has(el.id);
-                        const isSelected = selectedElement === el.id;
-                        return (
-                          <g key={el.id} className="array-element">
-                            {/* Memory Address (if enabled) */}
-                            {showMemoryAddresses && (
+                {/* Render based on array type */}
+                {arrayType === '2d' ? (
+                  /* 2D Array (Matrix) Visualization */
+                  <>
+                    {/* Group elements by row for true matrix rendering */}
+                    {Array.from({ length: rows }).map((_, r) => (
+                      <g key={`row-${r}`}>
+                        {Array.from({ length: cols }).map((_, c) => {
+                          const el = state.data.find(
+                            (e) =>
+                              (e as Array2DElement).row === r && (e as Array2DElement).col === c
+                          ) as Array2DElement | undefined;
+                          if (!el) return null;
+                          const x = 30 + c * (cellWidth + 10);
+                          const y = 40 + r * (cellHeight + 10);
+                          const isAnimating = animatingElements.has(el.id);
+                          const isSelected = selectedElement === el.id;
+                          return (
+                            <g key={el.id} className="array-element">
+                              {/* Memory Address (if enabled) */}
+                              {showMemoryAddresses && (
+                                <text
+                                  x={x + cellWidth / 2}
+                                  y={y - 18}
+                                  textAnchor="middle"
+                                  className="text-xs font-mono font-medium fill-gray-600"
+                                >
+                                  {getMemoryAddress(el.index)}
+                                </text>
+                              )}
+                              {/* Array Cell */}
+                              <rect
+                                x={x}
+                                y={y}
+                                width={cellWidth}
+                                height={cellHeight}
+                                fill={el.highlighted ? el.color : isSelected ? '#DBEAFE' : 'white'}
+                                stroke={
+                                  el.highlighted ? el.color : isSelected ? '#3B82F6' : '#D1D5DB'
+                                }
+                                strokeWidth={el.highlighted || isSelected ? 2 : 1}
+                                rx={4}
+                                className={`cursor-pointer transition-all duration-300 ${isAnimating ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
+                                onClick={() => handleElementClick(el.id)}
+                                aria-label={`Array cell [${el.row},${el.col}] value ${el.value}`}
+                              >
+                                <title>{`Value: ${el.value}\nIndex: [${el.row},${el.col}]${showMemoryAddresses ? `\nMemory: ${getMemoryAddress(el.index)}` : ''}`}</title>
+                              </rect>
+                              {/* Value */}
                               <text
                                 x={x + cellWidth / 2}
-                                y={y - 18}
+                                y={y + cellHeight / 2 + 5}
                                 textAnchor="middle"
-                                className="text-xs font-mono font-medium fill-gray-600"
+                                className={`text-sm font-semibold ${el.highlighted ? 'fill-white' : 'fill-gray-900'}`}
                               >
-                                {getMemoryAddress(el.index)}
+                                {el.value}
                               </text>
-                            )}
-                            {/* Array Cell */}
-                            <rect
-                              x={x}
-                              y={y}
-                              width={cellWidth}
-                              height={cellHeight}
-                              fill={el.highlighted ? el.color : isSelected ? '#DBEAFE' : 'white'}
-                              stroke={
-                                el.highlighted ? el.color : isSelected ? '#3B82F6' : '#D1D5DB'
-                              }
-                              strokeWidth={el.highlighted || isSelected ? 2 : 1}
-                              rx={4}
-                              className={`cursor-pointer transition-all duration-300 ${isAnimating ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
-                              onClick={() => handleElementClick(el.id)}
-                              aria-label={`Array cell [${el.row},${el.col}] value ${el.value}`}
-                            >
-                              <title>{`Value: ${el.value}\nIndex: [${el.row},${el.col}]${showMemoryAddresses ? `\nMemory: ${getMemoryAddress(el.index)}` : ''}`}</title>
-                            </rect>
-                            {/* Value */}
+                              {/* Index (if enabled) */}
+                              {showIndices && (
+                                <text
+                                  x={x + cellWidth / 2}
+                                  y={y + cellHeight + 18}
+                                  textAnchor="middle"
+                                  className="text-xs font-medium fill-gray-700"
+                                >
+                                  [{el.row},{el.col}]
+                                </text>
+                              )}
+                            </g>
+                          );
+                        })}
+                      </g>
+                    ))}
+                  </>
+                ) : arrayType === 'sparse' ? (
+                  /* Sparse Array Visualization */
+                  <>
+                    {/* Show original array indices */}
+                    {Array.from({ length: sparseSize }, (_, i) => i).map((originalIndex) => {
+                      const sparseElement = currentData.find(
+                        (el) => (el as SparseArrayElement).originalIndex === originalIndex
+                      ) as SparseArrayElement;
+                      const hasValue = sparseElement !== undefined;
+                      const x = 30 + originalIndex * (cellWidth + 10);
+                      const y = showMemoryAddresses ? 55 : 35;
+                      const isSelected = hasValue && selectedElement === sparseElement.id;
+
+                      return (
+                        <g key={`original-${originalIndex}`}>
+                          {/* Memory Address (if enabled) */}
+                          {showMemoryAddresses && (
                             <text
                               x={x + cellWidth / 2}
-                              y={y + cellHeight / 2 + 5}
+                              y={y - 22}
                               textAnchor="middle"
-                              className={`text-sm font-semibold ${el.highlighted ? 'fill-white' : 'fill-gray-900'}`}
+                              className="text-xs font-mono font-medium fill-gray-600"
                             >
-                              {el.value}
+                              {getMemoryAddress(originalIndex)}
                             </text>
-                            {/* Index (if enabled) */}
-                            {showIndices && (
-                              <text
-                                x={x + cellWidth / 2}
-                                y={y + cellHeight + 18}
-                                textAnchor="middle"
-                                className="text-xs font-medium fill-gray-700"
-                              >
-                                [{el.row},{el.col}]
-                              </text>
-                            )}
-                          </g>
-                        );
-                      })}
-                    </g>
-                  ))}
-                </>
-              ) : arrayType === 'sparse' ? (
-                /* Sparse Array Visualization */
-                <>
-                  {/* Show original array indices */}
-                  {Array.from({ length: sparseSize }, (_, i) => i).map((originalIndex) => {
-                    const sparseElement = currentData.find(
-                      (el) => (el as SparseArrayElement).originalIndex === originalIndex
-                    ) as SparseArrayElement;
-                    const hasValue = sparseElement !== undefined;
-                    const x = 30 + originalIndex * (cellWidth + 10);
-                    const y = showMemoryAddresses ? 55 : 35;
-                    const isSelected = hasValue && selectedElement === sparseElement.id;
+                          )}
 
-                    return (
-                      <g key={`original-${originalIndex}`}>
-                        {/* Memory Address (if enabled) */}
-                        {showMemoryAddresses && (
+                          {/* Array Cell */}
+                          <rect
+                            x={x}
+                            y={y}
+                            width={cellWidth}
+                            height={cellHeight}
+                            fill={
+                              hasValue
+                                ? sparseElement.highlighted
+                                  ? sparseElement.color
+                                  : isSelected
+                                    ? '#DBEAFE'
+                                    : 'white'
+                                : '#F3F4F6'
+                            }
+                            stroke={
+                              hasValue
+                                ? sparseElement.highlighted
+                                  ? sparseElement.color
+                                  : isSelected
+                                    ? '#3B82F6'
+                                    : '#D1D5DB'
+                                : '#E5E7EB'
+                            }
+                            strokeWidth={
+                              hasValue && (sparseElement.highlighted || isSelected) ? 2 : 1
+                            }
+                            rx={4}
+                            className={`cursor-pointer transition-all duration-300 ${isSelected ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
+                            onClick={() => hasValue && handleElementClick(sparseElement.id)}
+                            aria-label={`Sparse cell [${originalIndex}] value ${hasValue ? sparseElement.value : sparseDefaultValue}`}
+                          >
+                            <title>{`Value: ${hasValue ? sparseElement.value : sparseDefaultValue}\nIndex: [${originalIndex}]${showMemoryAddresses ? `\nMemory: ${getMemoryAddress(originalIndex)}` : ''}`}</title>
+                          </rect>
+
+                          {/* Value or Default */}
                           <text
                             x={x + cellWidth / 2}
-                            y={y - 22}
+                            y={y + cellHeight / 2 + 5}
                             textAnchor="middle"
-                            className="text-xs font-mono font-medium fill-gray-600"
+                            className={`text-sm font-semibold ${hasValue && sparseElement.highlighted ? 'fill-white' : hasValue ? 'fill-gray-900' : 'fill-gray-400'}`}
                           >
-                            {getMemoryAddress(originalIndex)}
+                            {hasValue ? sparseElement.value : sparseDefaultValue}
                           </text>
-                        )}
 
-                        {/* Array Cell */}
-                        <rect
-                          x={x}
-                          y={y}
-                          width={cellWidth}
-                          height={cellHeight}
-                          fill={
-                            hasValue
-                              ? sparseElement.highlighted
-                                ? sparseElement.color
-                                : 'white'
-                              : '#F3F4F6'
-                          }
-                          stroke={
-                            hasValue
-                              ? sparseElement.highlighted
-                                ? sparseElement.color
-                                : '#D1D5DB'
-                              : '#E5E7EB'
-                          }
-                          strokeWidth={hasValue && sparseElement.highlighted ? 2 : 1}
-                          rx={4}
-                          className={`transition-all duration-300 ${isSelected ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
-                          aria-label={`Sparse cell [${originalIndex}] value ${hasValue ? sparseElement.value : sparseDefaultValue}`}
-                        >
-                          <title>{`Value: ${hasValue ? sparseElement.value : sparseDefaultValue}\nIndex: [${originalIndex}]${showMemoryAddresses ? `\nMemory: ${getMemoryAddress(originalIndex)}` : ''}`}</title>
-                        </rect>
+                          {/* Index (if enabled) */}
+                          {showIndices && (
+                            <text
+                              x={x + cellWidth / 2}
+                              y={y + cellHeight + 18}
+                              textAnchor="middle"
+                              className="text-xs font-medium fill-gray-700"
+                            >
+                              [{originalIndex}]
+                            </text>
+                          )}
+                        </g>
+                      );
+                    })}
+                  </>
+                ) : (
+                  /* 1D Array (Static/Dynamic) Visualization */
+                  <>
+                    {currentData.map((element, index) => {
+                      const x = 30 + index * (cellWidth + 10);
+                      const y = showMemoryAddresses ? 55 : 35;
+                      const isAnimating = animatingElements.has(element.id);
+                      const isSelected = selectedElement === element.id;
 
-                        {/* Value or Default */}
-                        <text
-                          x={x + cellWidth / 2}
-                          y={y + cellHeight / 2 + 5}
-                          textAnchor="middle"
-                          className={`text-sm font-semibold ${hasValue && sparseElement.highlighted ? 'fill-white' : hasValue ? 'fill-gray-900' : 'fill-gray-400'}`}
-                        >
-                          {hasValue ? sparseElement.value : sparseDefaultValue}
-                        </text>
+                      return (
+                        <g key={element.id} className="array-element">
+                          {/* Memory Address (if enabled) */}
+                          {showMemoryAddresses && (
+                            <text
+                              x={x + cellWidth / 2}
+                              y={y - 22}
+                              textAnchor="middle"
+                              className="text-xs font-mono font-medium fill-gray-600"
+                            >
+                              {getMemoryAddress(index)}
+                            </text>
+                          )}
 
-                        {/* Index (if enabled) */}
-                        {showIndices && (
+                          {/* Array Cell */}
+                          <rect
+                            x={x}
+                            y={y}
+                            width={cellWidth}
+                            height={cellHeight}
+                            fill={
+                              element.highlighted ? element.color : isSelected ? '#DBEAFE' : 'white'
+                            }
+                            stroke={
+                              element.highlighted
+                                ? element.color
+                                : isSelected
+                                  ? '#3B82F6'
+                                  : '#D1D5DB'
+                            }
+                            strokeWidth={element.highlighted || isSelected ? 2 : 1}
+                            rx={4}
+                            className={`cursor-pointer transition-all duration-300 ${isAnimating ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
+                            onClick={() => handleElementClick(element.id)}
+                            onMouseDown={(e) => handleMouseDown(e, index)}
+                            onMouseMove={() => handleMouseMove()}
+                            onMouseUp={(e) => handleMouseUp(e, index)}
+                            aria-label={`Array cell [${index}] value ${element.value}`}
+                          >
+                            <title>{`Value: ${element.value}\nIndex: [${index}]${showMemoryAddresses ? `\nMemory: ${getMemoryAddress(index)}` : ''}`}</title>
+                          </rect>
+
+                          {/* Value */}
                           <text
                             x={x + cellWidth / 2}
-                            y={y + cellHeight + 18}
+                            y={y + cellHeight / 2 + 5}
                             textAnchor="middle"
-                            className="text-xs font-medium fill-gray-700"
+                            className={`text-sm font-semibold ${element.highlighted ? 'fill-white' : 'fill-gray-900'}`}
                           >
-                            [{originalIndex}]
+                            {element.value}
                           </text>
-                        )}
-                      </g>
-                    );
-                  })}
-                </>
-              ) : (
-                /* 1D Array (Static/Dynamic) Visualization */
-                <>
-                  {currentData.map((element, index) => {
-                    const x = 30 + index * (cellWidth + 10);
-                    const y = showMemoryAddresses ? 55 : 35;
-                    const isAnimating = animatingElements.has(element.id);
-                    const isSelected = selectedElement === element.id;
 
-                    return (
-                      <g key={element.id} className="array-element">
-                        {/* Memory Address (if enabled) */}
-                        {showMemoryAddresses && (
-                          <text
-                            x={x + cellWidth / 2}
-                            y={y - 22}
-                            textAnchor="middle"
-                            className="text-xs font-mono font-medium fill-gray-600"
-                          >
-                            {getMemoryAddress(index)}
-                          </text>
-                        )}
+                          {/* Index (if enabled) */}
+                          {showIndices && (
+                            <text
+                              x={x + cellWidth / 2}
+                              y={y + cellHeight + 18}
+                              textAnchor="middle"
+                              className="text-xs font-medium fill-gray-700"
+                            >
+                              [{index}]
+                            </text>
+                          )}
+                        </g>
+                      );
+                    })}
+                  </>
+                )}
+              </svg>
+            </div>
 
-                        {/* Array Cell */}
-                        <rect
-                          x={x}
-                          y={y}
-                          width={cellWidth}
-                          height={cellHeight}
-                          fill={
-                            element.highlighted ? element.color : isSelected ? '#DBEAFE' : 'white'
-                          }
-                          stroke={
-                            element.highlighted ? element.color : isSelected ? '#3B82F6' : '#D1D5DB'
-                          }
-                          strokeWidth={element.highlighted || isSelected ? 2 : 1}
-                          rx={4}
-                          className={`cursor-pointer transition-all duration-300 ${isAnimating ? 'shadow-lg ring-2 ring-blue-400' : ''}`}
-                          onClick={() => handleElementClick(element.id)}
-                          onMouseDown={(e) => handleMouseDown(e, index)}
-                          onMouseMove={() => handleMouseMove()}
-                          onMouseUp={(e) => handleMouseUp(e, index)}
-                          aria-label={`Array cell [${index}] value ${element.value}`}
-                        >
-                          <title>{`Value: ${element.value}\nIndex: [${index}]${showMemoryAddresses ? `\nMemory: ${getMemoryAddress(index)}` : ''}`}</title>
-                        </rect>
-
-                        {/* Value */}
-                        <text
-                          x={x + cellWidth / 2}
-                          y={y + cellHeight / 2 + 5}
-                          textAnchor="middle"
-                          className={`text-sm font-semibold ${element.highlighted ? 'fill-white' : 'fill-gray-900'}`}
-                        >
-                          {element.value}
-                        </text>
-
-                        {/* Index (if enabled) */}
-                        {showIndices && (
-                          <text
-                            x={x + cellWidth / 2}
-                            y={y + cellHeight + 18}
-                            textAnchor="middle"
-                            className="text-xs font-medium fill-gray-700"
-                          >
-                            [{index}]
-                          </text>
-                        )}
-                      </g>
-                    );
-                  })}
-                </>
-              )}
-            </svg>
-
-            {/* Summary Bar Below Visualization */}
-            <div className="flex flex-wrap items-center justify-between gap-4 mt-6 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="flex items-center gap-3 text-blue-900 text-sm font-medium">
+            {/* Compact Summary Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mt-4 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs">
+              <div className="flex items-center gap-2 text-blue-900 font-medium">
                 <span>
                   Type: <span className="font-bold capitalize">{arrayType}</span>
                 </span>
+                <span>•</span>
                 <span>
-                  Size: <span className="font-bold">{currentData.length}</span>
-                </span>
-                <span>
-                  Max Size: <span className="font-bold">{maxSize}</span>
+                  Size:{' '}
+                  <span className="font-bold">
+                    {currentData.length}/{maxSize}
+                  </span>
                 </span>
               </div>
               {state.currentOperation && (
-                <div className="text-blue-800 text-sm">
-                  Last Operation:{' '}
-                  <span className="font-bold">{state.currentOperation.description}</span>
+                <div className="text-blue-800 font-medium">
+                  {state.currentOperation.description}
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Side: Controls */}
-        <div className="xl:col-span-1 space-y-6">
+        {/* Right Side: Compact Controls */}
+        <div className="lg:col-span-1 space-y-3">
           {/* Animation Controls */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h4 className="text-sm font-semibold text-gray-800 mb-4 flex items-center">
-              <Play className="w-4 h-4 mr-2" />
-              Animation Controls
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <h4 className="text-xs font-semibold text-gray-800 mb-3 flex items-center">
+              <Play className="w-3 h-3 mr-1" />
+              Controls
             </h4>
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-3">
               <div className="flex items-center justify-center space-x-2">
                 <button
                   onClick={() => actions.prevStep()}
                   disabled={!state.history || state.currentStep === 0}
-                  className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                  className="p-1.5 rounded-md bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                   title="Previous Step"
                 >
-                  <SkipBack className="w-4 h-4" />
+                  <SkipBack className="w-3 h-3" />
                 </button>
 
                 <button
                   onClick={state.isPlaying ? actions.pause : actions.play}
-                  className="p-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                  className="p-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                   title={state.isPlaying ? 'Pause' : 'Play'}
                 >
-                  {state.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                  {state.isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                 </button>
 
                 <button
                   onClick={() => actions.nextStep()}
                   disabled={!state.history || state.currentStep >= state.totalSteps - 1}
-                  className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                  className="p-1.5 rounded-md bg-white border border-gray-300 hover:bg-gray-50 disabled:opacity-50 transition-colors"
                   title="Next Step"
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3 h-3" />
                 </button>
 
                 <button
                   onClick={actions.reset}
-                  className="p-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
+                  className="p-1.5 rounded-md bg-white border border-gray-300 hover:bg-gray-50 transition-colors"
                   title="Reset"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3 h-3" />
                 </button>
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 font-medium">Speed:</span>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="3"
-                    step="0.1"
-                    value={state.speed}
-                    onChange={(e) => actions.setSpeed(parseFloat(e.target.value))}
-                    className="w-16 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600 min-w-[2rem]">{state.speed}x</span>
-                </div>
-              </div>
-
-              <div className="text-center text-sm text-gray-600 font-medium">
+              <div className="text-center text-xs text-gray-600 font-medium">
                 Step {state.currentStep + 1} of {state.totalSteps}
               </div>
             </div>
           </div>
 
           {/* Operation Controls */}
-          <div className="space-y-4">
-            <h4 className="text-sm font-semibold text-gray-800 flex items-center">
-              <Zap className="w-4 h-4 mr-2" />
-              Array Operations
+          <div className="space-y-2">
+            <h4 className="text-xs font-semibold text-gray-800 flex items-center">
+              <Zap className="w-3 h-3 mr-1" />
+              Operations
             </h4>
 
             {/* Insert Operation */}
             <form
               onSubmit={handleInsertSubmit}
-              className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+              className="bg-white border border-gray-200 rounded-lg p-2 space-y-2"
             >
-              <label className="block font-medium text-gray-800 text-sm">Insert Element</label>
-              <div className="flex space-x-2">
+              <label className="block font-medium text-gray-800 text-xs">Insert</label>
+              <div className="flex space-x-1">
                 <input
                   type="number"
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
-                  placeholder="Value"
-                  className="flex-1 px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Val"
+                  className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={!!currentOperation}
                 />
                 {arrayType === '2d' ? (
@@ -1419,20 +1460,20 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                       type="number"
                       value={insertRow}
                       onChange={(e) => setInsertRow(e.target.value)}
-                      placeholder="Row"
+                      placeholder="R"
                       min={0}
                       max={rows - 1}
-                      className="w-12 px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-10 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={!!currentOperation}
                     />
                     <input
                       type="number"
                       value={insertCol}
                       onChange={(e) => setInsertCol(e.target.value)}
-                      placeholder="Col"
+                      placeholder="C"
                       min={0}
                       max={cols - 1}
-                      className="w-12 px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-10 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       disabled={!!currentOperation}
                     />
                   </>
@@ -1441,10 +1482,10 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                     type="number"
                     value={insertIndex}
                     onChange={(e) => setInsertIndex(e.target.value)}
-                    placeholder="Index"
+                    placeholder="Idx"
                     min={0}
                     max={arrayType === 'sparse' ? sparseSize - 1 : state.data.length}
-                    className="w-16 px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-12 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={!!currentOperation}
                   />
                 )}
@@ -1452,11 +1493,12 @@ console.log(${arrayName}.length); // ${currentData.length}`;
               <button
                 type="submit"
                 disabled={
-                  !!currentOperation || (arrayType !== 'sparse' && state.data.length >= maxSize)
+                  !!currentOperation ||
+                  (arrayType !== 'sparse' && arrayType !== '2d' && state.data.length >= maxSize)
                 }
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-md text-xs transition-all duration-200 disabled:cursor-not-allowed"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3 h-3" />
                 <span>Insert</span>
               </button>
             </form>
@@ -1464,11 +1506,11 @@ console.log(${arrayName}.length); // ${currentData.length}`;
             {/* Access Operation */}
             <form
               onSubmit={handleAccessSubmit}
-              className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+              className="bg-white border border-gray-200 rounded-lg p-2 space-y-2"
             >
-              <label className="block font-medium text-gray-800 text-sm">Access Element</label>
+              <label className="block font-medium text-gray-800 text-xs">Access</label>
               {arrayType === '2d' ? (
-                <div className="flex space-x-2">
+                <div className="flex space-x-1">
                   <input
                     type="number"
                     value={accessRow}
@@ -1476,7 +1518,7 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                     placeholder="Row"
                     min={0}
                     max={rows - 1}
-                    className="flex-1 px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={!!currentOperation}
                   />
                   <input
@@ -1486,7 +1528,7 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                     placeholder="Col"
                     min={0}
                     max={cols - 1}
-                    className="flex-1 px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-1 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={!!currentOperation}
                   />
                 </div>
@@ -1498,16 +1540,16 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                   placeholder="Index"
                   min={0}
                   max={arrayType === 'sparse' ? sparseSize - 1 : state.data.length - 1}
-                  className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={!!currentOperation}
                 />
               )}
               <button
                 type="submit"
                 disabled={!!currentOperation || state.data.length === 0}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-md text-xs transition-all duration-200 disabled:cursor-not-allowed"
               >
-                <Zap className="w-4 h-4" />
+                <Zap className="w-3 h-3" />
                 <span>Access</span>
               </button>
             </form>
@@ -1515,37 +1557,31 @@ console.log(${arrayName}.length); // ${currentData.length}`;
             {/* Search Operation */}
             <form
               onSubmit={handleSearchSubmit}
-              className="bg-white border border-gray-200 rounded-lg p-4 space-y-3"
+              className="bg-white border border-gray-200 rounded-lg p-2 space-y-2"
             >
-              <label className="block font-medium text-gray-800 text-sm">Search Element</label>
+              <label className="block font-medium text-gray-800 text-xs">Search</label>
               <input
                 type="number"
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
                 placeholder="Value"
-                className="w-full px-2 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled={!!currentOperation}
               />
               <button
                 type="submit"
                 disabled={!!currentOperation || state.data.length === 0}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-md text-xs transition-all duration-200 disabled:cursor-not-allowed"
               >
-                <Search className="w-4 h-4" />
+                <Search className="w-3 h-3" />
                 <span>Search</span>
               </button>
             </form>
 
             {/* Delete Operation */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
-              <label className="block font-medium text-gray-800 text-sm">Delete Element</label>
-              <p className="text-xs text-gray-600">
-                {arrayType === '2d'
-                  ? 'Click an element to delete it'
-                  : arrayType === 'sparse'
-                    ? 'Click a stored value to remove it'
-                    : 'Click an element to delete it'}
-              </p>
+            <div className="bg-white border border-gray-200 rounded-lg p-2 space-y-2">
+              <label className="block font-medium text-gray-800 text-xs">Delete</label>
+              <p className="text-xs text-gray-600">Click an element above</p>
               <button
                 onClick={() => {
                   if (selectedElement) {
@@ -1554,9 +1590,90 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                         (el) => el.id === selectedElement
                       ) as Array2DElement;
                       if (element) {
-                        // For 2D arrays, we need to implement delete logic
-                        // For now, just clear selection
-                        clearSelection();
+                        setCurrentOperation('delete');
+                        const newElements = [...state.data];
+                        const elementIndex = newElements.findIndex(
+                          (el) => el.id === selectedElement
+                        );
+
+                        if (elementIndex >= 0) {
+                          // Highlight element to be deleted
+                          newElements[elementIndex] = {
+                            ...newElements[elementIndex],
+                            highlighted: true,
+                            color: '#EF4444',
+                          };
+                          actions.updateData(newElements);
+
+                          // Reset value to 0 after animation
+                          setTimeout(() => {
+                            newElements[elementIndex] = {
+                              ...newElements[elementIndex],
+                              value: 0,
+                              highlighted: false,
+                              color: '#3B82F6',
+                            };
+
+                            const operation: DataStructureOperation = {
+                              type: 'delete',
+                              index: element.row * cols + element.col,
+                              description: `Delete element at position [${element.row},${element.col}]`,
+                              complexity: { time: 'O(1)', space: 'O(1)' },
+                            };
+
+                            actions.updateData(newElements, operation);
+                            setCurrentOperation('');
+                            clearSelection();
+                          }, 1000);
+                        } else {
+                          clearSelection();
+                        }
+                      }
+                    } else if (arrayType === 'sparse') {
+                      // Handle sparse array delete - remove the sparse element
+                      const element = state.data.find(
+                        (el) => el.id === selectedElement
+                      ) as SparseArrayElement;
+                      if (element) {
+                        setCurrentOperation('delete');
+                        const newElements = [...state.data];
+                        const elementIndex = newElements.findIndex(
+                          (el) => el.id === selectedElement
+                        );
+
+                        if (elementIndex >= 0) {
+                          // Highlight element to be deleted
+                          newElements[elementIndex] = {
+                            ...newElements[elementIndex],
+                            highlighted: true,
+                            color: '#EF4444',
+                          };
+                          actions.updateData(newElements);
+
+                          // Remove sparse element after animation (it will revert to default value in visualization)
+                          setTimeout(() => {
+                            const updatedElements = newElements
+                              .filter((el) => el.id !== selectedElement)
+                              .map((el, i) => ({
+                                ...el,
+                                index: i,
+                                position: { x: i * 80, y: 0 },
+                              }));
+
+                            const operation: DataStructureOperation = {
+                              type: 'delete',
+                              index: element.originalIndex,
+                              description: `Delete sparse element at index ${element.originalIndex}`,
+                              complexity: { time: 'O(1)', space: 'O(1)' },
+                            };
+
+                            actions.updateData(updatedElements, operation);
+                            setCurrentOperation('');
+                            clearSelection();
+                          }, 1000);
+                        } else {
+                          clearSelection();
+                        }
                       }
                     } else {
                       const elementIndex = state.data.findIndex((el) => el.id === selectedElement);
@@ -1568,10 +1685,10 @@ console.log(${arrayName}.length); // ${currentData.length}`;
                   }
                 }}
                 disabled={!!currentOperation || !selectedElement}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 disabled:cursor-not-allowed disabled:transform-none"
+                className="w-full flex items-center justify-center space-x-1 px-2 py-1.5 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold rounded-md text-xs transition-all duration-200 disabled:cursor-not-allowed"
               >
-                <Minus className="w-4 h-4" />
-                <span>Delete Selected</span>
+                <Minus className="w-3 h-3" />
+                <span>Delete</span>
               </button>
             </div>
           </div>
@@ -1580,174 +1697,40 @@ console.log(${arrayName}.length); // ${currentData.length}`;
 
       {/* Complexity Information */}
       {state.currentOperation && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="font-semibold text-blue-900">
-              Operation: {state.currentOperation.description}
-            </h4>
-          </div>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <span className="font-medium text-blue-800">Time Complexity:</span>
-              <span className="ml-2 font-mono text-blue-900 text-lg">
-                {state.currentOperation.complexity.time}
-              </span>
-            </div>
-            <div>
-              <span className="font-medium text-blue-800">Space Complexity:</span>
-              <span className="ml-2 font-mono text-blue-900 text-lg">
-                {state.currentOperation.complexity.space}
-              </span>
-            </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-blue-900">
+              {state.currentOperation.description}
+            </span>
+            <span className="font-mono text-blue-900">
+              Time: {state.currentOperation.complexity.time} | Space:{' '}
+              {state.currentOperation.complexity.space}
+            </span>
           </div>
         </div>
       )}
 
-      {/* Educational Information */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 sm:p-6">
-        <h4 className="text-base sm:text-lg font-semibold text-blue-900 mb-4">
-          Understanding{' '}
-          {arrayType === '2d' ? '2D Arrays' : arrayType === 'sparse' ? 'Sparse Arrays' : 'Arrays'}
-        </h4>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          <div>
-            <h5 className="font-medium text-blue-800 mb-2 text-sm sm:text-base">
-              Key Characteristics
-            </h5>
-            <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
-              {arrayType === '2d' ? (
-                <>
-                  <li>
-                    • <strong>Matrix Structure:</strong> Elements arranged in rows and columns
-                  </li>
-                  <li>
-                    • <strong>2D Indexing:</strong> Access with [row][column] or [row*cols+column]
-                  </li>
-                  <li>
-                    • <strong>Contiguous Memory:</strong> Stored in row-major or column-major order
-                  </li>
-                  <li>
-                    • <strong>O(1) Access:</strong> Direct access to any element by coordinates
-                  </li>
-                </>
-              ) : arrayType === 'sparse' ? (
-                <>
-                  <li>
-                    • <strong>Space Efficient:</strong> Only stores non-default values
-                  </li>
-                  <li>
-                    • <strong>Default Values:</strong> Assumes most elements have the same default
-                    value
-                  </li>
-                  <li>
-                    • <strong>Index Mapping:</strong> Maintains mapping between logical and physical
-                    indices
-                  </li>
-                  <li>
-                    • <strong>Memory Savings:</strong> Significant space reduction for sparse data
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    • <strong>Contiguous Memory:</strong> Elements stored in adjacent memory
-                    locations
-                  </li>
-                  <li>
-                    • <strong>Fixed Size:</strong>{' '}
-                    {arrayType === 'static'
-                      ? 'Cannot change size after creation'
-                      : 'Can resize dynamically'}
-                  </li>
-                  <li>
-                    • <strong>O(1) Access:</strong> Direct access to any element by index
-                  </li>
-                  <li>
-                    • <strong>O(n) Insert/Delete:</strong> May require shifting elements
-                  </li>
-                </>
-              )}
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-medium text-blue-800 mb-2 text-sm sm:text-base">
-              Real-World Applications
-            </h5>
-            <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
-              {arrayType === '2d' ? (
-                <>
-                  <li>
-                    • <strong>Images:</strong> Pixel matrices in digital images
-                  </li>
-                  <li>
-                    • <strong>Spreadsheets:</strong> Data organized in rows and columns
-                  </li>
-                  <li>
-                    • <strong>Matrices:</strong> Mathematical computations and transformations
-                  </li>
-                  <li>
-                    • <strong>Games:</strong> 2D game boards and tile-based worlds
-                  </li>
-                </>
-              ) : arrayType === 'sparse' ? (
-                <>
-                  <li>
-                    • <strong>Large Datasets:</strong> Scientific data with many zero/default values
-                  </li>
-                  <li>
-                    • <strong>Recommendation Systems:</strong> User-item matrices with sparse
-                    ratings
-                  </li>
-                  <li>
-                    • <strong>Text Analysis:</strong> Document-term matrices with few non-zero
-                    entries
-                  </li>
-                  <li>
-                    • <strong>Graph Algorithms:</strong> Adjacency matrices for sparse graphs
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    • <strong>Databases:</strong> Storing tabular data efficiently
-                  </li>
-                  <li>
-                    • <strong>Images:</strong> Pixel arrays in digital images
-                  </li>
-                  <li>
-                    • <strong>Buffers:</strong> Temporary storage for I/O operations
-                  </li>
-                  <li>
-                    • <strong>Algorithms:</strong> Foundation for sorting and searching
-                  </li>
-                </>
-              )}
-            </ul>
-          </div>
-        </div>
-      </div>
-
       {/* Settings */}
-      <div className="flex flex-wrap gap-6 pt-6 border-t border-gray-200">
-        <label className="flex items-center space-x-3">
+      <div className="flex flex-wrap gap-4 pt-3 border-t border-gray-200">
+        <label className="flex items-center space-x-2">
           <input
             type="checkbox"
             checked={showIndices}
             onChange={(e) => setShowIndices(e.target.checked)}
             className="rounded"
           />
-          <span className="text-gray-700">Show Indices</span>
+          <span className="text-gray-700 text-xs">Show Indices</span>
         </label>
-        <label className="flex items-center space-x-3">
+        <label className="flex items-center space-x-2">
           <input
             type="checkbox"
             checked={showMemoryAddresses}
             onChange={(e) => setShowMemoryAddresses(e.target.checked)}
             className="rounded"
           />
-          <span className="text-gray-700">Show Memory Addresses</span>
+          <span className="text-gray-700 text-xs">Memory Addresses</span>
         </label>
-        <div className="text-gray-600">
+        <div className="text-gray-600 text-xs">
           Size: {currentData.length}/{maxSize}
         </div>
       </div>

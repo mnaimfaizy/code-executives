@@ -351,26 +351,22 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg p-6 ${className}`}>
+    <div className={`bg-white rounded-lg p-6 ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
-            <GitBranch className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+          <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+            <GitBranch className="w-4 h-4 text-teal-600" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Kruskal's Algorithm
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Find minimum spanning tree using union-find
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900">Kruskal's Algorithm</h3>
+            <p className="text-sm text-gray-600">Find minimum spanning tree using union-find</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowInfo(!showInfo)}
-          className="p-2 text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+          className="p-2 text-gray-600 hover:text-teal-600 transition-colors"
         >
           <Info className="w-5 h-5" />
         </button>
@@ -378,11 +374,9 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
 
       {/* Info Panel */}
       {showInfo && (
-        <div className="mb-6 p-4 bg-teal-50 dark:bg-teal-900/20 rounded-lg border border-teal-200 dark:border-teal-800">
-          <h4 className="font-semibold text-teal-900 dark:text-teal-100 mb-2">
-            Kruskal's Algorithm Steps:
-          </h4>
-          <ul className="text-sm text-teal-800 dark:text-teal-200 space-y-1">
+        <div className="mb-6 p-4 bg-teal-50 rounded-lg border border-teal-200">
+          <h4 className="font-semibold text-teal-900 mb-2">Kruskal's Algorithm Steps:</h4>
+          <ul className="text-sm text-teal-800 space-y-1">
             <li>• Sort all edges by weight in ascending order</li>
             <li>• Initialize each vertex as its own disjoint set</li>
             <li>• For each edge in sorted order:</li>
@@ -439,48 +433,42 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-6">
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Step:</span>
-            <span className="ml-1 text-teal-600 dark:text-teal-400">{step}</span>
+            <span className="font-medium text-gray-700">Step:</span>
+            <span className="ml-1 text-teal-600">{step}</span>
           </div>
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">MST Edges:</span>
-            <span className="ml-1 text-teal-600 dark:text-teal-400">
+            <span className="font-medium text-gray-700">MST Edges:</span>
+            <span className="ml-1 text-teal-600">
               {mstEdges.length}/{nodes.length - 1}
             </span>
           </div>
           <div className="text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">Total Weight:</span>
-            <span className="ml-1 text-teal-600 dark:text-teal-400">{totalWeight}</span>
+            <span className="font-medium text-gray-700">Total Weight:</span>
+            <span className="ml-1 text-teal-600">{totalWeight}</span>
           </div>
         </div>
 
-        {isComplete && (
-          <div className="text-sm text-green-600 dark:text-green-400 font-medium">
-            ✓ MST Complete!
-          </div>
-        )}
+        {isComplete && <div className="text-sm text-green-600 font-medium">✓ MST Complete!</div>}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Edge List */}
-        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            Edges (sorted by weight):
-          </h4>
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-900 mb-3">Edges (sorted by weight):</h4>
           <div className="space-y-2 max-h-40 overflow-y-auto">
             {sortedEdges.map((edge, index) => (
               <div
                 key={edge.id}
                 className={`flex items-center justify-between px-3 py-2 rounded text-sm ${
                   index === currentEdgeIndex && !isComplete
-                    ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800'
+                    ? 'bg-yellow-100 text-yellow-800 border border-yellow-200'
                     : edge.selected
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800'
+                      ? 'bg-green-100 text-green-800 border border-green-200'
                       : edge.rejected
-                        ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800'
+                        ? 'bg-red-100 text-red-800 border border-red-200'
                         : edge.processed
-                          ? 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300'
-                          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                          ? 'bg-gray-100 text-gray-700'
+                          : 'bg-white text-gray-600'
                 }`}
               >
                 <span className="font-medium">
@@ -493,18 +481,16 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
         </div>
 
         {/* Union-Find Sets */}
-        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-            Disjoint Sets (Union-Find):
-          </h4>
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-900 mb-3">Disjoint Sets (Union-Find):</h4>
           <div className="space-y-2">
             {Object.entries(unionFindSets).map(([root, members], index) => (
               <div key={root} className="flex items-center space-x-2">
                 <div
                   className={`px-3 py-1 rounded text-sm font-medium border ${
                     index % 2 === 0
-                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800'
-                      : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-800'
+                      ? 'bg-blue-100 text-blue-800 border-blue-200'
+                      : 'bg-purple-100 text-purple-800 border-purple-200'
                   }`}
                 >
                   {members.sort().join(', ')}
@@ -517,22 +503,20 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
 
       {/* MST Edges */}
       {mstEdges.length > 0 && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-          <h4 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
+        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+          <h4 className="text-sm font-semibold text-green-900 mb-2">
             Minimum Spanning Tree Edges:
           </h4>
           <div className="flex items-center space-x-2 flex-wrap">
             {mstEdges.map((edge, index) => (
               <div key={index} className="flex items-center">
                 <div
-                  className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 
-                             rounded text-sm font-medium border border-green-200 dark:border-green-800"
+                  className="px-3 py-1 bg-green-100 text-green-800 
+                             rounded text-sm font-medium border border-green-200"
                 >
                   {edge.source}-{edge.target} ({edge.weight})
                 </div>
-                {index < mstEdges.length - 1 && (
-                  <span className="mx-2 text-green-600 dark:text-green-400">+</span>
-                )}
+                {index < mstEdges.length - 1 && <span className="mx-2 text-green-600">+</span>}
               </div>
             ))}
           </div>
@@ -540,8 +524,8 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
       )}
 
       {/* Graph Visualization */}
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <svg viewBox="0 0 600 400" className="w-full h-96 bg-gray-50 dark:bg-gray-900">
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <svg viewBox="0 0 600 400" className="w-full h-96 bg-gray-50">
           {/* Background pattern */}
           <defs>
             <pattern id="mst-grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -582,7 +566,7 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
                   5
                 }
                 textAnchor="middle"
-                className="text-xs font-bold fill-gray-700 dark:fill-gray-300"
+                className="text-xs font-bold fill-gray-700"
                 style={{ pointerEvents: 'none' }}
               >
                 {edge.weight}
@@ -619,19 +603,19 @@ const KruskalVisualization: React.FC<KruskalVisualizationProps> = ({ className =
       <div className="mt-4 flex flex-wrap gap-6 text-sm">
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-green-500"></div>
-          <span className="text-gray-700 dark:text-gray-300">MST Edge</span>
+          <span className="text-gray-700">MST Edge</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-red-500" style={{ strokeDasharray: '2,2' }}></div>
-          <span className="text-gray-700 dark:text-gray-300">Rejected Edge</span>
+          <span className="text-gray-700">Rejected Edge</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-yellow-500"></div>
-          <span className="text-gray-700 dark:text-gray-300">Current Edge</span>
+          <span className="text-gray-700">Current Edge</span>
         </div>
         <div className="flex items-center space-x-2">
           <div className="w-4 h-1 bg-gray-400"></div>
-          <span className="text-gray-700 dark:text-gray-300">Unprocessed</span>
+          <span className="text-gray-700">Unprocessed</span>
         </div>
       </div>
     </div>

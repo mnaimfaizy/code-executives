@@ -634,11 +634,9 @@ const BinaryTreeVisualization: React.FC<BinaryTreeVisualizationProps> = ({
 
       {/* Traversal Controls */}
       {showTraversal && nodes.size > 0 && (
-        <div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border-2 border-blue-100 shadow-sm">
+        <div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-100 shadow-sm">
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-              Traversal:
-            </label>
+            <label className="text-sm font-semibold text-blue-700">Traversal:</label>
             <select
               value={currentTraversalType}
               onChange={(e) =>
@@ -668,9 +666,9 @@ const BinaryTreeVisualization: React.FC<BinaryTreeVisualizationProps> = ({
           </button>
 
           {traversalOrder.length > 0 && (
-            <div className="flex items-center space-x-2 px-3 py-2 bg-white/60 dark:bg-gray-800/60 rounded-lg border border-blue-200">
-              <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">Order:</span>
-              <span className="text-sm font-medium text-blue-800 dark:text-blue-300">
+            <div className="flex items-center space-x-2 px-3 py-2 bg-white/60 rounded-lg border border-blue-200">
+              <span className="text-xs font-semibold text-blue-600">Order:</span>
+              <span className="text-sm font-medium text-blue-800">
                 {traversalOrder.map((id) => nodes.get(id)?.value).join(' → ')}
               </span>
             </div>
@@ -679,7 +677,7 @@ const BinaryTreeVisualization: React.FC<BinaryTreeVisualizationProps> = ({
       )}
 
       {/* Tree Visualization */}
-      <div className="relative bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-6 shadow-inner">
+      <div className="relative bg-gradient-to-br from-gray-50 via-white to-blue-50 rounded-xl border-2 border-gray-200 p-6 shadow-inner">
         <svg
           width={SVG_WIDTH}
           height={SVG_HEIGHT}
@@ -692,12 +690,10 @@ const BinaryTreeVisualization: React.FC<BinaryTreeVisualizationProps> = ({
 
         {nodes.size === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-8 border-2 border-gray-200 dark:border-gray-700 shadow-lg">
+            <div className="text-center bg-white/80 backdrop-blur-sm rounded-2xl p-8 border-2 border-gray-200 shadow-lg">
               <div className="text-6xl mb-4">🌳</div>
-              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Build Your Binary Tree
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-lg font-semibold text-gray-700 mb-1">Build Your Binary Tree</p>
+              <p className="text-sm text-gray-500">
                 Insert nodes to start visualizing the tree structure
               </p>
             </div>
@@ -706,61 +702,59 @@ const BinaryTreeVisualization: React.FC<BinaryTreeVisualizationProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="mt-4 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Legend</h4>
+      <div className="mt-4 bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-200">
+        <h4 className="text-sm font-semibold text-gray-900 mb-3">Legend</h4>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-green-500 rounded-full border-2 border-green-600"></div>
-            <span className="text-gray-700 dark:text-gray-300">Root Node</span>
+            <span className="text-gray-700">Root Node</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-white rounded-full border-2 border-blue-500"></div>
-            <span className="text-gray-700 dark:text-gray-300">Regular Node</span>
+            <span className="text-gray-700">Regular Node</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-blue-500 rounded-full border-2 border-blue-700 shadow-lg"></div>
-            <span className="text-gray-700 dark:text-gray-300">Traversal Path</span>
+            <span className="text-gray-700">Traversal Path</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-amber-400 rounded-full border-2 border-amber-500 shadow-lg"></div>
-            <span className="text-gray-700 dark:text-gray-300">Replacement</span>
+            <span className="text-gray-700">Replacement</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-red-700 shadow-lg"></div>
-            <span className="text-gray-700 dark:text-gray-300">Deleting</span>
+            <span className="text-gray-700">Deleting</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-5 h-5 bg-blue-100 rounded-full border border-blue-500 flex items-center justify-center">
               <span className="text-[8px] font-bold text-blue-600">1</span>
             </div>
-            <span className="text-gray-700 dark:text-gray-300">Traversal Step</span>
+            <span className="text-gray-700">Traversal Step</span>
           </div>
         </div>
       </div>
 
       {/* Tree Statistics */}
       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl p-4 border-2 border-blue-100 dark:border-blue-800 shadow-sm">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{nodes.size}</div>
-          <div className="text-sm font-medium text-blue-700 dark:text-blue-300">Total Nodes</div>
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-100 shadow-sm">
+          <div className="text-2xl font-bold text-blue-600">{nodes.size}</div>
+          <div className="text-sm font-medium text-blue-700">Total Nodes</div>
         </div>
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl p-4 border-2 border-purple-100 dark:border-purple-800 shadow-sm">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-100 shadow-sm">
+          <div className="text-2xl font-bold text-purple-600">
             {Math.max(...Array.from(nodes.values()).map((n) => n.level), -1) + 1}
           </div>
-          <div className="text-sm font-medium text-purple-700 dark:text-purple-300">Height</div>
+          <div className="text-sm font-medium text-purple-700">Height</div>
         </div>
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl p-4 border-2 border-green-100 dark:border-green-800 shadow-sm">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-green-100 shadow-sm">
+          <div className="text-2xl font-bold text-green-600">
             {Array.from(nodes.values()).filter((n) => !n.left && !n.right).length}
           </div>
-          <div className="text-sm font-medium text-green-700 dark:text-green-300">Leaf Nodes</div>
+          <div className="text-sm font-medium text-green-700">Leaf Nodes</div>
         </div>
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/30 dark:to-orange-900/30 rounded-xl p-4 border-2 border-amber-100 dark:border-amber-800 shadow-sm">
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {maxNodes - nodes.size}
-          </div>
-          <div className="text-sm font-medium text-amber-700 dark:text-amber-300">Remaining</div>
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border-2 border-amber-100 shadow-sm">
+          <div className="text-2xl font-bold text-amber-600">{maxNodes - nodes.size}</div>
+          <div className="text-sm font-medium text-amber-700">Remaining</div>
         </div>
       </div>
     </div>

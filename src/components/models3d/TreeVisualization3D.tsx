@@ -230,7 +230,7 @@ const TreeVisualization3D: React.FC<TreeVisualization3DProps> = ({
   };
 
   return (
-    <div className={`relative bg-gray-100 dark:bg-gray-900 rounded-lg ${className}`}>
+    <div className={`relative bg-gray-100 rounded-lg ${className}`}>
       {/* 3D Canvas */}
       <canvas
         ref={canvasRef}
@@ -266,79 +266,77 @@ const TreeVisualization3D: React.FC<TreeVisualization3DProps> = ({
       <div className="absolute bottom-4 left-4 flex items-center space-x-2">
         <button
           onClick={resetAnimation}
-          className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm
-                   border border-gray-200 dark:border-gray-700
-                   hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 bg-white rounded-lg shadow-sm
+                   border border-gray-200
+                   hover:bg-gray-50 transition-colors"
           title="Reset"
         >
-          <SkipBack className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          <SkipBack className="w-4 h-4 text-gray-600" />
         </button>
 
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm
-                   border border-gray-200 dark:border-gray-700
-                   hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 bg-white rounded-lg shadow-sm
+                   border border-gray-200
+                   hover:bg-gray-50 transition-colors"
           title={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Pause className="w-4 h-4 text-gray-600" />
           ) : (
-            <Play className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <Play className="w-4 h-4 text-gray-600" />
           )}
         </button>
 
         <button
           onClick={() => setRotationY((prev) => prev + Math.PI / 4)}
-          className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm
-                   border border-gray-200 dark:border-gray-700
-                   hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 bg-white rounded-lg shadow-sm
+                   border border-gray-200
+                   hover:bg-gray-50 transition-colors"
           title="Rotate"
         >
-          <RotateCcw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+          <RotateCcw className="w-4 h-4 text-gray-600" />
         </button>
       </div>
 
       {/* Info Panel */}
       <div
-        className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm
-                      border border-gray-200 dark:border-gray-700 max-w-xs"
+        className="absolute top-4 right-4 bg-white rounded-lg p-4 shadow-sm
+                      border border-gray-200 max-w-xs"
       >
         <div className="flex items-center space-x-2 mb-2">
-          <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <h4 className="font-semibold text-gray-900 dark:text-white text-sm">3D Binary Tree</h4>
+          <Eye className="w-4 h-4 text-blue-600" />
+          <h4 className="font-semibold text-gray-900 text-sm">3D Binary Tree</h4>
         </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+        <div className="text-xs text-gray-600 space-y-1">
           <div>• Drag to rotate view</div>
           <div>• Scroll to zoom in/out</div>
           <div>• Play to animate traversal</div>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-xs text-gray-500 dark:text-gray-500">
-            Zoom: {Math.round(zoom * 100)}%
-          </div>
+        <div className="mt-3 pt-3 border-t border-gray-200">
+          <div className="text-xs text-gray-500">Zoom: {Math.round(zoom * 100)}%</div>
         </div>
       </div>
 
       {/* Legend */}
       <div
-        className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm
-                      border border-gray-200 dark:border-gray-700"
+        className="absolute bottom-4 right-4 bg-white rounded-lg p-3 shadow-sm
+                      border border-gray-200"
       >
-        <div className="text-xs font-semibold text-gray-900 dark:text-white mb-2">Node Types</div>
+        <div className="text-xs font-semibold text-gray-900 mb-2">Node Types</div>
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-            <span className="text-xs text-gray-600 dark:text-gray-400">Root</span>
+            <span className="text-xs text-gray-600">Root</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-green-500"></div>
-            <span className="text-xs text-gray-600 dark:text-gray-400">Internal</span>
+            <span className="text-xs text-gray-600">Internal</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <span className="text-xs text-gray-600 dark:text-gray-400">Leaf</span>
+            <span className="text-xs text-gray-600">Leaf</span>
           </div>
         </div>
       </div>

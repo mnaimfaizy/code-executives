@@ -1050,15 +1050,13 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
     <div className={`rb-tree-visualization ${className}`}>
       {/* Status Message Bar */}
       {statusMessage && (
-        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 dark:from-blue-900/20 dark:via-purple-900/20 dark:to-pink-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border border-blue-200 rounded-lg">
           <div className="flex items-center space-x-2">
             <div className="animate-pulse">
               <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
             </div>
-            <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-              {statusMessage}
-            </span>
-            <span className="text-xs text-blue-600 dark:text-blue-400 ml-auto">
+            <span className="text-sm font-medium text-blue-900">{statusMessage}</span>
+            <span className="text-xs text-blue-600 ml-auto">
               {animationState !== 'idle' && `(${animationState})`}
             </span>
           </div>
@@ -1135,10 +1133,10 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       </div>
 
       {/* Red-Black Properties */}
-      <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+      <div className="mb-4 p-4 bg-red-50 rounded-lg">
         <div className="flex items-center justify-between">
           <div className="text-sm">
-            <span className="font-medium text-red-700 dark:text-red-300">RB Properties: </span>
+            <span className="font-medium text-red-700">RB Properties: </span>
             <span
               className={`font-semibold ${isValidRBTree() ? 'text-green-600' : 'text-red-600'}`}
             >
@@ -1150,14 +1148,14 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
               </span>
             )}
           </div>
-          <div className="text-xs text-red-600 dark:text-red-400">
+          <div className="text-xs text-red-600">
             Root=Black, Red→Black children, Equal black heights
           </div>
         </div>
       </div>
 
       {/* Tree Visualization */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+      <div className="relative bg-white rounded-lg border border-gray-200 p-4">
         <svg
           width={SVG_WIDTH}
           height={SVG_HEIGHT}
@@ -1261,12 +1259,12 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
         {nodes.size === 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center backdrop-blur-sm bg-white/30 dark:bg-gray-800/30 rounded-2xl p-8 border-4 border-gradient-to-r from-red-200 via-purple-200 to-blue-200 shadow-xl">
+            <div className="text-center backdrop-blur-sm bg-white/30 rounded-2xl p-8 border-4 border-gradient-to-r from-red-200 via-purple-200 to-blue-200 shadow-xl">
               <div className="text-6xl mb-4 animate-pulse">🔴⚫</div>
-              <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <p className="text-base font-medium text-gray-700 mb-2">
                 Add nodes to build your Red-Black Tree
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-gray-500">
                 Watch automatic recoloring and rotations maintain balance
               </p>
             </div>
@@ -1275,37 +1273,35 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
       </div>
 
       {/* Legend */}
-      <div className="mt-4 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 border border-gray-200 dark:border-gray-700 shadow-sm">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
-          <Palette className="w-5 h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
+      <div className="mt-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border border-gray-200 shadow-sm">
+        <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+          <Palette className="w-5 h-5 mr-2 text-indigo-600" />
           Node Types & States
         </h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+          <div className="flex items-center space-x-3 bg-white rounded-lg p-2 shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-400 to-red-600 shadow-md"></div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Red Node</span>
+            <span className="font-medium text-gray-700">Red Node</span>
           </div>
-          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+          <div className="flex items-center space-x-3 bg-white rounded-lg p-2 shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 shadow-md"></div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Black Node</span>
+            <span className="font-medium text-gray-700">Black Node</span>
           </div>
-          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+          <div className="flex items-center space-x-3 bg-white rounded-lg p-2 shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-md ring-2 ring-blue-300"></div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Search Path</span>
+            <span className="font-medium text-gray-700">Search Path</span>
           </div>
-          <div className="flex items-center space-x-3 bg-white dark:bg-gray-800 rounded-lg p-2 shadow-sm">
+          <div className="flex items-center space-x-3 bg-white rounded-lg p-2 shadow-sm">
             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 shadow-md animate-pulse"></div>
-            <span className="font-medium text-gray-700 dark:text-gray-300">Violation</span>
+            <span className="font-medium text-gray-700">Violation</span>
           </div>
         </div>
       </div>
 
       {/* Red-Black Properties Reference */}
-      <div className="mt-4 bg-gradient-to-br from-red-50 to-gray-50 dark:from-red-900/20 dark:to-gray-900/20 rounded-lg p-4">
-        <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
-          Red-Black Tree Properties
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-700 dark:text-gray-300">
+      <div className="mt-4 bg-gradient-to-br from-red-50 to-gray-50 rounded-lg p-4">
+        <h4 className="text-sm font-medium text-gray-900 mb-2">Red-Black Tree Properties</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-gray-700">
           <div>1. Every node is either red or black</div>
           <div>2. Root is always black</div>
           <div>3. All leaves (NIL) are black</div>

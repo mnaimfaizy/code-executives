@@ -96,7 +96,7 @@ const HashTables: React.FC = () => {
                       e.target.value as 'chaining' | 'linear-probing' | 'quadratic-probing'
                     )
                   }
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
                 >
                   <option value="chaining">Separate Chaining</option>
                   <option value="linear-probing">Linear Probing</option>
@@ -173,63 +173,47 @@ const HashTables: React.FC = () => {
           </div>
 
           {/* Performance & Load Factor */}
-          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-              Performance Factors
-            </h3>
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">Performance Factors</h3>
 
             <div className="space-y-4">
               <div
-                className={`flex justify-between items-center p-3 bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 rounded-lg`}
+                className={`flex justify-between items-center p-3 bg-${theme.primary}-50 rounded-lg`}
               >
-                <span className="font-medium text-gray-900 dark:text-white">Insert</span>
-                <span
-                  className={`text-${theme.primary}-600 dark:text-${theme.primary}-400 font-mono font-semibold`}
-                >
+                <span className="font-medium text-gray-900">Insert</span>
+                <span className={`text-${theme.primary}-600 font-mono font-semibold`}>
                   O(1) avg
                 </span>
               </div>
 
               <div
-                className={`flex justify-between items-center p-3 bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 rounded-lg`}
+                className={`flex justify-between items-center p-3 bg-${theme.primary}-50 rounded-lg`}
               >
-                <span className="font-medium text-gray-900 dark:text-white">Delete</span>
-                <span
-                  className={`text-${theme.primary}-600 dark:text-${theme.primary}-400 font-mono font-semibold`}
-                >
+                <span className="font-medium text-gray-900">Delete</span>
+                <span className={`text-${theme.primary}-600 font-mono font-semibold`}>
                   O(1) avg
                 </span>
               </div>
 
               <div
-                className={`flex justify-between items-center p-3 bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 rounded-lg`}
+                className={`flex justify-between items-center p-3 bg-${theme.primary}-50 rounded-lg`}
               >
-                <span className="font-medium text-gray-900 dark:text-white">Search</span>
-                <span
-                  className={`text-${theme.primary}-600 dark:text-${theme.primary}-400 font-mono font-semibold`}
-                >
+                <span className="font-medium text-gray-900">Search</span>
+                <span className={`text-${theme.primary}-600 font-mono font-semibold`}>
                   O(1) avg
                 </span>
               </div>
 
-              <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                <span className="font-medium text-gray-900 dark:text-white">Worst Case</span>
-                <span className="text-red-600 dark:text-red-400 font-mono font-semibold">O(n)</span>
+              <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                <span className="font-medium text-gray-900">Worst Case</span>
+                <span className="text-red-600 font-mono font-semibold">O(n)</span>
               </div>
             </div>
 
-            <div
-              className={`mt-6 p-4 bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 rounded-lg`}
-            >
-              <h4
-                className={`font-semibold text-${theme.primary}-700 dark:text-${theme.primary}-300 mb-2`}
-              >
-                Load Factor Impact
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                Load Factor = n / m (entries / buckets)
-              </p>
-              <ul className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+            <div className={`mt-6 p-4 bg-${theme.primary}-50 rounded-lg`}>
+              <h4 className={`font-semibold text-${theme.primary}-700 mb-2`}>Load Factor Impact</h4>
+              <p className="text-sm text-gray-600 mb-2">Load Factor = n / m (entries / buckets)</p>
+              <ul className="text-xs text-gray-500 space-y-1">
                 <li>• &lt; 0.7: Excellent performance</li>
                 <li>• 0.7-0.8: Good performance</li>
                 <li>• &gt; 0.8: Consider resizing</li>
@@ -239,62 +223,42 @@ const HashTables: React.FC = () => {
         </div>
 
         {/* Hash Function Types */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-            Popular Hash Functions
-          </h3>
+        <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-8 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-8">Popular Hash Functions</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
-              className={`bg-gradient-to-br from-${theme.primary}-50 to-${theme.secondary}-50 dark:from-${theme.primary}-900/20 dark:to-${theme.secondary}-900/20 rounded-lg p-6`}
+              className={`bg-gradient-to-br from-${theme.primary}-50 to-${theme.secondary}-50 rounded-lg p-6`}
             >
-              <h4
-                className={`font-semibold text-${theme.primary}-700 dark:text-${theme.primary}-300 mb-3`}
-              >
-                Simple Hash
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <h4 className={`font-semibold text-${theme.primary}-700 mb-3`}>Simple Hash</h4>
+              <p className="text-sm text-gray-600 mb-4">
                 Sum of ASCII values modulo table size. Easy to understand but poor distribution.
               </p>
-              <div
-                className={`text-xs text-${theme.primary}-600 dark:text-${theme.primary}-400 font-mono bg-white dark:bg-gray-800 p-2 rounded`}
-              >
+              <div className={`text-xs text-${theme.primary}-600 font-mono bg-white p-2 rounded`}>
                 hash = (sum of chars) % size
               </div>
             </div>
 
             <div
-              className={`bg-gradient-to-br from-${theme.secondary}-50 to-${theme.accent}-50 dark:from-${theme.secondary}-900/20 dark:to-${theme.accent}-900/20 rounded-lg p-6`}
+              className={`bg-gradient-to-br from-${theme.secondary}-50 to-${theme.accent}-50 rounded-lg p-6`}
             >
-              <h4
-                className={`font-semibold text-${theme.secondary}-700 dark:text-${theme.secondary}-300 mb-3`}
-              >
-                DJB2 Hash
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <h4 className={`font-semibold text-${theme.secondary}-700 mb-3`}>DJB2 Hash</h4>
+              <p className="text-sm text-gray-600 mb-4">
                 Good distribution with simple bit operations. Popular in practice.
               </p>
-              <div
-                className={`text-xs text-${theme.secondary}-600 dark:text-${theme.secondary}-400 font-mono bg-white dark:bg-gray-800 p-2 rounded`}
-              >
+              <div className={`text-xs text-${theme.secondary}-600 font-mono bg-white p-2 rounded`}>
                 hash = hash * 33 + char
               </div>
             </div>
 
             <div
-              className={`bg-gradient-to-br from-${theme.accent}-50 to-${theme.primary}-50 dark:from-${theme.accent}-900/20 dark:to-${theme.primary}-900/20 rounded-lg p-6`}
+              className={`bg-gradient-to-br from-${theme.accent}-50 to-${theme.primary}-50 rounded-lg p-6`}
             >
-              <h4
-                className={`font-semibold text-${theme.accent}-700 dark:text-${theme.accent}-300 mb-3`}
-              >
-                FNV-1a Hash
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+              <h4 className={`font-semibold text-${theme.accent}-700 mb-3`}>FNV-1a Hash</h4>
+              <p className="text-sm text-gray-600 mb-4">
                 Fast and well-distributed. Good avalanche properties.
               </p>
-              <div
-                className={`text-xs text-${theme.accent}-600 dark:text-${theme.accent}-400 font-mono bg-white dark:bg-gray-800 p-2 rounded`}
-              >
+              <div className={`text-xs text-${theme.accent}-600 font-mono bg-white p-2 rounded`}>
                 hash = (hash ^ char) * prime
               </div>
             </div>
@@ -302,133 +266,89 @@ const HashTables: React.FC = () => {
         </div>
 
         {/* Real-World Applications */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Real-World Applications
-          </h3>
+        <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-8 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">Real-World Applications</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
               <div
-                className={`w-12 h-12 bg-${theme.primary}-100 dark:bg-${theme.primary}-900/20 rounded-lg flex items-center justify-center mx-auto mb-4`}
+                className={`w-12 h-12 bg-${theme.primary}-100 rounded-lg flex items-center justify-center mx-auto mb-4`}
               >
-                <Search
-                  className={`w-6 h-6 text-${theme.primary}-600 dark:text-${theme.primary}-400`}
-                />
+                <Search className={`w-6 h-6 text-${theme.primary}-600`} />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Database Indexing
-              </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Fast record lookup and query optimization
-              </p>
+              <h4 className="font-semibold text-gray-900 mb-2">Database Indexing</h4>
+              <p className="text-sm text-gray-600">Fast record lookup and query optimization</p>
             </div>
 
             <div className="text-center">
               <div
-                className={`w-12 h-12 bg-${theme.secondary}-100 dark:bg-${theme.secondary}-900/20 rounded-lg flex items-center justify-center mx-auto mb-4`}
+                className={`w-12 h-12 bg-${theme.secondary}-100 rounded-lg flex items-center justify-center mx-auto mb-4`}
               >
-                <Zap
-                  className={`w-6 h-6 text-${theme.secondary}-600 dark:text-${theme.secondary}-400`}
-                />
+                <Zap className={`w-6 h-6 text-${theme.secondary}-600`} />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Caching Systems</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Redis, Memcached for fast data retrieval
-              </p>
+              <h4 className="font-semibold text-gray-900 mb-2">Caching Systems</h4>
+              <p className="text-sm text-gray-600">Redis, Memcached for fast data retrieval</p>
             </div>
 
             <div className="text-center">
               <div
-                className={`w-12 h-12 bg-${theme.accent}-100 dark:bg-${theme.accent}-900/20 rounded-lg flex items-center justify-center mx-auto mb-4`}
+                className={`w-12 h-12 bg-${theme.accent}-100 rounded-lg flex items-center justify-center mx-auto mb-4`}
               >
-                <Users
-                  className={`w-6 h-6 text-${theme.accent}-600 dark:text-${theme.accent}-400`}
-                />
+                <Users className={`w-6 h-6 text-${theme.accent}-600`} />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">User Sessions</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Web application session management
-              </p>
+              <h4 className="font-semibold text-gray-900 mb-2">User Sessions</h4>
+              <p className="text-sm text-gray-600">Web application session management</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Hash className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Hash className="w-6 h-6 text-orange-600" />
               </div>
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Symbol Tables</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Compiler variable and function lookup
-              </p>
+              <h4 className="font-semibold text-gray-900 mb-2">Symbol Tables</h4>
+              <p className="text-sm text-gray-600">Compiler variable and function lookup</p>
             </div>
           </div>
         </div>
 
         {/* Implementation Examples */}
-        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-xl p-8 mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Language Implementations
-          </h3>
+        <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl p-8 mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">Language Implementations</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              className={`bg-${theme.primary}-50 dark:bg-${theme.primary}-900/20 rounded-lg p-4`}
-            >
-              <h4
-                className={`font-semibold text-${theme.primary}-700 dark:text-${theme.primary}-300 mb-3`}
-              >
-                JavaScript
-              </h4>
-              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+            <div className={`bg-${theme.primary}-50 rounded-lg p-4`}>
+              <h4 className={`font-semibold text-${theme.primary}-700 mb-3`}>JavaScript</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>
-                  • <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Map</code>{' '}
-                  and <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">Set</code>{' '}
-                  objects
+                  • <code className="text-xs bg-gray-200 px-1 rounded">Map</code> and{' '}
+                  <code className="text-xs bg-gray-200 px-1 rounded">Set</code> objects
                 </li>
                 <li>• Object property lookup</li>
                 <li>• V8 hidden classes</li>
               </ul>
             </div>
 
-            <div
-              className={`bg-${theme.secondary}-50 dark:bg-${theme.secondary}-900/20 rounded-lg p-4`}
-            >
-              <h4
-                className={`font-semibold text-${theme.secondary}-700 dark:text-${theme.secondary}-300 mb-3`}
-              >
-                Python
-              </h4>
-              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+            <div className={`bg-${theme.secondary}-50 rounded-lg p-4`}>
+              <h4 className={`font-semibold text-${theme.secondary}-700 mb-3`}>Python</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>
-                  • <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">dict</code>{' '}
-                  built-in type
+                  • <code className="text-xs bg-gray-200 px-1 rounded">dict</code> built-in type
                 </li>
                 <li>
-                  • <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">set</code>{' '}
-                  collections
+                  • <code className="text-xs bg-gray-200 px-1 rounded">set</code> collections
                 </li>
                 <li>• Module namespace lookup</li>
               </ul>
             </div>
 
-            <div className={`bg-${theme.accent}-50 dark:bg-${theme.accent}-900/20 rounded-lg p-4`}>
-              <h4
-                className={`font-semibold text-${theme.accent}-700 dark:text-${theme.accent}-300 mb-3`}
-              >
-                Java
-              </h4>
-              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+            <div className={`bg-${theme.accent}-50 rounded-lg p-4`}>
+              <h4 className={`font-semibold text-${theme.accent}-700 mb-3`}>Java</h4>
+              <ul className="text-sm text-gray-600 space-y-1">
                 <li>
-                  •{' '}
-                  <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashMap</code>{' '}
-                  and{' '}
-                  <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">HashSet</code>
+                  • <code className="text-xs bg-gray-200 px-1 rounded">HashMap</code> and{' '}
+                  <code className="text-xs bg-gray-200 px-1 rounded">HashSet</code>
                 </li>
                 <li>
-                  •{' '}
-                  <code className="text-xs bg-gray-200 dark:bg-gray-700 px-1 rounded">
-                    ConcurrentHashMap
-                  </code>
+                  • <code className="text-xs bg-gray-200 px-1 rounded">ConcurrentHashMap</code>
                 </li>
                 <li>• String interning</li>
               </ul>
@@ -438,18 +358,14 @@ const HashTables: React.FC = () => {
 
         {/* When to Use Hash Tables */}
         <div
-          className={`bg-gradient-to-r from-${theme.primary}-50 to-${theme.secondary}-50 dark:from-${theme.primary}-900/20 dark:to-${theme.secondary}-900/20 rounded-xl p-8 mb-8`}
+          className={`bg-gradient-to-r from-${theme.primary}-50 to-${theme.secondary}-50 rounded-xl p-8 mb-8`}
         >
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-            When to Use Hash Tables
-          </h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-8">When to Use Hash Tables</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-semibold text-green-700 dark:text-green-300 mb-4">
-                ✅ Great For
-              </h4>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+              <h4 className="font-semibold text-green-700 mb-4">✅ Great For</h4>
+              <ul className="space-y-2 text-gray-600">
                 <li className="flex items-start">
                   <span className="text-green-500 mr-2 mt-1">•</span>
                   Fast lookups, insertions, and deletions
@@ -474,10 +390,8 @@ const HashTables: React.FC = () => {
             </div>
 
             <div>
-              <h4 className="font-semibold text-red-700 dark:text-red-300 mb-4">
-                ❌ Consider Alternatives
-              </h4>
-              <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+              <h4 className="font-semibold text-red-700 mb-4">❌ Consider Alternatives</h4>
+              <ul className="space-y-2 text-gray-600">
                 <li className="flex items-start">
                   <span className="text-red-500 mr-2 mt-1">•</span>
                   When you need ordered data (use BST)
