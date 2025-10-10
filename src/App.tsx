@@ -1,6 +1,6 @@
 import React, { lazy, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { HelmetProvider } from 'react-helmet-async';
+import { HelmetProvider } from '@dr.pogodin/react-helmet';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import Footer from './components/Footer';

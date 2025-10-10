@@ -23,7 +23,7 @@
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-helmet-async": "^2.0.5",
+    "@dr.pogodin/react-helmet": "^3.0.4",
     "react-router-dom": "^7.9.1",
     "tailwindcss": "^4.1.13",
     "three": "^0.180.0",
