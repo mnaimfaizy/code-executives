@@ -560,7 +560,7 @@ const RedBlackTreeVisualization: React.FC<RBVisualizationProps> = ({
 
       return [nodeMap, currentRoot];
     },
-    [rotateLeft, rotateRight, setRotatingNodes, setRecoloringNodes]
+    [rotateLeft, rotateRight, setRotatingNodes]
   );
 
   // Red-Black Tree deletion

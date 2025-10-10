@@ -197,7 +197,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
       setMessage(`Searching for ${key}...`);
 
       const path: BTreeNode[] = [];
-      let current: BTreeNode | null = root;
+      const current: BTreeNode | null = root;
 
       const searchStep = (node: BTreeNode | null, step: number) => {
         if (!node) {
@@ -464,7 +464,7 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
             calculatePositions(finalRoot);
           }
           setRoot(finalRoot ? { ...finalRoot } : null);
-        } catch (error) {
+        } catch {
           setMessage(`Key ${key} not found in tree`);
         }
 
