@@ -200,9 +200,11 @@ const Header: React.FC = () => {
             className="font-bold tracking-tight text-gray-900 hover:text-indigo-600 transition-colors flex items-center space-x-2"
             aria-label="Code Executives Home"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
-              <Code className="w-4 h-4 text-white" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="Code Executives Logo"
+              className="w-8 h-8 rounded-lg shadow-md"
+            />
             <span className="text-xl hidden sm:inline">Code Executives</span>
           </Link>
 
