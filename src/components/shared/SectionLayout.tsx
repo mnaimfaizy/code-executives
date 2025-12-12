@@ -37,7 +37,7 @@ const SectionLayout: React.FC<SectionLayoutProps> = ({
           {/* Left Column - Main Content */}
           <div className={sectionClasses.mainContent}>{mainContent}</div>
           {/* Right Column - Navigation & Quick Links */}
-          <div className={`${sectionClasses.sidebar} sticky top-6 self-start`}>{sidebar}</div>
+          <div className={`${sectionClasses.sidebar} lg:sticky lg:top-6 lg:self-start`}>{sidebar}</div>
         </div>
       ) : (
         <div className="w-full">{mainContent}</div>
