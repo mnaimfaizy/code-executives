@@ -542,8 +542,8 @@ const Sidebar: React.FC = () => {
           'fixed left-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 bg-white shadow-lg transition-transform duration-300 ease-out border-r overflow-y-auto',
           // Mobile behavior
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-          // Desktop behavior - always visible
-          'lg:translate-x-0 lg:static lg:top-auto lg:h-auto lg:min-h-[calc(100vh-4rem)] lg:z-30 lg:shadow-sm',
+          // Desktop behavior - sticky and always visible
+          'lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:z-30 lg:shadow-sm',
           // Dynamic border color
           getThemeColorClass(theme, 'border'),
           // Smooth scrolling
