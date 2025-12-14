@@ -20,7 +20,7 @@ Interactive programming education platform with 70+ visualizations covering Git,
 
 ### Step 3: Copy This Website URL
 ```
-https://code-executives.com
+https://codexecutives.com
 ```
 
 ### Step 4: Add These Topics (copy one at a time, press Enter after each)
@@ -100,7 +100,7 @@ Currently, your repository has **no description, no website link, and no topics*
 
 After this update:
 - ✅ Appears in 31+ topic searches
-- ✅ Direct link to https://code-executives.com
+- ✅ Direct link to https://codexecutives.com
 - ✅ Professional appearance
 - ✅ Better discoverability and SEO
 

@@ -62,7 +62,7 @@ learning experiences.
 
 ### Website
 ```
-https://code-executives.com
+https://codexecutives.com
 ```
 
 ### Topics (31 total)
@@ -140,7 +140,7 @@ https://code-executives.com
 │ Structures, Big-O, Python, and RxJS...                 │
 │                                                          │
 │ About                                          ⚙️       │
-│ 🌐 https://code-executives.com                          │
+│ 🌐 https://codexecutives.com                          │
 │                                                          │
 │ 🏷️ educational-platform  interactive-learning           │
 │    programming-education  react  typescript  vite        │
@@ -162,7 +162,7 @@ After implementation, the repository will be discoverable through:
 ## 🔗 Quick Links
 
 - **Repository**: https://github.com/mnaimfaizy/code-executives
-- **Live Website**: https://code-executives.com
+- **Live Website**: https://codexecutives.com
 - **Update About**: Click ⚙️ next to About section
 
 ## ⏱️ Time Investment vs. Impact

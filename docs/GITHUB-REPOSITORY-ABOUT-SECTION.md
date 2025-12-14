@@ -16,7 +16,7 @@ Interactive programming education platform with 70+ visualizations. Learn Git, J
 
 ## 🌐 Website URL
 
-**Live Website**: `https://code-executives.com`
+**Live Website**: `https://codexecutives.com`
 
 ## 🏷️ Repository Topics/Tags
 
@@ -71,7 +71,7 @@ Add the following topics to improve discoverability and SEO. Topics help users f
 2. Click the ⚙️ (gear/settings) icon next to "About" on the right side of the repository page
 3. In the dialog that appears:
    - **Description**: Paste the short description from above
-   - **Website**: Enter `https://code-executives.com`
+   - **Website**: Enter `https://codexecutives.com`
    - **Topics**: Add each topic from the list above (separated by pressing Enter after each)
    - **Check** "Use your GitHub Pages website" if applicable
 4. Click "Save changes"
@@ -82,7 +82,7 @@ Add the following topics to improve discoverability and SEO. Topics help users f
 # Using GitHub CLI (gh)
 gh repo edit mnaimfaizy/code-executives \
   --description "Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and Three.js for immersive learning experiences." \
-  --homepage "https://code-executives.com"
+  --homepage "https://codexecutives.com"
 
 # Add topics (requires separate API calls or manual addition via web interface)
 ```
@@ -140,7 +140,7 @@ JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React,
 TypeScript, and Three.js for immersive learning experiences.
 
 🌐 Website
-https://code-executives.com
+https://codexecutives.com
 
 🏷️ Topics
 educational-platform  interactive-learning  programming-education  react  typescript  

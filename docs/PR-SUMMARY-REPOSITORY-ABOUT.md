@@ -16,7 +16,7 @@ This PR provides complete documentation and ready-to-use content for creating a 
    - Highlights key features (70+ visualizations, 7 modules)
 
 2. ✅ **Live Website Link**
-   - URL: `https://code-executives.com`
+   - URL: `https://codexecutives.com`
    - Verified from codebase SEO components
    - Prominently featured in documentation
 
@@ -64,7 +64,7 @@ and RxJS.
 
 ### Website
 ```
-https://code-executives.com
+https://codexecutives.com
 ```
 
 ### Topics (31 Total)
@@ -163,7 +163,7 @@ learn-to-code
 | Metric | Before | After |
 |--------|--------|-------|
 | Description | ❌ None | ✅ 243 chars, SEO-optimized |
-| Website Link | ❌ None | ✅ https://code-executives.com |
+| Website Link | ❌ None | ✅ https://codexecutives.com |
 | Topics | ❌ None | ✅ 31 curated tags |
 | Topic Coverage | ❌ 0 pages | ✅ 31+ topic pages |
 | Discoverability | ⬇️ Low | ⬆️ High |

@@ -28,7 +28,7 @@ Interactive programming education platform with 70+ visualizations. Learn Git, J
 
 ### 2. Website
 ```
-https://code-executives.com
+https://codexecutives.com
 ```
 
 ### 3. Topics (31 tags)
@@ -53,7 +53,7 @@ See the complete list in [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./REPOSITORY-ABOU
 
 ### Step 2: Add Information
 1. **Description**: Copy and paste from option above
-2. **Website**: Enter `https://code-executives.com`
+2. **Website**: Enter `https://codexecutives.com`
 3. **Topics**: Add topics one at a time (press Enter after each)
    - Start with essential topics
    - Add content topics (git-tutorial, data-structures, etc.)
@@ -130,7 +130,7 @@ After implementation, your repository About section will look like this:
 │ TypeScript, and Three.js for immersive learning            │
 │ experiences.                                                │
 │                                                             │
-│ 🌐 https://code-executives.com                             │
+│ 🌐 https://codexecutives.com                             │
 │                                                             │
 │ 🏷️ educational-platform  interactive-learning              │
 │    programming-education  react  typescript  vite           │
@@ -147,7 +147,7 @@ Use this checklist to ensure everything is complete:
 - [ ] Navigate to repository settings
 - [ ] Click gear icon next to About
 - [ ] Add description (copied from quick reference)
-- [ ] Add website URL: https://code-executives.com
+- [ ] Add website URL: https://codexecutives.com
 - [ ] Add all 31 topics (one at a time)
 - [ ] Save changes
 - [ ] Verify description displays correctly

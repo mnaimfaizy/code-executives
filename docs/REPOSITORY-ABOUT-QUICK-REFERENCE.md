@@ -16,7 +16,7 @@ Interactive programming education platform with 70+ visualizations. Learn Git, J
 
 ### Website URL
 ```
-https://code-executives.com
+https://codexecutives.com
 ```
 
 ### Topics (copy and paste one at a time)
@@ -105,7 +105,7 @@ web-development
 ## 🔗 Quick Access
 
 - **Repository**: https://github.com/mnaimfaizy/code-executives
-- **Live Site**: https://code-executives.com
+- **Live Site**: https://codexecutives.com
 - **Edit About**: Click ⚙️ icon next to "About" on repository page
 
 ## ✅ Quick Steps
