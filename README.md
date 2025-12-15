@@ -2,7 +2,11 @@
 
 **Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
 
+**🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
+
 **✨ Now featuring 7 complete learning modules with 70+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, and a LeetCode-style playground with advanced debugging and gamification.**
+
+> **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
 ## 🌟 Features
 
