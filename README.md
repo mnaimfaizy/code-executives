@@ -172,6 +172,51 @@ yarn build
 
 The built application will be in the `dist/` directory.
 
+### 🌐 Deploying to cPanel (Apache)
+
+Code Executives is a **Single Page Application (SPA)** that uses client-side routing via React Router. When deployed on a traditional Apache/cPanel host, you need to tell Apache to serve `index.html` for every URL so that React Router can handle navigation. Without this step, directly visiting any URL (e.g. `https://codexecutives.com/javascript`) will return a **404 error** because Apache looks for a physical file at that path.
+
+**This repository already includes the required `.htaccess` file** (`public/.htaccess`) which Vite automatically copies to `dist/` on every build.
+
+#### Step-by-step cPanel deployment
+
+1. **Build the application**
+
+   ```bash
+   npm run build
+   ```
+
+   The `dist/` folder now contains the complete production bundle, including the `.htaccess` file.
+
+2. **Upload `dist/` contents to your public_html directory**
+
+   Using cPanel's File Manager or FTP, upload **all files and folders** inside `dist/` (not the folder itself) to your domain's `public_html` directory (or the sub-directory you are deploying to).
+
+   > ⚠️ Make sure to upload hidden files as well — the `.htaccess` file starts with a dot and can be invisible in some FTP clients. Enable "Show Hidden Files" in cPanel File Manager.
+
+3. **Verify `mod_rewrite` is enabled**
+
+   The `.htaccess` relies on Apache's `mod_rewrite` module. Most cPanel hosts have this enabled by default. If you still see 404 errors after uploading, contact your host to confirm `mod_rewrite` is active.
+
+4. **Test direct URL access**
+
+   Open your browser and navigate directly to a deep URL such as `https://yourdomain.com/javascript` or `https://yourdomain.com/git`. The page should load correctly via React Router.
+
+#### How the `.htaccess` works
+
+```apache
+Options -MultiViews
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [QSA,L]
+```
+
+- Requests for **real files** (JS/CSS chunks, images, fonts) are served directly.
+- All other requests are **internally rewritten** to `index.html`, letting React Router decide what to render.
+
+> **No Node.js server is required.** The application is a fully static bundle that works with any web server capable of serving static files.
+
 ## 🎓 Learning Modules
 
 ### 📚 **Git Tutorial (Complete)**

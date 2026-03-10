@@ -1,0 +1,20 @@
+# ============================================================
+# Apache configuration for cPanel/Apache SPA (Single Page App)
+# ============================================================
+# This file is required so that React Router can handle client-
+# side routing when a user directly visits any URL path (e.g.
+# https://codexecutives.com/javascript). Without it, Apache
+# would return a 404 for any path that does not map to a real
+# file on disk.
+# ============================================================
+
+Options -MultiViews
+RewriteEngine On
+
+# If the request is for an existing file or directory, serve it
+# directly (assets, images, JS/CSS chunks, etc.).
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Otherwise redirect to index.html so React Router takes over.
+RewriteRule ^ index.html [QSA,L]
