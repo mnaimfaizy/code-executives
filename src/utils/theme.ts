@@ -84,6 +84,14 @@ export const theme = {
       border: 'indigo-100',
       shadow: 'indigo-200',
     },
+    ai: {
+      primary: 'rose',
+      secondary: 'fuchsia',
+      accent: 'violet',
+      gradient: 'from-rose-50 via-fuchsia-50 to-violet-50',
+      border: 'rose-200',
+      shadow: 'rose-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',
