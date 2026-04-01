@@ -14,6 +14,7 @@ import {
   ChevronDown,
   BookOpen,
   Boxes,
+  Brain,
 } from 'lucide-react';
 import { useUI } from '../shared/contexts';
 
@@ -109,6 +110,12 @@ const Header: React.FC = () => {
           icon: <GitBranch className="w-4 h-4" />,
           description: 'Version control mastery',
         },
+        {
+          label: 'AI Fundamentals',
+          path: '/ai',
+          icon: <Brain className="w-4 h-4" />,
+          description: 'AI & Machine Learning fundamentals',
+        },
       ],
     },
   ];
@@ -172,6 +179,7 @@ const Header: React.FC = () => {
     if (path === '/git') return 'text-orange-600 bg-orange-50';
     if (path === '/datastructures' || path === '/systemdesign') return 'text-blue-600 bg-blue-50';
     if (path === '/bigo') return 'text-purple-600 bg-purple-50';
+    if (path === '/ai') return 'text-rose-600 bg-rose-50';
     return 'text-gray-700 hover:bg-gray-50';
   };
 

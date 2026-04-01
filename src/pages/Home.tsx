@@ -158,10 +158,23 @@ const Home: React.FC = () => {
       level: 'Advanced',
       duration: '3-4 hours',
     },
+    {
+      icon: <Brain className="w-12 h-12" />,
+      title: 'AI Fundamentals',
+      description:
+        'Master machine learning from scratch — neural networks, gradient descent, embeddings, and RAG pipelines through interactive visualizations',
+      path: '/ai',
+      color: 'rose',
+      gradient: 'from-rose-600 to-fuchsia-600',
+      bgGradient: 'from-rose-50 to-fuchsia-50',
+      topics: ['Neural Networks', 'Gradient Descent', 'Word Embeddings', 'RAG Pipeline'],
+      level: 'Beginner Friendly',
+      duration: '3-4 hours',
+    },
   ];
 
   const stats = [
-    { value: '10+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
+    { value: '11+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
     { value: '70+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
     { value: '1000+', label: 'Code Examples', icon: <FileCode className="w-5 h-5" /> },
     { value: '24/7', label: 'Available Learning', icon: <Cpu className="w-5 h-5" /> },
@@ -191,10 +204,11 @@ const Home: React.FC = () => {
     },
     {
       phase: 'Architecture & Systems',
-      modules: [allModules[7], allModules[8], allModules[9]], // Python, System Design, TypeScript
+      modules: [allModules[7], allModules[8], allModules[9], allModules[10]], // Python, System Design, TypeScript, AI
       icon: <Award className="w-6 h-6" />,
       color: 'emerald',
-      description: 'Master system design patterns and multi-language architectures',
+      description:
+        'Master system design patterns, multi-language architectures, and AI fundamentals',
     },
   ];
 
@@ -395,7 +409,7 @@ const Home: React.FC = () => {
                 }}
                 className="inline-flex items-center space-x-2 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
               >
-                <span>View All 10 Modules</span>
+                <span>View All 11 Modules</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

@@ -4,7 +4,7 @@
 
 **🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 7 complete learning modules with 70+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, and a LeetCode-style playground with advanced debugging and gamification.**
+**✨ Now featuring 8 complete learning modules with 80+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, AI Fundamentals, and a LeetCode-style playground with advanced debugging and gamification.**
 
 > **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
@@ -19,8 +19,8 @@
 - **Data Structures**: Comprehensive guide to fundamental data structures with interactive visualizations
 - **Big-O Notation**: Complete algorithmic complexity analysis with 10+ interactive tools and metaphors
 - **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
+- **AI Fundamentals**: Machine learning concepts from scratch — neural networks, gradient descent, embeddings, and RAG pipelines
 - **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
-- **More modules coming soon**: Algorithms, system design, design patterns
 
 ### 🎮 **Interactive Visualizations**
 
@@ -305,6 +305,24 @@ Complete Python tutorial covering the fundamental concepts that make Python uniq
 - **Performance Analysis**: GIL impact, memory optimization, and concurrency alternatives
 - **Real-world Applications**: Best practices for CPU-bound vs I/O-bound tasks, memory profiling, and optimization techniques
 
+### 🤖 **AI Fundamentals (Complete)**
+
+Master machine learning concepts from the ground up with interactive visualizations and beginner-friendly explanations:
+
+- **Introduction to AI/ML**: Core concepts, history, and the difference between AI, ML, and deep learning — with ELI10 analogies
+- **ML Lifecycle**: End-to-end machine learning pipeline from data collection to model deployment
+- **Feature Engineering**: Transforming raw data into meaningful inputs — normalization, encoding, and selection
+- **Neural Networks**: How neurons, layers, and activation functions work — interactive forward pass visualization
+- **Loss Functions**: Understanding MSE, cross-entropy, and how models measure their own mistakes
+- **Gradient Descent**: Intuitive step-by-step visualization of how models learn by minimizing loss
+- **Backpropagation**: Chain rule demystified — interactive gradient flow through a neural network
+- **Generalization**: Overfitting, underfitting, bias-variance tradeoff, and regularization techniques
+- **Training vs Inference**: The distinction between learning and prediction, with batch/online learning modes
+- **Word Embeddings**: Turning text into vectors — Word2Vec, cosine similarity, and semantic relationships
+- **RAG Pipeline**: Retrieval-Augmented Generation — grounding LLMs with external knowledge stores
+- **Beginner Friendly**: Every section includes ELI10 boxes, real-world analogies, and key takeaways
+- **11 Interactive Sections**: Progressive visualizations guiding learners from zero ML knowledge to RAG pipelines
+
 ### 🎯 **LeetCode-Style Playground (Complete)**
 
 Interactive coding environment that transforms algorithm learning through visual debugging and gamification:
@@ -396,14 +414,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 7 complete interactive modules with 70+ visualizations
+- 🎓 **Learning Modules**: 8 complete interactive modules with 80+ visualizations
 - 🎯 **Playground**: LeetCode-style coding environment with debugging and gamification
 
 ---
 
 **Built with ❤️ for developers, by developers**
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, and Python Programming modules. Practice algorithms with our LeetCode-style playground featuring advanced debugging, real-time visualizations, and gamification._
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, Python Programming, and AI Fundamentals modules. Practice algorithms with our LeetCode-style playground featuring advanced debugging, real-time visualizations, and gamification._
 
 ## 3D/2D Visualization Architecture
 

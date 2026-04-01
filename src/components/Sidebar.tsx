@@ -52,6 +52,13 @@ const getThemeColorClass = (
       buttonHover: 'hover:text-emerald-600',
       border: 'border-emerald-100',
     },
+    rose: {
+      active: 'bg-rose-100 text-rose-800 border-rose-500',
+      hover: 'hover:bg-rose-50 hover:text-rose-700',
+      buttonActive: 'text-rose-600 hover:text-rose-700',
+      buttonHover: 'hover:text-rose-600',
+      border: 'border-rose-100',
+    },
   };
 
   const colors = colorMap[theme.primary] || colorMap.blue;
@@ -299,6 +306,19 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Best Practices', path: '/typescript?section=Best%20Practices' },
     { label: 'Migration Guide', path: '/typescript?section=Migration%20Guide' },
   ],
+  '/ai': [
+    { label: 'Introduction', path: '/ai?section=Introduction' },
+    { label: 'ML Lifecycle', path: '/ai?section=ML%20Lifecycle' },
+    { label: 'Feature Engineering', path: '/ai?section=Feature%20Engineering' },
+    { label: 'Neural Networks', path: '/ai?section=Neural%20Networks' },
+    { label: 'Loss Functions', path: '/ai?section=Loss%20Functions' },
+    { label: 'Gradient Descent', path: '/ai?section=Gradient%20Descent' },
+    { label: 'Backpropagation', path: '/ai?section=Backpropagation' },
+    { label: 'Generalization', path: '/ai?section=Generalization' },
+    { label: 'Training vs Inference', path: '/ai?section=Training%20vs%20Inference' },
+    { label: 'Word Embeddings', path: '/ai?section=Word%20Embeddings' },
+    { label: 'RAG Pipeline', path: '/ai?section=RAG%20Pipeline' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -323,7 +343,9 @@ const Sidebar: React.FC = () => {
     | 'bigo'
     | 'python'
     | 'systemdesign'
-    | 'typescript' => {
+    | 'typescript'
+    | 'ai' => {
+    if (path.includes('/ai')) return 'ai';
     if (path.includes('javascript')) return 'javascript';
     if (path.includes('python')) return 'python';
     if (path.includes('react')) return 'react';

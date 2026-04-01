@@ -27,6 +27,7 @@ const BigOPage = lazy(() => import('./features/bigo'));
 const PythonPage = lazy(() => import('./features/python'));
 const SystemDesignPage = lazy(() => import('./features/systemdesign'));
 const TypeScriptPage = lazy(() => import('./features/typescript'));
+const AIFundamentalsPage = lazy(() => import('./features/ai'));
 
 const App: React.FC = () => {
   // Initialize analytics on app mount
@@ -151,6 +152,14 @@ const App: React.FC = () => {
                           element={
                             <SuspenseRoute>
                               <TypeScriptPage />
+                            </SuspenseRoute>
+                          }
+                        />
+                        <Route
+                          path="/ai"
+                          element={
+                            <SuspenseRoute>
+                              <AIFundamentalsPage />
                             </SuspenseRoute>
                           }
                         />
