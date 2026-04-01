@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { ArrowRight, RotateCcw } from 'lucide-react';
+import { ArrowRight, RotateCcw, Lightbulb } from 'lucide-react';
 
 interface GraphNode {
   id: string;
@@ -145,16 +145,38 @@ const Backpropagation: React.FC = () => {
   const heroContent = (
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Backpropagation</h1>
-      <p className="text-xl text-gray-700 leading-relaxed">
-        Gradient descent tells the network to step downhill. Backpropagation efficiently computes{' '}
-        <strong>which direction is "downhill"</strong> for every single parameter — by reversing the
-        chain of computation.
+      <p className="text-xl text-gray-700 leading-relaxed mb-3">
+        In the previous section, gradient descent told the network to &quot;step downhill.&quot; But
+        how does the network figure out which direction is downhill for <em>every single one</em> of
+        its millions of parameters? That&apos;s the job of backpropagation — the clever algorithm
+        that <strong>traces the error backward</strong> through the computation graph, assigning
+        blame to each parameter along the way.
+      </p>
+      <p className="text-lg text-gray-600 leading-relaxed">
+        Without backpropagation, training would take exponentially longer. It&apos;s the reason
+        modern deep learning is practical at all.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* ELI10 box */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200 mb-4">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-amber-900 mb-1">Explain Like I&apos;m 10</h3>
+            <p className="text-gray-700 leading-relaxed">
+              Imagine you&apos;re in a relay race team. You drop the baton and your team loses. The
+              coach doesn&apos;t just shout at the last runner — they watch the replay and figure
+              out <strong>who dropped it and when</strong>. Backpropagation is that instant replay:
+              it rewinds through every calculation the model made and tells each part exactly how
+              much it messed up. Then every part can fix its own mistake for next time.
+            </p>
+          </div>
+        </div>
+      </div>
       <ThemeCard>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-gray-900">Computation Graph</h2>
@@ -183,8 +205,10 @@ const Backpropagation: React.FC = () => {
         </div>
 
         <p className="text-sm text-gray-600 mb-3">
-          Run the forward pass first, then click "Step Backward" repeatedly to watch gradients flow
-          in reverse through the graph.
+          <strong>How to use:</strong> Click &quot;Forward Pass&quot; to push values left → right.
+          Then click &quot;Step Backward&quot; repeatedly to watch gradients flow right → left
+          through the graph. Red badges show each node&apos;s gradient (how much it contributed to
+          the error). Try &quot;Auto Backward&quot; to watch the full replay automatically!
         </p>
 
         <div className="bg-gradient-to-br from-slate-50 to-rose-50/30 rounded-xl p-4 border border-rose-100">
@@ -329,30 +353,39 @@ const Backpropagation: React.FC = () => {
 
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">🏭 The Corporate Chain of Command</h2>
-        <div className="space-y-3">
+        <p className="text-gray-700 leading-relaxed mb-4">
+          Think of a neural network as a factory with multiple departments. When a defective product
+          ships, the QC boss doesn&apos;t fire everyone — they trace the assembly line backward to
+          figure out <em>who</em> is responsible and <em>how much</em>.
+        </p>
+        <div className="space-y-3 mb-4">
           {[
             {
-              team: 'Factory Floor (Layer 1)',
-              role: 'Molds plastic parts — receives the biggest blame if raw materials were wrong.',
-            },
-            {
-              team: 'Assembly Team (Layer 2)',
-              role: 'Assembles components — "We used what Floor gave us!"',
+              team: 'QC Boss (Loss Function)',
+              emoji: '🔍',
+              role: 'Inspects the final product, measures how bad the defect is, and starts the blame investigation.',
             },
             {
               team: 'Packaging (Output Layer)',
-              role: 'Boxes the product — closest to the output error.',
+              emoji: '📦',
+              role: 'Closest to the output — gets feedback first. "The label was crooked? That\'s on me."',
             },
             {
-              team: 'QC Boss (Loss Function)',
-              role: 'Inspects the final product and traces the blame backward.',
+              team: 'Assembly Team (Hidden Layers)',
+              emoji: '🔧',
+              role: 'Middle of the chain. Receives proportional blame: "I used what the floor gave me, but I also bent it wrong."',
             },
-          ].map(({ team, role }) => (
+            {
+              team: 'Factory Floor (Input Layer)',
+              emoji: '🏗️',
+              role: 'The first to touch raw materials. Gets the smallest blame — but still adjusts for next time.',
+            },
+          ].map(({ team, emoji, role }) => (
             <div
               key={team}
               className="flex gap-3 items-start bg-gradient-to-r from-rose-50 to-white rounded-lg p-3 border border-rose-100"
             >
-              <div className="w-2 h-2 rounded-full bg-rose-400 mt-1.5 shrink-0" />
+              <div className="text-xl shrink-0">{emoji}</div>
               <div>
                 <span className="font-bold text-gray-900 text-sm">{team}</span>
                 <p className="text-xs text-gray-600">{role}</p>
@@ -360,11 +393,19 @@ const Backpropagation: React.FC = () => {
             </div>
           ))}
         </div>
+        <div className="bg-rose-50 rounded-lg p-3 border border-rose-200">
+          <p className="text-sm text-gray-700">
+            <strong>Key insight:</strong> Each department only needs to know two things — what it
+            received and what it sent out. It computes its <em>local gradient</em> and passes the
+            blame upstream. This is why backprop is so efficient: no department needs to understand
+            the entire factory!
+          </p>
+        </div>
       </ThemeCard>
 
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">The Chain Rule</h2>
-        <div className="bg-gradient-to-r from-rose-50 to-fuchsia-50 rounded-xl p-6 border border-rose-200 text-center">
+        <div className="bg-gradient-to-r from-rose-50 to-fuchsia-50 rounded-xl p-6 border border-rose-200 text-center mb-4">
           <p className="font-mono text-lg text-gray-800 mb-2">
             ∂L/∂w = (∂L/∂ŷ) × (∂ŷ/∂z) × (∂z/∂w)
           </p>
@@ -373,7 +414,61 @@ const Backpropagation: React.FC = () => {
             graph. Each node only needs to know its own local derivative.
           </p>
         </div>
+        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+          <h4 className="font-bold text-amber-800 mb-2">🧒 In plain English:</h4>
+          <p className="text-sm text-gray-700 leading-relaxed mb-2">
+            Suppose you increase <strong>w</strong> by a tiny amount. That changes{' '}
+            <strong>z</strong> a little. That change in z changes <strong>ŷ</strong> a little. And
+            that change in ŷ changes the <strong>loss</strong> a little. The chain rule multiplies
+            all these &quot;a little&quot; effects together to get the total effect of changing w on
+            the loss.
+          </p>
+          <p className="text-sm text-gray-700">
+            It&apos;s like a row of dominoes — each one tips the next, and the chain rule tells you
+            how hard the last domino falls based on how hard you pushed the first one.
+          </p>
+        </div>
       </ThemeCard>
+
+      {/* Forward vs Backward summary */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b">
+              <th className="p-3 text-left font-bold text-gray-900">Aspect</th>
+              <th className="p-3 text-left font-bold text-blue-700">Forward Pass →</th>
+              <th className="p-3 text-left font-bold text-rose-700">Backward Pass ←</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ['Direction', 'Input → Output', 'Output → Input'],
+              ['What flows', 'Data values', 'Gradients (blame)'],
+              ['Purpose', 'Compute prediction', 'Compute how to improve'],
+              ['When', 'Every training step', 'Every training step (after forward)'],
+              ['Result', 'A prediction + loss value', 'Updated weights'],
+            ].map(([aspect, forward, backward]) => (
+              <tr key={aspect} className="border-b last:border-0">
+                <td className="p-3 font-medium text-gray-900">{aspect}</td>
+                <td className="p-3 text-gray-700">{forward}</td>
+                <td className="p-3 text-gray-700">{backward}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Key takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          Backpropagation is not a separate algorithm from gradient descent — it&apos;s the{' '}
+          <strong>efficient way to compute</strong> the gradients that gradient descent needs. It
+          works by applying the chain rule backward through the computation graph, so each node only
+          computes its own local derivative. This makes training networks with millions of
+          parameters practical on modern hardware.
+        </p>
+      </div>
     </>
   );
 

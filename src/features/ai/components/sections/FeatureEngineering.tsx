@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { ArrowRight, Trash2, Plus } from 'lucide-react';
+import { ArrowRight, Trash2, Plus, Lightbulb, AlertTriangle } from 'lucide-react';
 
 interface RawColumn {
   name: string;
@@ -57,14 +57,70 @@ const FeatureEngineering: React.FC = () => {
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Feature Engineering</h1>
       <p className="text-xl text-gray-700 leading-relaxed">
-        The art and science of transforming raw data into meaningful numerical features. ML
-        algorithms only understand numbers — feature engineering bridges the gap.
+        Machine learning models only understand numbers. But real-world data includes things like
+        &quot;USA&quot;, &quot;Pro subscription&quot;, and &quot;Male&quot;. Feature engineering is
+        the art of converting messy, real-world information into clean numbers that machines can
+        learn from.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* Simple explanation */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border border-amber-200 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="bg-amber-100 p-2 rounded-full flex-shrink-0">
+            <Lightbulb className="w-6 h-6 text-amber-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-amber-900 mb-2">Explain Like I&apos;m 10 🧒</h3>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              Imagine you want to teach a calculator to predict which students will pass an exam.
+              You can&apos;t type &quot;likes math&quot; or &quot;studies a lot&quot; into a
+              calculator — it only understands numbers!
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              So you need to <strong>convert everything into numbers</strong>. &quot;Likes
+              math&quot; becomes <code className="bg-amber-100 px-1 rounded">1</code>,
+              &quot;doesn&apos;t like math&quot; becomes{' '}
+              <code className="bg-amber-100 px-1 rounded">0</code>. &quot;Studies 3 hours/day&quot;
+              stays as <code className="bg-amber-100 px-1 rounded">3</code>. That&apos;s feature
+              engineering — <strong>preparing data so machines can understand it</strong>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Why is this needed? */}
+      <ThemeCard>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          🤔 Why Can&apos;t Models Use Text Directly?
+        </h2>
+        <p className="text-gray-700 leading-relaxed mb-4">
+          At its core, a machine learning model is just a mathematical formula. It multiplies inputs
+          by numbers (weights), adds them up, and produces an output. You can&apos;t multiply
+          &quot;Japan&quot; × 0.5 — that doesn&apos;t make mathematical sense!
+        </p>
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+            <h4 className="font-bold text-red-800 mb-2">❌ What the model sees</h4>
+            <div className="font-mono text-sm text-gray-700 bg-white rounded p-2">
+              <div>Country: &quot;USA&quot; → ???</div>
+              <div>Plan: &quot;Pro&quot; → ???</div>
+              <div className="text-red-500 text-xs mt-1">Can&apos;t do math with text!</div>
+            </div>
+          </div>
+          <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+            <h4 className="font-bold text-green-800 mb-2">✅ After feature engineering</h4>
+            <div className="font-mono text-sm text-gray-700 bg-white rounded p-2">
+              <div>Country_USA: 1, Country_UK: 0, Country_JP: 0</div>
+              <div>Plan_Pro: 1, Plan_Free: 0</div>
+              <div className="text-green-500 text-xs mt-1">Now we can multiply and add!</div>
+            </div>
+          </div>
+        </div>
+      </ThemeCard>
       {/* Interactive Feature Factory */}
       <ThemeCard>
         <div className="flex items-center justify-between mb-4">
@@ -317,61 +373,129 @@ const FeatureEngineering: React.FC = () => {
       {/* Analogy */}
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          👨‍🍳 The Analogy: Master Chef's Kitchen
+          👨‍🍳 The Analogy: Master Chef&apos;s Kitchen
         </h2>
         <p className="text-gray-700 leading-relaxed mb-4">
           Imagine a machine learning model as a world-class master chef, and the raw data as
-          groceries delivered from a farm. If you hand the chef an unpeeled onion, a live chicken,
-          and unwashed wheat stalks, the chef cannot immediately bake a chicken pie.
+          groceries delivered straight from a farm. If you hand the chef an unpeeled onion, a live
+          chicken, and unwashed wheat stalks, the chef cannot immediately bake a chicken pie.
         </p>
         <p className="text-gray-700 leading-relaxed mb-4">
           <strong>Feature engineering</strong> is the meticulous prep work done by sous-chefs before
-          cooking: peeling, chopping, measuring, washing, and marinating.{' '}
-          <strong>One-hot encoding</strong> is like separating a mixed basket of vegetables into
-          clearly labeled Tupperware containers.
+          any cooking begins: peeling, chopping, measuring, washing, and marinating.
         </p>
-        <p className="text-gray-700 leading-relaxed">
-          <strong>Feature selection</strong> is throwing out the handful of gravel that accidentally
-          got mixed into the delivery — irrelevant data that would ruin the meal.
-        </p>
+        <div className="grid md:grid-cols-3 gap-4 mb-4">
+          <div className="bg-rose-50 rounded-lg p-4 border border-rose-200">
+            <h4 className="font-bold text-rose-800 mb-2 text-sm">One-Hot Encoding</h4>
+            <p className="text-sm text-gray-700">
+              Like separating a mixed basket of vegetables into clearly labeled containers —
+              &quot;Tomatoes here, Peppers here, Onions here.&quot; Each gets its own binary column.
+            </p>
+          </div>
+          <div className="bg-fuchsia-50 rounded-lg p-4 border border-fuchsia-200">
+            <h4 className="font-bold text-fuchsia-800 mb-2 text-sm">Feature Creation</h4>
+            <p className="text-sm text-gray-700">
+              Like creating a new sauce by combining existing ingredients — mixing Debt ÷ Income
+              gives you a &quot;financial health score&quot; that&apos;s more informative than
+              either alone.
+            </p>
+          </div>
+          <div className="bg-violet-50 rounded-lg p-4 border border-violet-200">
+            <h4 className="font-bold text-violet-800 mb-2 text-sm">Feature Selection</h4>
+            <p className="text-sm text-gray-700">
+              Like throwing out the handful of gravel that accidentally got mixed into the delivery
+              — irrelevant data that would ruin the meal.
+            </p>
+          </div>
+        </div>
       </ThemeCard>
+
+      {/* Dimensionality Warning */}
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-5 border border-orange-200 mb-6">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-orange-900 mb-2">
+              ⚠️ The Dimensionality Explosion Problem
+            </h3>
+            <p className="text-sm text-gray-700 leading-relaxed mb-2">
+              One-hot encoding can create a LOT of columns. If &quot;Country&quot; has 200 possible
+              values, it creates 200 new columns! A dataset with 50 categorical features, each
+              having 100 values, would explode from 50 columns to 5,000 columns.
+            </p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              This is called the <strong>&quot;curse of dimensionality&quot;</strong> — the more
+              columns you have, the more data you need for the model to learn effectively.
+              That&apos;s why <strong>feature selection</strong> (removing irrelevant columns) is
+              just as important as feature creation.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Feature Selection Methods */}
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Feature Selection Methods</h2>
+        <p className="text-gray-700 mb-4 leading-relaxed">
+          Not all features are useful. Some are noisy, redundant, or irrelevant. Selecting the right
+          features is like packing for a trip — bring only what you need.
+        </p>
         <div className="grid md:grid-cols-3 gap-4">
           <div className="bg-rose-50 rounded-xl p-4 border border-rose-200">
             <h3 className="font-bold text-rose-800 mb-2">Filter Methods</h3>
             <p className="text-sm text-gray-700 mb-2">
-              Evaluate statistical properties independently of the model.
+              Evaluate each feature independently using statistics — like checking each
+              ingredient&apos;s expiry date before cooking.
             </p>
             <div className="text-[10px] bg-white rounded-lg px-3 py-2 text-gray-600">
-              <strong>Cost:</strong> Low <br />
-              <strong>Use:</strong> Rapid pruning of noisy datasets
+              <strong>Cost:</strong> Low — no model training needed
+              <br />
+              <strong>Example:</strong> Correlation analysis, Chi-squared test
+              <br />
+              <strong>Best for:</strong> Quick removal of obviously useless features
             </div>
           </div>
           <div className="bg-fuchsia-50 rounded-xl p-4 border border-fuchsia-200">
             <h3 className="font-bold text-fuchsia-800 mb-2">Wrapper Methods</h3>
             <p className="text-sm text-gray-700 mb-2">
-              Train the model iteratively on different feature subsets.
+              Try every combination of features and pick the best one — like taste-testing every
+              possible ingredient combination.
             </p>
             <div className="text-[10px] bg-white rounded-lg px-3 py-2 text-gray-600">
-              <strong>Cost:</strong> Very High <br />
-              <strong>Use:</strong> Finding optimal feature combinations
+              <strong>Cost:</strong> Very High — trains many models
+              <br />
+              <strong>Example:</strong> Forward/backward selection
+              <br />
+              <strong>Best for:</strong> Small datasets where accuracy matters most
             </div>
           </div>
           <div className="bg-violet-50 rounded-xl p-4 border border-violet-200">
             <h3 className="font-bold text-violet-800 mb-2">Embedded Methods</h3>
             <p className="text-sm text-gray-700 mb-2">
-              Algorithms select features during training automatically.
+              The model itself decides which features matter as it trains — like a chef who
+              naturally ignores ingredients that don&apos;t affect taste.
             </p>
             <div className="text-[10px] bg-white rounded-lg px-3 py-2 text-gray-600">
-              <strong>Cost:</strong> Medium <br />
-              <strong>Use:</strong> Lasso Regression, Random Forests
+              <strong>Cost:</strong> Medium — done during training
+              <br />
+              <strong>Example:</strong> Lasso Regression, Random Forests
+              <br />
+              <strong>Best for:</strong> Most real-world applications
             </div>
           </div>
         </div>
       </ThemeCard>
+
+      {/* Key Takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          Feature engineering is often called &quot;the most important part of machine
+          learning.&quot; A simple model with great features will outperform a complex model with
+          bad features. Data scientists spend about <strong>80% of their time</strong> on data
+          preparation and feature engineering — only 20% on actual model training!
+        </p>
+      </div>
     </>
   );
 

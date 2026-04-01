@@ -1,7 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { RefreshCw, Play, Pause } from 'lucide-react';
+import {
+  RefreshCw,
+  Play,
+  Pause,
+  SkipForward,
+  SkipBack,
+  Lightbulb,
+  ChevronRight,
+} from 'lucide-react';
 
 const PHASES = [
   {
@@ -32,47 +40,78 @@ const PHASES = [
 
 const PHASE_DETAILS: Record<
   string,
-  { title: string; description: string; outputs: string[]; infra: string }
+  {
+    title: string;
+    description: string;
+    simpleExplanation: string;
+    realWorldExample: string;
+    outputs: string[];
+    infra: string;
+  }
 > = {
   define: {
     title: 'Problem Definition',
     description:
-      'Identify the specific task the AI must solve, define success metrics, and establish baseline performance requirements.',
+      'Identify the specific task the AI must solve, define success metrics, and establish baseline performance requirements. This is where you ask: "What exactly do we want the AI to do?" — without a clear problem, even the best model is useless.',
+    simpleExplanation:
+      'Deciding what question you want the AI to answer. Like choosing what subject to study before opening a textbook.',
+    realWorldExample:
+      'Netflix asking: "Can we predict which shows a user will enjoy?" or a hospital asking: "Can we detect tumors in X-ray images?"',
     outputs: ['Project Roadmap', 'KPIs & Metrics', 'Data Requirements'],
     infra: 'Collaboration Platforms',
   },
   data: {
     title: 'Data Preparation',
     description:
-      'Gather raw data, clean it, handle missing values, and transform it into a format digestible by mathematical models.',
+      'Gather raw data, clean it, handle missing values, and transform it into a format digestible by mathematical models. This is often the most time-consuming phase — data scientists spend ~80% of their time here. Garbage in = garbage out.',
+    simpleExplanation:
+      'Collecting and cleaning ingredients before cooking. If your eggs are rotten, no recipe can save the cake!',
+    realWorldExample:
+      'Collecting 10 million photos of cats and dogs, removing blurry images, ensuring each photo is labeled correctly, and resizing them all to the same dimensions.',
     outputs: ['Clean Datasets', 'Feature Store', 'Data Versioning'],
     infra: 'Data Lakes & Feature Stores',
   },
   train: {
     title: 'Model Training',
     description:
-      'Select optimal architecture, feed prepared data, and iteratively refine hyperparameters to learn underlying patterns.',
+      'Select optimal architecture, feed prepared data, and iteratively refine hyperparameters to learn underlying patterns. The model sees examples, makes predictions, checks errors, and adjusts — millions of times.',
+    simpleExplanation:
+      'Like a student doing practice problems over and over. Each wrong answer helps them learn the right approach.',
+    realWorldExample:
+      'Training GPT-4 required thousands of GPUs running for months, processing hundreds of billions of words from books, websites, and articles.',
     outputs: ['Trained Weights', 'Hyperparameters', 'Training Logs'],
     infra: 'GPU/TPU Clusters',
   },
   eval: {
     title: 'Model Evaluation',
     description:
-      'Rigorously test the trained model against unseen data to validate generalization and prevent memorization.',
+      'Rigorously test the trained model against unseen data to validate generalization. This is like a final exam — you test with questions the model has NEVER seen to make sure it actually learned the concepts, not just memorized answers.',
+    simpleExplanation:
+      'Giving the student a practice test with brand new questions to see if they really understand the material.',
+    realWorldExample:
+      'Testing a self-driving car model on road conditions from cities it was never trained on — rain, snow, night driving.',
     outputs: ['Accuracy Metrics', 'Confusion Matrix', 'Error Analysis'],
     infra: 'Model Registry',
   },
   deploy: {
     title: 'Model Deployment',
     description:
-      'Package the validated model using containerization and deploy it behind an API endpoint for production use.',
+      'Package the validated model and deploy it behind an API endpoint so real users can use it. This is where the model goes from a lab experiment to a real product millions of people can interact with.',
+    simpleExplanation:
+      "Publishing a finished book — moving it from the author's desk to bookstore shelves where anyone can read it.",
+    realWorldExample:
+      "When you ask Siri a question, your voice is sent to Apple's servers where a deployed speech recognition model converts it to text in milliseconds.",
     outputs: ['API Endpoint', 'Docker Container', 'Scaling Config'],
     infra: 'Kubernetes / Cloud',
   },
   monitor: {
     title: 'Monitoring & Maintenance',
     description:
-      'Continuously track model accuracy, detect data drift, and trigger retraining pipelines when performance degrades.',
+      'Continuously track model accuracy, detect data drift (when the real world changes and the model becomes outdated), and trigger retraining when performance degrades. Models are not "set and forget" — they need ongoing care.',
+    simpleExplanation:
+      'Like maintaining a car — regular check-ups, oil changes, and tire rotations to keep it running smoothly.',
+    realWorldExample:
+      'A fraud detection model trained in 2020 may miss new scam patterns in 2024. Monitoring detects the drop in accuracy and triggers retraining with fresh data.',
     outputs: ['Drift Alerts', 'Performance Logs', 'Retrain Triggers'],
     infra: 'Feedback Loops & Schedulers',
   },
@@ -82,6 +121,7 @@ const MLLifecycle: React.FC = () => {
   const [activePhase, setActivePhase] = useState<string | null>(null);
   const [animatingPhase, setAnimatingPhase] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1500);
   const [pulseOpacity, setPulseOpacity] = useState(1);
 
   const cx = 300;
@@ -91,10 +131,14 @@ const MLLifecycle: React.FC = () => {
   useEffect(() => {
     if (!isPlaying) return;
     const interval = setInterval(() => {
-      setAnimatingPhase((prev) => (prev + 1) % PHASES.length);
-    }, 1500);
+      setAnimatingPhase((prev) => {
+        const next = (prev + 1) % PHASES.length;
+        setActivePhase(PHASES[next].id);
+        return next;
+      });
+    }, speed);
     return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [isPlaying, speed]);
 
   useEffect(() => {
     let frame: number;
@@ -126,25 +170,71 @@ const MLLifecycle: React.FC = () => {
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">The Machine Learning Lifecycle</h1>
       <p className="text-xl text-gray-700 leading-relaxed">
-        AI development is a structured, iterative, and highly cyclical process. Explore each phase
-        of the pipeline — from problem definition to continuous monitoring.
+        Building an AI system isn&apos;t just about &quot;training a model.&quot; It&apos;s a
+        structured journey with 6 critical phases — and they repeat in a loop, just like how
+        software gets version updates.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* Simple explanation */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border border-amber-200 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="bg-amber-100 p-2 rounded-full flex-shrink-0">
+            <Lightbulb className="w-6 h-6 text-amber-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-amber-900 mb-2">Explain Like I&apos;m 10 🧒</h3>
+            <p className="text-gray-700 leading-relaxed">
+              Building AI is like baking a cake. First you <strong>decide what cake</strong> to make
+              (problem definition). Then you <strong>buy and prepare ingredients</strong> (data
+              preparation). You <strong>mix and bake</strong> (training). You{' '}
+              <strong>taste-test it</strong> (evaluation). You{' '}
+              <strong>serve it at the party</strong> (deployment). And afterward, you{' '}
+              <strong>ask guests if they liked it</strong> so you can improve next time
+              (monitoring). Then the cycle repeats with the next cake!
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Interactive Lifecycle Visualization */}
       <ThemeCard>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
           <h2 className="text-2xl font-bold text-gray-900">Interactive Lifecycle Pipeline</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                const prev = (animatingPhase - 1 + PHASES.length) % PHASES.length;
+                setAnimatingPhase(prev);
+                setActivePhase(PHASES[prev].id);
+                setIsPlaying(false);
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              title="Previous phase"
+            >
+              <SkipBack className="w-4 h-4" />
+            </button>
             <button
               onClick={() => setIsPlaying(!isPlaying)}
               className="flex items-center gap-1 px-3 py-1.5 text-sm bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors"
             >
               {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              {isPlaying ? 'Pause' : 'Animate'}
+              {isPlaying ? 'Pause' : 'Play'}
+            </button>
+            <button
+              onClick={() => {
+                const next = (animatingPhase + 1) % PHASES.length;
+                setAnimatingPhase(next);
+                setActivePhase(PHASES[next].id);
+                setIsPlaying(false);
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              title="Next phase"
+            >
+              <SkipForward className="w-4 h-4" />
             </button>
             <button
               onClick={() => {
@@ -158,6 +248,28 @@ const MLLifecycle: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Speed control */}
+        <div className="flex items-center gap-3 mb-4 bg-gray-50 rounded-lg p-3">
+          <span className="text-sm font-medium text-gray-600 whitespace-nowrap">Speed:</span>
+          <input
+            type="range"
+            min={500}
+            max={3000}
+            step={250}
+            value={3500 - speed}
+            onChange={(e) => setSpeed(3500 - Number(e.target.value))}
+            className="flex-1 accent-rose-500"
+          />
+          <span className="text-sm text-gray-500 whitespace-nowrap w-12 text-right">
+            {speed <= 750 ? '🐇 Fast' : speed <= 1500 ? '🚶 Med' : '🐢 Slow'}
+          </span>
+        </div>
+
+        <p className="text-sm text-gray-500 mb-3 italic">
+          💡 Click any phase in the circle to see its details. Use ⏮⏭ to step through phases one
+          by one.
+        </p>
 
         <div className="relative bg-gradient-to-br from-gray-50 to-rose-50/30 rounded-xl p-4 border border-rose-100">
           <svg
@@ -317,7 +429,22 @@ const MLLifecycle: React.FC = () => {
         {detail && (
           <div className="mt-6 p-5 bg-gradient-to-r from-rose-50 to-fuchsia-50 rounded-xl border border-rose-200 animate-fadeIn">
             <h3 className="text-xl font-bold text-gray-900 mb-2">{detail.title}</h3>
-            <p className="text-gray-700 mb-4 leading-relaxed">{detail.description}</p>
+            <p className="text-gray-700 mb-3 leading-relaxed">{detail.description}</p>
+
+            {/* Simple explanation callout */}
+            <div className="bg-amber-50 rounded-lg p-3 mb-4 border border-amber-200">
+              <p className="text-sm text-gray-700">
+                <strong>🧒 In simple terms:</strong> {detail.simpleExplanation}
+              </p>
+            </div>
+
+            {/* Real-world example */}
+            <div className="bg-blue-50 rounded-lg p-3 mb-4 border border-blue-200">
+              <p className="text-sm text-gray-700">
+                <strong>🌍 Real-world example:</strong> {detail.realWorldExample}
+              </p>
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold text-gray-800 text-sm mb-2">Key Outputs</h4>
@@ -341,24 +468,136 @@ const MLLifecycle: React.FC = () => {
             </div>
           </div>
         )}
+
+        {!detail && (
+          <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200 text-center">
+            <p className="text-gray-500">
+              👆 Click on any phase in the circle above to see detailed information, or use the
+              play/step controls.
+            </p>
+          </div>
+        )}
+      </ThemeCard>
+
+      {/* Phases Comparison Table */}
+      <ThemeCard>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">📋 Phases at a Glance</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-rose-50">
+                <th className="px-4 py-3 text-left font-semibold text-gray-800 border-b border-rose-200">
+                  Phase
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-800 border-b border-rose-200">
+                  Goal
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-800 border-b border-rose-200">
+                  Time Spent
+                </th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-800 border-b border-rose-200">
+                  Who Does It
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['🎯 Problem Definition', 'Define what to solve', '~5%', 'Product + Data Science'],
+                ['🧹 Data Preparation', 'Clean & organize data', '~60%', 'Data Engineers'],
+                ['🏋️ Training', 'Teach the model', '~15%', 'ML Engineers'],
+                ['📊 Evaluation', 'Test on new data', '~10%', 'ML Engineers + QA'],
+                ['🚀 Deployment', 'Ship to production', '~5%', 'MLOps / DevOps'],
+                ['👁️ Monitoring', 'Watch for degradation', '~5%', 'MLOps + Alerts'],
+              ].map(([phase, goal, time, who], i) => (
+                <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <td className="px-4 py-3 font-medium text-gray-800 border-b border-gray-100">
+                    {phase}
+                  </td>
+                  <td className="px-4 py-3 text-gray-600 border-b border-gray-100">{goal}</td>
+                  <td className="px-4 py-3 text-gray-600 border-b border-gray-100">{time}</td>
+                  <td className="px-4 py-3 text-gray-600 border-b border-gray-100">{who}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-gray-500 mt-3 italic">
+          ⚠️ Notice that Data Preparation takes ~60% of the time! Most beginners think training is
+          the hard part, but in reality, getting clean data is the biggest challenge.
+        </p>
       </ThemeCard>
 
       {/* Analogy */}
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          🏃 The Analogy: Professional Athlete
+          🏃 The Analogy: Professional Athlete&apos;s Journey
         </h2>
         <p className="text-gray-700 leading-relaxed mb-4">
-          Imagine the career of an Olympic sprinter. <strong>Problem Definition</strong> is deciding
-          which race to run — the 100-meter dash. <strong>Data Preparation</strong> is diet and
-          conditioning; bad food means poor performance. <strong>Training</strong> is the daily
-          regimen on the track, making tiny adjustments to shave off milliseconds.
+          Imagine the complete career of an Olympic sprinter. Every phase of the ML lifecycle maps
+          perfectly to their journey:
         </p>
-        <p className="text-gray-700 leading-relaxed">
-          <strong>Evaluation</strong> is the trial race before the Olympics.{' '}
-          <strong>Deployment</strong> is the Olympic final itself. And <strong>Monitoring</strong>{' '}
-          is post-race physical therapy and off-season training to prevent performance degradation.
-        </p>
+        <div className="space-y-3 mb-6">
+          {[
+            {
+              phase: 'Problem Definition',
+              athlete:
+                'Deciding which race to compete in — the 100-meter dash. What does "winning" mean? Breaking 10 seconds? Medaling? You need a clear goal before any training begins.',
+              color: 'rose',
+            },
+            {
+              phase: 'Data Preparation',
+              athlete:
+                'The athlete\'s diet, sleep schedule, and conditioning routine. Just like "garbage in, garbage out" in AI — bad nutrition leads to poor performance no matter how hard you train.',
+              color: 'fuchsia',
+            },
+            {
+              phase: 'Training',
+              athlete:
+                "Daily practice on the track. Running the same drill hundreds of times, making tiny adjustments to form to shave off milliseconds. The athlete's muscles (like model weights) improve with each repetition.",
+              color: 'violet',
+            },
+            {
+              phase: 'Evaluation',
+              athlete:
+                'The trial race before the Olympics — a qualifying event with new competitors the athlete has never raced against. This reveals whether the training generalized or was specific to one track.',
+              color: 'blue',
+            },
+            {
+              phase: 'Deployment',
+              athlete:
+                'The Olympic final itself — performing under real conditions with real pressure, in front of millions of people. This is where all the preparation is put to the ultimate test.',
+              color: 'emerald',
+            },
+            {
+              phase: 'Monitoring',
+              athlete:
+                'Post-race physical therapy, off-season adjustments, and re-evaluating technique. Even gold medalists need to adapt — new competitors emerge, injuries happen, and performance can degrade without maintenance.',
+              color: 'amber',
+            },
+          ].map((item) => (
+            <div
+              key={item.phase}
+              className={`flex items-start gap-3 p-4 bg-${item.color}-50 rounded-lg border border-${item.color}-200`}
+            >
+              <ChevronRight className={`w-5 h-5 text-${item.color}-600 mt-0.5 flex-shrink-0`} />
+              <div>
+                <span className={`font-semibold text-${item.color}-800`}>{item.phase}:</span>
+                <span className="text-gray-700 ml-1">{item.athlete}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Key takeaway */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+          <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+          <p className="text-gray-700 leading-relaxed">
+            The ML lifecycle is <strong>never truly finished</strong>. Just like an athlete
+            constantly trains, evaluates, and adjusts, AI models need continuous monitoring and
+            retraining. The feedback loop (monitoring → data preparation) is what separates
+            production-grade AI from toy experiments.
+          </p>
+        </div>
       </ThemeCard>
     </>
   );

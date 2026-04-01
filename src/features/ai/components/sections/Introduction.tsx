@@ -4,7 +4,22 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
-import { Brain, Cpu, Database, Zap, TrendingUp, Network, Layers, Target } from 'lucide-react';
+import {
+  Brain,
+  Cpu,
+  Database,
+  Zap,
+  TrendingUp,
+  Network,
+  Layers,
+  Target,
+  Lightbulb,
+  MessageSquare,
+  Music,
+  Camera,
+  Map,
+  ShieldCheck,
+} from 'lucide-react';
 
 const Introduction: React.FC = () => {
   const navigateToSection = (sectionName: string): void => {
@@ -20,7 +35,7 @@ const Introduction: React.FC = () => {
       icon: <Brain className="w-5 h-5" />,
     },
     {
-      value: '∞',
+      value: '175B+',
       label: 'Parameters in Modern LLMs',
       icon: <Cpu className="w-5 h-5" />,
     },
@@ -42,9 +57,9 @@ const Introduction: React.FC = () => {
         AI Fundamentals: The Architecture of Intelligence
       </h1>
       <p className="text-xl text-gray-700 mb-6 leading-relaxed">
-        Deconstruct artificial intelligence from raw data to production inference. Master neural
-        networks, gradient descent, backpropagation, and modern NLP architectures through
-        interactive visualizations and intuitive analogies.
+        Ever wondered how your phone recognizes your face, or how ChatGPT writes essays? This module
+        breaks down the magic behind artificial intelligence into simple, visual, and interactive
+        lessons — no PhD required.
       </p>
       <StatsGrid stats={stats} colorScheme="rose" />
       <div className="flex flex-wrap justify-center gap-3">
@@ -66,44 +81,190 @@ const Introduction: React.FC = () => {
 
   const mainContent = (
     <>
+      {/* Simple Explanation Box */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border border-amber-200 mb-8">
+        <div className="flex items-start gap-4">
+          <div className="bg-amber-100 p-2 rounded-full flex-shrink-0">
+            <Lightbulb className="w-6 h-6 text-amber-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-amber-900 mb-2">Explain Like I&apos;m 10 🧒</h3>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              Imagine you have a really smart pet dog. You don&apos;t program the dog with a rule
+              book — instead, you <strong>show the dog many examples</strong>. &quot;This is a cat,
+              this is not a cat.&quot; After seeing thousands of examples, the dog learns to
+              recognize cats on its own — even cats it has never seen before!
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              <strong>That&apos;s essentially what AI does.</strong> Instead of following rules
+              humans wrote, AI learns patterns from data. The more examples you give it, the smarter
+              it gets. This course teaches you <em>exactly</em> how that learning process works,
+              step by step.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <ThemeCard>
         <h2 className="text-3xl font-bold text-gray-900 mb-6">What is Artificial Intelligence?</h2>
+
+        {/* AI in Your Daily Life */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 border border-blue-200">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            🌍 AI Is Already Everywhere In Your Life
+          </h3>
+          <p className="text-gray-700 mb-4 leading-relaxed">
+            You might think AI is some futuristic technology, but you already use it dozens of times
+            every day without realizing it:
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                icon: <MessageSquare className="w-5 h-5 text-blue-600" />,
+                title: 'Autocomplete',
+                desc: 'When your phone predicts the next word you want to type',
+              },
+              {
+                icon: <Camera className="w-5 h-5 text-purple-600" />,
+                title: 'Face Unlock',
+                desc: 'Your phone recognizing your face to unlock the screen',
+              },
+              {
+                icon: <Music className="w-5 h-5 text-green-600" />,
+                title: 'Spotify / YouTube',
+                desc: 'Recommending songs or videos you might like',
+              },
+              {
+                icon: <Map className="w-5 h-5 text-red-600" />,
+                title: 'Google Maps',
+                desc: 'Predicting traffic and finding the fastest route',
+              },
+              {
+                icon: <ShieldCheck className="w-5 h-5 text-amber-600" />,
+                title: 'Spam Filter',
+                desc: 'Your email automatically catching spam messages',
+              },
+              {
+                icon: <Brain className="w-5 h-5 text-rose-600" />,
+                title: 'ChatGPT',
+                desc: 'Having conversations and answering questions',
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="flex items-start gap-3 bg-white rounded-lg p-3 border border-gray-100 shadow-sm"
+              >
+                <div className="mt-0.5">{item.icon}</div>
+                <div>
+                  <span className="font-semibold text-gray-800 text-sm">{item.title}</span>
+                  <p className="text-xs text-gray-600">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <div>
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              From Deterministic to Probabilistic
+              From Rules to Learning: A Big Shift
             </h3>
             <p className="text-gray-700 mb-4 leading-relaxed">
-              Historically, software engineering relied on <strong>deterministic logic</strong> —
-              developers wrote explicit, static rules governing exact inputs and outputs. Today, the
-              landscape has evolved to embrace <strong>probabilistic programming</strong>, where
-              systems learn from historical data to make inferences about unseen future data.
+              In traditional software, a programmer writes every rule by hand. For example:{' '}
+              <em>&quot;If temperature &gt; 30°C, turn on the AC.&quot;</em> The computer only does
+              what it&apos;s explicitly told.
             </p>
-            <p className="text-gray-700 leading-relaxed">
-              As applications transition from static utilities to dynamic, learning environments,
-              software engineers must understand the internal mechanics of machine learning
-              algorithms to effectively build, debug, and scale these systems.
+            <p className="text-gray-700 mb-4 leading-relaxed">
+              With AI, something fundamentally different happens. Instead of writing rules, you give
+              the computer <strong>thousands of examples</strong> of inputs and correct outputs, and
+              the computer figures out the rules by itself. This is called{' '}
+              <strong>machine learning</strong>.
             </p>
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <p className="text-sm text-gray-700 font-mono mb-2">
+                <strong>Traditional:</strong> Human writes rules → Computer follows them
+              </p>
+              <p className="text-sm text-gray-700 font-mono">
+                <strong>AI/ML:</strong> Human provides examples → Computer discovers rules
+              </p>
+            </div>
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Two AI Paradigms</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Two Schools of AI</h3>
             <div className="space-y-4">
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-4 border border-rose-200">
-                <h4 className="font-semibold text-rose-800 mb-2">Symbolic AI (Classical)</h4>
-                <p className="text-sm text-gray-700">
-                  Pre-programmed rules and expert systems for logical reasoning. Highly
-                  interpretable but fails with ambiguity and unstructured data.
+                <h4 className="font-semibold text-rose-800 mb-2">
+                  Symbolic AI (The &quot;Rule Book&quot; Approach)
+                </h4>
+                <p className="text-sm text-gray-700 mb-2">
+                  Humans manually write logical rules for the computer to follow. Think of it like a
+                  recipe book — the computer follows each step exactly.
+                </p>
+                <p className="text-xs text-gray-500 italic">
+                  Example: A medical system with 10,000 hand-coded rules like &quot;IF fever AND
+                  cough AND fatigue THEN possibly flu&quot;
                 </p>
               </div>
               <div className="bg-gradient-to-r from-fuchsia-50 to-violet-50 rounded-xl p-4 border border-fuchsia-200">
-                <h4 className="font-semibold text-fuchsia-800 mb-2">Connectionist AI (Modern)</h4>
-                <p className="text-sm text-gray-700">
-                  Learns directly from data using neural networks and deep learning. Excels at
-                  pattern recognition in speech, text, and imagery.
+                <h4 className="font-semibold text-fuchsia-800 mb-2">
+                  Connectionist AI (The &quot;Learning Brain&quot; Approach)
+                </h4>
+                <p className="text-sm text-gray-700 mb-2">
+                  Inspired by how the human brain works. The computer learns patterns from data
+                  using networks of simple connected units (neurons). This is what ChatGPT, image
+                  recognition, and self-driving cars use.
+                </p>
+                <p className="text-xs text-gray-500 italic">
+                  Example: Show a network 1 million photos of cats and dogs — it learns to tell them
+                  apart without any explicit rules
                 </p>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* How Does a Machine Actually "Learn"? */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 mb-8 border border-emerald-200">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            🤔 How Does a Machine Actually &quot;Learn&quot;?
+          </h3>
+          <p className="text-gray-700 mb-4 leading-relaxed">
+            Machine learning follows a surprisingly simple loop, repeated millions of times:
+          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 text-center mb-4">
+            {[
+              { step: '1', label: 'Make a guess', color: 'bg-emerald-100 text-emerald-800' },
+              { step: '→', label: '', color: 'text-gray-400' },
+              {
+                step: '2',
+                label: 'Check how wrong it was',
+                color: 'bg-amber-100 text-amber-800',
+              },
+              { step: '→', label: '', color: 'text-gray-400' },
+              {
+                step: '3',
+                label: 'Adjust to be less wrong',
+                color: 'bg-blue-100 text-blue-800',
+              },
+              { step: '→', label: '', color: 'text-gray-400' },
+              { step: '🔁', label: 'Repeat!', color: 'bg-rose-100 text-rose-800' },
+            ].map((item, i) =>
+              item.label === '' ? (
+                <span key={i} className={`text-xl font-bold ${item.color} hidden sm:block`}>
+                  {item.step}
+                </span>
+              ) : (
+                <div key={i} className={`${item.color} rounded-lg px-4 py-2 text-sm font-medium`}>
+                  {item.step !== '🔁' && <span className="font-bold mr-1">Step {item.step}:</span>}
+                  {item.label}
+                </div>
+              )
+            )}
+          </div>
+          <p className="text-sm text-gray-600 italic">
+            This is exactly how you learned to ride a bike — try, fall, adjust, try again. The
+            difference is that a computer can do this loop millions of times per second.
+          </p>
         </div>
 
         <div className="bg-gradient-to-r from-rose-50 to-violet-50 rounded-xl p-6 mb-6">
@@ -117,7 +278,7 @@ const Introduction: React.FC = () => {
               </div>
               <h4 className="font-semibold text-gray-800 mb-2">The ML Lifecycle</h4>
               <p className="text-sm text-gray-600">
-                From data preparation to deployment and continuous monitoring
+                The complete journey from raw data → trained model → real-world predictions
               </p>
             </div>
             <div className="text-center">
@@ -126,7 +287,7 @@ const Introduction: React.FC = () => {
               </div>
               <h4 className="font-semibold text-gray-800 mb-2">Neural Network Internals</h4>
               <p className="text-sm text-gray-600">
-                Weights, biases, activation functions, and the math behind learning
+                How tiny math operations (weights × inputs + bias) connect to create intelligence
               </p>
             </div>
             <div className="text-center">
@@ -135,31 +296,145 @@ const Introduction: React.FC = () => {
               </div>
               <h4 className="font-semibold text-gray-800 mb-2">Modern NLP & RAG</h4>
               <p className="text-sm text-gray-600">
-                Word embeddings, vector databases, and retrieval-augmented generation
+                How computers understand human language and retrieve knowledge to answer questions
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-            <div className="w-2 h-2 bg-rose-500 rounded-full mt-2"></div>
-            <div>
-              <span className="text-gray-700 font-medium">Parametric Models</span>
-              <p className="text-sm text-gray-600">
-                Fixed set of parameters, like linear regression
-              </p>
+        {/* Key Terminology */}
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">📖 Key Terminology</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="w-2 h-2 bg-rose-500 rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <span className="text-gray-800 font-semibold">Parametric Models</span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Models with a <strong>fixed number of knobs</strong> to tune, no matter how much
+                  data you give them. Like a recipe with exactly 5 ingredients — you adjust the
+                  amounts but never add new ones.
+                </p>
+                <p className="text-xs text-gray-500 mt-1 italic">
+                  Examples: Linear Regression, Neural Networks
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="w-2 h-2 bg-fuchsia-500 rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <span className="text-gray-800 font-semibold">Non-parametric Models</span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Models that <strong>grow more complex</strong> as you give them more data. Like a
+                  photo album — the more photos you add, the more detailed the collection becomes.
+                </p>
+                <p className="text-xs text-gray-500 mt-1 italic">
+                  Examples: Decision Trees, K-Nearest Neighbors
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="w-2 h-2 bg-violet-500 rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <span className="text-gray-800 font-semibold">Training</span>
+                <p className="text-sm text-gray-600 mt-1">
+                  The process of showing a model thousands of examples so it can learn patterns.
+                  Like studying for an exam — the more practice problems you solve, the better you
+                  get.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start space-x-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="w-2 h-2 bg-pink-500 rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <span className="text-gray-800 font-semibold">Inference</span>
+                <p className="text-sm text-gray-600 mt-1">
+                  Using a trained model to make predictions on new, unseen data. Like taking the
+                  actual exam after you&apos;ve studied — you apply what you learned to new
+                  questions.
+                </p>
+              </div>
             </div>
           </div>
-          <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-            <div className="w-2 h-2 bg-fuchsia-500 rounded-full mt-2"></div>
-            <div>
-              <span className="text-gray-700 font-medium">Non-parametric Models</span>
-              <p className="text-sm text-gray-600">
-                Parameters grow with data, like decision trees
-              </p>
-            </div>
-          </div>
+        </div>
+      </ThemeCard>
+
+      {/* Learning Path Overview */}
+      <ThemeCard>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          🗺️ Your Learning Journey (11 Sections)
+        </h2>
+        <p className="text-gray-700 mb-6 leading-relaxed">
+          Each section builds on the previous one. We recommend going in order, but feel free to
+          jump to any topic that interests you:
+        </p>
+        <div className="space-y-3">
+          {[
+            {
+              num: 1,
+              title: 'ML Lifecycle',
+              desc: 'The end-to-end pipeline — from collecting data to shipping a model',
+            },
+            {
+              num: 2,
+              title: 'Feature Engineering',
+              desc: 'How to prepare and transform raw data so machines can understand it',
+            },
+            {
+              num: 3,
+              title: 'Neural Networks',
+              desc: 'The brain-inspired architecture that powers modern AI',
+            },
+            {
+              num: 4,
+              title: 'Loss Functions',
+              desc: 'How we measure "how wrong" a prediction is',
+            },
+            {
+              num: 5,
+              title: 'Gradient Descent',
+              desc: 'The algorithm that makes models smarter, step by step',
+            },
+            {
+              num: 6,
+              title: 'Backpropagation',
+              desc: 'How errors flow backward through a network to fix mistakes',
+            },
+            {
+              num: 7,
+              title: 'Generalization',
+              desc: 'Why "memorizing answers" is bad and how to avoid it',
+            },
+            {
+              num: 8,
+              title: 'Training vs Inference',
+              desc: 'The difference between learning and applying knowledge',
+            },
+            {
+              num: 9,
+              title: 'Word Embeddings',
+              desc: 'How computers turn words into numbers that capture meaning',
+            },
+            {
+              num: 10,
+              title: 'RAG Pipeline',
+              desc: 'How AI retrieves knowledge to give accurate, grounded answers',
+            },
+          ].map((item) => (
+            <button
+              key={item.num}
+              onClick={() => navigateToSection(item.title)}
+              className="w-full flex items-center gap-4 p-3 bg-gray-50 hover:bg-rose-50 rounded-lg border border-gray-200 hover:border-rose-200 transition-colors text-left"
+            >
+              <div className="w-8 h-8 bg-rose-100 text-rose-700 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0">
+                {item.num}
+              </div>
+              <div>
+                <span className="font-semibold text-gray-800">{item.title}</span>
+                <p className="text-sm text-gray-600">{item.desc}</p>
+              </div>
+            </button>
+          ))}
         </div>
       </ThemeCard>
     </>

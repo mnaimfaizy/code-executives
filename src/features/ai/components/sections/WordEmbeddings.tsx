@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { Search } from 'lucide-react';
+import { Search, Lightbulb } from 'lucide-react';
 
 interface WordPoint {
   word: string;
@@ -87,15 +87,36 @@ const WordEmbeddings: React.FC = () => {
   const heroContent = (
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Word Embeddings</h1>
-      <p className="text-xl text-gray-700 leading-relaxed">
-        Words become <strong>coordinates in a semantic galaxy</strong>. Similar meanings cluster
-        together. And with vector arithmetic, <em>King − Man + Woman = Queen</em>.
+      <p className="text-xl text-gray-700 leading-relaxed mb-3">
+        Computers don&apos;t understand words — they understand numbers. Word embeddings are the
+        breakthrough that lets AI understand <strong>meaning</strong> by converting each word into a
+        list of numbers (a vector) where <strong>similar meanings have similar numbers</strong>.
+        Words become coordinates in a semantic galaxy, and math becomes the language of meaning.
+      </p>
+      <p className="text-lg text-gray-600 leading-relaxed">
+        Click any word in the galaxy below to see its nearest semantic neighbors.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* ELI10 box */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200 mb-4">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-amber-900 mb-1">Explain Like I&apos;m 10</h3>
+            <p className="text-gray-700 leading-relaxed">
+              Imagine a magical school seating chart where the teacher places kids who are friends
+              close together and kids who don&apos;t know each other far apart. Word embeddings do
+              the same thing with words — &quot;Happy&quot; sits next to &quot;Joyful,&quot; and
+              both are far from &quot;Car.&quot; The computer figures out these friendships by
+              reading billions of sentences and noticing which words hang out together.
+            </p>
+          </div>
+        </div>
+      </div>
       <ThemeCard>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-gray-900">Semantic Galaxy</h2>
@@ -387,14 +408,87 @@ const WordEmbeddings: React.FC = () => {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">📚 The Magical Library</h2>
         <p className="text-gray-700 leading-relaxed mb-4">
           Imagine a massive library where books automatically slide across the room to group near
-          books with similar <em>meaning</em> — not alphabetically. Drop a book about "Apples" and
-          it slides next to "Oranges" and "Bananas," far from "Airplanes."
+          books with similar <em>meaning</em> — not alphabetically. Drop a book about
+          &quot;Apples&quot; and it slides next to &quot;Oranges&quot; and &quot;Bananas,&quot; far
+          from &quot;Airplanes.&quot;
         </p>
-        <p className="text-gray-700 leading-relaxed">
-          Each word's embedding is its <strong>GPS coordinate</strong> in this meaning-based space.
-          And because meaning maps to position, you can navigate using math.
-        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+          {[
+            {
+              concept: 'Each word = a GPS coordinate',
+              desc: 'Every word gets a unique position in this meaning-space. "Dog" might be at [0.2, 0.8, -0.3, ...].',
+              emoji: '📍',
+            },
+            {
+              concept: 'Close = similar meaning',
+              desc: '"Happy" and "Joyful" are neighbors. "Happy" and "Airplane" are on opposite ends of the library.',
+              emoji: '🤝',
+            },
+            {
+              concept: 'Directions = relationships',
+              desc: 'The direction from "King" to "Queen" is the same as "Man" to "Woman" — both capture the concept of gender.',
+              emoji: '🧭',
+            },
+          ].map(({ concept, desc, emoji }) => (
+            <div
+              key={concept}
+              className="bg-gradient-to-b from-fuchsia-50 to-rose-50 rounded-xl p-4 border border-fuchsia-200"
+            >
+              <div className="text-2xl mb-2">{emoji}</div>
+              <h4 className="font-bold text-sm text-gray-900 mb-1">{concept}</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
       </ThemeCard>
+
+      {/* How embeddings are created */}
+      <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200 mb-4">
+        <h3 className="font-bold text-violet-900 mb-3">🔬 How Are Embeddings Created?</h3>
+        <p className="text-sm text-gray-700 leading-relaxed mb-3">
+          The model reads billions of sentences and learns:{' '}
+          <em>&quot;Words that appear in similar contexts have similar meanings.&quot;</em> For
+          example, &quot;The ___ sat on the throne&quot; could be filled by &quot;King&quot; or
+          &quot;Queen,&quot; so they get similar coordinates.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              method: 'Word2Vec (2013)',
+              desc: 'Predicted a word from its neighbors. Started the embedding revolution.',
+            },
+            {
+              method: 'GloVe (2014)',
+              desc: 'Used word co-occurrence statistics across the entire corpus.',
+            },
+            {
+              method: 'BERT/GPT Embeddings',
+              desc: 'Context-aware: "bank" means different things in "river bank" vs "bank account".',
+            },
+            {
+              method: 'Typical Dimensions',
+              desc: '100 to 1,536 numbers per word. GPT-4 uses 12,288-dimensional vectors.',
+            },
+          ].map(({ method, desc }) => (
+            <div key={method} className="bg-white/60 rounded-lg p-3 border border-violet-100">
+              <span className="font-bold text-sm text-gray-900">{method}</span>
+              <p className="text-xs text-gray-600 mt-1">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Key takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          Word embeddings are the foundation of all modern NLP. They solve a fundamental problem:
+          computers only understand numbers, but language is made of words. By converting words into
+          vectors where <strong>meaning = position</strong>, we enable math on language — and
+          that&apos;s what makes search engines, chatbots, translation, and sentiment analysis
+          possible.
+        </p>
+      </div>
     </>
   );
 

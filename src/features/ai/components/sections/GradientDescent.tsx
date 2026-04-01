@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { Play, RotateCcw, Pause } from 'lucide-react';
+import { Play, RotateCcw, Pause, Lightbulb, SkipForward } from 'lucide-react';
 
 // Rastrigin-like loss landscape for interesting topology
 const lossAt = (x: number, y: number): number => {
@@ -162,15 +162,37 @@ const GradientDescent: React.FC = () => {
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Gradient Descent</h1>
       <p className="text-xl text-gray-700 leading-relaxed">
-        The blindfolded hiker descends a misty mountain. Each step follows the steepest downhill
-        slope — the <strong>negative gradient</strong>. The stride length — the{' '}
-        <strong>learning rate</strong> — makes all the difference.
+        This is the core optimization algorithm that makes neural networks actually <em>learn</em>.
+        It answers: &quot;I know I&apos;m wrong — but which direction should I adjust my weights to
+        be less wrong next time?&quot;
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* Simple explanation */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-6 border border-amber-200 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="bg-amber-100 p-2 rounded-full flex-shrink-0">
+            <Lightbulb className="w-6 h-6 text-amber-600" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-amber-900 mb-2">Explain Like I&apos;m 10 🧒</h3>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              Imagine you&apos;re blindfolded on a hilly mountain and need to reach the lowest
+              valley. You can&apos;t see, but you CAN feel the ground with your feet. You take a
+              step in whichever direction slopes downward the most.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              <strong>That&apos;s gradient descent!</strong> The &quot;slope of the ground&quot; is
+              the <em>gradient</em> (math that tells you which way is downhill), and the &quot;size
+              of your step&quot; is the <em>learning rate</em>. Big steps are fast but risky (you
+              might overshoot the valley). Tiny steps are safe but slow.
+            </p>
+          </div>
+        </div>
+      </div>
       <ThemeCard>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-gray-900">Interactive Loss Landscape</h2>
@@ -181,7 +203,17 @@ const GradientDescent: React.FC = () => {
               className="flex items-center gap-1 px-3 py-1.5 text-sm bg-rose-100 text-rose-700 rounded-lg hover:bg-rose-200 transition-colors disabled:opacity-40"
             >
               {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              {isRunning ? 'Pause' : 'Start Descent'}
+              {isRunning ? 'Pause' : 'Auto Descent'}
+            </button>
+            <button
+              onClick={() => {
+                if (ballPos && !isRunning) stepDescent();
+              }}
+              disabled={!ballPos || isRunning}
+              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-fuchsia-100 text-fuchsia-700 rounded-lg hover:bg-fuchsia-200 transition-colors disabled:opacity-40"
+              title="Take one step manually"
+            >
+              <SkipForward className="w-4 h-4" /> Step
             </button>
             <button
               onClick={handleReset}
@@ -318,8 +350,8 @@ const GradientDescent: React.FC = () => {
       </ThemeCard>
 
       <ThemeCard>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Update Rule</h2>
-        <div className="bg-gradient-to-r from-rose-50 to-fuchsia-50 rounded-xl p-6 border border-rose-200 text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">The Update Rule</h2>
+        <div className="bg-gradient-to-r from-rose-50 to-fuchsia-50 rounded-xl p-6 border border-rose-200 text-center mb-4">
           <p className="font-mono text-lg text-gray-800 mb-2">
             θ<sub>new</sub> = θ<sub>old</sub> − α × ∇L(θ)
           </p>
@@ -328,35 +360,94 @@ const GradientDescent: React.FC = () => {
             learning rate (α).
           </p>
         </div>
+        <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+          <h4 className="font-bold text-amber-800 mb-2">🧒 In plain English:</h4>
+          <ul className="text-sm text-gray-700 space-y-2">
+            <li>
+              • <strong>θ</strong> = the model&apos;s current guess (weights and biases)
+            </li>
+            <li>
+              • <strong>∇L(θ)</strong> = which direction is &quot;uphill&quot; (increasing the
+              error). We go the <em>opposite</em> way.
+            </li>
+            <li>
+              • <strong>α</strong> = how big of a step we take (learning rate)
+            </li>
+            <li>
+              • <strong>Result:</strong> a slightly better set of weights! Repeat this millions of
+              times.
+            </li>
+          </ul>
+        </div>
       </ThemeCard>
 
       <ThemeCard>
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">⛰️ The Blindfolded Hiker</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          ⛰️ The Blindfolded Hiker: Learning Rate Matters
+        </h2>
+        <p className="text-gray-700 leading-relaxed mb-4">
+          The learning rate is the single most important setting in training a neural network. Too
+          small and training takes forever. Too large and the model explodes. Here&apos;s what
+          happens:
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {[
             {
-              label: 'Tiny Steps (α ≈ 0.01)',
-              desc: 'The hiker inch-crawls safely downhill. Guaranteed to reach the bottom — but it takes three weeks.',
+              label: 'Tiny Steps (α ≈ 0.001)',
+              emoji: '🐢',
+              desc: 'The hiker inch-crawls safely downhill. Guaranteed to reach the bottom — but it might take weeks of computer time. In practice, this wastes expensive GPU hours.',
               color: 'bg-blue-50 border-blue-200 text-blue-800',
             },
             {
-              label: 'Good Stride (α ≈ 0.1)',
-              desc: 'Confident walking pace. Reaches the valley floor quickly without overshooting. The sweet spot.',
+              label: 'Good Stride (α ≈ 0.01–0.1)',
+              emoji: '🚶',
+              desc: 'Confident walking pace. Reaches the valley floor quickly without overshooting. This is the sweet spot — most successful models use learning rates in this range.',
               color: 'bg-emerald-50 border-emerald-200 text-emerald-800',
             },
             {
               label: 'Flying Leaps (α > 1)',
-              desc: 'The hiker launches off the opposite hillside. Each step makes things worse. Total divergence.',
+              emoji: '🤸',
+              desc: 'The hiker launches off the opposite hillside. Each step makes things worse — the loss increases instead of decreasing. The model learns nothing.',
               color: 'bg-red-50 border-red-200 text-red-800',
             },
           ].map((item) => (
             <div key={item.label} className={`rounded-xl p-4 border ${item.color}`}>
+              <div className="text-2xl mb-2">{item.emoji}</div>
               <h3 className="font-bold mb-1 text-sm">{item.label}</h3>
               <p className="text-xs leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
       </ThemeCard>
+
+      {/* Local minima warning */}
+      <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200 mb-4">
+        <h3 className="font-bold text-violet-900 mb-2">🕳️ The Local Minima Problem</h3>
+        <p className="text-sm text-gray-700 leading-relaxed mb-2">
+          In the landscape above, you might notice the ball gets &quot;stuck&quot; in a valley that
+          isn&apos;t the deepest one. This is called a <strong>local minimum</strong> — a low point
+          that&apos;s not the global lowest point. It&apos;s like finding a puddle on a mountain and
+          thinking you&apos;ve reached the ocean.
+        </p>
+        <p className="text-sm text-gray-700 leading-relaxed">
+          Real neural networks have billions of dimensions (not just 2), so the landscape is
+          incredibly complex. Modern optimizers like <strong>Adam</strong> and{' '}
+          <strong>SGD with momentum</strong> help escape local minima — like giving the hiker a
+          running start so they can roll over small bumps.
+        </p>
+      </div>
+
+      {/* Key takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          Gradient descent is the engine that makes learning happen. Without it, a neural network is
+          just a random number generator. The gradient tells you{' '}
+          <strong>which direction to adjust</strong>, and the learning rate tells you{' '}
+          <strong>how much to adjust</strong>. Together, they turn a bad model into a good one, one
+          tiny step at a time.
+        </p>
+      </div>
     </>
   );
 

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { Play, RotateCcw, Search } from 'lucide-react';
+import { Play, RotateCcw, Search, Lightbulb } from 'lucide-react';
 
 const stages = [
   { id: 'query', label: 'User Query', x: 60, y: 180, color: '#3b82f6', icon: '💬' },
@@ -60,16 +60,36 @@ const RAGPipeline: React.FC = () => {
   const heroContent = (
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">RAG Pipeline</h1>
-      <p className="text-xl text-gray-700 leading-relaxed">
-        Retrieval-Augmented Generation eliminates hallucinations by giving the LLM an{' '}
-        <strong>open-book</strong> advantage — retrieving real facts from a vector database before
-        generating an answer.
+      <p className="text-xl text-gray-700 leading-relaxed mb-3">
+        Large Language Models are incredibly smart — but they can also confidently make things up.
+        <strong> Retrieval-Augmented Generation (RAG)</strong> fixes this by giving the LLM an{' '}
+        <strong>open-book advantage</strong>: before answering, it retrieves real facts from a
+        database and uses those facts to generate a grounded, accurate response.
+      </p>
+      <p className="text-lg text-gray-600 leading-relaxed">
+        Click &quot;Run Pipeline&quot; below to watch all 6 stages of RAG in action.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* ELI10 box */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200 mb-4">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-amber-900 mb-1">Explain Like I&apos;m 10</h3>
+            <p className="text-gray-700 leading-relaxed">
+              Imagine you&apos;re in an open-book test. Without the book, you&apos;d have to guess
+              the answers — and you might guess wrong! But with the book, you can flip to the right
+              page, read the exact facts, and write a perfect answer.{' '}
+              <strong>RAG is the open book for AI.</strong> It finds the right pages (retrieval),
+              hands them to the AI (augmentation), and the AI writes a factual answer (generation).
+            </p>
+          </div>
+        </div>
+      </div>
       <ThemeCard>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-gray-900">RAG Pipeline Animation</h2>
@@ -369,18 +389,79 @@ const RAGPipeline: React.FC = () => {
 
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">📚 The Smart Librarian</h2>
-        <p className="text-gray-700 leading-relaxed mb-3">
-          The LLM is a brilliant, fast-talking student taking an exam — but hasn't read your company
-          rulebook. Without RAG, it <strong>confidently guesses</strong> (hallucination).
+        <p className="text-gray-700 leading-relaxed mb-4">
+          Think of an LLM as a brilliant, fast-talking student who has read millions of books — but
+          hasn&apos;t read <em>your</em> company&apos;s employee handbook. Without RAG, it{' '}
+          <strong>confidently guesses</strong> the vacation policy (hallucination). With RAG:
         </p>
-        <p className="text-gray-700 leading-relaxed">
-          RAG gives the student an <strong>open-book advantage</strong>. The Vector Database is the
-          library's master index; the Retriever is an incredibly smart librarian who finds pages by{' '}
-          <em>meaning</em>, not keywords. You ask "rules about leaving early" → the librarian brings
-          back pages about "flexible hours" and "PTO." The student gives a perfectly accurate answer
-          without guessing.
-        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          {[
+            {
+              step: '1. You Ask',
+              emoji: '🙋',
+              desc: '"How many vacation days do I get?" The question is converted into a meaning-vector.',
+            },
+            {
+              step: '2. Librarian Searches',
+              emoji: '📖',
+              desc: "The vector database (the library's master index) finds pages about PTO by meaning — not keywords.",
+            },
+            {
+              step: '3. Student Answers',
+              emoji: '✍️',
+              desc: 'The LLM reads the retrieved pages and writes a factual, cited answer. No guessing needed.',
+            },
+          ].map(({ step, emoji, desc }) => (
+            <div
+              key={step}
+              className="bg-gradient-to-b from-rose-50 to-fuchsia-50 rounded-xl p-4 border border-rose-200"
+            >
+              <div className="text-2xl mb-2">{emoji}</div>
+              <h4 className="font-bold text-sm text-gray-900 mb-1">{step}</h4>
+              <p className="text-xs text-gray-600 leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
       </ThemeCard>
+
+      {/* Hallucination explainer */}
+      <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border border-red-200 mb-4">
+        <h3 className="font-bold text-red-900 mb-2">🤥 What Is a Hallucination?</h3>
+        <p className="text-sm text-gray-700 leading-relaxed mb-3">
+          When an LLM makes up facts that sound completely true but are wrong, it&apos;s called a{' '}
+          <strong>hallucination</strong>. For example, an LLM might say &quot;Your company offers
+          unlimited PTO&quot; — even if it doesn&apos;t. This happens because the model is
+          predicting <em>likely-sounding words</em>, not checking facts.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="bg-red-100/50 rounded-lg p-3 border border-red-200">
+            <h4 className="font-bold text-sm text-red-800 mb-1">❌ Without RAG</h4>
+            <p className="text-xs text-gray-700">
+              &quot;Based on typical tech company policies, you probably get 20 days PTO.&quot; —{' '}
+              <em>Made up!</em>
+            </p>
+          </div>
+          <div className="bg-emerald-100/50 rounded-lg p-3 border border-emerald-200">
+            <h4 className="font-bold text-sm text-emerald-800 mb-1">✅ With RAG</h4>
+            <p className="text-xs text-gray-700">
+              &quot;According to Section 4.2, you get 15 days PTO. After 5 years, this increases to
+              20 days.&quot; — <em>Factual!</em>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Key takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          RAG is the most practical way to make AI trustworthy for business applications. Instead of
+          retraining an entire model (expensive and slow), you give it access to your documents at
+          query time. The model stays general-purpose, but its answers become{' '}
+          <strong>specific, accurate, and citable</strong>. This is how most enterprise chatbots,
+          internal search tools, and customer support AI systems work today.
+        </p>
+      </div>
     </>
   );
 

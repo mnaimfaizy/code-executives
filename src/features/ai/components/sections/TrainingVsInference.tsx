@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Lightbulb } from 'lucide-react';
 
 const TrainingVsInference: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
@@ -39,15 +39,37 @@ const TrainingVsInference: React.FC = () => {
   const heroContent = (
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Training vs. Inference</h1>
-      <p className="text-xl text-gray-700 leading-relaxed">
-        Training builds the brain. Inference puts it to work. Understanding the drastic engineering
-        difference is critical for deploying AI in production.
+      <p className="text-xl text-gray-700 leading-relaxed mb-3">
+        These are the two fundamentally different phases of every AI system. Training is when the
+        model <strong>learns</strong> — it&apos;s slow, expensive, and happens once (or rarely).
+        Inference is when the model <strong>answers questions</strong> — it&apos;s fast, cheap, and
+        happens millions of times per day. Understanding the difference is critical for anyone
+        building or using AI in production.
+      </p>
+      <p className="text-lg text-gray-600 leading-relaxed">
+        Click the buttons below to see both phases in action, side by side.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* ELI10 box */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200 mb-4">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-amber-900 mb-1">Explain Like I&apos;m 10</h3>
+            <p className="text-gray-700 leading-relaxed">
+              Think of learning to ride a bike. <strong>Training</strong> is the weeks of practice
+              with wobbling, falling, and scraping your knees — it&apos;s hard and takes a long
+              time. <strong>Inference</strong> is when you can finally just hop on and ride to
+              school without thinking about it. You already learned; now you just <em>do</em>. AI
+              works the same way!
+            </p>
+          </div>
+        </div>
+      </div>
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Factory vs. Vending Machine</h2>
         <p className="text-sm text-gray-600 mb-4">
@@ -381,25 +403,99 @@ const TrainingVsInference: React.FC = () => {
 
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">🏃 The Marathon Metaphor</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <p className="text-gray-700 leading-relaxed mb-4">
+          Training a model is like an athlete preparing for a marathon. Inference is race day.
+          Here&apos;s why this metaphor captures the essence of both phases perfectly:
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
-            <h3 className="font-bold text-amber-900 mb-2">Training = Preparation</h3>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              Months of grueling preparation: lifting weights, running 20 miles daily, strict diet.
-              Constantly breaking down muscles to build them stronger. Immense time and resources —
-              the only goal is to improve physical capability.
-            </p>
+            <h3 className="font-bold text-amber-900 mb-2">🏋️ Training = Preparation</h3>
+            <ul className="text-sm text-gray-700 space-y-2 leading-relaxed">
+              <li>
+                • <strong>Months of effort:</strong> Lifting weights, running 20 miles daily, strict
+                diet
+              </li>
+              <li>
+                • <strong>Constantly breaking down:</strong> Muscles tear to grow back stronger
+                (like adjusting weights through backprop)
+              </li>
+              <li>
+                • <strong>Needs a coach:</strong> Someone to check form and give feedback (like the
+                loss function)
+              </li>
+              <li>
+                • <strong>Immense cost:</strong> Gym membership, nutrition, time off work (like GPU
+                clusters costing $10K+/day)
+              </li>
+            </ul>
           </div>
           <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-xl p-4 border border-emerald-200">
-            <h3 className="font-bold text-emerald-900 mb-2">Inference = Race Day</h3>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              All learning is finished. The runner steps to the starting line and simply{' '}
-              <strong>executes</strong>. Not building new muscle mid-race — just using everything
-              learned to run as fast as possible.
-            </p>
+            <h3 className="font-bold text-emerald-900 mb-2">🏅 Inference = Race Day</h3>
+            <ul className="text-sm text-gray-700 space-y-2 leading-relaxed">
+              <li>
+                • <strong>Preparation is done:</strong> The runner steps to the starting line
+              </li>
+              <li>
+                • <strong>No more learning:</strong> Not building new muscle mid-race — just
+                executing
+              </li>
+              <li>
+                • <strong>Speed matters:</strong> Every millisecond counts (latency is critical)
+              </li>
+              <li>
+                • <strong>Low cost per run:</strong> Some water and a pair of shoes (like a small
+                API server)
+              </li>
+            </ul>
           </div>
         </div>
       </ThemeCard>
+
+      {/* Real-world examples */}
+      <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200 mb-4">
+        <h3 className="font-bold text-violet-900 mb-3">🌍 Real-World Examples</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            {
+              app: 'ChatGPT',
+              training: 'Trained on trillions of words over months using thousands of GPUs',
+              inference: 'Generates your response in ~1 second',
+            },
+            {
+              app: 'Google Translate',
+              training: 'Learned from billions of translated sentence pairs',
+              inference: 'Translates your text in milliseconds',
+            },
+            {
+              app: 'Spotify Recommend',
+              training: 'Analyzed listening patterns of 600M+ users',
+              inference: 'Picks your next song in <100ms',
+            },
+          ].map(({ app, training, inference }) => (
+            <div key={app} className="bg-white/60 rounded-lg p-3 border border-violet-100">
+              <h4 className="font-bold text-sm text-gray-900 mb-2">{app}</h4>
+              <p className="text-xs text-amber-700 mb-1">
+                <strong>Training:</strong> {training}
+              </p>
+              <p className="text-xs text-emerald-700">
+                <strong>Inference:</strong> {inference}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Key takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          Training and inference are like building a car vs. driving it. You wouldn&apos;t redesign
+          the engine every time you drive to work. The model trains once (or periodically), freezes
+          its learned weights, and then serves predictions at lightning speed. Most of the AI you
+          interact with daily — search engines, voice assistants, recommendation feeds — is running{' '}
+          <strong>inference</strong>, not training.
+        </p>
+      </div>
     </>
   );
 

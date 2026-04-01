@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Lightbulb } from 'lucide-react';
 
 // Generate a smooth U-shape with noise
 const generateData = (
@@ -128,16 +128,38 @@ const Generalization: React.FC = () => {
   const heroContent = (
     <div className="max-w-4xl mx-auto text-center">
       <h1 className="text-4xl font-bold text-gray-900 mb-4">Generalization</h1>
-      <p className="text-xl text-gray-700 leading-relaxed">
-        A model that aces the training data but fails on new data has{' '}
-        <strong>memorized the noise</strong> instead of learning the pattern. The battle between
-        underfitting and overfitting — the <strong>Bias-Variance Tradeoff</strong>.
+      <p className="text-xl text-gray-700 leading-relaxed mb-3">
+        The whole point of machine learning is to make good predictions on{' '}
+        <strong>data the model has never seen before</strong>. A model that aces its homework but
+        fails every test has <strong>memorized the noise</strong> instead of learning the pattern.
+        This section explores the tightrope walk between underfitting and overfitting — known as the{' '}
+        <strong>Bias-Variance Tradeoff</strong>.
+      </p>
+      <p className="text-lg text-gray-600 leading-relaxed">
+        Use the interactive slider below to see exactly what happens when a model is too simple,
+        just right, or way too complex.
       </p>
     </div>
   );
 
   const mainContent = (
     <>
+      {/* ELI10 box */}
+      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200 mb-4">
+        <div className="flex items-start gap-3">
+          <Lightbulb className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-bold text-amber-900 mb-1">Explain Like I&apos;m 10</h3>
+            <p className="text-gray-700 leading-relaxed">
+              Imagine studying for a math test. You could memorize every single practice problem —
+              but if the teacher changes the numbers, you&apos;d be lost. Or you could learn{' '}
+              <strong>how to do the math</strong>, and then you can solve <em>any</em> problem.
+              That&apos;s what &quot;generalization&quot; means: learning the rules, not just the
+              answers.
+            </p>
+          </div>
+        </div>
+      </div>
       <ThemeCard>
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="text-2xl font-bold text-gray-900">Interactive Curve Fitter</h2>
@@ -287,12 +309,17 @@ const Generalization: React.FC = () => {
 
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">📝 The School Exam</h2>
+        <p className="text-gray-700 leading-relaxed mb-4">
+          Think of training data as practice problems and test data as the real exam. Three types of
+          students show exactly what underfitting, overfitting, and good generalization look like:
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
               student: 'The Underfitter',
               emoji: '😴',
-              behavior: "Doesn't study. Assumes every answer is 'C'. Fails everything.",
+              behavior:
+                "Doesn't study at all. Assumes every answer is 'C'. Fails both practice and exam. The model is too simple to capture the pattern.",
               result: 'Practice: ❌ | Exam: ❌',
               color: 'from-blue-50 to-blue-100 border-blue-200',
             },
@@ -300,7 +327,7 @@ const Generalization: React.FC = () => {
               student: 'The Overfitter',
               emoji: '🤓',
               behavior:
-                'Photographic memory. Memorizes all 100 practice answers word-for-word. But when the numbers change on the real exam...',
+                'Photographic memory. Memorizes all 100 practice answers word-for-word, including typos. Aces practice, but when the numbers change on the real exam — total confusion.',
               result: 'Practice: ✅ | Exam: ❌',
               color: 'from-red-50 to-red-100 border-red-200',
             },
@@ -308,7 +335,7 @@ const Generalization: React.FC = () => {
               student: 'The Best Fit',
               emoji: '🧠',
               behavior:
-                'Studies the formulas. Learns the rules. Might miss one tricky practice question, but aces the new exam.',
+                'Studies the formulas and underlying rules. Might miss one tricky practice question, but understands the concepts well enough to handle new problems.',
               result: 'Practice: ✅ | Exam: ✅',
               color: 'from-emerald-50 to-emerald-100 border-emerald-200',
             },
@@ -324,6 +351,82 @@ const Generalization: React.FC = () => {
           ))}
         </div>
       </ThemeCard>
+
+      {/* Bias-Variance table */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-4">
+        <h3 className="text-lg font-bold text-gray-900 p-4 pb-2">⚖️ The Bias-Variance Tradeoff</h3>
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b">
+              <th className="p-3 text-left font-bold text-gray-900">Concept</th>
+              <th className="p-3 text-left font-bold text-blue-700">High Bias (Underfitting)</th>
+              <th className="p-3 text-left font-bold text-red-700">High Variance (Overfitting)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ['Model complexity', 'Too simple (straight line)', 'Too complex (wild zig-zag)'],
+              ['Training error', 'High', 'Very low (nearly zero)'],
+              ['Test error', 'High', 'Very high'],
+              ['What it learned', 'Nothing useful', 'Noise + signal together'],
+              ['Real-world analogy', 'Guessing randomly', 'Memorizing the textbook'],
+              [
+                'Fix by...',
+                'Adding more features/complexity',
+                'Regularization, more data, early stopping',
+              ],
+            ].map(([concept, bias, variance]) => (
+              <tr key={concept} className="border-b last:border-0">
+                <td className="p-3 font-medium text-gray-900">{concept}</td>
+                <td className="p-3 text-gray-700">{bias}</td>
+                <td className="p-3 text-gray-700">{variance}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Regularization note */}
+      <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200 mb-4">
+        <h3 className="font-bold text-violet-900 mb-2">🛡️ How Do We Prevent Overfitting?</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              name: 'More Training Data',
+              desc: 'More examples make it harder to memorize patterns.',
+            },
+            {
+              name: 'Regularization (L1/L2)',
+              desc: 'Penalizes overly large weights — forces simplicity.',
+            },
+            {
+              name: 'Early Stopping',
+              desc: 'Stop training before the model starts memorizing noise.',
+            },
+            {
+              name: 'Dropout',
+              desc: 'Randomly disable neurons during training — forces redundancy.',
+            },
+          ].map(({ name, desc }) => (
+            <div key={name} className="bg-white/60 rounded-lg p-3 border border-violet-100">
+              <span className="font-bold text-sm text-gray-900">{name}</span>
+              <p className="text-xs text-gray-600 mt-1">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Key takeaway */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <h3 className="font-bold text-emerald-900 mb-2">🎯 Key Takeaway</h3>
+        <p className="text-gray-700 leading-relaxed">
+          The goal of machine learning is not to get <strong>zero error on training data</strong> —
+          it&apos;s to get <strong>low error on data the model has never seen</strong>. Use the
+          slider above to see this in action: as you increase the degree past 3, the training error
+          drops to near zero, but the test error starts climbing. The sweet spot is a model
+          that&apos;s complex enough to capture the pattern, but simple enough to ignore the noise.
+        </p>
+      </div>
     </>
   );
 
