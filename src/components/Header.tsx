@@ -15,6 +15,7 @@ import {
   BookOpen,
   Boxes,
   Brain,
+  Server,
 } from 'lucide-react';
 import { useUI } from '../shared/contexts';
 
@@ -79,6 +80,12 @@ const Header: React.FC = () => {
           path: '/nextjs',
           icon: <Globe className="w-4 h-4" />,
           description: 'Next.js full-stack framework',
+        },
+        {
+          label: 'Node.js',
+          path: '/nodejs',
+          icon: <Server className="w-4 h-4" />,
+          description: 'Node.js ecosystem & runtime',
         },
       ],
     },
@@ -180,6 +187,7 @@ const Header: React.FC = () => {
     if (path === '/datastructures' || path === '/systemdesign') return 'text-blue-600 bg-blue-50';
     if (path === '/bigo') return 'text-purple-600 bg-purple-50';
     if (path === '/ai') return 'text-rose-600 bg-rose-50';
+    if (path === '/nodejs') return 'text-green-600 bg-green-50';
     return 'text-gray-700 hover:bg-gray-50';
   };
 

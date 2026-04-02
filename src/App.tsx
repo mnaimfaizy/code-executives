@@ -28,6 +28,7 @@ const PythonPage = lazy(() => import('./features/python'));
 const SystemDesignPage = lazy(() => import('./features/systemdesign'));
 const TypeScriptPage = lazy(() => import('./features/typescript'));
 const AIFundamentalsPage = lazy(() => import('./features/ai'));
+const NodeJSPage = lazy(() => import('./features/nodejs'));
 
 const App: React.FC = () => {
   // Initialize analytics on app mount
@@ -160,6 +161,14 @@ const App: React.FC = () => {
                           element={
                             <SuspenseRoute>
                               <AIFundamentalsPage />
+                            </SuspenseRoute>
+                          }
+                        />
+                        <Route
+                          path="/nodejs"
+                          element={
+                            <SuspenseRoute>
+                              <NodeJSPage />
                             </SuspenseRoute>
                           }
                         />
