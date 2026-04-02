@@ -25,6 +25,7 @@ import {
   Package,
   Cpu,
   Network,
+  Server,
 } from 'lucide-react';
 import ThemeCard from '../components/shared/ThemeCard';
 import { SEO } from '../shared/components/SEO/SEO';
@@ -171,11 +172,24 @@ const Home: React.FC = () => {
       level: 'Beginner Friendly',
       duration: '3-4 hours',
     },
+    {
+      icon: <Server className="w-12 h-12" />,
+      title: 'Node.js Ecosystem',
+      description:
+        'Master the Event Loop, V8 memory, Streams, Clustering, module systems, and the runtime wars',
+      path: '/nodejs',
+      color: 'green',
+      gradient: 'from-green-600 to-emerald-600',
+      bgGradient: 'from-green-50 to-emerald-50',
+      topics: ['Event Loop', 'Streams & Buffers', 'Cluster vs Workers', 'Runtime Wars'],
+      level: 'Deep Dive',
+      duration: '3-4 hours',
+    },
   ];
 
   const stats = [
-    { value: '11+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
-    { value: '70+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
+    { value: '12+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
+    { value: '78+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
     { value: '1000+', label: 'Code Examples', icon: <FileCode className="w-5 h-5" /> },
     { value: '24/7', label: 'Available Learning', icon: <Cpu className="w-5 h-5" /> },
   ];
@@ -204,11 +218,11 @@ const Home: React.FC = () => {
     },
     {
       phase: 'Architecture & Systems',
-      modules: [allModules[7], allModules[8], allModules[9], allModules[10]], // Python, System Design, TypeScript, AI
+      modules: [allModules[7], allModules[8], allModules[9], allModules[10], allModules[11]], // Python, System Design, TypeScript, AI, Node.js
       icon: <Award className="w-6 h-6" />,
       color: 'emerald',
       description:
-        'Master system design patterns, multi-language architectures, and AI fundamentals',
+        'Master system design patterns, multi-language architectures, AI fundamentals, and runtime ecosystems',
     },
   ];
 
@@ -237,7 +251,7 @@ const Home: React.FC = () => {
   const features = [
     {
       icon: <MonitorPlay className="w-8 h-8 text-indigo-600" />,
-      title: '70+ Interactive Visualizations',
+      title: '78+ Interactive Visualizations',
       description: 'See how engines, compilers, and frameworks work internally',
     },
     {
@@ -261,7 +275,7 @@ const Home: React.FC = () => {
     <>
       <SEO
         title="Code Executives - Master Programming Internals"
-        description="Deep dive into JavaScript engines, Git internals, framework architectures, and system design. 70+ interactive visualizations for developers who want to understand how things really work under the hood."
+        description="Deep dive into JavaScript engines, Git internals, framework architectures, and system design. 78+ interactive visualizations for developers who want to understand how things really work under the hood."
         keywords={[
           'programming internals',
           'javascript engine internals',
@@ -294,7 +308,7 @@ const Home: React.FC = () => {
               <span className="font-semibold text-indigo-600">actually work</span> under the hood.
               For developers who want to understand JavaScript engines, Git internals, data
               structure performance, and framework architectures through{' '}
-              <span className="font-semibold text-purple-600">70+ interactive visualizations</span>.
+              <span className="font-semibold text-purple-600">78+ interactive visualizations</span>.
             </p>
 
             {/* CTA Buttons */}
@@ -409,7 +423,7 @@ const Home: React.FC = () => {
                 }}
                 className="inline-flex items-center space-x-2 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
               >
-                <span>View All 11 Modules</span>
+                <span>View All 12 Modules</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

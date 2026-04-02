@@ -59,6 +59,13 @@ const getThemeColorClass = (
       buttonHover: 'hover:text-rose-600',
       border: 'border-rose-100',
     },
+    green: {
+      active: 'bg-green-100 text-green-800 border-green-500',
+      hover: 'hover:bg-green-50 hover:text-green-700',
+      buttonActive: 'text-green-600 hover:text-green-700',
+      buttonHover: 'hover:text-green-600',
+      border: 'border-green-100',
+    },
   };
 
   const colors = colorMap[theme.primary] || colorMap.blue;
@@ -319,6 +326,18 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Word Embeddings', path: '/ai?section=Word%20Embeddings' },
     { label: 'RAG Pipeline', path: '/ai?section=RAG%20Pipeline' },
   ],
+  '/nodejs': [
+    { label: 'Introduction', path: '/nodejs?section=Introduction' },
+    { label: 'Event Loop', path: '/nodejs?section=Event%20Loop' },
+    { label: 'Async Programming', path: '/nodejs?section=Async%20Programming' },
+    { label: 'Buffers & Streams', path: '/nodejs?section=Buffers%20%26%20Streams' },
+    { label: 'Scaling', path: '/nodejs?section=Scaling' },
+    { label: 'Memory Management', path: '/nodejs?section=Memory%20Management' },
+    { label: 'Module System', path: '/nodejs?section=Module%20System' },
+    { label: 'Package Managers', path: '/nodejs?section=Package%20Managers' },
+    { label: 'Frameworks', path: '/nodejs?section=Frameworks' },
+    { label: 'Runtime Wars', path: '/nodejs?section=Runtime%20Wars' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -344,7 +363,9 @@ const Sidebar: React.FC = () => {
     | 'python'
     | 'systemdesign'
     | 'typescript'
-    | 'ai' => {
+    | 'ai'
+    | 'nodejs' => {
+    if (path.includes('/nodejs')) return 'nodejs';
     if (path.includes('/ai')) return 'ai';
     if (path.includes('javascript')) return 'javascript';
     if (path.includes('python')) return 'python';

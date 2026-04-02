@@ -92,6 +92,14 @@ export const theme = {
       border: 'rose-200',
       shadow: 'rose-200',
     },
+    nodejs: {
+      primary: 'green',
+      secondary: 'emerald',
+      accent: 'lime',
+      gradient: 'from-green-50 via-white to-emerald-50',
+      border: 'green-100',
+      shadow: 'green-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',
