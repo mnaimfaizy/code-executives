@@ -114,7 +114,7 @@ const CloudArchitecture: React.FC = () => {
             },
             {
               name: 'Circuit Breaker',
-              desc: 'Stop calling a failing service. After N failures, \"open\" the circuit and return fallback. Periodically test if the service recovered.',
+              desc: 'Stop calling a failing service. After N failures, "open" the circuit and return fallback. Periodically test if the service recovered.',
               useCase: 'Preventing cascade failures in distributed systems',
             },
             {
