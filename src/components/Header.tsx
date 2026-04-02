@@ -16,6 +16,7 @@ import {
   Boxes,
   Brain,
   Server,
+  Cloud,
 } from 'lucide-react';
 import { useUI } from '../shared/contexts';
 
@@ -123,6 +124,12 @@ const Header: React.FC = () => {
           icon: <Brain className="w-4 h-4" />,
           description: 'AI & Machine Learning fundamentals',
         },
+        {
+          label: 'DevOps',
+          path: '/devops',
+          icon: <Cloud className="w-4 h-4" />,
+          description: 'DevOps & Cloud Computing',
+        },
       ],
     },
   ];
@@ -188,6 +195,7 @@ const Header: React.FC = () => {
     if (path === '/bigo') return 'text-purple-600 bg-purple-50';
     if (path === '/ai') return 'text-rose-600 bg-rose-50';
     if (path === '/nodejs') return 'text-green-600 bg-green-50';
+    if (path === '/devops') return 'text-sky-600 bg-sky-50';
     return 'text-gray-700 hover:bg-gray-50';
   };
 
