@@ -5,6 +5,7 @@ import { RefreshCw, Lightbulb } from 'lucide-react';
 
 const LAYER_SIZES = [3, 4, 4, 2];
 const NODE_RADIUS = 20;
+const INPUTS = [0.8, 0.4, 0.6];
 
 function sigmoid(x: number): number {
   return 1 / (1 + Math.exp(-x));
@@ -49,7 +50,6 @@ const NeuralNetworks: React.FC = () => {
   const [selectedEdge, setSelectedEdge] = useState<{ l: number; i: number; j: number } | null>(
     null
   );
-  const inputs = [0.8, 0.4, 0.6];
 
   const nodePositions = useMemo(() => {
     const positions: { x: number; y: number }[][] = [];
@@ -72,7 +72,7 @@ const NeuralNetworks: React.FC = () => {
   }, []);
 
   const activations = useMemo(() => {
-    const acts: number[][] = [inputs];
+    const acts: number[][] = [INPUTS];
     for (let l = 0; l < weights.length; l++) {
       const layerActs: number[] = [];
       for (let j = 0; j < LAYER_SIZES[l + 1]; j++) {
@@ -85,7 +85,7 @@ const NeuralNetworks: React.FC = () => {
       acts.push(layerActs);
     }
     return acts;
-  }, [weights, biases, inputs]);
+  }, [weights, biases]);
 
   const handleWeightChange = useCallback((l: number, i: number, j: number, value: number) => {
     setWeights((prev) => {
@@ -338,7 +338,7 @@ const NeuralNetworks: React.FC = () => {
             )}
 
             {/* Input labels */}
-            {inputs.map((val, i) => (
+            {INPUTS.map((val, i) => (
               <text
                 key={`input-${i}`}
                 x={nodePositions[0][i].x - NODE_RADIUS - 10}

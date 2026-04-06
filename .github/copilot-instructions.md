@@ -15,6 +15,22 @@
 - **Build**: `npm run build` (TypeScript + Vite)
 - **Test**: `npm test` (watch mode) or `npm run test:run` (CI mode)
 
+## 🔐 Dependency and CI Security
+
+See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current repository policy and remediation plan.
+
+- Treat all changes to `package.json`, `package-lock.json`, `.npmrc`, and `.github/workflows/**` as security-sensitive.
+- This repository is npm-only. Do not switch to Yarn or pnpm unless the repo is explicitly migrated and the security policy is updated.
+- Prefer existing platform APIs or already-approved packages before adding a new dependency.
+- Use exact versions for direct npm dependencies. Avoid `^` and `~`, and keep `.npmrc` configured with `save-exact=true`.
+- For existing lockfiles, use `npm ci`. For disposable review flows that only need metadata and audit signals, prefer `npm ci --ignore-scripts` first.
+- In CI, use only `npm ci` and verify that `package-lock.json` stays unchanged after install.
+- Review lockfile diffs for unexpected transitive packages and any new install-time script behavior before accepting dependency updates.
+- Keep `package-lock.json` committed and frozen in CI.
+- Do not recommend a blanket `ignore-scripts=true` change for normal local installs in this repo without a migration plan because the current toolchain depends on reviewed install-script packages such as `esbuild` and `@tailwindcss/oxide`.
+- Preserve the `package.json` overrides that block compromised Axios releases `1.14.1` and `0.30.4`.
+- For GitHub Actions, pin third-party actions to full commit SHAs, set explicit minimal `permissions`, and prefer OIDC over long-lived secrets whenever external systems are involved.
+
 ### **10 Learning Modules**
 
 1. JavaScript Engine - V8 internals and execution flow
@@ -549,14 +565,14 @@ analyticsService.trackEvent('feature_used', { feature: 'visualization' });
 import { env } from './core/config/env';
 
 // Available environment variables
-env.enableAnalytics      // boolean
-env.googleAnalyticsId    // string | undefined
-env.isDevelopment        // boolean
-env.isProduction         // boolean
+env.enableAnalytics; // boolean
+env.googleAnalyticsId; // string | undefined
+env.isDevelopment; // boolean
+env.isProduction; // boolean
 
 // Access in components
-import.meta.env.DEV      // Vite development mode
-import.meta.env.PROD     // Vite production mode
+import.meta.env.DEV; // Vite development mode
+import.meta.env.PROD; // Vite production mode
 ```
 
 ## 📚 Module-Specific Guidelines
@@ -638,6 +654,7 @@ The application includes these complete learning modules:
 ### **ESLint Configuration**
 
 The project uses:
+
 - `@typescript-eslint` for TypeScript-specific rules
 - `eslint-plugin-react` and `eslint-plugin-react-hooks` for React best practices
 - `eslint-plugin-import` for import organization
@@ -789,6 +806,7 @@ describe('useMyHook', () => {
 ```
 
 **Test File Organization:**
+
 - **Unit Tests**: Test utility functions and hooks
 - **Component Tests**: Verify rendering and interactions
 - **Integration Tests**: Test feature workflows
@@ -796,6 +814,7 @@ describe('useMyHook', () => {
 - Use `src/test/` for shared test utilities and setup
 
 **Existing Test Examples:**
+
 - `src/shared/hooks/useDebounce.test.ts`
 - `src/shared/hooks/useThrottle.test.ts`
 - `src/shared/components/feedback/ErrorBoundary/ErrorBoundary.test.tsx`
@@ -808,12 +827,14 @@ describe('useMyHook', () => {
 Complete step-by-step guide:
 
 1. **Create Feature Directory Structure**:
+
 ```bash
 mkdir -p src/features/[module]/components/{sections,visualizations/2d}
 touch src/features/[module]/index.tsx
 ```
 
 2. **Add Type Definitions** (if needed):
+
 ```typescript
 // src/types/[module].ts
 export interface ModuleState {
@@ -822,6 +843,7 @@ export interface ModuleState {
 ```
 
 3. **Add Theme Colors**:
+
 ```typescript
 // src/utils/theme.ts - Add to colors object
 [module]: {
@@ -835,6 +857,7 @@ export interface ModuleState {
 ```
 
 4. **Create Main Page Component**:
+
 ```typescript
 // src/features/[module]/index.tsx
 import React from 'react';
@@ -854,6 +877,7 @@ export default ModulePage;
 ```
 
 5. **Add Lazy Route in App.tsx**:
+
 ```typescript
 // Import
 const NewModulePage = lazy(() => import('./features/newmodule'));
@@ -875,6 +899,7 @@ const NewModulePage = lazy(() => import('./features/newmodule'));
 ### **Creating Interactive Visualizations**
 
 1. **Start with SVG Structure**:
+
 ```typescript
 const MyViz: React.FC = () => {
   return (
@@ -888,23 +913,26 @@ const MyViz: React.FC = () => {
 ```
 
 2. **Add State Management**:
+
 ```typescript
 const [step, setStep] = useState(0);
 const [isPlaying, setIsPlaying] = useState(false);
 ```
 
 3. **Implement Animation Logic**:
+
 ```typescript
 useEffect(() => {
   if (!isPlaying) return;
   const interval = setInterval(() => {
-    setStep(prev => (prev + 1) % totalSteps);
+    setStep((prev) => (prev + 1) % totalSteps);
   }, 1000);
   return () => clearInterval(interval);
 }, [isPlaying]);
 ```
 
 4. **Add Demo Controls**:
+
 ```typescript
 <div className="flex gap-2 mt-4">
   <button onClick={() => setIsPlaying(!isPlaying)}>
@@ -915,6 +943,7 @@ useEffect(() => {
 ```
 
 5. **Include Educational Tooltips**:
+
 ```typescript
 <title>Explanation of what this element represents</title>
 ```

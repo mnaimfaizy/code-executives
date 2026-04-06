@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import { ArrowRight, RotateCcw, Lightbulb } from 'lucide-react';
@@ -44,6 +44,11 @@ const Backpropagation: React.FC = () => {
   const [step, setStep] = useState(0);
   const [activeEdge, setActiveEdge] = useState<string | null>(null);
 
+  const xValue = nodes.find((node) => node.id === 'x')?.value ?? 2;
+  const wValue = nodes.find((node) => node.id === 'w')?.value ?? 3;
+  const addValue = nodes.find((node) => node.id === 'add')?.value ?? 7;
+  const addGradient = 2 * addValue;
+
   const runForward = useCallback(() => {
     const n = initialNodes.map((nd) => ({ ...nd }));
     // x=2, w=3: mul = 6
@@ -68,51 +73,48 @@ const Backpropagation: React.FC = () => {
     grad: number;
     edge: string;
     explanation: string;
-  }[] = [
-    { nodeId: 'loss', grad: 1, edge: '', explanation: 'dL/dL = 1 (by definition)' },
-    {
-      nodeId: 'sq',
-      grad: 2 * (nodes.find((n) => n.id === 'add')?.value ?? 7),
-      edge: 'sq->loss',
-      explanation: `dL/d(sq_input) = 2×${nodes.find((n) => n.id === 'add')?.value ?? 7} = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7)}`,
-    },
-    {
-      nodeId: 'add',
-      grad: 2 * (nodes.find((n) => n.id === 'add')?.value ?? 7),
-      edge: 'add->sq',
-      explanation: `dL/d(add) = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7)} × 1 (chain rule)`,
-    },
-    {
-      nodeId: 'b',
-      grad: 2 * (nodes.find((n) => n.id === 'add')?.value ?? 7),
-      edge: 'b->add',
-      explanation: `dL/db = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7)} (+ passes gradient through)`,
-    },
-    {
-      nodeId: 'mul',
-      grad: 2 * (nodes.find((n) => n.id === 'add')?.value ?? 7),
-      edge: 'mul->add',
-      explanation: `dL/d(mul) = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7)} (+ passes gradient through)`,
-    },
-    {
-      nodeId: 'w',
-      grad:
-        2 *
-        (nodes.find((n) => n.id === 'add')?.value ?? 7) *
-        (nodes.find((n) => n.id === 'x')?.value ?? 2),
-      edge: 'w->mul',
-      explanation: `dL/dw = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7)} × x = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7) * (nodes.find((n) => n.id === 'x')?.value ?? 2)}`,
-    },
-    {
-      nodeId: 'x',
-      grad:
-        2 *
-        (nodes.find((n) => n.id === 'add')?.value ?? 7) *
-        (nodes.find((n) => n.id === 'w')?.value ?? 3),
-      edge: 'x->mul',
-      explanation: `dL/dx = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7)} × w = ${2 * (nodes.find((n) => n.id === 'add')?.value ?? 7) * (nodes.find((n) => n.id === 'w')?.value ?? 3)}`,
-    },
-  ];
+  }[] = useMemo(
+    () => [
+      { nodeId: 'loss', grad: 1, edge: '', explanation: 'dL/dL = 1 (by definition)' },
+      {
+        nodeId: 'sq',
+        grad: addGradient,
+        edge: 'sq->loss',
+        explanation: `dL/d(sq_input) = 2×${addValue} = ${addGradient}`,
+      },
+      {
+        nodeId: 'add',
+        grad: addGradient,
+        edge: 'add->sq',
+        explanation: `dL/d(add) = ${addGradient} × 1 (chain rule)`,
+      },
+      {
+        nodeId: 'b',
+        grad: addGradient,
+        edge: 'b->add',
+        explanation: `dL/db = ${addGradient} (+ passes gradient through)`,
+      },
+      {
+        nodeId: 'mul',
+        grad: addGradient,
+        edge: 'mul->add',
+        explanation: `dL/d(mul) = ${addGradient} (+ passes gradient through)`,
+      },
+      {
+        nodeId: 'w',
+        grad: addGradient * xValue,
+        edge: 'w->mul',
+        explanation: `dL/dw = ${addGradient} × x = ${addGradient * xValue}`,
+      },
+      {
+        nodeId: 'x',
+        grad: addGradient * wValue,
+        edge: 'x->mul',
+        explanation: `dL/dx = ${addGradient} × w = ${addGradient * wValue}`,
+      },
+    ],
+    [addGradient, addValue, wValue, xValue]
+  );
 
   const stepBackward = useCallback(() => {
     if (phase !== 'forward' && phase !== 'backward') return;
