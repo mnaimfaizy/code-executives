@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "**/CODEOWNERS": "plaintext"
+  },
+  "[plaintext]": {
+    "editor.formatOnSave": false
+  }
+}
