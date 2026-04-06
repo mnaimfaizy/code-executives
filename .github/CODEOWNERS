@@ -1,0 +1,13 @@
+# Default owner
+
+- @mnaimfaizy
+
+# Security-sensitive files and directories
+
+/.github/workflows/ @mnaimfaizy
+/.github/instructions/ @mnaimfaizy
+/package.json @mnaimfaizy
+/package-lock.json @mnaimfaizy
+/.npmrc @mnaimfaizy
+/SECURITY.md @mnaimfaizy
+/docs/SECURITY/ @mnaimfaizy

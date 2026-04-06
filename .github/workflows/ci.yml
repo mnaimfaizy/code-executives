@@ -6,7 +6,54 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 jobs:
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: moderate
+          fail-on-scopes: development, runtime, unknown
+
+  secure-install-review:
+    name: Secure Install Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Restore cached dependencies
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependency metadata without scripts
+        run: npm ci --ignore-scripts
+
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+
   setup:
     name: Setup Dependencies
     runs-on: ubuntu-latest
@@ -15,17 +62,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Cache node modules
         id: cache-node-modules
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -35,29 +82,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
+
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [setup, secure-install-review]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Restore cached dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
 
       - name: Run linter
         run: npm run lint
@@ -65,26 +118,29 @@ jobs:
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [setup, secure-install-review]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Restore cached dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
 
       - name: Run type-check
         run: npx tsc --noEmit
@@ -92,26 +148,29 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    needs: setup
+    needs: [setup, secure-install-review]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Restore cached dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
 
       - name: Run tests
         run: npm run test:run
@@ -121,7 +180,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@aa56896cf108bd10b5eb883cd1d24196da57f695 # v5.5.4
         with:
           files: ./coverage/coverage-final.json
           fail_ci_if_error: false
@@ -130,20 +189,20 @@ jobs:
   build:
     name: Build Application
     runs-on: ubuntu-latest
-    needs: [lint, type-check, test]
+    needs: [lint, type-check, test, secure-install-review]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Restore cached dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -151,11 +210,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
+
       - name: Build application
         run: npm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dist
           path: dist/
@@ -169,16 +231,16 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "20"
           cache: "npm"
 
       - name: Restore cached dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -186,11 +248,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify frozen lockfile
+        run: git diff --exit-code -- package-lock.json
+
       - name: Build application
         run: npm run build
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v12
+        uses: treosh/lighthouse-ci-action@512cc908a55bfb0ad231facca52adf3d3a651df4 # v12
         with:
           urls: |
             http://localhost:4173

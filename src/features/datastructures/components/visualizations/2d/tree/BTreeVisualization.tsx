@@ -365,115 +365,102 @@ const BTreeVisualization: React.FC<BTreeVisualizationProps> = ({ degree = 3, cla
     return current.keys[0];
   };
 
-  const removeFromNonLeaf = useCallback(
-    (node: BTreeNode, idx: number): void => {
-      const key = node.keys[idx];
+  const removeFromNonLeaf = (node: BTreeNode, idx: number): void => {
+    const key = node.keys[idx];
 
-      if (node.children[idx].keys.length > minKeys) {
-        const predecessor = getPredecessor(node, idx);
-        node.keys[idx] = predecessor;
-        deleteKey(node.children[idx], predecessor);
-      } else if (node.children[idx + 1].keys.length > minKeys) {
-        const successor = getSuccessor(node, idx);
-        node.keys[idx] = successor;
-        deleteKey(node.children[idx + 1], successor);
+    if (node.children[idx].keys.length > minKeys) {
+      const predecessor = getPredecessor(node, idx);
+      node.keys[idx] = predecessor;
+      deleteKey(node.children[idx], predecessor);
+    } else if (node.children[idx + 1].keys.length > minKeys) {
+      const successor = getSuccessor(node, idx);
+      node.keys[idx] = successor;
+      deleteKey(node.children[idx + 1], successor);
+    } else {
+      merge(node, idx);
+      deleteKey(node.children[idx], key);
+    }
+  };
+
+  const deleteKey = (node: BTreeNode, key: number): void => {
+    const idx = findKey(node, key);
+
+    if (idx < node.keys.length && node.keys[idx] === key) {
+      if (node.isLeaf) {
+        removeFromLeaf(node, idx);
       } else {
-        merge(node, idx);
-        deleteKey(node.children[idx], key);
+        removeFromNonLeaf(node, idx);
       }
-    },
-    [minKeys, merge]
-  );
+      return;
+    }
 
-  const deleteKey = useCallback(
-    (node: BTreeNode, key: number): void => {
-      const idx = findKey(node, key);
+    if (node.isLeaf) {
+      return;
+    }
 
-      if (idx < node.keys.length && node.keys[idx] === key) {
-        // Key found in this node
-        if (node.isLeaf) {
-          removeFromLeaf(node, idx);
-        } else {
-          removeFromNonLeaf(node, idx);
-        }
-      } else {
-        // Key not in this node
-        if (node.isLeaf) {
-          return; // Key not in tree
-        }
+    const isInLastChild = idx === node.keys.length;
 
-        const isInLastChild = idx === node.keys.length;
+    if (node.children[idx].keys.length <= minKeys) {
+      fill(node, idx);
+    }
 
-        // If child has only minKeys keys, fill it first
-        if (node.children[idx].keys.length <= minKeys) {
-          fill(node, idx);
-        }
+    if (isInLastChild && idx > node.keys.length) {
+      deleteKey(node.children[idx - 1], key);
+      return;
+    }
 
-        // After fill, the key might have moved
-        if (isInLastChild && idx > node.keys.length) {
-          deleteKey(node.children[idx - 1], key);
-        } else {
-          deleteKey(node.children[idx], key);
-        }
-      }
-    },
-    [minKeys, fill, removeFromNonLeaf]
-  );
+    deleteKey(node.children[idx], key);
+  };
 
-  const deleteFromTree = useCallback(
-    (key: number) => {
-      if (!root) {
-        setMessage('Tree is empty');
-        return;
-      }
+  const deleteFromTree = (key: number) => {
+    if (!root) {
+      setMessage('Tree is empty');
+      return;
+    }
 
-      setIsAnimating(true);
-      setAnimationState('deleting');
-      setMessage(`Deleting ${key}...`);
+    setIsAnimating(true);
+    setAnimationState('deleting');
+    setMessage(`Deleting ${key}...`);
 
-      setTimeout(() => {
-        const newRoot = { ...root };
+    setTimeout(() => {
+      const newRoot = { ...root };
 
-        // Deep clone the tree to avoid mutation issues
-        const cloneNode = (node: BTreeNode): BTreeNode => ({
-          ...node,
-          keys: [...node.keys],
-          children: node.children.map(cloneNode),
-        });
+      const cloneNode = (node: BTreeNode): BTreeNode => ({
+        ...node,
+        keys: [...node.keys],
+        children: node.children.map(cloneNode),
+      });
 
-        const clonedRoot = cloneNode(newRoot);
+      const clonedRoot = cloneNode(newRoot);
 
-        try {
-          deleteKey(clonedRoot, key);
+      try {
+        deleteKey(clonedRoot, key);
 
-          // If root is empty after deletion, make its only child the new root
-          let finalRoot: BTreeNode | null = clonedRoot;
-          if (clonedRoot.keys.length === 0) {
-            if (!clonedRoot.isLeaf && clonedRoot.children.length > 0) {
-              finalRoot = clonedRoot.children[0];
-              setMessage(`Deleted ${key} and updated root`);
-            } else {
-              finalRoot = null;
-              setMessage(`Deleted ${key}, tree is now empty`);
-            }
+        let finalRoot: BTreeNode | null = clonedRoot;
+        if (clonedRoot.keys.length === 0) {
+          if (!clonedRoot.isLeaf && clonedRoot.children.length > 0) {
+            finalRoot = clonedRoot.children[0];
+            setMessage(`Deleted ${key} and updated root`);
           } else {
-            setMessage(`Deleted ${key} from B-Tree`);
+            finalRoot = null;
+            setMessage(`Deleted ${key}, tree is now empty`);
           }
-
-          if (finalRoot) {
-            calculatePositions(finalRoot);
-          }
-          setRoot(finalRoot ? { ...finalRoot } : null);
-        } catch {
-          setMessage(`Key ${key} not found in tree`);
+        } else {
+          setMessage(`Deleted ${key} from B-Tree`);
         }
 
-        setAnimationState(null);
-        setIsAnimating(false);
-      }, 500);
-    },
-    [root, calculatePositions, deleteKey]
-  );
+        if (finalRoot) {
+          calculatePositions(finalRoot);
+        }
+        setRoot(finalRoot ? { ...finalRoot } : null);
+      } catch {
+        setMessage(`Key ${key} not found in tree`);
+      }
+
+      setAnimationState(null);
+      setIsAnimating(false);
+    }, 500);
+  };
 
   const handleSearch = () => {
     const value = parseInt(searchValue);

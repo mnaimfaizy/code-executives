@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook } from '@testing-library/react';
+import { act, renderHook } from '@testing-library/react';
 import { useReducedMotion } from './useReducedMotion';
 
 describe('useReducedMotion', () => {
@@ -68,16 +68,17 @@ describe('useReducedMotion', () => {
     );
     matchMediaMock.matches = false;
 
-    const { result, rerender } = renderHook(() => useReducedMotion());
+    const { result } = renderHook(() => useReducedMotion());
 
     expect(result.current).toBe(false);
 
     // Simulate media query change
     matchMediaMock.matches = true;
     if (changeHandler) {
-      changeHandler({ matches: true } as MediaQueryListEvent);
+      act(() => {
+        changeHandler({ matches: true } as MediaQueryListEvent);
+      });
     }
-    rerender();
 
     expect(result.current).toBe(true);
   });
