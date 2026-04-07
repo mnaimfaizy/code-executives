@@ -17,18 +17,18 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@dr.pogodin/react-helmet": "3.0.4",
-    "@tailwindcss/vite": "4.1.13",
+    "@dr.pogodin/react-helmet": "3.1.1",
+    "@tailwindcss/vite": "4.2.2",
     "@types/three": "0.180.0",
-    "acorn": "8.15.0",
+    "acorn": "8.16.0",
     "astring": "1.9.0",
     "lucide-react": "0.544.0",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
     "react-router-dom": "7.14.0",
-    "tailwindcss": "4.1.13",
-    "three": "0.180.0",
-    "web-vitals": "5.1.0"
+    "tailwindcss": "4.2.2",
+    "three": "0.183.2",
+    "web-vitals": "5.2.0"
   },
   "devDependencies": {
     "@eslint/js": "9.35.0",
@@ -36,8 +36,8 @@
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
-    "@types/react": "19.1.13",
-    "@types/react-dom": "19.1.9",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.43.0",
     "@typescript-eslint/parser": "8.43.0",
     "@vitejs/plugin-react": "5.0.2",
