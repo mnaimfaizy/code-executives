@@ -4,7 +4,7 @@
 
 **🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 12 complete learning modules with 78+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, AI Fundamentals, Node.js Ecosystem, and a LeetCode-style playground with advanced debugging and gamification.**
+**✨ Now featuring 13 complete learning modules with 83+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, AI Fundamentals, Node.js Ecosystem, Auth & Security, and a LeetCode-style playground with advanced debugging and gamification.**
 
 > **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
@@ -21,6 +21,7 @@
 - **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
 - **AI Fundamentals**: Machine learning concepts from scratch — neural networks, gradient descent, embeddings, and RAG pipelines
 - **Node.js Ecosystem**: Deep dive into Event Loop, V8 memory, Streams, Clustering, module systems, package managers, frameworks, and runtime wars (Node vs Deno vs Bun)
+- **Auth & Security**: Modern authentication and authorization — OAuth 2.0, OIDC, PKCE, WebAuthn/Passkeys, Zero Trust, BFF Pattern, and AI agent authentication
 - **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
 
 ### 🎮 **Interactive Visualizations**

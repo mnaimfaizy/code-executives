@@ -100,6 +100,14 @@ export const theme = {
       border: 'green-100',
       shadow: 'green-200',
     },
+    auth: {
+      primary: 'amber',
+      secondary: 'orange',
+      accent: 'yellow',
+      gradient: 'from-amber-50 via-white to-orange-50',
+      border: 'amber-100',
+      shadow: 'amber-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',
