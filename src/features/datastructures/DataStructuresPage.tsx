@@ -31,7 +31,6 @@ const GraphTypes = lazy(() => import('./components/sections/GraphTypes'));
 const ComplexityAnalysis = lazy(() => import('./components/sections/ComplexityAnalysis'));
 const RealWorldApplications = lazy(() => import('./components/sections/RealWorldApplications'));
 const PracticeProblems = lazy(() => import('./components/sections/PracticeProblems'));
-const Visualizations3D = lazy(() => import('./components/sections/Visualizations3D'));
 const Playground = lazy(() => import('../../components/playground/Playground'));
 
 function useQuery() {
@@ -104,8 +103,6 @@ const DataStructuresPage: React.FC = () => {
         return <RealWorldApplications />;
       case 'practice-problems':
         return <PracticeProblems />;
-      case '3d-visualizations':
-        return <Visualizations3D />;
       case 'playground':
         return <Playground />;
       default:

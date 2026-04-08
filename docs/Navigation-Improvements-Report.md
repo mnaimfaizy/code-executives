@@ -367,6 +367,8 @@ Sidebar:
 ### **Bundle Size:**
 
 - No significant increase (navigation is lightweight)
+- Icons properly tree-shaken
+- Components are code-split ready
 
 ---
 

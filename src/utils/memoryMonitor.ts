@@ -1,29 +1,12 @@
-// Memory monitoring utilities for Three.js applications
-import type { WebGLRenderer } from 'three';
+// Memory monitoring utilities
 export interface MemoryStats {
-  geometries: number;
-  textures: number;
-  materials: number;
-  renderTargets: number;
-  programs: number;
-  info: {
-    memory: {
-      geometries: number;
-      textures: number;
-    };
-    render: {
-      calls: number;
-      triangles: number;
-      points: number;
-      lines: number;
-    };
-    programs: number;
-  };
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
 }
 
 export class MemoryMonitor {
   private static instance: MemoryMonitor;
-  private memoryStats: MemoryStats | null = null;
   private monitoring = false;
 
   private constructor() {}
@@ -35,88 +18,16 @@ export class MemoryMonitor {
     return MemoryMonitor.instance;
   }
 
-  startMonitoring(renderer: WebGLRenderer): void {
+  startMonitoring(): void {
     if (this.monitoring) return;
-
     this.monitoring = true;
     console.log('🧠 Memory monitoring started');
-
-    // Log initial memory stats
-    this.logMemoryStats(renderer);
   }
 
   stopMonitoring(): void {
     if (!this.monitoring) return;
-
     this.monitoring = false;
     console.log('🧠 Memory monitoring stopped');
-  }
-
-  logMemoryStats(renderer: WebGLRenderer): void {
-    if (!renderer || !renderer.info) return;
-
-    const info = renderer.info;
-    const stats: MemoryStats = {
-      geometries: info.memory.geometries,
-      textures: info.memory.textures,
-      materials: 0, // Not directly available
-      renderTargets: 0, // Not directly available
-      programs: Array.isArray(info.programs) ? info.programs.length : info.programs || 0,
-      info: {
-        memory: {
-          geometries: info.memory.geometries,
-          textures: info.memory.textures,
-        },
-        render: {
-          calls: info.render.calls,
-          triangles: info.render.triangles,
-          points: info.render.points,
-          lines: info.render.lines,
-        },
-        programs: Array.isArray(info.programs) ? info.programs.length : info.programs || 0,
-      },
-    };
-
-    this.memoryStats = stats;
-
-    if (this.monitoring) {
-      console.group('📊 Three.js Memory Stats');
-      console.log(`Geometries: ${stats.geometries}`);
-      console.log(`Textures: ${stats.textures}`);
-      console.log(`Programs: ${stats.programs}`);
-      console.log(`Render Calls: ${stats.info.render.calls}`);
-      console.log(`Triangles: ${stats.info.render.triangles}`);
-      console.groupEnd();
-    }
-  }
-
-  getMemoryStats(): MemoryStats | null {
-    return this.memoryStats;
-  }
-
-  // Check for potential memory leaks
-  checkForLeaks(renderer: WebGLRenderer, previousStats?: MemoryStats): boolean {
-    if (!renderer || !renderer.info || !previousStats) return false;
-
-    const current = renderer.info;
-    const hasLeak =
-      current.memory.geometries > previousStats.geometries + 10 || // Allow some tolerance
-      current.memory.textures > previousStats.textures + 5; // Allow some tolerance
-
-    if (hasLeak && this.monitoring) {
-      console.warn('🚨 Potential memory leak detected!');
-      console.warn('Previous:', previousStats);
-      console.warn('Current:', current);
-    }
-
-    return hasLeak;
-  }
-
-  forceGC(): void {
-    if ('gc' in window) {
-      (window as { gc: () => void }).gc();
-      console.log('🗑️ Forced garbage collection');
-    }
   }
 
   getBrowserMemoryInfo(): {

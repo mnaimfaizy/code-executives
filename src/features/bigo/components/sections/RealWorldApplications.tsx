@@ -1,13 +1,9 @@
-// src/sections/bigo/RealWorldApplications.tsx
-// Real-world applications of Big-O analysis in algorithms and data structures
-
 import React, { useState } from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import CTASection from '../../../../components/shared/CTASection';
-import ComplexityLandscape from '../../../../components/models3d/ComplexityLandscape3D';
 
 interface ApplicationExample {
   category: string;
@@ -487,38 +483,6 @@ const RealWorldApplications: React.FC = () => {
 
       {/* Performance Insights */}
       {renderPerformanceInsights()}
-
-      {/* 3D Complexity Landscape */}
-      <ThemeCard className="p-8">
-        <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-          3D Algorithm Complexity Landscape
-        </h3>
-        <p className="text-gray-700 text-center mb-6">
-          Explore algorithms in three-dimensional complexity space. Each point represents an
-          algorithm, positioned by its time complexity (X), space complexity (Y), and overall
-          efficiency (Z).
-        </p>
-        <ComplexityLandscape
-          showAxes={true}
-          showGrid={true}
-          interactive={true}
-          className="w-full"
-        />
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div className="bg-blue-50 p-3 rounded-lg">
-            <h4 className="font-semibold text-blue-800 mb-1">Time Complexity (X-axis)</h4>
-            <p className="text-blue-700">How algorithm performance scales with input size</p>
-          </div>
-          <div className="bg-green-50 p-3 rounded-lg">
-            <h4 className="font-semibold text-green-800 mb-1">Space Complexity (Y-axis)</h4>
-            <p className="text-green-700">Memory usage relative to input size</p>
-          </div>
-          <div className="bg-purple-50 p-3 rounded-lg">
-            <h4 className="font-semibold text-purple-800 mb-1">Efficiency Score (Z-axis)</h4>
-            <p className="text-purple-700">Overall algorithmic efficiency metric</p>
-          </div>
-        </div>
-      </ThemeCard>
 
       {/* Navigation */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
