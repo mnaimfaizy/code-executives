@@ -4,7 +4,7 @@
 
 **🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 12 complete learning modules with 78+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, AI Fundamentals, Node.js Ecosystem, and a LeetCode-style playground with advanced debugging and gamification.**
+**✨ Now featuring 13 complete learning modules with 84+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, AI Fundamentals, Node.js Ecosystem, DevOps & Cloud Computing, and a LeetCode-style playground with advanced debugging and gamification.**
 
 > **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
@@ -21,6 +21,7 @@
 - **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
 - **AI Fundamentals**: Machine learning concepts from scratch — neural networks, gradient descent, embeddings, and RAG pipelines
 - **Node.js Ecosystem**: Deep dive into Event Loop, V8 memory, Streams, Clustering, module systems, package managers, frameworks, and runtime wars (Node vs Deno vs Bun)
+- **DevOps & Cloud Computing**: CI/CD pipelines, cloud service models (IaaS/PaaS/SaaS/FaaS), container orchestration with Kubernetes, Infrastructure as Code, observability, and modern DevOps roles
 - **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
 
 ### 🎮 **Interactive Visualizations**
@@ -324,6 +325,19 @@ Master machine learning concepts from the ground up with interactive visualizati
 - **Beginner Friendly**: Every section includes ELI10 boxes, real-world analogies, and key takeaways
 - **11 Interactive Sections**: Progressive visualizations guiding learners from zero ML knowledge to RAG pipelines
 
+### ☁️ **DevOps & Cloud Computing (Complete)**
+
+Comprehensive DevOps and cloud computing module with 6 interactive visualizations covering the entire DevOps lifecycle:
+
+- **Introduction**: DevOps history, genesis timeline (2007-2011), the infinite DevOps loop, and Netflix case study
+- **CI/CD Pipeline**: Interactive pipeline simulation with 7 stages, terminal logs, deployment strategies (blue-green, canary, rolling)
+- **Cloud Service Models**: Interactive IaaS/PaaS/SaaS/FaaS comparison with pizza analogy, NIST characteristics, and management burden visualization
+- **Cloud Architecture**: SVG diagrams for monolith, microservices, serverless, and load-balanced patterns with trade-off analysis
+- **Container Orchestration**: Kubernetes pod simulator with auto-scaling, Docker fundamentals, container vs VM comparison
+- **Infrastructure as Code**: Terraform/Ansible/Docker code examples, declarative vs imperative approaches, GitOps workflow, and drift detection
+- **Modern Dev Roles**: Frontend cloud developer, backend serverless developer, DevOps/platform engineer, SRE roles, DevSecOps practices, and career paths
+- **Observability**: Three pillars (metrics, logs, traces) with interactive exploration, alerting best practices, incident management, DORA metrics, and future trends
+
 ### 🎯 **LeetCode-Style Playground (Complete)**
 
 Interactive coding environment that transforms algorithm learning through visual debugging and gamification:
@@ -415,7 +429,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 8 complete interactive modules with 80+ visualizations
+- 🎓 **Learning Modules**: 13 complete interactive modules with 84+ visualizations
 - 🎯 **Playground**: LeetCode-style coding environment with debugging and gamification
 
 ---

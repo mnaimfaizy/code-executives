@@ -26,6 +26,7 @@ import {
   Cpu,
   Network,
   Server,
+  Cloud,
 } from 'lucide-react';
 import ThemeCard from '../components/shared/ThemeCard';
 import { SEO } from '../shared/components/SEO/SEO';
@@ -185,11 +186,24 @@ const Home: React.FC = () => {
       level: 'Deep Dive',
       duration: '3-4 hours',
     },
+    {
+      icon: <Cloud className="w-12 h-12" />,
+      title: 'DevOps & Cloud',
+      description:
+        'CI/CD pipelines, cloud service models, container orchestration, Infrastructure as Code, and observability',
+      path: '/devops',
+      color: 'sky',
+      gradient: 'from-sky-600 to-cyan-600',
+      bgGradient: 'from-sky-50 to-cyan-50',
+      topics: ['CI/CD Pipeline', 'Cloud Models', 'Kubernetes', 'Infrastructure as Code'],
+      level: 'Intermediate',
+      duration: '3-4 hours',
+    },
   ];
 
   const stats = [
-    { value: '12+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
-    { value: '78+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
+    { value: '13+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
+    { value: '84+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
     { value: '1000+', label: 'Code Examples', icon: <FileCode className="w-5 h-5" /> },
     { value: '24/7', label: 'Available Learning', icon: <Cpu className="w-5 h-5" /> },
   ];
@@ -218,11 +232,18 @@ const Home: React.FC = () => {
     },
     {
       phase: 'Architecture & Systems',
-      modules: [allModules[7], allModules[8], allModules[9], allModules[10], allModules[11]], // Python, System Design, TypeScript, AI, Node.js
+      modules: [
+        allModules[7],
+        allModules[8],
+        allModules[9],
+        allModules[10],
+        allModules[11],
+        allModules[12],
+      ], // Python, System Design, TypeScript, AI, Node.js, DevOps
       icon: <Award className="w-6 h-6" />,
       color: 'emerald',
       description:
-        'Master system design patterns, multi-language architectures, AI fundamentals, and runtime ecosystems',
+        'Master system design patterns, multi-language architectures, AI fundamentals, runtime ecosystems, and DevOps practices',
     },
   ];
 
@@ -423,7 +444,7 @@ const Home: React.FC = () => {
                 }}
                 className="inline-flex items-center space-x-2 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
               >
-                <span>View All 12 Modules</span>
+                <span>View All 13 Modules</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
