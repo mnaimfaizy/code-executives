@@ -29,6 +29,8 @@ const SystemDesignPage = lazy(() => import('./features/systemdesign'));
 const TypeScriptPage = lazy(() => import('./features/typescript'));
 const AIFundamentalsPage = lazy(() => import('./features/ai'));
 const NodeJSPage = lazy(() => import('./features/nodejs'));
+const AuthPage = lazy(() => import('./features/auth'));
+const DevOpsPage = lazy(() => import('./features/devops'));
 
 const App: React.FC = () => {
   // Initialize analytics on app mount
@@ -169,6 +171,22 @@ const App: React.FC = () => {
                           element={
                             <SuspenseRoute>
                               <NodeJSPage />
+                            </SuspenseRoute>
+                          }
+                        />
+                        <Route
+                          path="/auth"
+                          element={
+                            <SuspenseRoute>
+                              <AuthPage />
+                            </SuspenseRoute>
+                          }
+                        />
+                        <Route
+                          path="/devops"
+                          element={
+                            <SuspenseRoute>
+                              <DevOpsPage />
                             </SuspenseRoute>
                           }
                         />

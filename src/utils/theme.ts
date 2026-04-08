@@ -100,6 +100,22 @@ export const theme = {
       border: 'green-100',
       shadow: 'green-200',
     },
+    devops: {
+      primary: 'sky',
+      secondary: 'cyan',
+      accent: 'teal',
+      gradient: 'from-sky-50 via-white to-cyan-50',
+      border: 'sky-100',
+      shadow: 'sky-200',
+    },
+    auth: {
+      primary: 'amber',
+      secondary: 'orange',
+      accent: 'yellow',
+      gradient: 'from-amber-50 via-white to-orange-50',
+      border: 'amber-100',
+      shadow: 'amber-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',
