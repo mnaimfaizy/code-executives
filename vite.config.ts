@@ -46,6 +46,14 @@ export default defineConfig({
             if (id.includes('three')) {
               return 'vendor-three';
             }
+            // Monaco Editor (large, playground-only)
+            if (id.includes('monaco-editor')) {
+              return 'vendor-monaco';
+            }
+            // React Flow / xyflow (playground-only)
+            if (id.includes('@xyflow')) {
+              return 'vendor-xyflow';
+            }
             // React ecosystem (core libraries)
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
               return 'vendor-react';

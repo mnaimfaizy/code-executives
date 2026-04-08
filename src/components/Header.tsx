@@ -18,6 +18,7 @@ import {
   Server,
   Cloud,
   Shield,
+  Rocket,
 } from 'lucide-react';
 import { useUI } from '../shared/contexts';
 
@@ -333,6 +334,17 @@ const Header: React.FC = () => {
                 )}
               </div>
             ))}
+
+            {/* Playground — opens in new tab */}
+            <a
+              href="/playground"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+            >
+              <Rocket className="w-4 h-4" />
+              <span>Playground</span>
+            </a>
           </nav>
 
           {/* Mobile Menu Toggle */}
@@ -417,6 +429,24 @@ const Header: React.FC = () => {
                   </div>
                 </div>
               ))}
+
+              {/* Playground — opens in new tab */}
+              <div className="pt-4 border-t border-gray-200">
+                <a
+                  href="/playground"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-3 rounded-lg px-4 py-3 bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition-colors shadow-sm"
+                >
+                  <Rocket className="w-4 h-4" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm">Playground</div>
+                    <div className="text-xs text-indigo-200 mt-0.5">
+                      Interactive coding environment
+                    </div>
+                  </div>
+                </a>
+              </div>
             </nav>
           </div>
         </>

@@ -31,7 +31,7 @@ See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current rep
 - Preserve the `package.json` overrides that block compromised Axios releases `1.14.1` and `0.30.4`.
 - For GitHub Actions, pin third-party actions to full commit SHAs, set explicit minimal `permissions`, and prefer OIDC over long-lived secrets whenever external systems are involved.
 
-### **10 Learning Modules**
+### **10 Learning Modules + Playground**
 
 1. JavaScript Engine - V8 internals and execution flow
 2. RxJS - Reactive programming with observables
@@ -43,6 +43,7 @@ See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current rep
 8. Python - Language fundamentals and VM internals
 9. System Design - Architecture patterns and scalability
 10. TypeScript - Type system and advanced patterns
+11. **Playground** - Multi-language coding sandbox with AST instrumentation, timeline debugging, and React Flow visualization lenses
 
 ## 🏗️ Architecture Principles
 
@@ -55,6 +56,9 @@ See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current rep
 - **Icons**: Lucide React for consistent iconography
 - **Testing**: Vitest + React Testing Library
 - **Code Editing**: Monaco Editor (for playground)
+- **AST Tooling**: Acorn + Astring for JS/TS instrumentation in the Playground
+- **Python Runtime**: Pyodide (WASM) for in-browser Python execution in the Playground
+- **Graph Visualization**: @xyflow/react (React Flow) for Playground data-structure lenses
 - **SEO**: @dr.pogodin/react-helmet for meta tags
 
 ### **Architecture Patterns**
@@ -71,7 +75,7 @@ See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current rep
 
 ```
 src/
-├── features/              # Feature-based modules (10 learning modules)
+├── features/              # Feature-based modules (10 learning modules + Playground)
 │   ├── javascript/        # JavaScript Engine module
 │   ├── rxjs/              # RxJS Reactive Programming module
 │   ├── git/               # Git Tutorial module
@@ -81,7 +85,8 @@ src/
 │   ├── bigo/              # Big-O Notation module
 │   ├── python/            # Python Programming module
 │   ├── systemdesign/      # System Design module
-│   └── typescript/        # TypeScript module
+│   ├── typescript/        # TypeScript module
+│   └── playground/        # Coding Playground (standalone dark-themed layout)
 │   └── [feature]/
 │       ├── components/
 │       │   ├── sections/        # Educational content sections
@@ -631,6 +636,16 @@ The application includes these complete learning modules:
     - Advanced types and generics
     - Best practices and patterns
 
+11. **Playground** (`src/features/playground/`)
+    - **Standalone Layout**: Uses its own dark-themed layout (`PlaygroundLayout.tsx`) — no Header/Footer/Sidebar; route is rendered _outside_ `MainLayout`
+    - **Dark Theme Scoping**: `.playground-dark` class on the root wrapper; Tailwind `dark:` utilities are scoped to this class via `darkMode: ['class', '.playground-dark']` in `tailwind.config.js`
+    - **Instrumentation**: `JsInstrumenter` (Acorn/Astring AST rewrite) and `PythonInstrumenter` (`sys.settrace` wrapper) in `instrumentation/`
+    - **Execution**: Sandboxed iframe (`SandboxFrame`) for JS/TS; in-process Pyodide WASM for Python
+    - **Visualization**: React Flow lenses in `components/visualization/lenses/` — Array, LinkedList, Stack, Queue, HashTable
+    - **Security**: CSP-locked iframe, HTML entity escaping, prototype-pollution defense, rate-limited output (see `utils/sanitize.ts`)
+    - **Testing**: 59 tests (unit + component + integration) in this feature
+    - **Developer Guide**: `docs/Playground-Developer-Guide.md`
+
 ### **Visualization Guidelines by Module**
 
 - **Git**: Use consistent color coding (green=staged, blue=committed, red=conflicts)
@@ -639,6 +654,7 @@ The application includes these complete learning modules:
 - **Data Structures**: Show step-by-step algorithm execution
 - **Big-O**: Use visual metaphors (teleporter, librarian, conveyor belt)
 - **Python**: 3D models for VM internals and memory profiler
+- **Playground**: React Flow lenses for data structures; space-themed animated starfield canvas; dark-scoped theme
 
 ## 🚨 Code Quality Standards
 

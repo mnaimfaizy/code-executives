@@ -35,17 +35,17 @@
 - **Step-by-Step Guidance**: Progressive learning with animated tutorials
 - **Debug Visualizations**: Live data structure state during code execution
 
-### 🎯 **LeetCode-Style Playground**
+### 🎯 **Coding Playground**
 
-- **Interactive Coding Environment**: Monaco editor with syntax highlighting and IntelliSense
-- **Step-by-Step Debugging**: Pause execution, inspect variables, and watch data structures change in real-time
-- **Data Structure Visualizations**: Array, LinkedList, Queue, Stack, and HashTable with live updates
-- **Performance Analysis**: Big-O complexity analysis and execution time monitoring
-- **Gamification System**: Scoring, achievements, and progress tracking
-- **Educational Tooltips**: Explanations for each operation and debugging concept
+- **Multi-Language Support**: JavaScript, TypeScript, and Python execution with Monaco editor
+- **AST-Based Instrumentation**: Acorn/Astring pipeline injects tracing into JS/TS; `sys.settrace` wrapper for Python via Pyodide (WASM)
+- **Timeline Player**: Step through snapshots, inspect variables and call stack at each execution point
+- **Visualization Lenses**: Pluggable React Flow canvases — Array, LinkedList, Stack, Queue, HashTable with live state updates
+- **Sandboxed Execution**: CSP-locked iframe with no network access; blocked `eval`, `XMLHttpRequest`, `fetch`, `WebSocket`
+- **Space-Themed Dark UI**: Standalone layout with animated starfield canvas, scoped dark theme
+- **Example Snippets**: Curated per-language examples with pre-selected visualization lenses
 - **Keyboard Shortcuts**: F10 (step), F5 (continue/pause), F11 (reset), Space (pause/resume)
-- **Session Persistence**: Auto-save and restore debugging sessions
-- **Problem Database**: Curated coding challenges with test cases and solutions
+- **Rate-Limited Output**: Console entries capped at 500, oversized strings truncated to 50 KB
 
 ### 🎨 **Modern User Experience**
 
@@ -63,6 +63,10 @@
 - **Styling**: Tailwind CSS 4.x for utility-first styling
 - **Routing**: React Router for seamless navigation
 - **Icons**: Lucide React for consistent iconography
+- **Code Editor**: Monaco Editor (`@monaco-editor/react`) for the Playground
+- **AST Tooling**: Acorn + Astring for JS/TS instrumentation
+- **Python Runtime**: Pyodide (WASM) for in-browser Python execution
+- **Graph Visualization**: @xyflow/react (React Flow) for data-structure lenses
 
 ### **Visualization Technologies**
 
@@ -339,20 +343,20 @@ Comprehensive DevOps and cloud computing module with 6 interactive visualization
 - **Modern Dev Roles**: Frontend cloud developer, backend serverless developer, DevOps/platform engineer, SRE roles, DevSecOps practices, and career paths
 - **Observability**: Three pillars (metrics, logs, traces) with interactive exploration, alerting best practices, incident management, DORA metrics, and future trends
 
-### 🎯 **LeetCode-Style Playground (Complete)**
+### 🎯 **Coding Playground (Complete)**
 
-Interactive coding environment that transforms algorithm learning through visual debugging and gamification:
+Multi-language coding environment with AST-based instrumentation and live data-structure visualizations:
 
-- **Interactive Problem Solving**: Curated coding challenges with real-time test case validation and performance analysis
-- **Advanced Debugging Engine**: Step-by-step execution with pause/resume, variable inspection, and call stack visualization
-- **Live Data Structure Visualization**: Watch arrays, linked lists, stacks, queues, and hash tables change in real-time during execution
-- **Educational Debugging**: Comprehensive tooltips explaining each operation, data structure behavior, and algorithmic concepts
-- **Keyboard Shortcuts**: Professional debugging experience with F10 (step), F5 (continue/pause), F11 (reset), and Space (pause/resume)
-- **Performance Monitoring**: Real-time Big-O complexity analysis, memory usage tracking, and execution time profiling
-- **Gamification System**: Achievement unlocks, scoring system, and progress tracking to motivate learning
-- **Session Persistence**: Auto-save debugging sessions and restore work across browser sessions
-- **Multiple Data Structures**: Complete implementations with collision handling, hash calculations, and performance comparisons
-- **Code Instrumentation**: Advanced code analysis with function call/return tracking and operation-level insights
+- **Multi-Language Execution**: JavaScript, TypeScript (transpiled), and Python (Pyodide WASM) — all in-browser, no server
+- **AST Instrumentation**: Acorn/Astring pipeline injects `__snapshot()` calls around every statement; Python uses `sys.settrace` wrapper with base64-encoded source
+- **Timeline Player**: Step forward/backward through execution snapshots, inspect variables and call stack at each point
+- **Visualization Lenses**: Pluggable React Flow canvases for Array, LinkedList, Stack, Queue, and HashTable — select the lens matching your algorithm
+- **Sandboxed Iframe**: CSP `default-src 'none'; script-src 'unsafe-inline'`; blocked network APIs (`fetch`, `XMLHttpRequest`, `WebSocket`); 10-second execution timeout
+- **Space-Themed Dark UI**: Standalone layout (no Header/Footer/Sidebar), animated starfield canvas, dark theme scoped via `.playground-dark` class
+- **Example Snippets**: Per-language curated examples with pre-selected visualization lenses
+- **Keyboard Shortcuts**: F10 (step), F5 (continue/pause), F11 (reset), Space (pause/resume)
+- **Security Hardening**: HTML entity escaping, prototype-pollution defense, recursive-depth limits, rate-limited console output (500 entries, 50 KB max string)
+- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for adding lenses, languages, and snippets
 
 ## 🛠️ Development
 
