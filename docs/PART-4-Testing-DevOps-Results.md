@@ -432,7 +432,6 @@ export interface EnvironmentConfig {
   googleAnalyticsId?: string;
   sentryDsn?: string;
   features: {
-    enable3D: boolean;
     enableExperimental: boolean;
   };
 }
@@ -445,7 +444,6 @@ export const env: EnvironmentConfig = {
   googleAnalyticsId: getEnvVar('VITE_GOOGLE_ANALYTICS_ID'),
   sentryDsn: getEnvVar('VITE_SENTRY_DSN'),
   features: {
-    enable3D: getEnvBool('VITE_FEATURE_3D', true),
     enableExperimental: getEnvBool('VITE_FEATURE_EXPERIMENTAL', false),
   },
 };
@@ -477,7 +475,6 @@ VITE_ENABLE_PERFORMANCE_MONITORING=true
 # VITE_SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
 
 # Feature Flags
-VITE_FEATURE_3D=true
 VITE_FEATURE_EXPERIMENTAL=false
 ```
 
@@ -804,8 +801,8 @@ if (isDevelopment()) {
 }
 
 // Feature flags
-if (env.features.enable3D) {
-  import('./3DVisualization');
+if (env.features.enableExperimental) {
+  import('./ExperimentalFeature');
 }
 ```
 

@@ -353,8 +353,7 @@ const ProblemList = () => {
 ✓ built in 50.16s
 
 Top 10 Largest Chunks:
-1. vendor-three: 611.25 KB (gzip: 155.60 KB) - 3D visualization library
-2. vendor-react: 258.60 KB (gzip: 77.82 KB) - React library
+1. vendor-react: 258.60 KB (gzip: 77.82 KB) - React library
 3. index (SystemDesign): 267.75 KB (gzip: 50.98 KB)
 4. index (TypeScript): 219.27 KB (gzip: 42.71 KB)
 5. index (NextJS): 207.91 KB (gzip: 40.96 KB)
@@ -367,18 +366,7 @@ Top 10 Largest Chunks:
 
 ### Optimization Opportunities Identified
 
-#### **1. Three.js Bundle (611 KB)**
-
-**Current State**: Entire Three.js library bundled as vendor chunk
-
-**Optimization Strategies**:
-
-- ✅ Already code-split (separate chunk)
-- ✅ Only loaded when 3D visualizations needed
-- 🔄 **Future**: Use tree-shaking with es modules build
-- 🔄 **Future**: Consider lighter alternatives (react-three-fiber optimizations)
-
-#### **2. Feature Bundles (100-270 KB)**
+#### **1. Feature Bundles (100-270 KB)**
 
 **Current State**: Large feature pages include all sections
 
@@ -660,7 +648,6 @@ const ScrollIndicator = () => {
    - **Impact**: 10-20% faster perceived load
 
 4. **Bundle Optimization**
-   - Tree-shake Three.js (use es modules)
    - Split large features into sub-routes
    - Implement route-based prefetching
    - **Impact**: 20-30% smaller initial bundle

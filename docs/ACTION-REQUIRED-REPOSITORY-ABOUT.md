@@ -15,7 +15,7 @@ The GitHub repository's **About section** needs to be updated with a proper desc
 
 ### Step 2: Copy This Description
 ```
-Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and Three.js for immersive learning experiences.
+Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and interactive 2D visualizations for engaging learning experiences.
 ```
 
 ### Step 3: Copy This Website URL
@@ -34,7 +34,6 @@ react
 typescript
 vite
 tailwindcss
-threejs
 react-router
 ```
 
@@ -58,7 +57,6 @@ web-development
 programming-tutorial
 educational-content
 2d-visualization
-3d-visualization
 leetcode
 algorithm-visualization
 code-playground

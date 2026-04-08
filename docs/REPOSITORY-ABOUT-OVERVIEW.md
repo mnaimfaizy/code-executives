@@ -55,8 +55,8 @@ code-executives/
 ```
 Interactive programming education platform with 70+ visualizations 
 covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, 
-and RxJS. Built with React, TypeScript, and Three.js for immersive 
-learning experiences.
+and RxJS. Built with React, TypeScript, and interactive 2D visualizations 
+for engaging learning experiences.
 ```
 **Length**: 243 characters (within 350 limit)
 
@@ -74,7 +74,7 @@ https://codexecutives.com
 
 #### By Purpose:
 - **SEO Keywords**: educational-platform, programming-education, learn-to-code
-- **Tech Stack**: react, typescript, vite, tailwindcss, threejs
+- **Tech Stack**: react, typescript, vite, tailwindcss
 - **Content Focus**: git-tutorial, data-structures, algorithms, nextjs, python
 - **Features**: visualization, interactive-learning, code-playground
 
@@ -137,7 +137,7 @@ https://codexecutives.com
 │                                                          │
 │ Interactive programming education platform with 70+     │
 │ visualizations covering Git, JavaScript, Next.js, Data  │
-│ Structures, Big-O, Python, and RxJS...                 │
+│ Structures, Big-O, Python, and RxJS...                  │
 │                                                          │
 │ About                                          ⚙️       │
 │ 🌐 https://codexecutives.com                          │
