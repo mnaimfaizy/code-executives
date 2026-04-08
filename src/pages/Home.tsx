@@ -27,6 +27,7 @@ import {
   Network,
   Server,
   Cloud,
+  Shield,
 } from 'lucide-react';
 import ThemeCard from '../components/shared/ThemeCard';
 import { SEO } from '../shared/components/SEO/SEO';
@@ -199,11 +200,24 @@ const Home: React.FC = () => {
       level: 'Intermediate',
       duration: '3-4 hours',
     },
+    {
+      icon: <Shield className="w-12 h-12" />,
+      title: 'Auth & Security',
+      description:
+        'Master OAuth 2.0, PKCE, WebAuthn, Zero Trust, and modern authentication patterns for secure applications',
+      path: '/auth',
+      color: 'amber',
+      gradient: 'from-amber-600 to-orange-600',
+      bgGradient: 'from-amber-50 to-orange-50',
+      topics: ['OAuth 2.0 & OIDC', 'PKCE Flow', 'Zero Trust', 'WebAuthn / Passkeys'],
+      level: 'Advanced',
+      duration: '3-4 hours',
+    },
   ];
 
   const stats = [
-    { value: '13+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
-    { value: '84+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
+    { value: '14+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
+    { value: '90+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
     { value: '1000+', label: 'Code Examples', icon: <FileCode className="w-5 h-5" /> },
     { value: '24/7', label: 'Available Learning', icon: <Cpu className="w-5 h-5" /> },
   ];
@@ -239,11 +253,12 @@ const Home: React.FC = () => {
         allModules[10],
         allModules[11],
         allModules[12],
-      ], // Python, System Design, TypeScript, AI, Node.js, DevOps
+        allModules[13],
+      ], // Python, System Design, TypeScript, AI, Node.js, DevOps, Auth
       icon: <Award className="w-6 h-6" />,
       color: 'emerald',
       description:
-        'Master system design patterns, multi-language architectures, AI fundamentals, runtime ecosystems, and DevOps practices',
+        'Master system design patterns, multi-language architectures, AI fundamentals, and runtime ecosystems, and DevOps practices, and modern authentication patterns.',
     },
   ];
 
@@ -272,7 +287,7 @@ const Home: React.FC = () => {
   const features = [
     {
       icon: <MonitorPlay className="w-8 h-8 text-indigo-600" />,
-      title: '78+ Interactive Visualizations',
+      title: '83+ Interactive Visualizations',
       description: 'See how engines, compilers, and frameworks work internally',
     },
     {
@@ -296,7 +311,7 @@ const Home: React.FC = () => {
     <>
       <SEO
         title="Code Executives - Master Programming Internals"
-        description="Deep dive into JavaScript engines, Git internals, framework architectures, and system design. 78+ interactive visualizations for developers who want to understand how things really work under the hood."
+        description="Deep dive into JavaScript engines, Git internals, framework architectures, and system design. 83+ interactive visualizations for developers who want to understand how things really work under the hood."
         keywords={[
           'programming internals',
           'javascript engine internals',
@@ -329,7 +344,7 @@ const Home: React.FC = () => {
               <span className="font-semibold text-indigo-600">actually work</span> under the hood.
               For developers who want to understand JavaScript engines, Git internals, data
               structure performance, and framework architectures through{' '}
-              <span className="font-semibold text-purple-600">78+ interactive visualizations</span>.
+              <span className="font-semibold text-purple-600">83+ interactive visualizations</span>.
             </p>
 
             {/* CTA Buttons */}

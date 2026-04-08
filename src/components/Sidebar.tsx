@@ -73,6 +73,13 @@ const getThemeColorClass = (
       buttonHover: 'hover:text-sky-600',
       border: 'border-sky-100',
     },
+    amber: {
+      active: 'bg-amber-100 text-amber-800 border-amber-500',
+      hover: 'hover:bg-amber-50 hover:text-amber-700',
+      buttonActive: 'text-amber-600 hover:text-amber-700',
+      buttonHover: 'hover:text-amber-600',
+      border: 'border-amber-100',
+    },
   };
 
   const colors = colorMap[theme.primary] || colorMap.blue;
@@ -355,6 +362,23 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
     { label: 'Modern Dev Roles', path: '/devops?section=Modern%20Dev%20Roles' },
     { label: 'Observability', path: '/devops?section=Observability' },
   ],
+  '/auth': [
+    { label: 'Introduction', path: '/auth?section=Introduction' },
+    {
+      label: 'Evolution of Digital Identity',
+      path: '/auth?section=Evolution%20of%20Digital%20Identity',
+    },
+    { label: 'Authentication Types', path: '/auth?section=Authentication%20Types' },
+    { label: 'Authorization Models', path: '/auth?section=Authorization%20Models' },
+    {
+      label: 'OAuth 2.0 & OpenID Connect',
+      path: '/auth?section=OAuth%202.0%20%26%20OpenID%20Connect',
+    },
+    { label: 'PKCE Authorization Flow', path: '/auth?section=PKCE%20Authorization%20Flow' },
+    { label: 'BFF Pattern', path: '/auth?section=BFF%20Pattern' },
+    { label: 'AI Agent Authentication', path: '/auth?section=AI%20Agent%20Authentication' },
+    { label: 'Visualization', path: '/auth?section=Visualization' },
+  ],
   '/': [],
   '/about': [],
 };
@@ -382,8 +406,10 @@ const Sidebar: React.FC = () => {
     | 'typescript'
     | 'ai'
     | 'nodejs'
-    | 'devops' => {
+    | 'devops'
+    | 'auth' => {
     if (path.includes('/devops')) return 'devops';
+    if (path.includes('/auth')) return 'auth';
     if (path.includes('/nodejs')) return 'nodejs';
     if (path.includes('/ai')) return 'ai';
     if (path.includes('javascript')) return 'javascript';

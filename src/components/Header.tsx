@@ -17,6 +17,7 @@ import {
   Brain,
   Server,
   Cloud,
+  Shield,
 } from 'lucide-react';
 import { useUI } from '../shared/contexts';
 
@@ -130,6 +131,12 @@ const Header: React.FC = () => {
           icon: <Cloud className="w-4 h-4" />,
           description: 'DevOps & Cloud Computing',
         },
+        {
+          label: 'Auth & Security',
+          path: '/auth',
+          icon: <Shield className="w-4 h-4" />,
+          description: 'Authentication & Authorization',
+        },
       ],
     },
   ];
@@ -194,6 +201,7 @@ const Header: React.FC = () => {
     if (path === '/datastructures' || path === '/systemdesign') return 'text-blue-600 bg-blue-50';
     if (path === '/bigo') return 'text-purple-600 bg-purple-50';
     if (path === '/ai') return 'text-rose-600 bg-rose-50';
+    if (path === '/auth') return 'text-amber-600 bg-amber-50';
     if (path === '/nodejs') return 'text-green-600 bg-green-50';
     if (path === '/devops') return 'text-sky-600 bg-sky-50';
     return 'text-gray-700 hover:bg-gray-50';

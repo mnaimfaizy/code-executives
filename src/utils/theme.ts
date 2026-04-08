@@ -108,6 +108,14 @@ export const theme = {
       border: 'sky-100',
       shadow: 'sky-200',
     },
+    auth: {
+      primary: 'amber',
+      secondary: 'orange',
+      accent: 'yellow',
+      gradient: 'from-amber-50 via-white to-orange-50',
+      border: 'amber-100',
+      shadow: 'amber-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',
