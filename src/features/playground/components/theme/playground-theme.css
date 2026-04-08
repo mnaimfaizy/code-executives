@@ -1,0 +1,88 @@
+/* Playground Scoped Dark Theme — Space Theme
+ * These styles are scoped under [data-theme="playground"] and do NOT
+ * affect the main light-mode application.
+ */
+
+[data-theme='playground'] {
+  /* ─── Color Variables ─── */
+  --pg-bg-primary: #0a0a1a;
+  --pg-bg-secondary: #0f0f2e;
+  --pg-bg-tertiary: #1a1a3e;
+  --pg-bg-surface: #12122a;
+  --pg-bg-surface-hover: #1e1e42;
+
+  /* Translucent variants — lets the starfield bleed through */
+  --pg-bg-surface-translucent: rgba(18, 18, 42, 0.55);
+  --pg-bg-toolbar-translucent: rgba(15, 15, 46, 0.65);
+
+  --pg-accent-blue: #00d4ff;
+  --pg-accent-blue-hover: #33ddff;
+  --pg-accent-purple: #8b5cf6;
+  --pg-accent-green: #00ff88;
+  --pg-accent-red: #ff4466;
+  --pg-accent-amber: #ffaa00;
+
+  --pg-text-primary: #e0e0ff;
+  --pg-text-secondary: #a0a0cc;
+  --pg-text-muted: #6b6b99;
+
+  --pg-border: #2a2a4e;
+  --pg-border-hover: #3a3a6e;
+  --pg-border-focus: #00d4ff;
+
+  --pg-toolbar-height: 48px;
+  --pg-font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  --pg-font-sans: 'Inter', system-ui, sans-serif;
+
+  /* ─── Base Styles ─── */
+  color: var(--pg-text-primary);
+  font-family: var(--pg-font-sans);
+  background: var(--pg-bg-primary);
+
+  /* ─── Scrollbar Styling ─── */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--pg-bg-tertiary) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--pg-bg-tertiary);
+    border-radius: 3px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--pg-border-hover);
+  }
+
+  /* ─── Focus Styles ─── */
+  *:focus-visible {
+    outline: 2px solid var(--pg-border-focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* ─── Selection ─── */
+  ::selection {
+    background: rgba(0, 212, 255, 0.25);
+    color: var(--pg-text-primary);
+  }
+
+  /* ─── Transitions ─── */
+  button,
+  a {
+    transition:
+      background-color 200ms ease,
+      color 200ms ease,
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+}
