@@ -440,7 +440,7 @@ Optimize the build for the Playground chunk.
 
 ### Step 2.1 — JavaScript/TypeScript Instrumentation
 
-- [ ] Create `src/features/playground/services/instrumentCode.ts`:
+- [x] Create `src/features/playground/services/instrumentCode.ts`:
   - Uses `acorn` (already installed) to parse JS/TS code into AST
   - Traverses the AST and injects tracker calls at:
     - Every statement (captures line number + local variables)
@@ -451,13 +451,13 @@ Optimize the build for the Playground chunk.
   - Returns `{ instrumentedCode: string, sourceMap: Map<number, number> }`
   - **Security**: The tracker code is a simple data collector, not an eval-based tool
   - **Security**: Input code is parsed (not eval'd) — syntax errors caught at parse time
-- [ ] Create `src/features/playground/instrumentation/JsInstrumenter.ts`:
+- [x] Create `src/features/playground/instrumentation/JsInstrumenter.ts`:
   - Higher-level wrapper around `instrumentCode.ts`
   - Defines the `__tracker__` runtime object that gets injected into the sandbox
   - The tracker collects `StateSnapshot` objects into an array
   - Sends snapshots back to parent via `postMessage` after execution completes
   - Handles async code: tracker waits for microtask queue to drain before reporting
-- [ ] Create `src/features/playground/instrumentation/StateSnapshot.ts`:
+- [x] Create `src/features/playground/instrumentation/StateSnapshot.ts`:
   - Defines the snapshot data model:
     ```ts
     interface StateSnapshot {
@@ -476,7 +476,7 @@ Optimize the build for the Playground chunk.
     ```
   - Serialization utilities (deep clone, circular reference handling)
   - Diff utility: compute what changed between two snapshots
-- [ ] Update `SandboxFrame.tsx` to support instrumented execution mode:
+- [x] Update `SandboxFrame.tsx` to support instrumented execution mode:
   - Inject `__tracker__` object into iframe global scope
   - Collect snapshots via `postMessage` channel
   - Return both console output AND timeline data
@@ -486,13 +486,13 @@ Optimize the build for the Playground chunk.
 
 ### Step 2.2 — Python Instrumentation
 
-- [ ] Create `src/features/playground/instrumentation/PythonInstrumenter.ts`:
+- [x] Create `src/features/playground/instrumentation/PythonInstrumenter.ts`:
   - Generates a Python wrapper that uses `sys.settrace()` to capture execution frames
   - The trace function captures: line number, local variables, call stack depth
   - Filters out internal Pyodide frames (only user code is traced)
   - Serializes frame data to JSON and passes it across the Pyodide FFI to JavaScript
   - Returns an array of `StateSnapshot` objects matching the JS format
-- [ ] Update `usePyodide.ts` to support instrumented execution mode:
+- [x] Update `usePyodide.ts` to support instrumented execution mode:
   - Wraps user code with the trace function
   - Collects snapshots alongside console output
   - Handles large snapshot arrays efficiently (limit to ~1000 steps with sampling)
@@ -502,12 +502,12 @@ Optimize the build for the Playground chunk.
 
 ### Step 2.3 — Timeline Player & Playback Controls
 
-- [ ] Create `src/features/playground/hooks/useTimeline.ts`:
+- [x] Create `src/features/playground/hooks/useTimeline.ts`:
   - Manages the array of `StateSnapshot` objects
   - API: `{ currentStep, totalSteps, goToStep, nextStep, prevStep, play, pause, isPlaying, speed, setSpeed }`
   - Auto-play mode: advances steps at configurable speed (0.5x, 1x, 2x, 4x)
   - Respects `prefers-reduced-motion` (disables auto-advance animations)
-- [ ] Create `src/features/playground/components/instrumentation/TimelinePlayer.tsx`:
+- [x] Create `src/features/playground/components/instrumentation/TimelinePlayer.tsx`:
   - Timeline slider (range input) showing current step / total steps
   - Playback buttons: ⏮ First, ◀ Prev, ▶ Play/Pause, ▶ Next, ⏭ Last
   - Speed control dropdown
@@ -515,7 +515,7 @@ Optimize the build for the Playground chunk.
   - Variables panel: shows current snapshot's local/global variables
   - Call stack panel: shows current function chain
   - Keyboard shortcuts: Left/Right arrows for step, Space for play/pause
-- [ ] Wire timeline into `PlaygroundApp.tsx`:
+- [x] Wire timeline into `PlaygroundApp.tsx`:
   - After instrumented execution, populate timeline
   - Timeline controls appear in the right pane
   - Current step highlights the corresponding line in Monaco

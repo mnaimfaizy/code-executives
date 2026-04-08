@@ -1,6 +1,6 @@
 import { useRef, useCallback, useState } from 'react';
 import type { SandboxFrameHandle } from '../components/execution/SandboxFrame';
-import type { ConsoleEntry } from '../types';
+import type { ConsoleEntry, StateSnapshot } from '../types';
 import { DEFAULT_EXECUTION_TIMEOUT_MS } from '../types/playground-v2';
 
 /** Maximum allowed code length (50 KB) */
@@ -21,6 +21,10 @@ interface UseSandboxReturn {
   error: string | null;
   /** Ref to attach to the SandboxFrame component */
   sandboxRef: React.RefObject<SandboxFrameHandle | null>;
+  /** Timeline snapshots from the last instrumented execution */
+  snapshots: StateSnapshot[];
+  /** Clear the snapshots */
+  clearSnapshots: () => void;
 }
 
 /**
@@ -32,10 +36,15 @@ export function useSandbox(): UseSandboxReturn {
   const [isRunning, setIsRunning] = useState(false);
   const [entries, setEntries] = useState<ConsoleEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [snapshots, setSnapshots] = useState<StateSnapshot[]>([]);
 
   const clearEntries = useCallback((): void => {
     setEntries([]);
     setError(null);
+  }, []);
+
+  const clearSnapshots = useCallback((): void => {
+    setSnapshots([]);
   }, []);
 
   const execute = useCallback(async (code: string): Promise<void> => {
@@ -66,6 +75,9 @@ export function useSandbox(): UseSandboxReturn {
     try {
       const result = await sandbox.execute(code, DEFAULT_EXECUTION_TIMEOUT_MS);
       setEntries((prev) => [...prev, ...result.entries]);
+      if (result.snapshots && result.snapshots.length > 0) {
+        setSnapshots(result.snapshots);
+      }
       if (result.error) {
         setError(result.error);
       }
@@ -99,5 +111,7 @@ export function useSandbox(): UseSandboxReturn {
     clearEntries,
     error,
     sandboxRef,
+    snapshots,
+    clearSnapshots,
   };
 }

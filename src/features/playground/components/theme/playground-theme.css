@@ -86,3 +86,17 @@
       box-shadow 200ms ease;
   }
 }
+
+/* ─── Monaco Editor Line Highlight ─── */
+.pg-highlight-line {
+  background: rgba(0, 212, 255, 0.12);
+  border-left: 3px solid #00d4ff;
+}
+
+.pg-highlight-glyph {
+  background: #00d4ff;
+  border-radius: 50%;
+  margin-left: 3px;
+  width: 8px !important;
+  height: 8px !important;
+}

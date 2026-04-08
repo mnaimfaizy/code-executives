@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PlaygroundLayout from './components/layout/PlaygroundLayout';
 import BackToSiteLink from './components/layout/BackToSiteLink';
 import MonacoEditor from './components/editor/MonacoEditor';
@@ -8,9 +8,12 @@ import SandboxFrame from './components/execution/SandboxFrame';
 import ConsoleOutput from './components/execution/ConsoleOutput';
 import ExecutionController from './components/execution/ExecutionController';
 import PythonRunner from './components/execution/PythonRunner';
+import TimelinePlayer from './components/instrumentation/TimelinePlayer';
 import { usePlaygroundState } from './hooks/usePlaygroundState';
 import { useSandbox } from './hooks/useSandbox';
 import { usePyodide } from './hooks/usePyodide';
+import { useTimeline } from './hooks/useTimeline';
+import { prepareInstrumentedCode } from './instrumentation/JsInstrumenter';
 import './components/theme/playground-theme.css';
 
 const PlaygroundApp: React.FC = () => {
@@ -19,6 +22,10 @@ const PlaygroundApp: React.FC = () => {
 
   const sandbox = useSandbox();
   const pyodide = usePyodide();
+  const timeline = useTimeline();
+
+  // Instrumented mode toggle
+  const [instrumentedMode, setInstrumentedMode] = useState(true);
 
   // Determine which console entries to show based on language
   const consoleEntries = language === 'python' ? pyodide.entries : sandbox.entries;
@@ -33,19 +40,40 @@ const PlaygroundApp: React.FC = () => {
 
   const handleRun = useCallback((): void => {
     setExecutionState('running');
+    timeline.clear();
 
     if (language === 'python') {
-      pyodide.runPython(code).then(() => {
+      const runFn = instrumentedMode ? pyodide.runPythonInstrumented : pyodide.runPython;
+      runFn(code).then(() => {
         setExecutionState(pyodide.error ? 'error' : 'completed');
+        if (instrumentedMode && pyodide.snapshots.length > 0) {
+          timeline.loadSnapshots(pyodide.snapshots);
+        }
       });
     } else {
-      // For TypeScript, we'd ideally transpile first, but Monaco's built-in TS
-      // compiler can handle this in a future enhancement. For now, run as JS.
-      sandbox.execute(code).then(() => {
-        setExecutionState(sandbox.error ? 'error' : 'completed');
-      });
+      // For JS/TS: instrument the code if mode is enabled
+      if (instrumentedMode) {
+        const result = prepareInstrumentedCode(code);
+        if ('error' in result) {
+          // Fall back to non-instrumented execution on parse error
+          sandbox.execute(code).then(() => {
+            setExecutionState(sandbox.error ? 'error' : 'completed');
+          });
+          return;
+        }
+        sandbox.execute(result.code).then(() => {
+          setExecutionState(sandbox.error ? 'error' : 'completed');
+          if (sandbox.snapshots.length > 0) {
+            timeline.loadSnapshots(sandbox.snapshots);
+          }
+        });
+      } else {
+        sandbox.execute(code).then(() => {
+          setExecutionState(sandbox.error ? 'error' : 'completed');
+        });
+      }
     }
-  }, [language, code, sandbox, pyodide, setExecutionState]);
+  }, [language, code, sandbox, pyodide, setExecutionState, instrumentedMode, timeline]);
 
   const handleStop = useCallback((): void => {
     if (language === 'python') {
@@ -61,7 +89,10 @@ const PlaygroundApp: React.FC = () => {
     resetCode();
     sandbox.clearEntries();
     pyodide.clearEntries();
-  }, [resetCode, sandbox, pyodide]);
+    sandbox.clearSnapshots();
+    pyodide.clearSnapshots();
+    timeline.clear();
+  }, [resetCode, sandbox, pyodide, timeline]);
 
   const handleClearConsole = useCallback((): void => {
     if (language === 'python') {
@@ -118,6 +149,20 @@ const PlaygroundApp: React.FC = () => {
         {/* Language picker */}
         <LanguagePicker language={language} onLanguageChange={setLanguage} />
 
+        {/* Instrumented mode toggle */}
+        <label
+          className="flex items-center gap-1.5 text-xs cursor-pointer select-none"
+          style={{ color: 'var(--pg-text-secondary)' }}
+        >
+          <input
+            type="checkbox"
+            checked={instrumentedMode}
+            onChange={(e) => setInstrumentedMode(e.target.checked)}
+            className="accent-blue-500"
+          />
+          <span>Trace</span>
+        </label>
+
         <div className="flex-1" />
 
         {/* Execution controls */}
@@ -150,31 +195,36 @@ const PlaygroundApp: React.FC = () => {
               language={language}
               onChange={setCode}
               onExecute={handleRun}
+              highlightLine={timeline.currentSnapshot?.line}
             />
           </div>
         </div>
 
-        {/* Visualization Pane (placeholder until Phase 3) */}
+        {/* Timeline / Visualization Pane */}
         <div
-          className="flex flex-col items-center justify-center rounded-lg"
+          className="flex flex-col rounded-lg overflow-hidden"
           style={{
             background: 'var(--pg-bg-surface-translucent)',
             backdropFilter: 'blur(8px)',
             border: '1px solid var(--pg-border)',
           }}
         >
-          <span
-            className="text-sm font-medium"
-            style={{
-              color: 'var(--pg-text-muted)',
-              fontFamily: 'var(--pg-font-mono)',
-            }}
-          >
-            Visualization
-          </span>
-          <span className="text-xs mt-1" style={{ color: 'var(--pg-text-muted)' }}>
-            React Flow / SVG — Phase 3
-          </span>
+          <TimelinePlayer
+            currentStep={timeline.currentStep}
+            totalSteps={timeline.totalSteps}
+            currentSnapshot={timeline.currentSnapshot}
+            previousSnapshot={timeline.previousSnapshot}
+            isPlaying={timeline.isPlaying}
+            speed={timeline.speed}
+            onGoToStep={timeline.goToStep}
+            onNextStep={timeline.nextStep}
+            onPrevStep={timeline.prevStep}
+            onFirstStep={timeline.firstStep}
+            onLastStep={timeline.lastStep}
+            onPlay={timeline.play}
+            onPause={timeline.pause}
+            onSetSpeed={timeline.setSpeed}
+          />
         </div>
 
         {/* Output Pane */}

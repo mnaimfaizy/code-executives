@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import Editor, { type OnChange } from '@monaco-editor/react';
+import type { editor as MonacoEditorType } from 'monaco-editor';
 import { useMonaco, getEditorOptions, getMonacoLanguage } from '../../hooks/useMonaco';
 import type { PlaygroundLanguage } from '../../types';
 
@@ -8,10 +9,20 @@ interface MonacoEditorProps {
   language: PlaygroundLanguage;
   onChange: (value: string) => void;
   onExecute: () => void;
+  /** Line number to highlight (1-based). Set to 0 or undefined to clear. */
+  highlightLine?: number;
 }
 
-const MonacoEditor: React.FC<MonacoEditorProps> = ({ code, language, onChange, onExecute }) => {
+const MonacoEditor: React.FC<MonacoEditorProps> = ({
+  code,
+  language,
+  onChange,
+  onExecute,
+  highlightLine,
+}) => {
   const { handleBeforeMount, handleEditorMount } = useMonaco(onExecute);
+  const editorRef = useRef<MonacoEditorType.IStandaloneCodeEditor | null>(null);
+  const decorationsRef = useRef<MonacoEditorType.IEditorDecorationsCollection | null>(null);
 
   const handleChange: OnChange = useCallback(
     (value) => {
@@ -20,6 +31,56 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({ code, language, onChange, o
     [onChange]
   );
 
+  const handleMount = useCallback(
+    (
+      editor: MonacoEditorType.IStandaloneCodeEditor,
+      monaco: Parameters<typeof handleEditorMount>[1]
+    ) => {
+      editorRef.current = editor;
+      handleEditorMount(editor, monaco);
+    },
+    [handleEditorMount]
+  );
+
+  // Highlight the current execution line
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+
+    if (!highlightLine || highlightLine <= 0) {
+      // Clear decorations
+      if (decorationsRef.current) {
+        decorationsRef.current.clear();
+      }
+      return;
+    }
+
+    const newDecorations: MonacoEditorType.IModelDeltaDecoration[] = [
+      {
+        range: {
+          startLineNumber: highlightLine,
+          startColumn: 1,
+          endLineNumber: highlightLine,
+          endColumn: 1,
+        },
+        options: {
+          isWholeLine: true,
+          className: 'pg-highlight-line',
+          glyphMarginClassName: 'pg-highlight-glyph',
+        },
+      },
+    ];
+
+    if (decorationsRef.current) {
+      decorationsRef.current.set(newDecorations);
+    } else {
+      decorationsRef.current = editor.createDecorationsCollection(newDecorations);
+    }
+
+    // Reveal the line
+    editor.revealLineInCenterIfOutsideViewport(highlightLine);
+  }, [highlightLine]);
+
   return (
     <div className="w-full h-full" aria-label={`${language} code editor`}>
       <Editor
@@ -27,7 +88,7 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({ code, language, onChange, o
         value={code}
         onChange={handleChange}
         beforeMount={handleBeforeMount}
-        onMount={handleEditorMount}
+        onMount={handleMount}
         options={getEditorOptions()}
         loading={
           <div

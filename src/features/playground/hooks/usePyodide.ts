@@ -5,7 +5,11 @@ import {
   type PyodideInstance,
   type PyodideLoadingState,
 } from '../services/pyodide-loader';
-import type { ConsoleEntry, ConsoleEntryType } from '../types';
+import type { ConsoleEntry, ConsoleEntryType, StateSnapshot } from '../types';
+import {
+  wrapPythonCodeWithTrace,
+  parsePythonSnapshots,
+} from '../instrumentation/PythonInstrumenter';
 
 /** Maximum allowed code length (50 KB) */
 const MAX_CODE_LENGTH = 50 * 1024;
@@ -16,6 +20,8 @@ const PYTHON_TIMEOUT_MS = 10_000;
 interface UsePyodideReturn {
   /** Execute Python code and return console entries */
   runPython: (code: string) => Promise<void>;
+  /** Execute Python code with instrumentation (sys.settrace) */
+  runPythonInstrumented: (code: string) => Promise<void>;
   /** Current loading state */
   loadingState: PyodideLoadingState;
   /** Whether Pyodide is ready to execute */
@@ -30,6 +36,10 @@ interface UsePyodideReturn {
   error: string | null;
   /** Pre-load Pyodide (e.g., on hover) */
   preload: () => void;
+  /** Timeline snapshots from the last instrumented execution */
+  snapshots: StateSnapshot[];
+  /** Clear the snapshots */
+  clearSnapshots: () => void;
 }
 
 /**
@@ -44,10 +54,15 @@ export function usePyodide(): UsePyodideReturn {
   const [entries, setEntries] = useState<ConsoleEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const instanceRef = useRef<PyodideInstance | null>(null);
+  const [snapshots, setSnapshots] = useState<StateSnapshot[]>([]);
 
   const clearEntries = useCallback((): void => {
     setEntries([]);
     setError(null);
+  }, []);
+
+  const clearSnapshots = useCallback((): void => {
+    setSnapshots([]);
   }, []);
 
   const ensureLoaded = useCallback(async (): Promise<PyodideInstance> => {
@@ -155,8 +170,89 @@ export function usePyodide(): UsePyodideReturn {
     [ensureLoaded]
   );
 
+  const runPythonInstrumented = useCallback(
+    async (code: string): Promise<void> => {
+      // Input validation
+      if (code.length > MAX_CODE_LENGTH) {
+        setError(`Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`);
+        return;
+      }
+
+      setIsRunning(true);
+      setError(null);
+      setSnapshots([]);
+
+      try {
+        const pyodide = await ensureLoaded();
+
+        const newEntries: ConsoleEntry[] = [];
+
+        pyodide.setStdout({
+          batched: (msg: string) => {
+            newEntries.push({
+              id: `${Date.now()}-${newEntries.length}`,
+              type: 'log',
+              args: [msg],
+              timestamp: Date.now(),
+            });
+          },
+        });
+
+        pyodide.setStderr({
+          batched: (msg: string) => {
+            newEntries.push({
+              id: `${Date.now()}-${newEntries.length}`,
+              type: 'error',
+              args: [msg],
+              timestamp: Date.now(),
+            });
+          },
+        });
+
+        const instrumentedCode = wrapPythonCodeWithTrace(code);
+
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(
+            () =>
+              reject(
+                new Error(`Execution timed out (exceeded ${PYTHON_TIMEOUT_MS / 1000}s limit)`)
+              ),
+            PYTHON_TIMEOUT_MS
+          );
+        });
+
+        await Promise.race([pyodide.runPythonAsync(instrumentedCode), timeoutPromise]);
+
+        // Retrieve the snapshots from the Python global
+        const resultJson = pyodide.globals.get('_instrumentation_result') as string;
+        if (resultJson) {
+          const parsed = parsePythonSnapshots(resultJson);
+          setSnapshots(parsed);
+        }
+
+        setEntries((prev) => [...prev, ...newEntries]);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown Python execution error';
+        setError(message);
+        setEntries((prev) => [
+          ...prev,
+          {
+            id: `${Date.now()}-error`,
+            type: 'error',
+            args: [message],
+            timestamp: Date.now(),
+          },
+        ]);
+      } finally {
+        setIsRunning(false);
+      }
+    },
+    [ensureLoaded]
+  );
+
   return {
     runPython,
+    runPythonInstrumented,
     loadingState,
     isReady: loadingState.status === 'ready',
     isRunning,
@@ -164,5 +260,7 @@ export function usePyodide(): UsePyodideReturn {
     clearEntries,
     error,
     preload,
+    snapshots,
+    clearSnapshots,
   };
 }

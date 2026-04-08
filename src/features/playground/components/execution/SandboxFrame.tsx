@@ -1,5 +1,5 @@
 import { useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
-import type { ConsoleEntry, ConsoleEntryType } from '../../types';
+import type { ConsoleEntry, ConsoleEntryType, StateSnapshot } from '../../types';
 
 /** Messages sent from host → sandbox iframe */
 interface HostToSandbox {
@@ -11,11 +11,13 @@ interface HostToSandbox {
 
 /** Messages sent from sandbox iframe → host */
 interface SandboxToHost {
-  type: 'console' | 'result' | 'error' | 'ready';
+  type: 'console' | 'result' | 'error' | 'ready' | 'timeline';
   entries?: Array<{ type: ConsoleEntryType; args: string[] }>;
   error?: string;
   line?: number;
   column?: number;
+  snapshots?: StateSnapshot[];
+  totalSteps?: number;
 }
 
 /**
@@ -151,23 +153,27 @@ function generateNonce(): string {
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+export interface SandboxExecutionResult {
+  entries: ConsoleEntry[];
+  error?: string;
+  /** Timeline snapshots from instrumented execution (if __tracker__ was present) */
+  snapshots?: StateSnapshot[];
+  totalSteps?: number;
+}
+
 export interface SandboxFrameHandle {
-  execute: (
-    code: string,
-    timeout: number
-  ) => Promise<{
-    entries: ConsoleEntry[];
-    error?: string;
-  }>;
+  execute: (code: string, timeout: number) => Promise<SandboxExecutionResult>;
   terminate: () => void;
 }
 
 const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const pendingRef = useRef<{
-    resolve: (value: { entries: ConsoleEntry[]; error?: string }) => void;
+    resolve: (value: SandboxExecutionResult) => void;
     reject: (err: Error) => void;
     timeoutId: ReturnType<typeof setTimeout>;
+    /** Accumulate timeline data from a separate 'timeline' message */
+    timelineData?: { snapshots: StateSnapshot[]; totalSteps: number };
   } | null>(null);
   const nonceRef = useRef(generateNonce());
 
@@ -193,6 +199,18 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
       const data = event.data as SandboxToHost;
       if (!data || !data.type) return;
 
+      if (data.type === 'timeline') {
+        // Timeline snapshots arrive before the 'result' message
+        const pending = pendingRef.current;
+        if (pending) {
+          pending.timelineData = {
+            snapshots: data.snapshots ?? [],
+            totalSteps: data.totalSteps ?? 0,
+          };
+        }
+        return;
+      }
+
       if (data.type === 'result' || data.type === 'error') {
         const pending = pendingRef.current;
         if (pending) {
@@ -200,6 +218,8 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
           pending.resolve({
             entries: parseEntries(data.entries),
             error: data.type === 'error' ? data.error : undefined,
+            snapshots: pending.timelineData?.snapshots,
+            totalSteps: pending.timelineData?.totalSteps,
           });
           pendingRef.current = null;
         }
@@ -230,7 +250,7 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
   }, []);
 
   const execute = useCallback(
-    (code: string, timeout: number): Promise<{ entries: ConsoleEntry[]; error?: string }> => {
+    (code: string, timeout: number): Promise<SandboxExecutionResult> => {
       // Terminate any pending execution
       if (pendingRef.current) terminate();
 
