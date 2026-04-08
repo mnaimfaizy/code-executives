@@ -9,6 +9,7 @@ lerna-debug.log*
 
 .playwright-mcp/
 node_modules
+coverage
 dist
 dist-ssr
 *.local
