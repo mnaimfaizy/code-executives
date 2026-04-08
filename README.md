@@ -21,6 +21,8 @@
 - **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
 - **AI Fundamentals**: Machine learning concepts from scratch — neural networks, gradient descent, embeddings, and RAG pipelines
 - **Node.js Ecosystem**: Deep dive into Event Loop, V8 memory, Streams, Clustering, module systems, package managers, frameworks, and runtime wars (Node vs Deno vs Bun)
+- **DevOps & Cloud Computing**: CI/CD pipelines, cloud service models (IaaS/PaaS/SaaS/FaaS), container orchestration with Kubernetes, Infrastructure as Code, observability, and modern DevOps roles
+- **Auth & Security**: Modern authentication and authorization — OAuth 2.0, OIDC, PKCE, WebAuthn/Passkeys, Zero Trust, BFF Pattern, and AI agent authentication
 - **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
 
 ### 🎮 **Interactive Visualizations**
