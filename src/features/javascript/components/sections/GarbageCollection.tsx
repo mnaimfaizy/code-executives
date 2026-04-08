@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import TwoDLayout from '../../../../components/TwoDLayout';
-import ModeTabs from '../../../../components/shared/ModeTabs';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
 import Editor from '../../../../components/shared/Editor';
@@ -244,7 +243,6 @@ const GarbageCollection2D: React.FC<{
 };
 
 const GarbageCollection: React.FC = () => {
-  const [mode, setMode] = useState<'2D' | '3D'>('2D');
   const [inputMode, setInputMode] = useState<'js' | 'dsl'>('js');
   const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([
@@ -556,22 +554,14 @@ const GarbageCollection: React.FC = () => {
         </div>
       </div>
 
-      <ModeTabs mode={mode} onChange={setMode} />
-
-      {mode === '2D' ? (
-        <div className="mt-2">
-          <TwoDLayout
-            title="2D Visualization: Garbage Collection"
-            editor={editor}
-            output={outputPanel}
-            canvas={canvas2D}
-          />
-        </div>
-      ) : (
-        <div className="mt-2 text-sm text-gray-600">
-          3D visualization for Garbage Collection is coming soon.
-        </div>
-      )}
+      <div className="mt-2">
+        <TwoDLayout
+          title="2D Visualization: Garbage Collection"
+          editor={editor}
+          output={outputPanel}
+          canvas={canvas2D}
+        />
+      </div>
     </section>
   );
 };
