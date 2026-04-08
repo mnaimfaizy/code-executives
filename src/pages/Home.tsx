@@ -26,6 +26,7 @@ import {
   Cpu,
   Network,
   Server,
+  Cloud,
   Shield,
 } from 'lucide-react';
 import ThemeCard from '../components/shared/ThemeCard';
@@ -187,6 +188,19 @@ const Home: React.FC = () => {
       duration: '3-4 hours',
     },
     {
+      icon: <Cloud className="w-12 h-12" />,
+      title: 'DevOps & Cloud',
+      description:
+        'CI/CD pipelines, cloud service models, container orchestration, Infrastructure as Code, and observability',
+      path: '/devops',
+      color: 'sky',
+      gradient: 'from-sky-600 to-cyan-600',
+      bgGradient: 'from-sky-50 to-cyan-50',
+      topics: ['CI/CD Pipeline', 'Cloud Models', 'Kubernetes', 'Infrastructure as Code'],
+      level: 'Intermediate',
+      duration: '3-4 hours',
+    },
+    {
       icon: <Shield className="w-12 h-12" />,
       title: 'Auth & Security',
       description:
@@ -202,8 +216,8 @@ const Home: React.FC = () => {
   ];
 
   const stats = [
-    { value: '13+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
-    { value: '83+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
+    { value: '14+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
+    { value: '90+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
     { value: '1000+', label: 'Code Examples', icon: <FileCode className="w-5 h-5" /> },
     { value: '24/7', label: 'Available Learning', icon: <Cpu className="w-5 h-5" /> },
   ];
@@ -239,11 +253,12 @@ const Home: React.FC = () => {
         allModules[10],
         allModules[11],
         allModules[12],
-      ], // Python, System Design, TypeScript, AI, Node.js, Auth
+        allModules[13],
+      ], // Python, System Design, TypeScript, AI, Node.js, DevOps, Auth
       icon: <Award className="w-6 h-6" />,
       color: 'emerald',
       description:
-        'Master system design patterns, multi-language architectures, AI fundamentals, runtime ecosystems, and modern authentication',
+        'Master system design patterns, multi-language architectures, AI fundamentals, and runtime ecosystems, and DevOps practices, and modern authentication patterns.',
     },
   ];
 
