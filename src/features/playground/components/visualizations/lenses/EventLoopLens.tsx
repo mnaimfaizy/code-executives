@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { StateSnapshot, StackFrame, QueueEntry } from '../../../types';
 
 interface EventLoopLensProps {
@@ -122,11 +122,8 @@ const EventLoopLens: React.FC<EventLoopLensProps> = ({ currentSnapshot }) => {
   const { callStack, microtaskQueue, macrotaskQueue } = currentSnapshot;
 
   // Determine which phase the event loop is in
-  const phase = useMemo<'stack' | 'microtask' | 'macrotask'>(() => {
-    if (callStack.length > 0) return 'stack';
-    if (microtaskQueue.length > 0) return 'microtask';
-    return 'macrotask';
-  }, [callStack, microtaskQueue, macrotaskQueue]);
+  const phase: 'stack' | 'microtask' | 'macrotask' =
+    callStack.length > 0 ? 'stack' : microtaskQueue.length > 0 ? 'microtask' : 'macrotask';
 
   return (
     <div className="h-full flex flex-col p-3 gap-3 overflow-auto">

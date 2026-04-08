@@ -2,11 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PlaygroundLayout from './components/layout/PlaygroundLayout';
 import PaneResizer from './components/layout/PaneResizer';
 import PlaygroundToolbar from './components/layout/PlaygroundToolbar';
-import SettingsPanel, {
-  loadSettings,
-  saveSettings,
-  type PlaygroundSettings,
-} from './components/layout/SettingsPanel';
+import SettingsPanel from './components/layout/SettingsPanel';
 import MonacoEditor from './components/editor/MonacoEditor';
 import EditorTabs from './components/editor/EditorTabs';
 import SandboxFrame from './components/execution/SandboxFrame';
@@ -22,6 +18,11 @@ import { usePaneLayout } from './hooks/usePaneLayout';
 import { prepareInstrumentedCode } from './instrumentation/JsInstrumenter';
 import type { ExampleSnippet } from './utils/exampleSnippets';
 import type { VisualizationLens } from './types';
+import {
+  loadSettings,
+  saveSettings,
+  type PlaygroundSettings,
+} from './components/layout/playgroundSettings';
 import './components/theme/playground-theme.css';
 
 const PlaygroundApp: React.FC = () => {

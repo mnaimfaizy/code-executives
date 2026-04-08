@@ -94,7 +94,16 @@ vi.mock('./hooks/usePaneLayout', () => ({
 vi.mock('./components/layout/SettingsPanel', () => ({
   __esModule: true,
   default: () => null,
-  loadSettings: () => ({ fontSize: 14, wordWrap: true, tabSize: 2 }),
+}));
+
+vi.mock('./components/layout/playgroundSettings', () => ({
+  __esModule: true,
+  loadSettings: () => ({
+    fontSize: 14,
+    wordWrap: true,
+    executionTimeoutMs: 10_000,
+    animationsEnabled: true,
+  }),
   saveSettings: vi.fn(),
 }));
 

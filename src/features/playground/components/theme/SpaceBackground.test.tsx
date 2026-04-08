@@ -33,7 +33,7 @@ describe('SpaceBackground', () => {
     });
 
     // Mock requestAnimationFrame
-    rafSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+    rafSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => {
       // Don't actually call the callback to prevent infinite loops
       return 1;
     });
