@@ -17,11 +17,17 @@ const MAX_CODE_LENGTH = 50 * 1024;
 /** Default Python execution timeout (10 seconds) */
 const PYTHON_TIMEOUT_MS = 10_000;
 
+/** Result returned directly from run functions for immediate use by the caller */
+export interface PyodideExecuteResult {
+  error: string | null;
+  snapshots: StateSnapshot[];
+}
+
 interface UsePyodideReturn {
   /** Execute Python code and return console entries */
-  runPython: (code: string) => Promise<void>;
+  runPython: (code: string) => Promise<PyodideExecuteResult>;
   /** Execute Python code with instrumentation (sys.settrace) */
-  runPythonInstrumented: (code: string) => Promise<void>;
+  runPythonInstrumented: (code: string) => Promise<PyodideExecuteResult>;
   /** Current loading state */
   loadingState: PyodideLoadingState;
   /** Whether Pyodide is ready to execute */
@@ -90,20 +96,21 @@ export function usePyodide(): UsePyodideReturn {
   }, [ensureLoaded, loadingState.status]);
 
   const runPython = useCallback(
-    async (code: string): Promise<void> => {
+    async (code: string): Promise<PyodideExecuteResult> => {
       // Input validation
       if (code.length > MAX_CODE_LENGTH) {
-        setError(`Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`);
+        const msg = `Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`;
+        setError(msg);
         setEntries((prev) => [
           ...prev,
           {
             id: `${Date.now()}-validation`,
             type: 'error' as ConsoleEntryType,
-            args: [`Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`],
+            args: [msg],
             timestamp: Date.now(),
           },
         ]);
-        return;
+        return { error: msg, snapshots: [] };
       }
 
       setIsRunning(true);
@@ -151,6 +158,7 @@ export function usePyodide(): UsePyodideReturn {
         await Promise.race([pyodide.runPythonAsync(code), timeoutPromise]);
 
         setEntries((prev) => [...prev, ...newEntries]);
+        return { error: null, snapshots: [] };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown Python execution error';
         setError(message);
@@ -163,6 +171,7 @@ export function usePyodide(): UsePyodideReturn {
             timestamp: Date.now(),
           },
         ]);
+        return { error: message, snapshots: [] };
       } finally {
         setIsRunning(false);
       }
@@ -171,11 +180,12 @@ export function usePyodide(): UsePyodideReturn {
   );
 
   const runPythonInstrumented = useCallback(
-    async (code: string): Promise<void> => {
+    async (code: string): Promise<PyodideExecuteResult> => {
       // Input validation
       if (code.length > MAX_CODE_LENGTH) {
-        setError(`Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`);
-        return;
+        const msg = `Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`;
+        setError(msg);
+        return { error: msg, snapshots: [] };
       }
 
       setIsRunning(true);
@@ -225,12 +235,14 @@ export function usePyodide(): UsePyodideReturn {
 
         // Retrieve the snapshots from the Python global
         const resultJson = pyodide.globals.get('_instrumentation_result') as string;
+        let resultSnapshots: StateSnapshot[] = [];
         if (resultJson) {
-          const parsed = parsePythonSnapshots(resultJson);
-          setSnapshots(parsed);
+          resultSnapshots = parsePythonSnapshots(resultJson);
+          setSnapshots(resultSnapshots);
         }
 
         setEntries((prev) => [...prev, ...newEntries]);
+        return { error: null, snapshots: resultSnapshots };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown Python execution error';
         setError(message);
@@ -243,6 +255,7 @@ export function usePyodide(): UsePyodideReturn {
             timestamp: Date.now(),
           },
         ]);
+        return { error: message, snapshots: [] };
       } finally {
         setIsRunning(false);
       }

@@ -9,11 +9,14 @@ import ConsoleOutput from './components/execution/ConsoleOutput';
 import ExecutionController from './components/execution/ExecutionController';
 import PythonRunner from './components/execution/PythonRunner';
 import TimelinePlayer from './components/instrumentation/TimelinePlayer';
+import LensSelector from './components/visualizations/LensSelector';
+import VisualizationCanvas from './components/visualizations/VisualizationCanvas';
 import { usePlaygroundState } from './hooks/usePlaygroundState';
 import { useSandbox } from './hooks/useSandbox';
 import { usePyodide } from './hooks/usePyodide';
 import { useTimeline } from './hooks/useTimeline';
 import { prepareInstrumentedCode } from './instrumentation/JsInstrumenter';
+import type { VisualizationLens } from './types';
 import './components/theme/playground-theme.css';
 
 const PlaygroundApp: React.FC = () => {
@@ -26,6 +29,9 @@ const PlaygroundApp: React.FC = () => {
 
   // Instrumented mode toggle
   const [instrumentedMode, setInstrumentedMode] = useState(true);
+
+  // Visualization lens
+  const [activeLens, setActiveLens] = useState<VisualizationLens>('none');
 
   // Determine which console entries to show based on language
   const consoleEntries = language === 'python' ? pyodide.entries : sandbox.entries;
@@ -44,32 +50,32 @@ const PlaygroundApp: React.FC = () => {
 
     if (language === 'python') {
       const runFn = instrumentedMode ? pyodide.runPythonInstrumented : pyodide.runPython;
-      runFn(code).then(() => {
-        setExecutionState(pyodide.error ? 'error' : 'completed');
-        if (instrumentedMode && pyodide.snapshots.length > 0) {
-          timeline.loadSnapshots(pyodide.snapshots);
+      runFn(code).then((result) => {
+        setExecutionState(result.error ? 'error' : 'completed');
+        if (instrumentedMode && result.snapshots.length > 0) {
+          timeline.loadSnapshots(result.snapshots);
         }
       });
     } else {
       // For JS/TS: instrument the code if mode is enabled
       if (instrumentedMode) {
-        const result = prepareInstrumentedCode(code);
-        if ('error' in result) {
+        const prepared = prepareInstrumentedCode(code);
+        if ('error' in prepared) {
           // Fall back to non-instrumented execution on parse error
-          sandbox.execute(code).then(() => {
-            setExecutionState(sandbox.error ? 'error' : 'completed');
+          sandbox.execute(code).then((result) => {
+            setExecutionState(result.error ? 'error' : 'completed');
           });
           return;
         }
-        sandbox.execute(result.code).then(() => {
-          setExecutionState(sandbox.error ? 'error' : 'completed');
-          if (sandbox.snapshots.length > 0) {
-            timeline.loadSnapshots(sandbox.snapshots);
+        sandbox.execute(prepared.code).then((result) => {
+          setExecutionState(result.error ? 'error' : 'completed');
+          if (result.snapshots.length > 0) {
+            timeline.loadSnapshots(result.snapshots);
           }
         });
       } else {
-        sandbox.execute(code).then(() => {
-          setExecutionState(sandbox.error ? 'error' : 'completed');
+        sandbox.execute(code).then((result) => {
+          setExecutionState(result.error ? 'error' : 'completed');
         });
       }
     }
@@ -163,6 +169,16 @@ const PlaygroundApp: React.FC = () => {
           <span>Trace</span>
         </label>
 
+        {/* Separator */}
+        <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
+
+        {/* Lens selector */}
+        <LensSelector
+          activeLens={activeLens}
+          onLensChange={setActiveLens}
+          currentSnapshot={timeline.currentSnapshot}
+        />
+
         <div className="flex-1" />
 
         {/* Execution controls */}
@@ -200,7 +216,7 @@ const PlaygroundApp: React.FC = () => {
           </div>
         </div>
 
-        {/* Timeline / Visualization Pane */}
+        {/* Visualization / Timeline Pane */}
         <div
           className="flex flex-col rounded-lg overflow-hidden"
           style={{
@@ -209,22 +225,37 @@ const PlaygroundApp: React.FC = () => {
             border: '1px solid var(--pg-border)',
           }}
         >
-          <TimelinePlayer
-            currentStep={timeline.currentStep}
-            totalSteps={timeline.totalSteps}
-            currentSnapshot={timeline.currentSnapshot}
-            previousSnapshot={timeline.previousSnapshot}
-            isPlaying={timeline.isPlaying}
-            speed={timeline.speed}
-            onGoToStep={timeline.goToStep}
-            onNextStep={timeline.nextStep}
-            onPrevStep={timeline.prevStep}
-            onFirstStep={timeline.firstStep}
-            onLastStep={timeline.lastStep}
-            onPlay={timeline.play}
-            onPause={timeline.pause}
-            onSetSpeed={timeline.setSpeed}
-          />
+          {/* Visualization canvas (top portion) */}
+          <div className="flex-1 min-h-0">
+            <VisualizationCanvas
+              lens={activeLens}
+              currentSnapshot={timeline.currentSnapshot}
+              previousSnapshot={timeline.previousSnapshot}
+            />
+          </div>
+          {/* Timeline controls (bottom) */}
+          <div
+            style={{
+              borderTop: '1px solid var(--pg-border)',
+            }}
+          >
+            <TimelinePlayer
+              currentStep={timeline.currentStep}
+              totalSteps={timeline.totalSteps}
+              currentSnapshot={timeline.currentSnapshot}
+              previousSnapshot={timeline.previousSnapshot}
+              isPlaying={timeline.isPlaying}
+              speed={timeline.speed}
+              onGoToStep={timeline.goToStep}
+              onNextStep={timeline.nextStep}
+              onPrevStep={timeline.prevStep}
+              onFirstStep={timeline.firstStep}
+              onLastStep={timeline.lastStep}
+              onPlay={timeline.play}
+              onPause={timeline.pause}
+              onSetSpeed={timeline.setSpeed}
+            />
+          </div>
         </div>
 
         {/* Output Pane */}

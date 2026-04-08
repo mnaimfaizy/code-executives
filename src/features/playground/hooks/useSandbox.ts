@@ -6,9 +6,15 @@ import { DEFAULT_EXECUTION_TIMEOUT_MS } from '../types/playground-v2';
 /** Maximum allowed code length (50 KB) */
 const MAX_CODE_LENGTH = 50 * 1024;
 
+/** Result returned directly from execute() for immediate use by the caller */
+export interface SandboxExecuteResult {
+  error: string | null;
+  snapshots: StateSnapshot[];
+}
+
 interface UseSandboxReturn {
   /** Execute JS/TS code in the sandbox */
-  execute: (code: string) => Promise<void>;
+  execute: (code: string) => Promise<SandboxExecuteResult>;
   /** Terminate current execution */
   terminate: () => void;
   /** Whether code is currently running */
@@ -47,26 +53,28 @@ export function useSandbox(): UseSandboxReturn {
     setSnapshots([]);
   }, []);
 
-  const execute = useCallback(async (code: string): Promise<void> => {
+  const execute = useCallback(async (code: string): Promise<SandboxExecuteResult> => {
     const sandbox = sandboxRef.current;
     if (!sandbox) {
-      setError('Sandbox not initialized');
-      return;
+      const msg = 'Sandbox not initialized';
+      setError(msg);
+      return { error: msg, snapshots: [] };
     }
 
     // Input validation
     if (code.length > MAX_CODE_LENGTH) {
-      setError(`Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`);
+      const msg = `Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`;
+      setError(msg);
       setEntries((prev) => [
         ...prev,
         {
           id: `${Date.now()}-validation`,
           type: 'error',
-          args: [`Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`],
+          args: [msg],
           timestamp: Date.now(),
         },
       ]);
-      return;
+      return { error: msg, snapshots: [] };
     }
 
     setIsRunning(true);
@@ -75,12 +83,14 @@ export function useSandbox(): UseSandboxReturn {
     try {
       const result = await sandbox.execute(code, DEFAULT_EXECUTION_TIMEOUT_MS);
       setEntries((prev) => [...prev, ...result.entries]);
-      if (result.snapshots && result.snapshots.length > 0) {
-        setSnapshots(result.snapshots);
+      const resultSnapshots = result.snapshots ?? [];
+      if (resultSnapshots.length > 0) {
+        setSnapshots(resultSnapshots);
       }
       if (result.error) {
         setError(result.error);
       }
+      return { error: result.error ?? null, snapshots: resultSnapshots };
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown execution error';
       setError(message);
@@ -93,6 +103,7 @@ export function useSandbox(): UseSandboxReturn {
           timestamp: Date.now(),
         },
       ]);
+      return { error: message, snapshots: [] };
     } finally {
       setIsRunning(false);
     }

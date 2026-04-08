@@ -38,25 +38,10 @@ export function prepareInstrumentedCode(rawCode: string): InstrumentedPayload | 
     return { error: result.error ?? 'Instrumentation failed' };
   }
 
-  // Append a postMessage call to send snapshots back to the host
-  // after user code finishes executing.
-  const codeWithReporting =
-    result.instrumentedCode +
-    `
-// --- Snapshot reporting ---
-Promise.resolve().then(function() {
-  setTimeout(function() {
-    parent.postMessage({
-      type: 'timeline',
-      snapshots: __tracker__.getSnapshots(),
-      totalSteps: __tracker__.getStepCount()
-    }, '*');
-  }, 60);
-});
-`;
-
+  // No need to append a separate postMessage — the sandbox iframe
+  // reads from __tracker__ directly when posting its 'result' message.
   return {
-    code: codeWithReporting,
+    code: result.instrumentedCode,
     sourceMap: result.sourceMap,
   };
 }

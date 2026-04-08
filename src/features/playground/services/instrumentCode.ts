@@ -37,7 +37,7 @@ const MAX_SNAPSHOTS = 1000;
  */
 function getTrackerRuntime(): string {
   return `
-var __tracker__ = (function() {
+window.__tracker__ = (function() {
   var snapshots = [];
   var callStack = [];
   var stepCounter = 0;

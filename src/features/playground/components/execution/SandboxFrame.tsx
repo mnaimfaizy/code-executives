@@ -119,7 +119,21 @@ function createSandboxHTML(nonce: string): string {
         // Wait for any pending macrotasks (setTimeout with 0) briefly
         setTimeout(function() {
           if (timedOut) return;
-          parent.postMessage({ type: 'result', entries: entries }, '*');
+          // If instrumented code injected a __tracker__, include its snapshots
+          var snapshots = null;
+          var totalSteps = 0;
+          if (typeof __tracker__ !== 'undefined') {
+            try {
+              snapshots = __tracker__.getSnapshots();
+              totalSteps = __tracker__.getStepCount();
+            } catch(e) { /* tracker may not be available */ }
+          }
+          parent.postMessage({
+            type: 'result',
+            entries: entries,
+            snapshots: snapshots,
+            totalSteps: totalSteps
+          }, '*');
         }, 50);
       });
     } catch (err) {
@@ -172,8 +186,6 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
     resolve: (value: SandboxExecutionResult) => void;
     reject: (err: Error) => void;
     timeoutId: ReturnType<typeof setTimeout>;
-    /** Accumulate timeline data from a separate 'timeline' message */
-    timelineData?: { snapshots: StateSnapshot[]; totalSteps: number };
   } | null>(null);
   const nonceRef = useRef(generateNonce());
 
@@ -199,18 +211,6 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
       const data = event.data as SandboxToHost;
       if (!data || !data.type) return;
 
-      if (data.type === 'timeline') {
-        // Timeline snapshots arrive before the 'result' message
-        const pending = pendingRef.current;
-        if (pending) {
-          pending.timelineData = {
-            snapshots: data.snapshots ?? [],
-            totalSteps: data.totalSteps ?? 0,
-          };
-        }
-        return;
-      }
-
       if (data.type === 'result' || data.type === 'error') {
         const pending = pendingRef.current;
         if (pending) {
@@ -218,8 +218,8 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
           pending.resolve({
             entries: parseEntries(data.entries),
             error: data.type === 'error' ? data.error : undefined,
-            snapshots: pending.timelineData?.snapshots,
-            totalSteps: pending.timelineData?.totalSteps,
+            snapshots: data.snapshots ?? undefined,
+            totalSteps: data.totalSteps ?? undefined,
           });
           pendingRef.current = null;
         }
