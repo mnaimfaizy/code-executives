@@ -229,9 +229,6 @@ const CallStack: React.FC = () => {
       // ignore persistence errors
     }
   }, [ip, running]);
-  useEffect(() => {
-    // persistence: no-op placeholder kept for consistency
-  }, []);
 
   // highlighting is built inline when rendering InstrumentedSource
 
