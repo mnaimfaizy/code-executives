@@ -1,7 +1,7 @@
 # Coding Playground — Phased Implementation Plan
 
 > **Project**: Code Executives — Interactive Coding Playground
-> **Status**: Planning
+> **Status**: Phase 0 Complete
 > **Created**: 2026-04-08
 > **Reference**: [Coding Playground Architecture and Implementation](./Coding%20Playground%20Architecture%20and%20Implementation.md)
 
@@ -223,8 +223,8 @@ New dependencies required (all with **exact versions** per `.npmrc` policy):
 
 Create the directory structure and core TypeScript types.
 
-- [ ] Create `src/features/playground/` directory tree matching the [Directory Structure](#directory-structure) above
-- [ ] Create `src/features/playground/types/playground-v2.ts` with core interfaces:
+- [x] Create `src/features/playground/` directory tree matching the [Directory Structure](#directory-structure) above
+- [x] Create `src/features/playground/types/playground-v2.ts` with core interfaces:
   - `PlaygroundLanguage` (`'javascript' | 'typescript' | 'python'`)
   - `VisualizationLens` (`'event-loop' | 'heap-stack' | 'data-structure' | 'stream' | 'none'`)
   - `ExecutionState` (`'idle' | 'running' | 'paused' | 'stepping' | 'completed' | 'error'`)
@@ -233,18 +233,18 @@ Create the directory structure and core TypeScript types.
   - `PlaygroundConfig` (language, lens, code, execution settings)
   - `SandboxMessage` (discriminated union for iframe ↔ host communication)
   - `ConsoleEntry` (type: log/warn/error/info, args, timestamp)
-- [ ] Create `src/features/playground/utils/codeTemplates.ts` with starter templates for each language
-- [ ] Export types from `src/features/playground/types/` via barrel `index.ts`
+- [x] Create `src/features/playground/utils/codeTemplates.ts` with starter templates for each language
+- [x] Export types from `src/features/playground/types/` via barrel `index.ts`
 
 ### Step 0.2 — Routing & Navigation Integration
 
 Wire the Playground into the app's routing system.
 
-- [ ] Add lazy import in `src/App.tsx`:
+- [x] Add lazy import in `src/App.tsx`:
   ```tsx
   const PlaygroundEntry = lazy(() => import('./features/playground/PlaygroundEntry'));
   ```
-- [ ] Add route in `src/App.tsx` **outside** the main layout wrapper:
+- [x] Add route in `src/App.tsx` **outside** the main layout wrapper:
   ```tsx
   <Route
     path="/playground"
@@ -255,73 +255,73 @@ Wire the Playground into the app's routing system.
     }
   />
   ```
-- [ ] Ensure the `/playground` route does NOT render Header, Sidebar, Footer, or Breadcrumbs. This requires restructuring `App.tsx` routes so that:
+- [x] Ensure the `/playground` route does NOT render Header, Sidebar, Footer, or Breadcrumbs. This requires restructuring `App.tsx` routes so that:
   - The main layout (Header + Sidebar + Footer) wraps only the existing feature routes.
   - The `/playground` route is a sibling that renders its own full-screen layout.
-- [ ] Add "Playground" link to `src/components/Header.tsx` navigation:
+- [x] Add "Playground" link to `src/components/Header.tsx` navigation:
   - Position: Standalone link (not inside any dropdown group), placed at the end of the nav bar
   - Opens in new tab: `<a href="/playground" target="_blank" rel="noopener noreferrer">`
   - Styled distinctly (e.g., with a rocket/terminal icon from Lucide, accent color)
-- [ ] Verify that direct navigation to `http://localhost:5173/playground` renders the standalone layout (no main app chrome)
+- [x] Verify that direct navigation to `http://localhost:5173/playground` renders the standalone layout (no main app chrome)
 
 ### Step 0.3 — Standalone Layout Shell & Space Theme
 
 Build the visual shell for the Playground.
 
-- [ ] Create `src/features/playground/components/theme/tokens.ts`:
+- [x] Create `src/features/playground/components/theme/tokens.ts`:
   - Define design tokens as plain objects (colors, spacing, border radius, shadows)
   - Base palette: deep space blacks (`#0a0a1a`, `#0f0f2e`), nebula purples (`#1a1a3e`), electric blues (`#00d4ff`), star whites (`#e0e0ff`), success greens (`#00ff88`), error reds (`#ff4466`)
   - Editor gutter, line highlight, selection colors
   - Font: `'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace`
-- [ ] Create `src/features/playground/components/theme/playground-theme.css`:
+- [x] Create `src/features/playground/components/theme/playground-theme.css`:
   - Scoped under `[data-theme="playground"]`
   - CSS custom properties for all tokens
   - Scrollbar styling (thin, dark)
   - Selection color overrides
   - Focus ring styles (electric blue)
   - Transition defaults
-- [ ] Import `playground-theme.css` in `PlaygroundApp.tsx` (not in `index.css` to keep it scoped)
-- [ ] Create `src/features/playground/components/theme/SpaceBackground.tsx`:
+- [x] Import `playground-theme.css` in `PlaygroundApp.tsx` (not in `index.css` to keep it scoped)
+- [x] Create `src/features/playground/components/theme/SpaceBackground.tsx`:
   - Animated starfield using `<canvas>` element
   - Multiple layers of stars at different speeds (parallax)
   - Subtle nebula color gradients (CSS radial gradients overlaid)
   - Respect `prefers-reduced-motion` — static stars, no animation
   - Fixed position behind all content (`z-index: 0`)
   - Performant: `requestAnimationFrame` loop, canvas-based rendering
-- [ ] Create `src/features/playground/components/layout/PlaygroundLayout.tsx`:
+- [x] Create `src/features/playground/components/layout/PlaygroundLayout.tsx`:
   - Full viewport: `100vw × 100vh`, `overflow: hidden`
   - Sets `data-theme="playground"` on root `<div>`
   - Renders `<SpaceBackground />` as background layer
   - Accepts `children` for the three-pane content
   - No Header, Sidebar, or Footer from main app
-- [ ] Create `src/features/playground/components/layout/BackToSiteLink.tsx`:
+- [x] Create `src/features/playground/components/layout/BackToSiteLink.tsx`:
   - Small link in top-left corner: "← Code Executives"
   - Links back to `"/"` (main site)
   - Opens in same window (not new tab) since user is already in a new tab
   - Uses `window.opener ? window.close() : window.location.href = '/'` pattern
-- [ ] Create `src/features/playground/PlaygroundApp.tsx`:
+- [x] Create `src/features/playground/PlaygroundApp.tsx`:
   - Wraps everything in `<PlaygroundLayout>`
   - Placeholder panes with "Editor", "Visualization", "Output" text
   - Import and apply scoped theme CSS
-- [ ] Create `src/features/playground/PlaygroundEntry.tsx`:
+- [x] Create `src/features/playground/PlaygroundEntry.tsx`:
   - Default export for lazy loading
-  - Wraps `<PlaygroundApp />` in `<ErrorBoundary level="page">`
+  - Wraps `<PlaygroundApp />` in `<ErrorBoundary level="feature">`
   - Adds `<SEO>` with playground-specific meta tags
-- [ ] Verify the dark shell renders correctly at `/playground` in a new tab
-- [ ] Verify the main app routes remain unaffected (no dark styles leaking)
+- [x] Verify the dark shell renders correctly at `/playground` in a new tab
+- [x] Verify the main app routes remain unaffected (no dark styles leaking)
 
 ### Step 0.4 — Vite Build Configuration
 
 Optimize the build for the Playground chunk.
 
-- [ ] Update `vite.config.ts` `manualChunks` to include:
+- [x] Update `vite.config.ts` `manualChunks` to include:
   ```ts
   if (id.includes('monaco-editor')) return 'vendor-monaco';
   if (id.includes('@xyflow')) return 'vendor-xyflow';
   if (id.includes('/src/features/playground/')) return 'playground';
   ```
-- [ ] Verify build succeeds with `npm run build`
-- [ ] Verify the playground chunk is appropriately sized in `dist/stats.html`
+- [x] Verify build succeeds with `npm run build`
+- [x] Verify the playground chunk is appropriately sized in `dist/stats.html`
 
 ---
 
