@@ -1,21 +1,26 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PlaygroundLayout from './components/layout/PlaygroundLayout';
-import BackToSiteLink from './components/layout/BackToSiteLink';
+import PaneResizer from './components/layout/PaneResizer';
+import PlaygroundToolbar from './components/layout/PlaygroundToolbar';
+import SettingsPanel, {
+  loadSettings,
+  saveSettings,
+  type PlaygroundSettings,
+} from './components/layout/SettingsPanel';
 import MonacoEditor from './components/editor/MonacoEditor';
 import EditorTabs from './components/editor/EditorTabs';
-import LanguagePicker from './components/editor/LanguagePicker';
 import SandboxFrame from './components/execution/SandboxFrame';
 import ConsoleOutput from './components/execution/ConsoleOutput';
-import ExecutionController from './components/execution/ExecutionController';
 import PythonRunner from './components/execution/PythonRunner';
 import TimelinePlayer from './components/instrumentation/TimelinePlayer';
-import LensSelector from './components/visualizations/LensSelector';
 import VisualizationCanvas from './components/visualizations/VisualizationCanvas';
 import { usePlaygroundState } from './hooks/usePlaygroundState';
 import { useSandbox } from './hooks/useSandbox';
 import { usePyodide } from './hooks/usePyodide';
 import { useTimeline } from './hooks/useTimeline';
+import { usePaneLayout } from './hooks/usePaneLayout';
 import { prepareInstrumentedCode } from './instrumentation/JsInstrumenter';
+import type { ExampleSnippet } from './utils/exampleSnippets';
 import type { VisualizationLens } from './types';
 import './components/theme/playground-theme.css';
 
@@ -32,6 +37,29 @@ const PlaygroundApp: React.FC = () => {
 
   // Visualization lens
   const [activeLens, setActiveLens] = useState<VisualizationLens>('none');
+
+  // Resizable pane layout
+  const paneLayout = usePaneLayout();
+
+  // Settings
+  const [settings, setSettings] = useState<PlaygroundSettings>(loadSettings);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close settings on outside click
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const handler = (e: MouseEvent): void => {
+      if (
+        settingsContainerRef.current &&
+        !settingsContainerRef.current.contains(e.target as Node)
+      ) {
+        setSettingsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [settingsOpen]);
 
   // Determine which console entries to show based on language
   const consoleEntries = language === 'python' ? pyodide.entries : sandbox.entries;
@@ -108,97 +136,125 @@ const PlaygroundApp: React.FC = () => {
     }
   }, [language, sandbox, pyodide]);
 
+  const handleLoadSnippet = useCallback(
+    (snippet: ExampleSnippet): void => {
+      setLanguage(snippet.language);
+      setCode(snippet.code);
+      setActiveLens(snippet.suggestedLens);
+      sandbox.clearEntries();
+      pyodide.clearEntries();
+      sandbox.clearSnapshots();
+      pyodide.clearSnapshots();
+      timeline.clear();
+    },
+    [setLanguage, setCode, sandbox, pyodide, timeline]
+  );
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent): void => {
-      // Escape → stop execution
-      if (e.key === 'Escape' && executionState === 'running') {
-        handleStop();
+      const mod = e.ctrlKey || e.metaKey;
+
+      // Ctrl+Enter → Run code
+      if (e.key === 'Enter' && mod && !e.shiftKey) {
+        e.preventDefault();
+        handleRun();
+        return;
+      }
+      // Escape → stop execution or close settings
+      if (e.key === 'Escape') {
+        if (settingsOpen) {
+          setSettingsOpen(false);
+        } else if (executionState === 'running') {
+          handleStop();
+        }
+        return;
       }
       // Ctrl+L → clear console
-      if (e.key === 'l' && (e.ctrlKey || e.metaKey)) {
+      if (e.key === 'l' && mod) {
         e.preventDefault();
         handleClearConsole();
+        return;
+      }
+      // Left/Right arrow → timeline stepping (when not in editor)
+      const activeEl = document.activeElement;
+      const inEditor =
+        activeEl?.closest('.monaco-editor') !== null ||
+        activeEl?.tagName === 'TEXTAREA' ||
+        activeEl?.tagName === 'INPUT';
+      if (!inEditor && timeline.totalSteps > 0) {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          timeline.prevStep();
+          return;
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          timeline.nextStep();
+          return;
+        }
+        // Space → play/pause timeline
+        if (e.key === ' ') {
+          e.preventDefault();
+          if (timeline.isPlaying) {
+            timeline.pause();
+          } else {
+            timeline.play();
+          }
+          return;
+        }
+      }
+      // ? → toggle keyboard shortcut reference (only when not in editor)
+      if (e.key === '?' && !inEditor) {
+        // Could be expanded to show a shortcut overlay
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [executionState, handleStop, handleClearConsole]);
+  }, [executionState, settingsOpen, handleRun, handleStop, handleClearConsole, timeline]);
 
   return (
     <PlaygroundLayout>
-      {/* Top toolbar area */}
-      <div
-        className="flex items-center gap-4 px-4 shrink-0"
-        style={{
-          height: 'var(--pg-toolbar-height)',
-          borderBottom: '1px solid var(--pg-border)',
-          background: 'var(--pg-bg-toolbar-translucent)',
-          backdropFilter: 'blur(10px)',
-        }}
-      >
-        <BackToSiteLink />
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full" style={{ background: 'var(--pg-accent-green)' }} />
-          <span
-            className="text-sm font-semibold tracking-wide"
-            style={{ color: 'var(--pg-text-primary)' }}
-          >
-            Playground
-          </span>
-        </div>
-
-        {/* Separator */}
-        <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
-
-        {/* Language picker */}
-        <LanguagePicker language={language} onLanguageChange={setLanguage} />
-
-        {/* Instrumented mode toggle */}
-        <label
-          className="flex items-center gap-1.5 text-xs cursor-pointer select-none"
-          style={{ color: 'var(--pg-text-secondary)' }}
-        >
-          <input
-            type="checkbox"
-            checked={instrumentedMode}
-            onChange={(e) => setInstrumentedMode(e.target.checked)}
-            className="accent-blue-500"
-          />
-          <span>Trace</span>
-        </label>
-
-        {/* Separator */}
-        <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
-
-        {/* Lens selector */}
-        <LensSelector
+      {/* Top toolbar */}
+      <div className="relative shrink-0" ref={settingsContainerRef}>
+        <PlaygroundToolbar
+          language={language}
+          onLanguageChange={setLanguage}
           activeLens={activeLens}
           onLensChange={setActiveLens}
           currentSnapshot={timeline.currentSnapshot}
-        />
-
-        <div className="flex-1" />
-
-        {/* Execution controls */}
-        <ExecutionController
+          instrumentedMode={instrumentedMode}
+          onInstrumentedModeChange={setInstrumentedMode}
           executionState={executionState}
           onRun={handleRun}
           onStop={handleStop}
           onReset={handleReset}
+          onLoadSnippet={handleLoadSnippet}
+          onOpenSettings={() => setSettingsOpen((prev) => !prev)}
         />
+        {settingsOpen && (
+          <SettingsPanel
+            settings={settings}
+            onChange={(next) => {
+              setSettings(next);
+              saveSettings(next);
+            }}
+            onClose={() => setSettingsOpen(false)}
+          />
+        )}
       </div>
 
       {/* Python loading indicator */}
       {language === 'python' && <PythonRunner loadingState={pyodide.loadingState} />}
 
       {/* Three-pane content area */}
-      <div className="flex-1 grid grid-cols-3 gap-1 p-1 min-h-0">
+      <div className="flex-1 flex min-h-0 p-1 gap-0">
         {/* Editor Pane */}
         <div
           className="flex flex-col rounded-lg overflow-hidden"
           style={{
+            width: `${paneLayout.dividers[0] * 100}%`,
             background: 'var(--pg-bg-surface-translucent)',
             backdropFilter: 'blur(8px)',
             border: '1px solid var(--pg-border)',
@@ -212,14 +268,24 @@ const PlaygroundApp: React.FC = () => {
               onChange={setCode}
               onExecute={handleRun}
               highlightLine={timeline.currentSnapshot?.line}
+              fontSize={settings.fontSize}
+              wordWrap={settings.wordWrap}
             />
           </div>
         </div>
+
+        <PaneResizer
+          position={paneLayout.dividers[0]}
+          onResize={(f) => paneLayout.setDivider(0, f)}
+          onReset={paneLayout.resetDividers}
+          aria-label="Resize editor and visualization panes"
+        />
 
         {/* Visualization / Timeline Pane */}
         <div
           className="flex flex-col rounded-lg overflow-hidden"
           style={{
+            width: `${(paneLayout.dividers[1] - paneLayout.dividers[0]) * 100}%`,
             background: 'var(--pg-bg-surface-translucent)',
             backdropFilter: 'blur(8px)',
             border: '1px solid var(--pg-border)',
@@ -258,10 +324,18 @@ const PlaygroundApp: React.FC = () => {
           </div>
         </div>
 
+        <PaneResizer
+          position={paneLayout.dividers[1]}
+          onResize={(f) => paneLayout.setDivider(1, f)}
+          onReset={paneLayout.resetDividers}
+          aria-label="Resize visualization and console panes"
+        />
+
         {/* Output Pane */}
         <div
           className="flex flex-col rounded-lg overflow-hidden"
           style={{
+            width: `${(1 - paneLayout.dividers[1]) * 100}%`,
             background: 'var(--pg-bg-surface-translucent)',
             backdropFilter: 'blur(8px)',
             border: '1px solid var(--pg-border)',

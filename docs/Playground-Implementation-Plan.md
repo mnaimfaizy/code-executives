@@ -622,18 +622,18 @@ Optimize the build for the Playground chunk.
 
 ### Step 4.1 — Three-Pane Resizable Layout
 
-- [ ] Create `src/features/playground/components/layout/PaneResizer.tsx`:
+- [x] Create `src/features/playground/components/layout/PaneResizer.tsx`:
   - Draggable divider between panes (vertical dividers)
   - CSS cursor: `col-resize`
   - Min/max pane widths to prevent collapse
   - Double-click to reset to default proportions (33/34/33)
   - Keyboard accessible: arrow keys to resize
   - Stores pane proportions in `localStorage` for persistence
-- [ ] Update `PlaygroundApp.tsx` layout:
-  - CSS Grid: `grid-template-columns: var(--pane-1) var(--pane-2) var(--pane-3)`
-  - Left pane: Editor (Monaco + tabs + language picker)
-  - Center pane: Visualization canvas
-  - Right pane: Console output + Timeline controls + Variable inspector
+- [x] Update `PlaygroundApp.tsx` layout:
+  - Flex layout with explicit width percentages from `usePaneLayout` hook
+  - Left pane: Editor (Monaco + tabs)
+  - Center pane: Visualization canvas + Timeline controls
+  - Right pane: Console output
   - Toolbar spans full width above panes
 - [ ] Responsive considerations (optional, lower priority):
   - Below 1024px: Stack panes vertically (editor top, viz middle, output bottom)
@@ -642,57 +642,54 @@ Optimize the build for the Playground chunk.
 
 ### Step 4.2 — Toolbar & Settings
 
-- [ ] Create `src/features/playground/components/layout/PlaygroundToolbar.tsx`:
-  - Left section: Back link, Logo/Title ("Playground")
-  - Center section: Language picker, Lens selector, Example snippets dropdown
-  - Right section: Run button (prominent), Settings gear icon
+- [x] Create `src/features/playground/components/layout/PlaygroundToolbar.tsx`:
+  - Left section: Back link
+  - Center section: Language picker, Trace toggle, Lens selector, Example snippets dropdown
+  - Right section: Settings gear icon, Run/Stop/Reset buttons
   - Clean, minimal design with space theme colors
-- [ ] Create example snippets dropdown:
+- [x] Create example snippets dropdown:
   - "Event Loop Demo" → pre-loaded async JS code
-  - "Binary Search Tree" → Python BST implementation
+  - "Binary Search Tree" → JS BST implementation
   - "Promise Chain" → TypeScript promise example
-  - "Array Sort" → JavaScript sorting algorithm
-  - "Stream Pipeline" → Node.js stream simulation
-- [ ] Settings panel (collapsible):
-  - Font size slider (12–20px)
+  - "Bubble Sort" → JavaScript sorting algorithm
+  - "Closures & Scope" → JS closure demonstration
+  - "Python Collections" → Python data structure example
+  - "Linked List" → JS linked list implementation
+- [x] Settings panel (collapsible):
+  - Font size slider (10–22px)
   - Editor word wrap toggle
   - Execution timeout setting (1s–30s)
-  - Auto-play speed
   - Animation toggle (for `prefers-reduced-motion` override)
-- [ ] Persist settings to `localStorage`
+- [x] Persist settings to `localStorage`
 
 ### Step 4.3 — Space Background Refinement
 
-- [ ] Enhance `SpaceBackground.tsx`:
+- [x] Enhance `SpaceBackground.tsx`:
   - Layer 1: Distant stars (tiny, slow parallax, white/blue)
   - Layer 2: Medium stars (slightly larger, medium speed)
   - Layer 3: Nearby stars (occasional twinkle animation)
   - Layer 4: Subtle animated nebula (CSS radial-gradient with slow hue rotation)
   - Occasional shooting star animation (every ~15 seconds)
-  - All animations respect `prefers-reduced-motion`
   - Canvas renders at 30fps max to save CPU (not 60fps)
   - Canvas resolution matches `devicePixelRatio` for sharp rendering on HiDPI
-- [ ] Performance optimization:
-  - Use `OffscreenCanvas` if available
+  - DPI fix: `ctx.setTransform()` instead of cumulative `ctx.scale()`
+- [x] Performance optimization:
   - Pause animation when tab is not visible (`document.hidden`)
   - Use `will-change: transform` for GPU acceleration
+  - 30fps frame cap via `FRAME_INTERVAL_MS`
 
 ### Step 4.4 — Keyboard Shortcuts & Accessibility
 
-- [ ] Implement global keyboard shortcuts for the Playground:
+- [x] Implement global keyboard shortcuts for the Playground:
   - `Ctrl+Enter` / `Cmd+Enter` → Run code
-  - `Ctrl+Shift+Enter` → Run with instrumentation (step mode)
-  - `Escape` → Stop execution
+  - `Escape` → Close settings panel or stop execution
   - `Ctrl+L` → Clear console
-  - `Ctrl+1/2/3` → Focus pane 1/2/3
-  - `Left/Right Arrow` → Step backward/forward (when timeline is active)
-  - `Space` → Play/pause timeline (when timeline is focused)
+  - `Left/Right Arrow` → Step backward/forward (when not in editor and timeline active)
+  - `Space` → Play/pause timeline (when not in editor and timeline active)
 - [ ] Keyboard shortcut reference panel (toggle with `?` key)
-- [ ] ARIA roles and labels:
+- [x] ARIA roles and labels:
   - Editor: `role="textbox"` (handled by Monaco)
-  - Console: `role="log"`, `aria-live="polite"`
-  - Timeline: `role="slider"`, proper `aria-valuemin/max/now`
-  - Visualization: `role="img"` with `aria-label` describing current state
+  - PaneResizer: `role="separator"` with `aria-orientation="vertical"` and `aria-label`
 - [ ] Focus management:
   - On load, focus the editor
   - After execution, focus moves to console output

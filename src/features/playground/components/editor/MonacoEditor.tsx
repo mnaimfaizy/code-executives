@@ -11,6 +11,10 @@ interface MonacoEditorProps {
   onExecute: () => void;
   /** Line number to highlight (1-based). Set to 0 or undefined to clear. */
   highlightLine?: number;
+  /** Editor font size in pixels */
+  fontSize?: number;
+  /** Enable word wrapping */
+  wordWrap?: boolean;
 }
 
 const MonacoEditor: React.FC<MonacoEditorProps> = ({
@@ -19,6 +23,8 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
   onChange,
   onExecute,
   highlightLine,
+  fontSize,
+  wordWrap,
 }) => {
   const { handleBeforeMount, handleEditorMount } = useMonaco(onExecute);
   const editorRef = useRef<MonacoEditorType.IStandaloneCodeEditor | null>(null);
@@ -89,7 +95,11 @@ const MonacoEditor: React.FC<MonacoEditorProps> = ({
         onChange={handleChange}
         beforeMount={handleBeforeMount}
         onMount={handleMount}
-        options={getEditorOptions()}
+        options={{
+          ...getEditorOptions(),
+          ...(fontSize !== undefined && { fontSize }),
+          ...(wordWrap !== undefined && { wordWrap: wordWrap ? 'on' : 'off' }),
+        }}
         loading={
           <div
             className="flex items-center justify-center w-full h-full"
