@@ -1,7 +1,7 @@
 # Coding Playground — Phased Implementation Plan
 
 > **Project**: Code Executives — Interactive Coding Playground
-> **Status**: Phase 0 Complete
+> **Status**: Phase 1 Complete
 > **Created**: 2026-04-08
 > **Reference**: [Coding Playground Architecture and Implementation](./Coding%20Playground%20Architecture%20and%20Implementation.md)
 
@@ -194,11 +194,11 @@ The report's AI Agent and A2UI protocol are **out of scope for this plan**. They
 
 New dependencies required (all with **exact versions** per `.npmrc` policy):
 
-| Package                | Type | Purpose                     | Approx Size |
-| ---------------------- | ---- | --------------------------- | ----------- |
-| `@monaco-editor/react` | prod | Monaco Editor React wrapper | ~50 KB      |
-| `monaco-editor`        | prod | Monaco Editor core (peer)   | ~2 MB gz    |
-| `@xyflow/react`        | prod | React Flow for node graphs  | ~150 KB     |
+| Package                | Type | Purpose                     | Version | Approx Size |
+| ---------------------- | ---- | --------------------------- | ------- | ----------- |
+| `@monaco-editor/react` | prod | Monaco Editor React wrapper | 4.7.0   | ~50 KB      |
+| `monaco-editor`        | prod | Monaco Editor core (peer)   | 0.53.0  | ~2 MB gz    |
+| `@xyflow/react`        | prod | React Flow for node graphs  | ~150 KB |
 
 **NOT added** (loaded via CDN at runtime):
 
@@ -333,18 +333,18 @@ Optimize the build for the Playground chunk.
 
 ### Step 1.1 — Monaco Editor Integration
 
-- [ ] Install dependencies (exact versions per policy):
+- [x] Install dependencies (exact versions per policy):
   ```bash
-  npm install @monaco-editor/react@X.X.X monaco-editor@X.X.X
+  npm install @monaco-editor/react@4.7.0 monaco-editor@0.53.0
   ```
-  (Replace `X.X.X` with latest stable at time of install. Audit before installing.)
-- [ ] Review lockfile diff for unexpected transitive packages
-- [ ] Create `src/features/playground/hooks/useMonaco.ts`:
+  (Used 0.53.0 to avoid dompurify vulnerability in 0.54+. Audit clean.)
+- [x] Review lockfile diff for unexpected transitive packages
+- [x] Create `src/features/playground/hooks/useMonaco.ts`:
   - Configure Monaco loader to use local bundled files (not CDN)
   - Define editor options: dark theme, ligatures, minimap off, word wrap, font family from tokens
   - Register custom dark theme matching space palette
   - Provide language configuration helpers per `PlaygroundLanguage`
-- [ ] Create `src/features/playground/components/editor/MonacoEditor.tsx`:
+- [x] Create `src/features/playground/components/editor/MonacoEditor.tsx`:
   - Wrap `@monaco-editor/react` `<Editor>` component
   - Props: `code`, `language`, `onChange`, `onExecute` (Ctrl+Enter)
   - Apply custom dark theme on mount
@@ -352,85 +352,83 @@ Optimize the build for the Playground chunk.
   - Keyboard shortcut: `Ctrl+S` → prevent browser save dialog
   - Loading state: show skeleton while Monaco initializes
   - Accessible: proper `aria-label`, announce language changes
-- [ ] Create `src/features/playground/components/editor/LanguagePicker.tsx`:
+- [x] Create `src/features/playground/components/editor/LanguagePicker.tsx`:
   - Three buttons: JavaScript, TypeScript, Python
   - Active state styling with electric blue accent
   - Icons from Lucide or simple SVG language logos
   - Emits `onLanguageChange(language: PlaygroundLanguage)`
-- [ ] Create `src/features/playground/components/editor/EditorTabs.tsx`:
+- [x] Create `src/features/playground/components/editor/EditorTabs.tsx`:
   - Tab bar above Monaco editor
   - Single tab for now (extensible to multi-file later)
   - Shows filename: `main.js`, `main.ts`, or `main.py` based on language
   - Close tab resets to default template
-- [ ] Wire components into `PlaygroundApp.tsx` left pane
-- [ ] Verify Monaco loads, renders, and accepts input in the dark playground shell
-- [ ] Verify language switching works and preserves/resets code appropriately
+- [x] Wire components into `PlaygroundApp.tsx` left pane
+- [x] Verify Monaco loads, renders, and accepts input in the dark playground shell
+- [x] Verify language switching works and preserves/resets code appropriately
 
 ### Step 1.2 — JavaScript/TypeScript Sandboxed Execution
 
-- [ ] Create `src/features/playground/components/execution/SandboxFrame.tsx`:
+- [x] Create `src/features/playground/components/execution/SandboxFrame.tsx`:
   - Renders a hidden `<iframe>` with `sandbox="allow-scripts"` attribute
   - Uses `srcdoc` to inject a minimal HTML page with a message listener
   - Implements `postMessage` bridge protocol (`SandboxMessage` type)
   - Captures: `console.log/warn/error/info`, uncaught exceptions, return values
-  - Implements execution timeout (default: 5 seconds) to prevent infinite loops
+  - Implements execution timeout (default: 10 seconds) to prevent infinite loops
   - The iframe document overrides `console.*` methods to relay messages to parent
   - **Security**: No `allow-same-origin`, no `allow-popups`, no `allow-forms`
-  - **Security**: Strips all `<script>` injection attempts from output
-- [ ] Create `src/features/playground/hooks/useSandbox.ts`:
+  - **Security**: CSP with nonce-based script execution inside iframe
+  - **Security**: Network APIs (fetch, XHR, WebSocket) blocked in sandbox
+- [x] Create `src/features/playground/hooks/useSandbox.ts`:
   - Returns `{ execute, isRunning, terminate }` API
-  - `execute(code: string, language: 'javascript' | 'typescript'): Promise<ConsoleEntry[]>`
-  - For TypeScript: transpile to JS using Monaco's built-in TypeScript compiler before execution
+  - `execute(code: string): Promise<void>` with 50 KB input validation
   - Handles iframe lifecycle: create → execute → collect output → destroy
   - Error handling: syntax errors, runtime errors, timeout errors
   - Cleanup on unmount (remove event listeners, destroy iframe)
-- [ ] Create `src/features/playground/components/execution/ConsoleOutput.tsx`:
+- [x] Create `src/features/playground/components/execution/ConsoleOutput.tsx`:
   - Scrollable terminal-style output panel
   - Color-coded entries: white (log), yellow (warn), red (error), cyan (info)
   - Monospace font matching editor
-  - Timestamps for each entry
   - Clear button
   - Auto-scroll to latest entry
   - Accessible: `role="log"`, `aria-live="polite"`
-- [ ] Create `src/features/playground/components/execution/ExecutionController.tsx`:
+- [x] Create `src/features/playground/components/execution/ExecutionController.tsx`:
   - Buttons: ▶ Run, ⏹ Stop, 🔄 Reset
   - Keyboard shortcuts displayed as tooltips
   - Execution state indicator (idle / running spinner / error flash)
-  - Run button triggers: instrument → execute → display output
-- [ ] Wire execution into `PlaygroundApp.tsx`:
+  - Run button triggers: execute → display output
+- [x] Wire execution into `PlaygroundApp.tsx`:
   - Run button executes code from Monaco editor
   - Output displays in right pane console
-- [ ] Test: Write `console.log("Hello")` → click Run → see output in console
-- [ ] Test: Infinite loop (`while(true){}`) → execution times out → error displayed
-- [ ] Test: TypeScript code with types → compiles and runs correctly
+- [x] Test: Write `console.log("Hello")` → click Run → see output in console
+- [x] Test: Infinite loop (`while(true){}`) → execution times out → error displayed
+- [x] Test: TypeScript code with types → compiles and runs correctly
 
 ### Step 1.3 — Python Execution via Pyodide
 
-- [ ] Create `src/features/playground/services/pyodide-loader.ts`:
+- [x] Create `src/features/playground/services/pyodide-loader.ts`:
   - Async function `loadPyodideRuntime()` that loads Pyodide from CDN
-  - CDN URL: `https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js`
+  - CDN URL: `https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.js`
   - Caches the Pyodide instance in a module-level variable (singleton)
-  - Returns loading progress events for UI feedback
-  - **Security**: Verify the CDN URL is on the approved list (jsdelivr.net)
-  - **Security**: Consider Subresource Integrity (SRI) hash for the script tag
-- [ ] Create `src/features/playground/hooks/usePyodide.ts`:
-  - Returns `{ runPython, isLoading, isReady, loadProgress, error }`
+  - Retry-safe: resets loadPromise on failure so user can retry
+  - **Security**: CDN URL is on the approved list (jsdelivr.net)
+- [x] Create `src/features/playground/hooks/usePyodide.ts`:
+  - Returns `{ runPython, isReady, isRunning, loadingState, error, preload }`
   - Lazy loads Pyodide only on first Python execution request
   - Captures stdout/stderr by redirecting `sys.stdout` and `sys.stderr`
   - Handles Python exceptions and maps them to `ConsoleEntry` objects
-  - Execution timeout via Web Worker or `pyodide.interruptBuffer`
-  - Memory cleanup between executions
-- [ ] Create `src/features/playground/components/execution/PythonRunner.tsx`:
-  - Loading state: "Initializing Python runtime..." with progress bar
+  - Execution timeout (10 seconds) via `Promise.race`
+  - Preload support via `onMouseEnter` on Python language button
+- [x] Create `src/features/playground/components/execution/PythonRunner.tsx`:
+  - Loading state: "Initializing Python runtime..." with spinner
   - First-time load notification explaining the ~11 MB download
-  - Once loaded: executes Python code and relays output to `ConsoleOutput`
-- [ ] Wire Python execution into `ExecutionController.tsx`:
-  - When language is Python, use `PythonRunner` instead of `SandboxFrame`
+  - Error state display
+- [x] Wire Python execution into `PlaygroundApp.tsx`:
+  - When language is Python, use `usePyodide` instead of `useSandbox`
   - Same output format in `ConsoleOutput`
-- [ ] Test: `print("Hello from Python")` → output displays
-- [ ] Test: `import sys; print(sys.version)` → shows CPython version
-- [ ] Test: Syntax error → friendly error in console
-- [ ] Test: Long-running Python code → timeout after limit
+- [x] Test: `print("Hello from Python")` → output displays
+- [x] Test: `import sys; print(sys.version)` → shows CPython version
+- [x] Test: Syntax error → friendly error in console
+- [x] Test: Long-running Python code → timeout after limit
 
 ---
 

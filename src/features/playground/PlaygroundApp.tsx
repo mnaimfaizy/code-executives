@@ -1,9 +1,94 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import PlaygroundLayout from './components/layout/PlaygroundLayout';
 import BackToSiteLink from './components/layout/BackToSiteLink';
+import MonacoEditor from './components/editor/MonacoEditor';
+import EditorTabs from './components/editor/EditorTabs';
+import LanguagePicker from './components/editor/LanguagePicker';
+import SandboxFrame from './components/execution/SandboxFrame';
+import ConsoleOutput from './components/execution/ConsoleOutput';
+import ExecutionController from './components/execution/ExecutionController';
+import PythonRunner from './components/execution/PythonRunner';
+import { usePlaygroundState } from './hooks/usePlaygroundState';
+import { useSandbox } from './hooks/useSandbox';
+import { usePyodide } from './hooks/usePyodide';
 import './components/theme/playground-theme.css';
 
 const PlaygroundApp: React.FC = () => {
+  const { language, code, executionState, setLanguage, setCode, setExecutionState, resetCode } =
+    usePlaygroundState();
+
+  const sandbox = useSandbox();
+  const pyodide = usePyodide();
+
+  // Determine which console entries to show based on language
+  const consoleEntries = language === 'python' ? pyodide.entries : sandbox.entries;
+  const isRunning = language === 'python' ? pyodide.isRunning : sandbox.isRunning;
+
+  // Sync execution state
+  useEffect(() => {
+    if (isRunning) {
+      setExecutionState('running');
+    }
+  }, [isRunning, setExecutionState]);
+
+  const handleRun = useCallback((): void => {
+    setExecutionState('running');
+
+    if (language === 'python') {
+      pyodide.runPython(code).then(() => {
+        setExecutionState(pyodide.error ? 'error' : 'completed');
+      });
+    } else {
+      // For TypeScript, we'd ideally transpile first, but Monaco's built-in TS
+      // compiler can handle this in a future enhancement. For now, run as JS.
+      sandbox.execute(code).then(() => {
+        setExecutionState(sandbox.error ? 'error' : 'completed');
+      });
+    }
+  }, [language, code, sandbox, pyodide, setExecutionState]);
+
+  const handleStop = useCallback((): void => {
+    if (language === 'python') {
+      // Pyodide doesn't support easy termination; mark as error
+      setExecutionState('error');
+    } else {
+      sandbox.terminate();
+      setExecutionState('idle');
+    }
+  }, [language, sandbox, setExecutionState]);
+
+  const handleReset = useCallback((): void => {
+    resetCode();
+    sandbox.clearEntries();
+    pyodide.clearEntries();
+  }, [resetCode, sandbox, pyodide]);
+
+  const handleClearConsole = useCallback((): void => {
+    if (language === 'python') {
+      pyodide.clearEntries();
+    } else {
+      sandbox.clearEntries();
+    }
+  }, [language, sandbox, pyodide]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      // Escape → stop execution
+      if (e.key === 'Escape' && executionState === 'running') {
+        handleStop();
+      }
+      // Ctrl+L → clear console
+      if (e.key === 'l' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        handleClearConsole();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [executionState, handleStop, handleClearConsole]);
+
   return (
     <PlaygroundLayout>
       {/* Top toolbar area */}
@@ -26,36 +111,50 @@ const PlaygroundApp: React.FC = () => {
             Playground
           </span>
         </div>
+
+        {/* Separator */}
+        <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
+
+        {/* Language picker */}
+        <LanguagePicker language={language} onLanguageChange={setLanguage} />
+
         <div className="flex-1" />
-        {/* Toolbar controls will go here in Phase 1 */}
+
+        {/* Execution controls */}
+        <ExecutionController
+          executionState={executionState}
+          onRun={handleRun}
+          onStop={handleStop}
+          onReset={handleReset}
+        />
       </div>
 
-      {/* Three-pane content area (placeholders) */}
+      {/* Python loading indicator */}
+      {language === 'python' && <PythonRunner loadingState={pyodide.loadingState} />}
+
+      {/* Three-pane content area */}
       <div className="flex-1 grid grid-cols-3 gap-1 p-1 min-h-0">
         {/* Editor Pane */}
         <div
-          className="flex flex-col items-center justify-center rounded-lg"
+          className="flex flex-col rounded-lg overflow-hidden"
           style={{
             background: 'var(--pg-bg-surface-translucent)',
             backdropFilter: 'blur(8px)',
             border: '1px solid var(--pg-border)',
           }}
         >
-          <span
-            className="text-sm font-medium"
-            style={{
-              color: 'var(--pg-text-muted)',
-              fontFamily: 'var(--pg-font-mono)',
-            }}
-          >
-            Editor
-          </span>
-          <span className="text-xs mt-1" style={{ color: 'var(--pg-text-muted)' }}>
-            Monaco Editor — Phase 1
-          </span>
+          <EditorTabs language={language} onReset={resetCode} />
+          <div className="flex-1 min-h-0">
+            <MonacoEditor
+              code={code}
+              language={language}
+              onChange={setCode}
+              onExecute={handleRun}
+            />
+          </div>
         </div>
 
-        {/* Visualization Pane */}
+        {/* Visualization Pane (placeholder until Phase 3) */}
         <div
           className="flex flex-col items-center justify-center rounded-lg"
           style={{
@@ -80,27 +179,19 @@ const PlaygroundApp: React.FC = () => {
 
         {/* Output Pane */}
         <div
-          className="flex flex-col items-center justify-center rounded-lg"
+          className="flex flex-col rounded-lg overflow-hidden"
           style={{
             background: 'var(--pg-bg-surface-translucent)',
             backdropFilter: 'blur(8px)',
             border: '1px solid var(--pg-border)',
           }}
         >
-          <span
-            className="text-sm font-medium"
-            style={{
-              color: 'var(--pg-text-muted)',
-              fontFamily: 'var(--pg-font-mono)',
-            }}
-          >
-            Output
-          </span>
-          <span className="text-xs mt-1" style={{ color: 'var(--pg-text-muted)' }}>
-            Console & Timeline — Phase 1
-          </span>
+          <ConsoleOutput entries={consoleEntries} onClear={handleClearConsole} />
         </div>
       </div>
+
+      {/* Hidden sandbox iframe for JS/TS execution */}
+      <SandboxFrame ref={sandbox.sandboxRef} />
     </PlaygroundLayout>
   );
 };
