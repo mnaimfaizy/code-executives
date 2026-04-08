@@ -271,4 +271,4 @@ const HeapStackLens: React.FC<HeapStackLensProps> = ({ currentSnapshot }) => {
   );
 };
 
-export default HeapStackLens;
+export default React.memo(HeapStackLens);

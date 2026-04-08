@@ -118,4 +118,4 @@ function AnimatedNode({ data }: { data: AnimatedNodeData }): React.ReactElement 
   );
 }
 
-export default AnimatedNode;
+export default React.memo(AnimatedNode);

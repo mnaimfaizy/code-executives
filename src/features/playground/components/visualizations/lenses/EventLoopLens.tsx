@@ -221,4 +221,4 @@ const EventLoopLens: React.FC<EventLoopLensProps> = ({ currentSnapshot }) => {
   );
 };
 
-export default EventLoopLens;
+export default React.memo(EventLoopLens);

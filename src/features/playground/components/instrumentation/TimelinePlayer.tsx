@@ -8,7 +8,7 @@
  * - Home/End: first/last step
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import {
   SkipBack,
   ChevronLeft,
@@ -75,45 +75,9 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
 }) => {
   const diff = currentSnapshot ? diffSnapshots(previousSnapshot, currentSnapshot) : null;
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      // Ignore if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          e.preventDefault();
-          onPrevStep();
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          onNextStep();
-          break;
-        case ' ':
-          e.preventDefault();
-          if (isPlaying) {
-            onPause();
-          } else {
-            onPlay();
-          }
-          break;
-        case 'Home':
-          e.preventDefault();
-          onFirstStep();
-          break;
-        case 'End':
-          e.preventDefault();
-          onLastStep();
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isPlaying, onNextStep, onPrevStep, onPlay, onPause, onFirstStep, onLastStep]);
+  // Keyboard shortcuts (Arrow, Space, Home, End) are handled globally
+  // by PlaygroundApp to avoid duplicate listeners that conflict with
+  // Monaco editor input.
 
   const handleSliderChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>): void => {

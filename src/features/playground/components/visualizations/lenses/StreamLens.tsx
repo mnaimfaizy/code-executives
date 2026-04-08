@@ -358,4 +358,4 @@ const StreamLens: React.FC<StreamLensProps> = ({ currentSnapshot }) => {
   );
 };
 
-export default StreamLens;
+export default React.memo(StreamLens);

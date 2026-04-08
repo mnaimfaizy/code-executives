@@ -10,12 +10,16 @@ import {
   wrapPythonCodeWithTrace,
   parsePythonSnapshots,
 } from '../instrumentation/PythonInstrumenter';
+import { isTextContent, enforceEntryLimit, MAX_CONSOLE_ENTRIES } from '../utils/sanitize';
 
 /** Maximum allowed code length (50 KB) */
 const MAX_CODE_LENGTH = 50 * 1024;
 
 /** Default Python execution timeout (10 seconds) */
 const PYTHON_TIMEOUT_MS = 10_000;
+
+/** Minimum interval between executions (ms) — rate limit */
+const MIN_EXECUTION_INTERVAL_MS = 1_000;
 
 /** Result returned directly from run functions for immediate use by the caller */
 export interface PyodideExecuteResult {
@@ -61,6 +65,7 @@ export function usePyodide(): UsePyodideReturn {
   const [error, setError] = useState<string | null>(null);
   const instanceRef = useRef<PyodideInstance | null>(null);
   const [snapshots, setSnapshots] = useState<StateSnapshot[]>([]);
+  const lastExecutionRef = useRef<number>(0);
 
   const clearEntries = useCallback((): void => {
     setEntries([]);
@@ -97,21 +102,39 @@ export function usePyodide(): UsePyodideReturn {
 
   const runPython = useCallback(
     async (code: string): Promise<PyodideExecuteResult> => {
-      // Input validation
+      // Input validation: max code length
       if (code.length > MAX_CODE_LENGTH) {
         const msg = `Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`;
         setError(msg);
-        setEntries((prev) => [
-          ...prev,
-          {
-            id: `${Date.now()}-validation`,
-            type: 'error' as ConsoleEntryType,
-            args: [msg],
-            timestamp: Date.now(),
-          },
-        ]);
+        setEntries((prev) =>
+          enforceEntryLimit([
+            ...prev,
+            {
+              id: `${Date.now()}-validation`,
+              type: 'error' as ConsoleEntryType,
+              args: [msg],
+              timestamp: Date.now(),
+            },
+          ])
+        );
         return { error: msg, snapshots: [] };
       }
+
+      // Input validation: reject binary content
+      if (!isTextContent(code)) {
+        const msg = 'Code contains binary content and cannot be executed';
+        setError(msg);
+        return { error: msg, snapshots: [] };
+      }
+
+      // Rate limiting: max 1 execution per second
+      const now = Date.now();
+      if (now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS) {
+        const msg = 'Please wait before running again';
+        setError(msg);
+        return { error: msg, snapshots: [] };
+      }
+      lastExecutionRef.current = now;
 
       setIsRunning(true);
       setError(null);
@@ -124,25 +147,52 @@ export function usePyodide(): UsePyodideReturn {
         // Redirect stdout/stderr to capture console output
         pyodide.setStdout({
           batched: (msg: string) => {
-            newEntries.push({
-              id: `${Date.now()}-${newEntries.length}`,
-              type: 'log',
-              args: [msg],
-              timestamp: Date.now(),
-            });
+            if (newEntries.length < MAX_CONSOLE_ENTRIES) {
+              newEntries.push({
+                id: `${Date.now()}-${newEntries.length}`,
+                type: 'log',
+                args: [msg],
+                timestamp: Date.now(),
+              });
+            }
           },
         });
 
         pyodide.setStderr({
           batched: (msg: string) => {
-            newEntries.push({
-              id: `${Date.now()}-${newEntries.length}`,
-              type: 'error',
-              args: [msg],
-              timestamp: Date.now(),
-            });
+            if (newEntries.length < MAX_CONSOLE_ENTRIES) {
+              newEntries.push({
+                id: `${Date.now()}-${newEntries.length}`,
+                type: 'error',
+                args: [msg],
+                timestamp: Date.now(),
+              });
+            }
           },
         });
+
+        // Security preamble: block dangerous Python modules and network access
+        const securityPreamble = `
+import sys
+
+# Block network-related modules
+class _BlockedModule:
+    def __getattr__(self, name):
+        raise ImportError("Network access is blocked in the sandbox for security")
+
+for _mod_name in ('urllib', 'urllib.request', 'http', 'http.client', 'socket', 'requests', 'httpx', 'aiohttp'):
+    sys.modules[_mod_name] = _BlockedModule()
+
+# Block os.system, subprocess, and other dangerous functions
+import os as _os
+_os.system = lambda *a, **kw: (_ for _ in ()).throw(PermissionError("os.system is blocked in the sandbox"))
+_os.popen = lambda *a, **kw: (_ for _ in ()).throw(PermissionError("os.popen is blocked in the sandbox"))
+sys.modules['subprocess'] = _BlockedModule()
+del _mod_name, _BlockedModule
+`;
+
+        // Execute security preamble first, then user code
+        await pyodide.runPythonAsync(securityPreamble);
 
         // Execute with timeout
         const timeoutPromise = new Promise<never>((_, reject) => {
@@ -157,20 +207,22 @@ export function usePyodide(): UsePyodideReturn {
 
         await Promise.race([pyodide.runPythonAsync(code), timeoutPromise]);
 
-        setEntries((prev) => [...prev, ...newEntries]);
+        setEntries((prev) => enforceEntryLimit([...prev, ...newEntries]));
         return { error: null, snapshots: [] };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown Python execution error';
         setError(message);
-        setEntries((prev) => [
-          ...prev,
-          {
-            id: `${Date.now()}-error`,
-            type: 'error',
-            args: [message],
-            timestamp: Date.now(),
-          },
-        ]);
+        setEntries((prev) =>
+          enforceEntryLimit([
+            ...prev,
+            {
+              id: `${Date.now()}-error`,
+              type: 'error',
+              args: [message],
+              timestamp: Date.now(),
+            },
+          ])
+        );
         return { error: message, snapshots: [] };
       } finally {
         setIsRunning(false);
@@ -181,12 +233,28 @@ export function usePyodide(): UsePyodideReturn {
 
   const runPythonInstrumented = useCallback(
     async (code: string): Promise<PyodideExecuteResult> => {
-      // Input validation
+      // Input validation: max code length
       if (code.length > MAX_CODE_LENGTH) {
         const msg = `Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`;
         setError(msg);
         return { error: msg, snapshots: [] };
       }
+
+      // Input validation: reject binary content
+      if (!isTextContent(code)) {
+        const msg = 'Code contains binary content and cannot be executed';
+        setError(msg);
+        return { error: msg, snapshots: [] };
+      }
+
+      // Rate limiting: max 1 execution per second
+      const now = Date.now();
+      if (now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS) {
+        const msg = 'Please wait before running again';
+        setError(msg);
+        return { error: msg, snapshots: [] };
+      }
+      lastExecutionRef.current = now;
 
       setIsRunning(true);
       setError(null);
@@ -199,25 +267,49 @@ export function usePyodide(): UsePyodideReturn {
 
         pyodide.setStdout({
           batched: (msg: string) => {
-            newEntries.push({
-              id: `${Date.now()}-${newEntries.length}`,
-              type: 'log',
-              args: [msg],
-              timestamp: Date.now(),
-            });
+            if (newEntries.length < MAX_CONSOLE_ENTRIES) {
+              newEntries.push({
+                id: `${Date.now()}-${newEntries.length}`,
+                type: 'log',
+                args: [msg],
+                timestamp: Date.now(),
+              });
+            }
           },
         });
 
         pyodide.setStderr({
           batched: (msg: string) => {
-            newEntries.push({
-              id: `${Date.now()}-${newEntries.length}`,
-              type: 'error',
-              args: [msg],
-              timestamp: Date.now(),
-            });
+            if (newEntries.length < MAX_CONSOLE_ENTRIES) {
+              newEntries.push({
+                id: `${Date.now()}-${newEntries.length}`,
+                type: 'error',
+                args: [msg],
+                timestamp: Date.now(),
+              });
+            }
           },
         });
+
+        // Security preamble: block dangerous Python modules and network access
+        const securityPreamble = `
+import sys
+
+class _BlockedModule:
+    def __getattr__(self, name):
+        raise ImportError("Network access is blocked in the sandbox for security")
+
+for _mod_name in ('urllib', 'urllib.request', 'http', 'http.client', 'socket', 'requests', 'httpx', 'aiohttp'):
+    sys.modules[_mod_name] = _BlockedModule()
+
+import os as _os
+_os.system = lambda *a, **kw: (_ for _ in ()).throw(PermissionError("os.system is blocked in the sandbox"))
+_os.popen = lambda *a, **kw: (_ for _ in ()).throw(PermissionError("os.popen is blocked in the sandbox"))
+sys.modules['subprocess'] = _BlockedModule()
+del _mod_name, _BlockedModule
+`;
+
+        await pyodide.runPythonAsync(securityPreamble);
 
         const instrumentedCode = wrapPythonCodeWithTrace(code);
 
@@ -241,20 +333,22 @@ export function usePyodide(): UsePyodideReturn {
           setSnapshots(resultSnapshots);
         }
 
-        setEntries((prev) => [...prev, ...newEntries]);
+        setEntries((prev) => enforceEntryLimit([...prev, ...newEntries]));
         return { error: null, snapshots: resultSnapshots };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown Python execution error';
         setError(message);
-        setEntries((prev) => [
-          ...prev,
-          {
-            id: `${Date.now()}-error`,
-            type: 'error',
-            args: [message],
-            timestamp: Date.now(),
-          },
-        ]);
+        setEntries((prev) =>
+          enforceEntryLimit([
+            ...prev,
+            {
+              id: `${Date.now()}-error`,
+              type: 'error',
+              args: [message],
+              timestamp: Date.now(),
+            },
+          ])
+        );
         return { error: message, snapshots: [] };
       } finally {
         setIsRunning(false);

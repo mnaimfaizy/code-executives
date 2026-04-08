@@ -285,15 +285,28 @@ function buildGraph(
   return { nodes: allNodes, edges: allEdges };
 }
 
+/** Maximum total rendered nodes for performance (applies across all structures) */
+const MAX_TOTAL_NODES = 200;
+
 /* ── Main Component ── */
 const DataStructureLens: React.FC<DataStructureLensProps> = ({
   currentSnapshot,
   previousSnapshot,
 }) => {
-  const { nodes, edges } = useMemo(
-    () => buildGraph(currentSnapshot, previousSnapshot),
-    [currentSnapshot, previousSnapshot]
-  );
+  const { nodes, edges } = useMemo(() => {
+    const graph = buildGraph(currentSnapshot, previousSnapshot);
+    // Cap total nodes for performance
+    if (graph.nodes.length > MAX_TOTAL_NODES) {
+      const cappedNodeIds = new Set(graph.nodes.slice(0, MAX_TOTAL_NODES).map((n) => n.id));
+      return {
+        nodes: graph.nodes.slice(0, MAX_TOTAL_NODES),
+        edges: graph.edges.filter(
+          (e) => cappedNodeIds.has(e.source) && cappedNodeIds.has(e.target)
+        ),
+      };
+    }
+    return graph;
+  }, [currentSnapshot, previousSnapshot]);
 
   if (nodes.length === 0) {
     return (
@@ -333,4 +346,4 @@ const DataStructureLens: React.FC<DataStructureLensProps> = ({
   );
 };
 
-export default DataStructureLens;
+export default React.memo(DataStructureLens);

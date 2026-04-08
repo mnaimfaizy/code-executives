@@ -176,12 +176,16 @@ const PlaygroundApp: React.FC = () => {
         handleClearConsole();
         return;
       }
-      // Left/Right arrow → timeline stepping (when not in editor)
+      // Left/Right arrow, Space → timeline stepping (when not in editor or any interactive element)
       const activeEl = document.activeElement;
+      const target = e.target instanceof HTMLElement ? e.target : null;
       const inEditor =
         activeEl?.closest('.monaco-editor') !== null ||
+        target?.closest('.monaco-editor') !== null ||
         activeEl?.tagName === 'TEXTAREA' ||
-        activeEl?.tagName === 'INPUT';
+        activeEl?.tagName === 'INPUT' ||
+        activeEl?.getAttribute('role') === 'textbox' ||
+        activeEl?.getAttribute('contenteditable') === 'true';
       if (!inEditor && timeline.totalSteps > 0) {
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
@@ -203,6 +207,17 @@ const PlaygroundApp: React.FC = () => {
           }
           return;
         }
+        // Home/End → first/last step
+        if (e.key === 'Home') {
+          e.preventDefault();
+          timeline.firstStep();
+          return;
+        }
+        if (e.key === 'End') {
+          e.preventDefault();
+          timeline.lastStep();
+          return;
+        }
       }
       // ? → toggle keyboard shortcut reference (only when not in editor)
       if (e.key === '?' && !inEditor) {
@@ -217,7 +232,7 @@ const PlaygroundApp: React.FC = () => {
   return (
     <PlaygroundLayout>
       {/* Top toolbar */}
-      <div className="relative shrink-0" ref={settingsContainerRef}>
+      <div className="relative shrink-0 z-20" ref={settingsContainerRef}>
         <PlaygroundToolbar
           language={language}
           onLanguageChange={setLanguage}

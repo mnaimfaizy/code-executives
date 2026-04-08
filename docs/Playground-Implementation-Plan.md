@@ -1,7 +1,7 @@
 # Coding Playground — Phased Implementation Plan
 
 > **Project**: Code Executives — Interactive Coding Playground
-> **Status**: Phase 3 Complete
+> **Status**: Phase 5 Complete
 > **Created**: 2026-04-08
 > **Reference**: [Coding Playground Architecture and Implementation](./Coding%20Playground%20Architecture%20and%20Implementation.md)
 
@@ -705,32 +705,32 @@ Optimize the build for the Playground chunk.
 
 ### Step 5.1 — Sandbox Security Hardening
 
-- [ ] Review and finalize `SandboxFrame.tsx` security:
+- [x] Review and finalize `SandboxFrame.tsx` security:
   - `sandbox="allow-scripts"` only — NO `allow-same-origin`, `allow-popups`, `allow-forms`, `allow-top-navigation`
   - Iframe `srcdoc` does not include any external script references
   - User code is string-passed via `postMessage`, never injected into `srcdoc` HTML
   - Implement nonce-based script execution inside the iframe
-- [ ] Add Content Security Policy meta tag inside the iframe's `srcdoc`:
+- [x] Add Content Security Policy meta tag inside the iframe's `srcdoc`:
   ```html
   <meta
     http-equiv="Content-Security-Policy"
     content="default-src 'none'; script-src 'nonce-{RANDOM}'; connect-src 'none'; img-src 'none'; style-src 'none';"
   />
   ```
-- [ ] Create `src/features/playground/utils/sanitize.ts`:
+- [x] Create `src/features/playground/utils/sanitize.ts`:
   - `sanitizeOutput(value: unknown): string` — safely stringify any value for display
   - Prevents prototype pollution in displayed objects
   - HTML-encodes output to prevent XSS in console display
   - Limits output string length (max 10 KB per entry, max 500 entries)
-- [ ] Network restriction: Ensure iframe cannot make fetch/XHR requests:
+- [x] Network restriction: Ensure iframe cannot make fetch/XHR requests:
   - CSP `connect-src 'none'` blocks all network access
   - Override `fetch` and `XMLHttpRequest` in iframe to throw clear errors
-- [ ] Pyodide security:
+- [x] Pyodide security:
   - Disable network access: override `urllib`, `requests` imports
   - Limit execution time with `pyodide.interruptBuffer`
   - Limit memory: monitor Pyodide heap size
   - Prevent filesystem access: Pyodide's virtual filesystem is acceptable (isolated)
-- [ ] Input validation:
+- [x] Input validation:
   - Maximum code length: 50 KB
   - Reject binary content
   - Rate-limit execution (max 1 run per second)
@@ -741,23 +741,23 @@ Optimize the build for the Playground chunk.
 
 ### Step 5.2 — Performance Optimization
 
-- [ ] Monaco Editor optimization:
+- [x] Monaco Editor optimization:
   - Lazy load Monaco only when Playground route is active (already handled by lazy routing)
   - Configure Monaco to load only required language workers (JS/TS/Python)
   - Disable unused Monaco features (code actions, quick suggestions in basic mode)
-- [ ] Pyodide optimization:
+- [x] Pyodide optimization:
   - Show loading progress with remaining bytes/percentage
   - Cache Pyodide in the browser using Service Worker (optional, advanced)
   - Pre-load Pyodide when user hovers over the Python language button (`onMouseEnter`)
-- [ ] React Flow optimization:
+- [x] React Flow optimization:
   - Virtualization is built-in — ensure it's not disabled
   - Limit max rendered nodes (cap at 200 for performance)
   - Use `React.memo` on custom node components
-- [ ] Space background optimization:
+- [x] Space background optimization:
   - Canvas rendering capped at 30fps
   - Pause when Playground tab is not focused
   - Reduce star count on lower-powered devices (check `navigator.hardwareConcurrency`)
-- [ ] Bundle optimization:
+- [x] Bundle optimization:
   - Verify playground chunk is separate from main app chunks
   - Monaco chunk should be ~2 MB (acceptable for an IDE feature)
   - React Flow chunk should be ~150 KB

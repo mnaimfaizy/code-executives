@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import type { ConsoleEntry } from '../../types';
+import { escapeHtml } from '../../utils/sanitize';
 
 interface ConsoleOutputProps {
   entries: ConsoleEntry[];
@@ -91,7 +92,7 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear }) => {
                 {TYPE_PREFIXES[entry.type]}
               </span>
               <pre className="whitespace-pre-wrap break-all flex-1 m-0">
-                {entry.args.map(String).join(' ')}
+                {entry.args.map((arg) => escapeHtml(String(arg))).join(' ')}
               </pre>
             </div>
           ))

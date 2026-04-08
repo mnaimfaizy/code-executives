@@ -1,9 +1,26 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 
-/** Number of stars per layer */
-const STAR_COUNTS = [180, 120, 60] as const;
+/** Base star counts per layer (adjusted based on device capability) */
+const BASE_STAR_COUNTS = [180, 120, 60] as const;
 /** Speed multipliers for parallax layers (slower → faster) */
 const LAYER_SPEEDS = [0.08, 0.15, 0.25] as const;
+
+/**
+ * Get star counts adjusted for device capability.
+ * Low-powered devices (≤ 4 cores) render fewer stars to save CPU.
+ */
+function getStarCounts(): readonly number[] {
+  const cores = navigator.hardwareConcurrency ?? 4;
+  if (cores <= 2) {
+    // Very low-powered: halve star counts
+    return BASE_STAR_COUNTS.map((c) => Math.round(c * 0.4));
+  }
+  if (cores <= 4) {
+    // Moderate: reduce by 30%
+    return BASE_STAR_COUNTS.map((c) => Math.round(c * 0.7));
+  }
+  return BASE_STAR_COUNTS;
+}
 /** Star size ranges per layer [min, max] */
 const STAR_SIZES: readonly [number, number][] = [
   [0.5, 1.2],
@@ -44,7 +61,8 @@ interface ShootingStar {
 }
 
 function createStars(width: number, height: number): Star[][] {
-  return STAR_COUNTS.map((count, layerIndex) => {
+  const starCounts = getStarCounts();
+  return starCounts.map((count, layerIndex) => {
     const [minSize, maxSize] = STAR_SIZES[layerIndex];
     const [minOpacity, maxOpacity] = STAR_OPACITIES[layerIndex];
     const speed = LAYER_SPEEDS[layerIndex];

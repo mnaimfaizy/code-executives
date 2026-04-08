@@ -88,6 +88,17 @@ export function getEditorOptions(): editor.IStandaloneEditorConstructionOptions 
     formatOnType: true,
     'semanticHighlighting.enabled': true,
     accessibilitySupport: 'auto',
+    // Performance optimizations — disable heavy features not needed for playground
+    codeLens: false,
+    colorDecorators: false,
+    inlayHints: { enabled: 'off' },
+    lightbulb: { enabled: 'off' as unknown as editor.ShowLightbulbIconMode },
+    hover: { above: false },
+    links: false,
+    renderWhitespace: 'none',
+    occurrencesHighlight: 'off',
+    selectionHighlight: false,
+    matchBrackets: 'near',
   };
 }
 

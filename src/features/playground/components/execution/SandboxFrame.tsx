@@ -37,11 +37,29 @@ function createSandboxHTML(nonce: string): string {
 (function() {
   'use strict';
 
-  // Block network APIs
-  window.fetch = undefined;
-  window.XMLHttpRequest = undefined;
-  window.WebSocket = undefined;
-  window.EventSource = undefined;
+  // Block network APIs with helpful error messages
+  function blockedNetwork(name) {
+    return function() {
+      throw new Error(name + ' is blocked in the sandbox for security. Network access is not allowed.');
+    };
+  }
+  Object.defineProperty(window, 'fetch', { get: blockedNetwork('fetch'), configurable: false });
+  Object.defineProperty(window, 'XMLHttpRequest', { get: blockedNetwork('XMLHttpRequest'), configurable: false });
+  Object.defineProperty(window, 'WebSocket', { get: blockedNetwork('WebSocket'), configurable: false });
+  Object.defineProperty(window, 'EventSource', { get: blockedNetwork('EventSource'), configurable: false });
+
+  // Block additional dangerous APIs
+  Object.defineProperty(window, 'importScripts', { get: blockedNetwork('importScripts'), configurable: false });
+  window.open = blockedNetwork('window.open');
+  navigator.sendBeacon = blockedNetwork('navigator.sendBeacon');
+
+  // Capture real parent reference for postMessage before we lock it down
+  var _hostWindow = window.parent;
+
+  // Block access to parent/opener (defense-in-depth beyond sandbox attr)
+  try { Object.defineProperty(window, 'parent', { get: function() { return window; }, configurable: false }); } catch(e) {}
+  try { Object.defineProperty(window, 'top', { get: function() { return window; }, configurable: false }); } catch(e) {}
+  try { Object.defineProperty(window, 'opener', { get: function() { return null; }, configurable: false }); } catch(e) {}
 
   var entries = [];
   var MAX_ENTRIES = 500;
@@ -100,7 +118,7 @@ function createSandboxHTML(nonce: string): string {
       var timedOut = false;
       timeoutId = setTimeout(function() {
         timedOut = true;
-        parent.postMessage({
+        _hostWindow.postMessage({
           type: 'error',
           error: 'Execution timed out (exceeded ' + (msg.timeout / 1000) + 's limit)',
           entries: entries
@@ -128,7 +146,7 @@ function createSandboxHTML(nonce: string): string {
               totalSteps = __tracker__.getStepCount();
             } catch(e) { /* tracker may not be available */ }
           }
-          parent.postMessage({
+          _hostWindow.postMessage({
             type: 'result',
             entries: entries,
             snapshots: snapshots,
@@ -144,7 +162,7 @@ function createSandboxHTML(nonce: string): string {
         : undefined;
 
       entries.push({ type: 'error', args: [errorMsg] });
-      parent.postMessage({
+      _hostWindow.postMessage({
         type: 'error',
         error: errorMsg,
         line: errorLine,
@@ -153,7 +171,7 @@ function createSandboxHTML(nonce: string): string {
     }
   });
 
-  parent.postMessage({ type: 'ready' }, '*');
+  _hostWindow.postMessage({ type: 'ready' }, '*');
 })();
 </script>
 </body>
