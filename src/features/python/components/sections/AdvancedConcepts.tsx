@@ -1,4 +1,4 @@
-import React, { Suspense, useState, useRef, useEffect } from 'react';
+import React from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
@@ -11,170 +11,9 @@ import GILVisualization from '../visualizations/2d/GILVisualization';
 import GeneratorVisualization from '../visualizations/2d/GeneratorVisualization';
 import DecoratorVisualization from '../visualizations/2d/DecoratorVisualization';
 
-// Lazy load heavy 3D visualizations
-const PythonVM3D = React.lazy(() => import('../../../../components/models3d/python/PythonVM3D'));
-const MemoryProfiler3D = React.lazy(
-  () => import('../../../../components/models3d/python/MemoryProfiler3D')
-);
-const CallGraph3D = React.lazy(() => import('../../../../components/models3d/python/CallGraph3D'));
-
-// Error boundary for 3D visualizations
-class VisualizationErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('3D Visualization Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-
-// Progressive loading hook
-const useProgressiveLoading = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    );
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  return { ref, isVisible };
-};
-
-// Enhanced loading component
-const LoadingFallback: React.FC<{ color: string; message?: string }> = ({
-  color,
-  message = 'Loading 3D Visualization...',
-}) => (
-  <div className="w-full h-96 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200">
-    <div className="text-center">
-      <div
-        className={`animate-spin rounded-full h-12 w-12 border-b-2 border-${color}-600 mx-auto mb-4`}
-      ></div>
-      <p className="text-gray-600 font-medium">{message}</p>
-      <p className="text-sm text-gray-500 mt-2">This may take a moment on slower connections</p>
-    </div>
-  </div>
-);
-
-// Error fallback component
-const ErrorFallback: React.FC<{ onRetry: () => void }> = ({ onRetry }) => (
-  <div className="w-full h-96 bg-red-50 rounded-lg flex items-center justify-center border border-red-200">
-    <div className="text-center">
-      <div className="text-red-500 mb-4">
-        <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-          />
-        </svg>
-      </div>
-      <h3 className="text-lg font-semibold text-red-800 mb-2">Visualization Failed to Load</h3>
-      <p className="text-red-600 mb-4">
-        This might be due to browser compatibility or network issues.
-      </p>
-      <button
-        onClick={onRetry}
-        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-      >
-        Try Again
-      </button>
-    </div>
-  </div>
-);
-
-// Progressive 3D component wrapper
-const Progressive3DVisualization: React.FC<{
-  children: React.ReactNode;
-  color: string;
-  title: string;
-}> = ({ children, color, title }) => {
-  const { ref, isVisible } = useProgressiveLoading();
-  const [error, setError] = useState(false);
-
-  const handleRetry = () => {
-    setError(false);
-    window.location.reload(); // Force reload to retry loading
-  };
-
-  return (
-    <div ref={ref}>
-      {!isVisible ? (
-        <div className="w-full h-96 bg-gray-50 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-200">
-          <div className="text-center">
-            <div
-              className={`w-12 h-12 rounded-full bg-${color}-100 flex items-center justify-center mx-auto mb-4`}
-            >
-              <svg
-                className={`w-6 h-6 text-${color}-600`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-            </div>
-            <p className="text-gray-600 font-medium">Scroll to load {title}</p>
-            <p className="text-sm text-gray-500 mt-1">3D visualization will load when visible</p>
-          </div>
-        </div>
-      ) : error ? (
-        <ErrorFallback onRetry={handleRetry} />
-      ) : (
-        <VisualizationErrorBoundary fallback={<ErrorFallback onRetry={handleRetry} />}>
-          <Suspense fallback={<LoadingFallback color={color} />}>{children}</Suspense>
-        </VisualizationErrorBoundary>
-      )}
-    </div>
-  );
-};
-
 const AdvancedConcepts: React.FC = () => {
   const stats = [
     { label: '2D Visualizations', value: '5', description: 'Interactive SVG models' },
-    { label: '3D Visualizations', value: '3', description: 'Three.js 3D scenes' },
     { label: 'Educational Steps', value: '25+', description: 'Step-by-step learning' },
     { label: 'Concepts Covered', value: '8', description: 'Advanced Python topics' },
   ];
@@ -184,8 +23,8 @@ const AdvancedConcepts: React.FC = () => {
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">🧠 Advanced Python Concepts</h1>
         <p className="text-xl text-gray-700 leading-relaxed">
-          Dive deep into Python's most powerful features through interactive 2D and 3D
-          visualizations. Explore generators, decorators, memory management, and execution models.
+          Dive deep into Python's most powerful features through interactive 2D visualizations.
+          Explore generators, decorators, memory management, and execution models.
         </p>
       </div>
       <StatsGrid stats={stats} colorScheme="python" />
@@ -257,53 +96,6 @@ const AdvancedConcepts: React.FC = () => {
               </p>
             </div>
             <DecoratorVisualization />
-          </ThemeCard>
-        </div>
-      </div>
-
-      {/* 3D Visualizations Section */}
-      <div className="mb-12">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
-          🌐 3D Immersive Visualizations
-        </h2>
-        <div className="grid gap-8">
-          {/* Python Virtual Machine */}
-          <ThemeCard className="p-6">
-            <div className="mb-4">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">🚀 Python Virtual Machine</h3>
-              <p className="text-gray-600">
-                3D exploration of Python's execution engine with bytecode, stack, and heap
-              </p>
-            </div>
-            <Progressive3DVisualization color="blue" title="Python VM">
-              <PythonVM3D />
-            </Progressive3DVisualization>
-          </ThemeCard>
-
-          {/* Memory Profiler */}
-          <ThemeCard className="p-6">
-            <div className="mb-4">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">📊 Memory Profiler</h3>
-              <p className="text-gray-600">
-                3D visualization of memory allocation patterns and object lifecycle
-              </p>
-            </div>
-            <Progressive3DVisualization color="green" title="Memory Profiler">
-              <MemoryProfiler3D />
-            </Progressive3DVisualization>
-          </ThemeCard>
-
-          {/* Call Graph */}
-          <ThemeCard className="p-6">
-            <div className="mb-4">
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">🔗 Function Call Graph</h3>
-              <p className="text-gray-600">
-                3D representation of function relationships and execution flow patterns
-              </p>
-            </div>
-            <Progressive3DVisualization color="purple" title="Call Graph">
-              <CallGraph3D />
-            </Progressive3DVisualization>
           </ThemeCard>
         </div>
       </div>

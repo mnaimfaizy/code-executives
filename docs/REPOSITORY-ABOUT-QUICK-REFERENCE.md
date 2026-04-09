@@ -6,7 +6,7 @@
 
 **Option 1 - Full Description** (350 chars):
 ```
-Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and Three.js for immersive learning experiences.
+Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and interactive 2D visualizations for engaging learning experiences.
 ```
 
 **Option 2 - Compact** (160 chars):
@@ -30,7 +30,6 @@ react
 typescript
 vite
 tailwindcss
-threejs
 react-router
 ```
 
@@ -54,7 +53,6 @@ web-development
 programming-tutorial
 educational-content
 2d-visualization
-3d-visualization
 leetcode
 algorithm-visualization
 code-playground
@@ -70,7 +68,6 @@ For easy reference, here's the complete list in alphabetical order:
 
 ```
 2d-visualization
-3d-visualization
 algorithm-visualization
 algorithms
 bigo-notation
@@ -95,7 +92,6 @@ react
 react-router
 rxjs
 tailwindcss
-threejs
 typescript
 vite
 visualization

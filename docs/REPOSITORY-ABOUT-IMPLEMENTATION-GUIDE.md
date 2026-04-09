@@ -18,7 +18,7 @@ Choose one based on GitHub's character limit:
 
 **Primary Option (350 characters)**:
 ```
-Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and Three.js for immersive learning experiences.
+Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and interactive 2D visualizations for engaging learning experiences.
 ```
 
 **Compact Option (160 characters)**:
@@ -42,7 +42,6 @@ See the complete list in [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./REPOSITORY-ABOU
 - typescript
 - vite
 - tailwindcss
-- threejs
 
 ## 🚀 Quick Setup (5 minutes)
 
@@ -127,14 +126,14 @@ After implementation, your repository About section will look like this:
 │ Interactive programming education platform with 70+         │
 │ visualizations covering Git, JavaScript, Next.js, Data      │
 │ Structures, Big-O, Python, and RxJS. Built with React,     │
-│ TypeScript, and Three.js for immersive learning            │
-│ experiences.                                                │
+│ TypeScript, and interactive 2D visualizations for engaging │
+│ learning experiences.                                       │
 │                                                             │
 │ 🌐 https://codexecutives.com                             │
 │                                                             │
 │ 🏷️ educational-platform  interactive-learning              │
 │    programming-education  react  typescript  vite           │
-│    tailwindcss  threejs  git-tutorial  data-structures     │
+│    tailwindcss  git-tutorial  data-structures     │
 │    algorithms  nextjs  python  rxjs  visualization          │
 │    web-development  [+16 more]                             │
 └─────────────────────────────────────────────────────────────┘

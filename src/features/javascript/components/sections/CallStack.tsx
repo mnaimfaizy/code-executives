@@ -1,13 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import * as THREE from 'three';
+import React, { useEffect, useRef, useState } from 'react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import CallStack2D, { type CallStack2DHandle } from '../visualizations/2d/CallStack2D';
-import ThreeCanvas, { type ThreeCanvasHandle } from '../../../../three/react/ThreeCanvas';
-import { CallStackAssemblyLine } from '../../../../three/models/CallStackAssemblyLine';
-import { RestaurantKitchen } from '../../../../three/models/RestaurantKitchen';
-import { RobotActor } from '../../../../three/models/RobotActor';
-import ThreeDLayout from '../../../../components/ThreeDLayout';
-import CallStackControlPanel from '../../../../components/shared/CallStackControlPanel';
 import {
   instrumentCode,
   colorForLabel,
@@ -16,7 +9,6 @@ import {
   setLabelColorMap,
   type FunctionInfo,
 } from '../../../../utils/instrument';
-import ModeTabs from '../../../../components/shared/ModeTabs';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
 import InstrumentedSource, { type Segment } from '../../../../components/shared/InstrumentedSource';
@@ -83,8 +75,6 @@ function baz() {
 main();`;
 
 const CallStack: React.FC = () => {
-  const [mode, setMode] = useState<'2D' | '3D'>('2D');
-
   // 2D state
   const stackRef = useRef<CallStack2DHandle | null>(null);
   const [inputMode, setInputMode] = useState<'js' | 'dsl'>('js');
@@ -239,9 +229,6 @@ const CallStack: React.FC = () => {
       // ignore persistence errors
     }
   }, [ip, running]);
-  useEffect(() => {
-    // When leaving 2D mode, just stop toggling run via toolbar. No extra action needed here.
-  }, [mode]);
 
   // highlighting is built inline when rendering InstrumentedSource
 
@@ -368,99 +355,6 @@ const CallStack: React.FC = () => {
     </div>
   );
 
-  // 3D state
-  const kitchenModel = useMemo(() => new RestaurantKitchen(), []);
-  const assemblyModel = useMemo(() => new CallStackAssemblyLine(), []);
-  const robot = useMemo(() => new RobotActor(), []);
-  const ref3D = useRef<ThreeCanvasHandle | null>(null);
-  const [outputLines3D, setOutputLines3D] = useState<OutputLine[]>([
-    { text: 'Kitchen ready!', kind: 'info' },
-  ]);
-  const [running3D, setRunning3D] = useState<boolean>(false);
-  const [speed3D, setSpeed3D] = useState<Speed>('very-slow');
-  const [currentModel, setCurrentModel] = useState<'kitchen' | 'assembly'>('kitchen');
-
-  const activeModel = currentModel === 'kitchen' ? kitchenModel : assemblyModel;
-
-  const log3D = (msg: string, opts?: { label?: string; kind?: OutputLine['kind'] }) =>
-    setOutputLines3D((o) => [...o, { text: msg, label: opts?.label, kind: opts?.kind }]);
-
-  const reset3D = () => {
-    setRunning3D(false);
-    activeModel.reset?.();
-    setOutputLines3D([{ text: 'Kitchen reset!', kind: 'info' }]);
-  };
-
-  const step3D = () => {
-    // Simulate a function call and return cycle
-    const functions = ['main', 'processOrder', 'cookPasta', 'serveDish', 'calculateTotal'];
-    const randomFunc = functions[Math.floor(Math.random() * functions.length)];
-
-    if (Math.random() > 0.5 && activeModel.getStackHeight?.() > 0) {
-      // Pop (complete order)
-      activeModel.popFrame();
-      log3D(`Order completed: ${randomFunc}()`, { label: randomFunc, kind: 'pop' });
-    } else {
-      // Push (new order)
-      activeModel.pushFrame(randomFunc);
-      log3D(`New order: ${randomFunc}()`, { label: randomFunc, kind: 'push' });
-    }
-  };
-
-  const runDemo3D = () => {
-    if (running3D) return;
-    setRunning3D(true);
-    log3D('Starting kitchen demo...', { kind: 'info' });
-
-    // Simulate a function call sequence
-    const demoSequence = [
-      { action: 'push', name: 'main' },
-      { action: 'push', name: 'processOrder' },
-      { action: 'push', name: 'cookPasta' },
-      { action: 'pop', name: 'cookPasta' },
-      { action: 'push', name: 'serveDish' },
-      { action: 'pop', name: 'serveDish' },
-      { action: 'pop', name: 'processOrder' },
-      { action: 'pop', name: 'main' },
-    ];
-
-    let stepIndex = 0;
-    const interval = setInterval(
-      () => {
-        if (stepIndex >= demoSequence.length) {
-          clearInterval(interval);
-          setRunning3D(false);
-          log3D('Kitchen demo complete!', { kind: 'info' });
-          return;
-        }
-
-        const step = demoSequence[stepIndex];
-        if (step.action === 'push') {
-          activeModel.pushFrame(step.name);
-          log3D(`New order: ${step.name}()`, { label: step.name, kind: 'push' });
-        } else {
-          activeModel.popFrame();
-          log3D(`Order completed: ${step.name}()`, { label: step.name, kind: 'pop' });
-        }
-
-        stepIndex++;
-      },
-      speed3D === 'very-slow' ? 1600 : speed3D === 'slow' ? 1000 : 450
-    );
-  };
-
-  const focusCamera3D = () => {
-    if (currentModel === 'kitchen') {
-      ref3D.current
-        ?.getEngine()
-        ?.focusCamera(new THREE.Vector3(4, 3, 5), new THREE.Vector3(0, 0.5, 0));
-    } else {
-      ref3D.current
-        ?.getEngine()
-        ?.focusCamera(new THREE.Vector3(6.5, 5.5, 10), new THREE.Vector3(0, 0, 0));
-    }
-  };
-
   return (
     <section className="mb-4">
       <h2 className="text-base font-semibold">Call Stack & Execution Context</h2>
@@ -529,121 +423,14 @@ const CallStack: React.FC = () => {
         </div>
       </div>
 
-      <ModeTabs mode={mode} onChange={setMode} />
-
-      {mode === '2D' ? (
-        <div className="mt-2">
-          <TwoDLayout
-            title="2D Visualization: Call Stack"
-            editor={editor}
-            output={outputPanel}
-            canvas={canvas2D}
-          />
-        </div>
-      ) : (
-        <div className="mt-2">
-          <ThreeDLayout
-            title="3D Visualization: Restaurant Kitchen Call Stack"
-            canvas={
-              <ThreeCanvas
-                ref={ref3D}
-                models={currentModel === 'kitchen' ? [kitchenModel] : [assemblyModel, robot]}
-              />
-            }
-            controlPanel={
-              <CallStackControlPanel
-                running={running3D}
-                speed={speed3D}
-                onRunToggle={runDemo3D}
-                onStep={step3D}
-                onReset={reset3D}
-                onSpeedChange={setSpeed3D}
-                onFocusCamera={focusCamera3D}
-                outputLines={outputLines3D}
-                colorForLabel={(label?: string) => (label ? colorForLabel(label) : undefined)}
-                currentModel={currentModel}
-                onModelSwitch={() =>
-                  setCurrentModel(currentModel === 'kitchen' ? 'assembly' : 'kitchen')
-                }
-              />
-            }
-            scenarioDescription={
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-lg font-semibold text-orange-900 mb-2">
-                    🍽️ The Restaurant Kitchen & Order Management
-                  </h4>
-                  <p className="text-sm text-orange-800 mb-3">
-                    Welcome to our bustling restaurant kitchen! Watch as order tickets stack up at
-                    the order station, demonstrating how JavaScript manages function calls through
-                    the Call Stack. Each new order (function call) goes to the top of the stack, and
-                    orders are completed in LIFO order (Last In, First Out).
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <h5 className="font-semibold text-orange-900 mb-2">
-                        🏪 The Kitchen Metaphor
-                      </h5>
-                      <ul className="space-y-1 text-orange-700">
-                        <li>
-                          <strong>Kitchen:</strong> JavaScript Call Stack
-                        </li>
-                        <li>
-                          <strong>Order Station:</strong> Stack memory region
-                        </li>
-                        <li>
-                          <strong>Order Tickets:</strong> Function calls (stack frames)
-                        </li>
-                        <li>
-                          <strong>Order Spike:</strong> Stack pointer
-                        </li>
-                        <li>
-                          <strong>Kitchen Staff:</strong> JavaScript engine
-                        </li>
-                        <li>
-                          <strong>Completed Orders:</strong> Returned functions
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-orange-900 mb-2">🎬 Kitchen Operations</h5>
-                      <ul className="space-y-1 text-orange-700">
-                        <li>
-                          <strong>New Order:</strong> Function call (push to stack)
-                        </li>
-                        <li>
-                          <strong>Order Processing:</strong> Function execution
-                        </li>
-                        <li>
-                          <strong>Order Complete:</strong> Function return (pop from stack)
-                        </li>
-                        <li>
-                          <strong>Rush Hour:</strong> Deep call chains
-                        </li>
-                        <li>
-                          <strong>Kitchen Reset:</strong> Stack cleared
-                        </li>
-                        <li>
-                          <strong>Order Colors:</strong> Different function types
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <p className="text-sm text-orange-700 mt-3">
-                    <strong>💡 Try it:</strong> Use the controls on the right to add new orders
-                    (function calls) and complete them. Notice how orders are processed in LIFO
-                    order - the last order received is the first one completed! You can also switch
-                    between Kitchen and Assembly Line views using the control panel.
-                  </p>
-                </div>
-              </div>
-            }
-          />
-        </div>
-      )}
+      <div className="mt-2">
+        <TwoDLayout
+          title="2D Visualization: Call Stack"
+          editor={editor}
+          output={outputPanel}
+          canvas={canvas2D}
+        />
+      </div>
     </section>
   );
 };

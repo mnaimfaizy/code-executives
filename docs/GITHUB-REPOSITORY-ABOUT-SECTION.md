@@ -6,7 +6,7 @@ This document provides the recommended configuration for the **Code Executives**
 
 **Short Description** (max 350 characters):
 ```
-Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and Three.js for immersive learning experiences.
+Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and interactive 2D visualizations for engaging learning experiences.
 ```
 
 **Alternative Shorter Description** (max 160 characters):
@@ -34,7 +34,6 @@ Add the following topics to improve discoverability and SEO. Topics help users f
 - `typescript`
 - `vite`
 - `tailwindcss`
-- `threejs`
 - `react-router`
 
 ### Content/Module Topics
@@ -54,7 +53,6 @@ Add the following topics to improve discoverability and SEO. Topics help users f
 - `programming-tutorial`
 - `educational-content`
 - `2d-visualization`
-- `3d-visualization`
 
 ### Additional Recommended Topics
 - `leetcode`
@@ -81,7 +79,7 @@ Add the following topics to improve discoverability and SEO. Topics help users f
 ```bash
 # Using GitHub CLI (gh)
 gh repo edit mnaimfaizy/code-executives \
-  --description "Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and Three.js for immersive learning experiences." \
+  --description "Interactive programming education platform with 70+ visualizations covering Git, JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, TypeScript, and interactive 2D visualizations for engaging learning experiences." \
   --homepage "https://codexecutives.com"
 
 # Add topics (requires separate API calls or manual addition via web interface)
@@ -137,14 +135,14 @@ The About section should look similar to this:
 📝 Description
 Interactive programming education platform with 70+ visualizations covering Git, 
 JavaScript, Next.js, Data Structures, Big-O, Python, and RxJS. Built with React, 
-TypeScript, and Three.js for immersive learning experiences.
+TypeScript, and interactive 2D visualizations for engaging learning experiences.
 
 🌐 Website
 https://codexecutives.com
 
 🏷️ Topics
 educational-platform  interactive-learning  programming-education  react  typescript  
-vite  tailwindcss  threejs  git-tutorial  javascript-engine  data-structures  
+vite  tailwindcss  git-tutorial  javascript-engine  data-structures  
 algorithms  nextjs  python  rxjs  visualization  web-development  coding-education  
 learn-to-code  programming-tutorial
 ```

@@ -29,7 +29,6 @@
 ### 🎮 **Interactive Visualizations**
 
 - **2D SVG Models**: Smooth animations explaining complex concepts (30+ components)
-- **3D Three.js Models**: Immersive 3D representations of programming constructs
 - **Algorithm Animations**: Step-by-step execution of sorting, searching, and traversal algorithms
 - **Data Structure Demos**: Interactive models for arrays, trees, graphs, and hash tables
 - **Real-time Interactions**: Click, drag, and explore concepts dynamically
@@ -82,7 +81,6 @@
 ### **Visualization Technologies**
 
 - **2D Graphics**: SVG-based interactive diagrams
-- **3D Graphics**: Three.js for immersive 3D models
 - **Animations**: CSS transitions and JavaScript-driven animations
 - **Interactivity**: Mouse/touch events with real-time feedback
 
@@ -101,8 +99,6 @@ src/
 │   │   │   ├── hash/    # HashTable visualization
 │   │   ├── bigo/        # Big-O notation visualizations (10+ components)
 │   │   └── python/      # Python programming visualizations
-│   ├── models3d/        # 3D visualization components
-│   │   └── python/      # Python 3D models (VM, memory profiler, call graph)
 │   ├── playground/      # LeetCode-style playground components
 │   │   ├── Playground.tsx          # Main playground component
 │   │   ├── ProblemDisplay.tsx      # Problem statement and examples
@@ -151,7 +147,6 @@ src/
 │   └── theme.ts        # Theme and styling utilities
 ├── data/               # Static data and problem sets
 │   └── problems.ts     # LeetCode-style coding problems
-└── three/              # Three.js 3D models and scenes
 ```
 
 ### Quiz Bank Naming
@@ -305,7 +300,6 @@ Comprehensive guide to fundamental data structures with interactive visualizatio
 - **Hash Tables**: Hash functions, collision resolution, and performance analysis
 - **Tree Structures**: Binary trees, BSTs, AVL trees, red-black trees, heaps, and B-trees
 - **Graph Structures**: Graph representations, BFS/DFS traversals, and shortest path algorithms
-- **3D Visualizations**: Interactive 3D models for complex data structure relationships
 - **Practice Problems**: LeetCode-style coding challenges with step-by-step solutions
 - **Real-world Applications**: Industry use cases from social media to database systems
 - **Performance Analysis**: Big O notation, complexity comparisons, and optimization strategies
@@ -425,13 +419,12 @@ To add a new learning module (following the Next.js, Data Structures, and Big-O 
 2. **Define TypeScript interfaces** in `src/types/[module-name].ts`
 3. **Create section components** in `src/sections/[module-name]/`
 4. **Add 2D visualizations** in `src/components/models2d/[module-name]/`
-5. **Add 3D visualizations** in `src/components/models3d/` (if needed)
-6. **Create page component** in `src/pages/[ModuleName]Page.tsx`
-7. **Create custom hooks** in `src/hooks/use[ModuleName].ts`
-8. **Update theme colors** in `src/utils/theme.ts`
-9. **Update navigation** in `src/components/Header.tsx` and `src/components/Sidebar.tsx`
-10. **Add routing** in `src/App.tsx`
-11. **Update README.md** with module information
+5. **Create page component** in `src/pages/[ModuleName]Page.tsx`
+6. **Create custom hooks** in `src/hooks/use[ModuleName].ts`
+7. **Update theme colors** in `src/utils/theme.ts`
+8. **Update navigation** in `src/components/Header.tsx` and `src/components/Sidebar.tsx`
+9. **Add routing** in `src/App.tsx`
+10. **Update README.md** with module information
 
 ## 🤝 Contributing
 
@@ -461,7 +454,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Next.js Team** for the incredible App Router and modern React framework
-- **Three.js** community for 3D visualization capabilities
 - **React** team for the amazing framework ecosystem
 - **Vite** for lightning-fast development experience
 - **Tailwind CSS** for utility-first styling approach
@@ -483,21 +475,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 _Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, Python Programming, and AI Fundamentals modules. Practice algorithms with our LeetCode-style playground featuring advanced debugging, real-time visualizations, and gamification._
 
-## 3D/2D Visualization Architecture
+## Visualization Architecture
 
-We use Three.js for 3D models with a modular structure under `src/three/`:
+All visualizations use SVG-based 2D components organized under each feature module:
 
-- `core/Engine.ts`: Lightweight host that creates a scene, camera, renderer, shared lights, and an animation loop. It manages model lifecycle.
-- `core/types.ts`: `IModel` interface that all 3D models implement: `init(scene)`, `update(dt)`, `dispose()`.
-- `core/anim.ts`: Tiny tween scheduler for simple time-based animations.
-- `react/ThreeCanvas.tsx`: React bridge that mounts the engine in a div and registers provided models.
-- `models/CallStackAssemblyLine.ts`: First model visualizing the Call Stack as an assembly line (conveyor + lift). Exposes `pushFrame()` and `popFrame()`.
-- `models/python/PythonVM3D.ts`: 3D visualization of Python Virtual Machine internals and execution flow.
-- `models/python/MemoryProfiler3D.ts`: Interactive 3D memory heap visualization with object allocation tracking.
-- `models/python/CallGraph3D.ts`: 3D representation of Python function call relationships and execution paths.
-
-Add a new model:
-
-1. Create `src/three/models/MyModel.ts` implementing `IModel`.
-2. Import it in a page and pass an instance to `ThreeCanvas` via `models={[new MyModel()]}`.
-3. Expose imperative methods on your model (e.g., `step()`) and call them from UI buttons.
+- Each feature's visualizations live in `src/features/[module]/components/visualizations/2d/`
+- 2D components use React with SVG animations and CSS transitions
+- Interactive controls (play/pause/step/reset) are built into each visualization component

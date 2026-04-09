@@ -1,18 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import TwoDLayout from '../../../../components/TwoDLayout';
-import ThreeDLayout from '../../../../components/ThreeDLayout';
 import MemoryHeap2D, {
   type MemoryHeap2DHandle,
 } from '../visualizations/2d/MemoryHeap2D';
-import MemoryHeap3D, { type MemoryHeap3DHandle } from '../visualizations/3d/MemoryHeap3D';
-import ThreeDControlPanel from '../../../../components/shared/ThreeDControlPanel';
 import {
   instrumentCode,
   colorForLabel,
   resetLabelColors,
   type FunctionInfo,
 } from '../../../../utils/instrument';
-import ModeTabs from '../../../../components/shared/ModeTabs';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
 import InstrumentedSource, { type Segment } from '../../../../components/shared/InstrumentedSource';
@@ -78,9 +74,7 @@ function main() {
 main();`;
 
 const MemoryHeap: React.FC = () => {
-  const [mode, setMode] = useState<'2D' | '3D'>('2D');
   const heapRef = useRef<MemoryHeap2DHandle | null>(null);
-  const heap3DRef = useRef<MemoryHeap3DHandle | null>(null);
   const [inputMode, setInputMode] = useState<'js' | 'dsl'>('js');
   const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([{ text: 'Ready.', kind: 'info' }]);
@@ -105,11 +99,7 @@ const MemoryHeap: React.FC = () => {
     getProgram: () => ensureCompiled().program,
     apply: async (ins) => {
       if (ins.type === 'alloc') {
-        // Apply to both 2D and 3D heaps
         heapRef.current?.alloc(ins.label, ins.size);
-        if (mode === '3D' && heap3DRef.current) {
-          await heap3DRef.current.allocateObject(ins.label, ins.label, ins.size || 1);
-        }
         log(`alloc(${ins.label}${ins.size != null ? `, ${ins.size}` : ''})`, {
           label: ins.label,
           kind: 'alloc',
@@ -117,9 +107,6 @@ const MemoryHeap: React.FC = () => {
       } else {
         const target = ins.label ?? heapRef.current?.getObjects().slice(-1)[0]?.id ?? '';
         heapRef.current?.free(target);
-        if (mode === '3D' && heap3DRef.current) {
-          await heap3DRef.current.deallocateObject(ins.label);
-        }
         log(`free(${ins.label ?? ''})`.trim(), { label: ins.label, kind: 'free' });
       }
     },
@@ -135,7 +122,6 @@ const MemoryHeap: React.FC = () => {
   const reset = () => {
     runnerReset();
     heapRef.current?.reset();
-    heap3DRef.current?.reset();
     setOutput([{ text: 'Reset.', kind: 'info' }]);
     compiledRef.current = null;
     resetLabelColors();
@@ -326,12 +312,6 @@ const MemoryHeap: React.FC = () => {
     </div>
   );
 
-  const canvas3D = (
-    <div className="h-full">
-      <MemoryHeap3D ref={heap3DRef} className="h-full w-full" />
-    </div>
-  );
-
   return (
     <section className="mb-4">
       <h2 className="text-base font-semibold">Memory Heap & Dynamic Allocation</h2>
@@ -388,102 +368,14 @@ const MemoryHeap: React.FC = () => {
         </div>
       </div>
 
-      <ModeTabs mode={mode} onChange={setMode} />
-
-      {mode === '2D' ? (
-        <div className="mt-2">
-          <TwoDLayout
-            title="2D Visualization: Memory Heap"
-            editor={editor}
-            output={outputPanel}
-            canvas={canvas2D}
-          />
-        </div>
-      ) : (
-        <div className="mt-2">
-          <ThreeDLayout
-            title="3D Memory Heap Library"
-            canvas={canvas3D}
-            controlPanel={
-              <ThreeDControlPanel
-                running={running}
-                speed={speed}
-                onRunToggle={run}
-                onStep={step}
-                onReset={reset}
-                onSpeedChange={(s) => setSpeed(s)}
-                onFocusCamera={() => heap3DRef.current?.focusCamera()}
-                outputLines={output}
-                colorForLabel={(label?: string) => (label ? colorForLabel(label) : undefined)}
-              />
-            }
-            scenarioDescription={
-              <div className="rounded-lg bg-blue-50 p-4">
-                <h4 className="mb-3 text-lg font-semibold text-blue-900">
-                  🏛️ The Digital Library & Memory Librarian
-                </h4>
-                <div className="space-y-3">
-                  <p className="text-sm text-blue-800">
-                    Welcome to our interactive 3D library where memory management comes to life!
-                    Watch as our friendly robot librarian organizes books (objects) on shelves (heap
-                    memory), demonstrating how JavaScript manages memory allocation, references, and
-                    garbage collection.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <h5 className="font-semibold text-blue-900 mb-2">📚 The Metaphor</h5>
-                      <ul className="space-y-1 text-blue-700">
-                        <li>
-                          <strong>Library:</strong> JavaScript Memory Heap
-                        </li>
-                        <li>
-                          <strong>Bookshelves:</strong> Memory regions
-                        </li>
-                        <li>
-                          <strong>Books:</strong> Objects and variables
-                        </li>
-                        <li>
-                          <strong>Robot Librarian:</strong> Memory manager
-                        </li>
-                        <li>
-                          <strong>Book Colors:</strong> Different data types
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h5 className="font-semibold text-blue-900 mb-2">🤖 Robot Actions</h5>
-                      <ul className="space-y-1 text-blue-700">
-                        <li>
-                          <strong>Walking:</strong> Moving to allocate/deallocate
-                        </li>
-                        <li>
-                          <strong>Placing Books:</strong> Memory allocation
-                        </li>
-                        <li>
-                          <strong>Removing Books:</strong> Memory deallocation
-                        </li>
-                        <li>
-                          <strong>Organizing:</strong> Garbage collection
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 bg-blue-100 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      <strong>💡 Try it:</strong> Use the controls on the right to run the example
-                      code and watch the robot manage memory in real-time. You can interact with the
-                      3D scene using your mouse!
-                    </p>
-                  </div>
-                </div>
-              </div>
-            }
-          />
-        </div>
-      )}
+      <div className="mt-2">
+        <TwoDLayout
+          title="2D Visualization: Memory Heap"
+          editor={editor}
+          output={outputPanel}
+          canvas={canvas2D}
+        />
+      </div>
     </section>
   );
 };

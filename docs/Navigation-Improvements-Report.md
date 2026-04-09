@@ -342,7 +342,7 @@ Sidebar:
 - ✅ Smooth 60fps animations
 - ✅ No layout shift
 - ✅ Fast interaction response
-- ✅ Build size reasonable (611KB three.js is largest)
+- ✅ Build size reasonable
 
 ---
 
