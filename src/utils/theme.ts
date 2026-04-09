@@ -116,6 +116,14 @@ export const theme = {
       border: 'amber-100',
       shadow: 'amber-200',
     },
+    backend: {
+      primary: 'slate',
+      secondary: 'zinc',
+      accent: 'stone',
+      gradient: 'from-slate-50 via-white to-zinc-50',
+      border: 'slate-200',
+      shadow: 'slate-200',
+    },
     playground: {
       primary: 'blue',
       secondary: 'indigo',

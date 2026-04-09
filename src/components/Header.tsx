@@ -138,6 +138,12 @@ const Header: React.FC = () => {
           icon: <Shield className="w-4 h-4" />,
           description: 'Authentication & Authorization',
         },
+        {
+          label: 'Backend Architecture',
+          path: '/backend',
+          icon: <Server className="w-4 h-4" />,
+          description: 'Backend patterns & API design',
+        },
       ],
     },
   ];
@@ -205,6 +211,7 @@ const Header: React.FC = () => {
     if (path === '/auth') return 'text-amber-600 bg-amber-50';
     if (path === '/nodejs') return 'text-green-600 bg-green-50';
     if (path === '/devops') return 'text-sky-600 bg-sky-50';
+    if (path === '/backend') return 'text-slate-600 bg-slate-50';
     return 'text-gray-700 hover:bg-gray-50';
   };
 
