@@ -1,14 +1,38 @@
+import { cpSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import type { Plugin } from 'vite';
 
+const copyQuizBanksPlugin = (): Plugin => {
+  let quizBanksSourceDir = '';
+  let quizBanksOutputDir = '';
+
+  return {
+    name: 'copy-quiz-banks',
+    apply: 'build',
+    configResolved(config) {
+      quizBanksSourceDir = resolve(config.root, 'quiz-banks');
+      quizBanksOutputDir = resolve(config.root, config.build.outDir, 'quiz-banks');
+    },
+    closeBundle() {
+      if (!existsSync(quizBanksSourceDir)) {
+        return;
+      }
+
+      cpSync(quizBanksSourceDir, quizBanksOutputDir, { recursive: true });
+    },
+  };
+};
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    copyQuizBanksPlugin(),
     // Bundle analyzer - generates stats.html
     visualizer({
       open: false,
