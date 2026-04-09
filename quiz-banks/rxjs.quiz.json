@@ -1,0 +1,854 @@
+{
+  "moduleId": "rxjs",
+  "moduleTitle": "RxJS Reactive Programming",
+  "description": "Scenario-based assessment of advanced RxJS stream design, operator tradeoffs, multicasting, marble testing, and failure recovery.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "rxjs-q01",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An ecommerce search box sends a request on every keystroke. Users type quickly, and stale responses are occasionally rendering after newer ones.",
+      "prompt": "Which operator should replace the current flattening strategy so only the latest request is allowed to update the UI?",
+      "options": [
+        "mergeMap",
+        "concatMap",
+        "switchMap",
+        "exhaustMap"
+      ],
+      "correctAnswer": 2,
+      "explanation": "switchMap cancels the previous inner subscription whenever a new search term arrives, which prevents stale responses from racing ahead of newer ones.",
+      "tags": [
+        "switchMap",
+        "autocomplete",
+        "cancellation"
+      ],
+      "references": [
+        "Operators",
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A telemetry pipeline emits upload batches continuously. Dropping a batch is unacceptable, the backend allows at most three concurrent writes, and one failed upload must not kill the whole stream.",
+      "prompt": "Which pipeline choices fit these constraints?",
+      "options": [
+        "Use mergeMap(batch => save$(batch).pipe(catchError(() => EMPTY)), 3)",
+        "Use switchMap so each new batch cancels the previous write",
+        "Use concatMap if preserving strict input order matters more than throughput",
+        "Put catchError outside the mergeMap so the first failing save completes the entire batch stream",
+        "Use exhaustMap so new batches are ignored while one write is active"
+      ],
+      "correctAnswer": [
+        0,
+        2
+      ],
+      "explanation": "mergeMap with a concurrency limit of 3 satisfies the throughput constraint, and handling errors inside each save prevents the outer stream from terminating. concatMap is also valid when ordered delivery is more important than parallelism.",
+      "tags": [
+        "mergeMap",
+        "concatMap",
+        "concurrency",
+        "batch-processing"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A dashboard service caches a polling stream with shareReplay({ bufferSize: 1, refCount: false }). Widgets subscribe and unsubscribe as routes change.",
+      "prompt": "True or false: with that configuration, the upstream polling source can stay subscribed even after the last widget unsubscribes.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "With refCount set to false, the shared subscription is not automatically torn down when subscriber count reaches zero, so the source can remain active.",
+      "tags": [
+        "shareReplay",
+        "multicasting",
+        "memory-leaks"
+      ],
+      "references": [
+        "Subjects",
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q04",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A checkout flow combines submit clicks with the latest fraud score and form validity. The fraud score updates independently, but risk evaluation should only run when the user clicks submit.",
+      "prompt": "Which combination operator best models this trigger pattern?",
+      "options": [
+        "combineLatest",
+        "withLatestFrom",
+        "zip",
+        "race"
+      ],
+      "correctAnswer": 1,
+      "explanation": "withLatestFrom uses one source as the trigger and samples the latest values from the other streams only when that trigger emits.",
+      "tags": [
+        "withLatestFrom",
+        "combineLatest",
+        "forms"
+      ],
+      "references": [
+        "Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q05",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A trading app consumes a websocket feed. The team wants to reconnect with backoff on disconnects, ignore malformed messages, derive the latest order book state, and share that state across multiple widgets.",
+      "prompt": "Put these steps in the most appropriate conceptual order from source creation to final shared stream.",
+      "items": [
+        "Create the websocket source",
+        "Attach retryWhen so disconnects resubscribe with backoff",
+        "Filter out malformed payloads from each connection",
+        "Use scan to build the latest order book state",
+        "Share the derived state with shareReplay"
+      ],
+      "correctAnswer": [
+        "Create the websocket source",
+        "Attach retryWhen so disconnects resubscribe with backoff",
+        "Filter out malformed payloads from each connection",
+        "Use scan to build the latest order book state",
+        "Share the derived state with shareReplay"
+      ],
+      "explanation": "Start from the source, define the reconnection policy, validate incoming messages, accumulate state with scan, and only then multicast the derived stream for downstream consumers.",
+      "tags": [
+        "ordering",
+        "webSocket",
+        "retryWhen",
+        "shareReplay"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q06",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "During an architecture review, your team needs to pick the correct subject type for four different collaboration patterns.",
+      "prompt": "Match each RxJS subject type to the most suitable behavior.",
+      "premises": [
+        "Subject",
+        "BehaviorSubject",
+        "ReplaySubject",
+        "AsyncSubject"
+      ],
+      "responses": [
+        "Late subscribers need the current state immediately and an initial seed exists",
+        "Only the final emitted value should be delivered once the source completes",
+        "Late subscribers must receive a configurable slice of recent history",
+        "Values should be multicasted only to current subscribers with no replay"
+      ],
+      "correctAnswer": [
+        3,
+        0,
+        2,
+        1
+      ],
+      "explanation": "Subject has no replay, BehaviorSubject stores the current value, ReplaySubject stores a history window, and AsyncSubject emits the last value only upon completion.",
+      "tags": [
+        "subjects",
+        "BehaviorSubject",
+        "ReplaySubject",
+        "AsyncSubject"
+      ],
+      "references": [
+        "Subjects",
+        "Core Components"
+      ]
+    },
+    {
+      "id": "rxjs-q07",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A mobile app login button is being tapped repeatedly on slow networks, producing duplicate authentication attempts and backend session conflicts.",
+      "prompt": "Which flattening operator is the safest default if later taps should be ignored until the current login finishes?",
+      "options": [
+        "mergeMap",
+        "switchMap",
+        "concatMap",
+        "exhaustMap"
+      ],
+      "correctAnswer": 3,
+      "explanation": "exhaustMap ignores new outer emissions while an inner observable is active, which makes it well suited for duplicate-submit prevention.",
+      "tags": [
+        "exhaustMap",
+        "authentication",
+        "higher-order-mapping"
+      ],
+      "references": [
+        "Operators",
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q08",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A search box uses switchMap(term => http(term).pipe(...)). The team wants a failed request to recover gracefully while still allowing future search terms to trigger new requests.",
+      "prompt": "Which statements are correct about catchError placement in this design?",
+      "options": [
+        "Placing catchError inside the switchMap lets a failed request recover without terminating the outer search term stream",
+        "Placing catchError after the switchMap will catch inner errors, but if it returns a finite fallback and completes, the outer search term stream can stop",
+        "If catchError inside the switchMap returns EMPTY, only that inner request ends and later search terms can still trigger new requests",
+        "Placing catchError inside the switchMap always rethrows errors to the outer stream",
+        "Using catchError outside the switchMap is the only way to log the failing term"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Inner catchError localizes failure to the request associated with one term. An outer catchError can recover too, but depending on what it returns, it can also complete the entire chain and stop future searches.",
+      "tags": [
+        "catchError",
+        "switchMap",
+        "error-boundaries"
+      ],
+      "references": [
+        "Error Handling",
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q09",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A collaborative editor autosaves drafts. Each save must reach the server in the same order that edits were accepted, and a later save must wait for the prior one to finish.",
+      "prompt": "Which operator most directly enforces that policy?",
+      "options": [
+        "mergeMap",
+        "concatMap",
+        "switchMap",
+        "throttleTime"
+      ],
+      "correctAnswer": 1,
+      "explanation": "concatMap queues inner observables and subscribes to them one at a time, preserving ordering across saves.",
+      "tags": [
+        "concatMap",
+        "autosave",
+        "ordering"
+      ],
+      "references": [
+        "Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q10",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A loading spinner is hidden with finalize(() => hideSpinner()) on an HTTP request that may complete, error, or be cancelled by takeUntil when a view unmounts.",
+      "prompt": "True or false: finalize runs for completion, error, and explicit unsubscription.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "finalize registers teardown logic and runs whenever the subscription ends, including normal completion, errors, and manual unsubscription.",
+      "tags": [
+        "finalize",
+        "teardown",
+        "unsubscribe"
+      ],
+      "references": [
+        "Error Handling",
+        "Core Components"
+      ]
+    },
+    {
+      "id": "rxjs-q11",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A filter state stream emits new object literals on every render, even when the semantic filter has not changed. Duplicate downstream analytics events are being recorded.",
+      "prompt": "What is the most precise RxJS-side fix?",
+      "options": [
+        "Add debounceTime(0) so equal objects collapse",
+        "Use distinctUntilChanged() with a custom comparator for the fields that matter",
+        "Replace the stream with a BehaviorSubject so duplicate objects are ignored",
+        "Use share() before subscribing"
+      ],
+      "correctAnswer": 1,
+      "explanation": "distinctUntilChanged uses reference equality by default, so object-shaped state usually needs a custom comparator keyed to the meaningful fields.",
+      "tags": [
+        "distinctUntilChanged",
+        "comparators",
+        "state-streams"
+      ],
+      "references": [
+        "Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q12",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "Application configuration is loaded over HTTP and shared by many lazily mounted widgets. The team wants one shared request per active consumer set, replay of the latest config to late subscribers, and no permanently pinned subscription after all widgets unmount.",
+      "prompt": "Which choices help satisfy this design?",
+      "options": [
+        "Use shareReplay({ bufferSize: 1, refCount: true }) on the HTTP stream",
+        "Use shareReplay({ bufferSize: 1, refCount: false }) if automatic teardown when widgets unmount is required",
+        "Place shareReplay after any mapping that produces the final configuration shape consumers need",
+        "Subscribe in a global singleton and never unsubscribe so the cache is always warm",
+        "If the source can error, decide whether to recover before the replay boundary so the cached terminal state matches intent"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "refCount true allows teardown when the last consumer leaves, placing shareReplay after shaping avoids repeating transform work, and error handling should be chosen deliberately before replay so the shared terminal behavior is correct.",
+      "tags": [
+        "shareReplay",
+        "caching",
+        "http",
+        "multicasting"
+      ],
+      "references": [
+        "Subjects",
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q13",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A page must load user profile, permissions, and feature flags. Rendering should occur once all three one-shot requests complete successfully, using their final values only.",
+      "prompt": "Which combinator matches that behavior most directly?",
+      "options": [
+        "combineLatest",
+        "forkJoin",
+        "merge",
+        "withLatestFrom"
+      ],
+      "correctAnswer": 1,
+      "explanation": "forkJoin waits for all input observables to complete and then emits one combined result using their last emitted values.",
+      "tags": [
+        "forkJoin",
+        "combination",
+        "http"
+      ],
+      "references": [
+        "Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q14",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A teammate is reviewing marble tests and wants to confirm the meaning of several shorthand fragments before diagnosing a timing bug.",
+      "prompt": "Match each marble fragment to its meaning.",
+      "premises": [
+        "--a-b-|",
+        "--#",
+        "^---!",
+        "(abc)|"
+      ],
+      "responses": [
+        "Subscription starts now and is explicitly unsubscribed later",
+        "Several values are emitted in the same frame and then the stream completes",
+        "The stream errors at that point in time",
+        "Two next notifications occur over time and then the stream completes"
+      ],
+      "correctAnswer": [
+        3,
+        2,
+        0,
+        1
+      ],
+      "explanation": "Standard marble syntax uses letters for next notifications, # for error, ! for unsubscription, and parentheses for synchronous grouped emissions in the same frame.",
+      "tags": [
+        "marbles",
+        "tests",
+        "scheduler"
+      ],
+      "references": [
+        "Marble Diagrams",
+        "Visualization Tool"
+      ]
+    },
+    {
+      "id": "rxjs-q15",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "A profile form should wait for typing to pause, ignore invalid states, skip resubmitting equivalent payloads, send only the newest valid save, and surface a fallback result when a save fails.",
+      "prompt": "Order these operations to build the intended pipeline.",
+      "items": [
+        "debounceTime to wait for typing to settle",
+        "filter for valid form states",
+        "distinctUntilChanged with a payload comparator",
+        "switchMap to a save request for the newest payload",
+        "Inside that request chain, use catchError to return a fallback result"
+      ],
+      "correctAnswer": [
+        "debounceTime to wait for typing to settle",
+        "filter for valid form states",
+        "distinctUntilChanged with a payload comparator",
+        "switchMap to a save request for the newest payload",
+        "Inside that request chain, use catchError to return a fallback result"
+      ],
+      "explanation": "First reduce noise, then gate by validity, then suppress semantically identical payloads. After that, switch to the newest request and catch request-level failures inside the switched save chain.",
+      "tags": [
+        "ordering",
+        "forms",
+        "switchMap",
+        "catchError"
+      ],
+      "references": [
+        "Operators",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q16",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An operations stream carries events for many tenants. You need a rolling failure count per tenant without manually pre-splitting the source into separate observables.",
+      "prompt": "Which operator gives the most direct starting point for that design?",
+      "options": [
+        "partition",
+        "pairwise",
+        "groupBy",
+        "bufferCount"
+      ],
+      "correctAnswer": 2,
+      "explanation": "groupBy partitions a source stream into grouped observables keyed by a selector, which is the standard starting point for per-key aggregation.",
+      "tags": [
+        "groupBy",
+        "aggregation",
+        "multi-tenant"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q17",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A shared state container is implemented with a BehaviorSubject seeded during hydration. A component subscribes after several updates have already happened.",
+      "prompt": "True or false: the late subscriber receives the most recent value immediately, even if that value was emitted before the subscription began.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "BehaviorSubject always holds a current value and synchronously emits that current value to new subscribers.",
+      "tags": [
+        "BehaviorSubject",
+        "state-management",
+        "hot-observable"
+      ],
+      "references": [
+        "Subjects",
+        "Core Components"
+      ]
+    },
+    {
+      "id": "rxjs-q18",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "An API fails intermittently during traffic spikes. You are designing retryWhen with exponential backoff and a clear stop condition so the UI can surface a terminal error after reasonable retries.",
+      "prompt": "Which statements are sound for this design?",
+      "options": [
+        "retryWhen can derive delay timing from the error stream, for example by pairing errors with attempt counts",
+        "A backoff strategy should usually include a maximum attempt count or another terminal condition",
+        "retryWhen automatically preserves request idempotency, so repeated POST side effects are always safe",
+        "When retries are exhausted, rethrowing or returning throwError from the notifier path lets downstream error handling run",
+        "Putting shareReplay before retryWhen guarantees each subscriber gets an independent retry budget"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "retryWhen is flexible enough to implement backoff from the error notifier stream, but retry safety still depends on the side effect being retried. A stop condition is essential, and exhausted retries should re-signal failure so downstream logic can react.",
+      "tags": [
+        "retryWhen",
+        "backoff",
+        "resilience"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q19",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A chart should update at most every 200 ms while a user drags a scrollbar. The team wants periodic updates during the drag instead of waiting until interaction fully stops.",
+      "prompt": "Which operator is the better fit than debounceTime?",
+      "options": [
+        "auditTime",
+        "last",
+        "reduce",
+        "takeLast"
+      ],
+      "correctAnswer": 0,
+      "explanation": "auditTime emits the most recent value at the chosen interval while activity continues, whereas debounceTime waits for silence before emitting.",
+      "tags": [
+        "auditTime",
+        "ui-performance",
+        "rate-limiting"
+      ],
+      "references": [
+        "Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q20",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A portfolio page refreshes automatically every 30 seconds, but the user can also trigger manual refreshes. Whenever either trigger fires, any in-flight request should be abandoned and the newest refresh should win.",
+      "prompt": "Which flattening strategy should drive the request stream?",
+      "options": [
+        "concatMap",
+        "switchMap",
+        "exhaustMap",
+        "expand"
+      ],
+      "correctAnswer": 1,
+      "explanation": "switchMap cancels the currently active refresh request whenever a newer trigger arrives, which is exactly the desired newest-wins behavior.",
+      "tags": [
+        "switchMap",
+        "polling",
+        "manual-refresh"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q21",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "A code review compares higher-order mapping choices against the production bugs they can create when used in the wrong context.",
+      "prompt": "Match each operator misuse to its most likely symptom.",
+      "premises": [
+        "Using mergeMap for an autocomplete request stream",
+        "Using switchMap for non-idempotent file uploads",
+        "Using exhaustMap for a rapid-fire save button",
+        "Using concatMap for latency-sensitive live typing previews"
+      ],
+      "responses": [
+        "New clicks are ignored while one request is active",
+        "Older uploads can be cancelled before they finish",
+        "Responses may arrive out of order and stale data can flash",
+        "Updates queue behind each other and the preview lags"
+      ],
+      "correctAnswer": [
+        2,
+        1,
+        0,
+        3
+      ],
+      "explanation": "Each flattening operator encodes a tradeoff: mergeMap allows concurrency, switchMap cancels prior work, exhaustMap ignores new triggers during active work, and concatMap queues work sequentially.",
+      "tags": [
+        "operator-tradeoffs",
+        "higher-order-mapping",
+        "code-review"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q22",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A monitoring widget should turn failures into ordinary values so the UI can render an inline error tile through the same rendering pipeline used for successful events.",
+      "prompt": "Which operator is the most direct starting point for converting next, error, and complete signals into data?",
+      "options": [
+        "materialize",
+        "dematerialize",
+        "repeatWhen",
+        "timeout"
+      ],
+      "correctAnswer": 0,
+      "explanation": "materialize converts notifications into Notification objects, allowing errors and completion to be treated as regular values. dematerialize is the inverse step if you later need to restore stream semantics.",
+      "tags": [
+        "materialize",
+        "notifications",
+        "error-as-data"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Error Handling"
+      ]
+    },
+    {
+      "id": "rxjs-q23",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A KPI widget combines two long-lived streams with combineLatest, but one source is a rarely updated feature-flag stream that has not emitted since startup.",
+      "prompt": "True or false: combineLatest emits nothing until every source has produced at least one value.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "combineLatest requires an initial emission from each input before it can produce a combined value.",
+      "tags": [
+        "combineLatest",
+        "initial-emission",
+        "dashboards"
+      ],
+      "references": [
+        "Operators",
+        "Core Components"
+      ]
+    },
+    {
+      "id": "rxjs-q24",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A shared service exposes an internal Subject directly to many features. Months later, the team discovers memory leaks and accidental next calls from code that should have been read-only.",
+      "prompt": "Which changes improve the design?",
+      "options": [
+        "Expose subject.asObservable() to consumers instead of the writable Subject",
+        "Rely on garbage collection alone; completion and unsubscription strategy do not matter for Subjects",
+        "Use takeUntil or an equivalent teardown pattern in subscribers with component lifecycles",
+        "Keep the Subject public so any feature can emit events directly",
+        "Complete or replace long-lived bridge Subjects deliberately when their owning scope is disposed"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Encapsulation prevents arbitrary writes, lifecycle-based teardown prevents leaked subscriptions, and deliberate disposal of bridge subjects avoids holding onto observers longer than intended.",
+      "tags": [
+        "Subject",
+        "encapsulation",
+        "memory-leaks"
+      ],
+      "references": [
+        "Subjects",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q25",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A startup routine wraps a server-sent events stream with firstValueFrom to await the first business event, but that source may stay open indefinitely and might not emit the needed event quickly.",
+      "prompt": "What is the main risk if the stream never emits a qualifying value?",
+      "options": [
+        "firstValueFrom will automatically resolve undefined after one scheduler frame",
+        "The promise can hang indefinitely unless you bound the stream with operators like timeout, take, or takeUntil",
+        "RxJS will convert the lack of emissions into a complete notification immediately",
+        "The stream becomes cold and replays all past events"
+      ],
+      "correctAnswer": 1,
+      "explanation": "firstValueFrom resolves on the first emission or rejects on error, but without a bound on a long-lived or silent source, it can await forever.",
+      "tags": [
+        "firstValueFrom",
+        "promises",
+        "timeouts"
+      ],
+      "references": [
+        "Observables",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q26",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A hot UI state stream drives expensive DOM paint-related updates. You want scheduled work aligned to the browser's next repaint rather than a generic macrotask.",
+      "prompt": "Which scheduler is the most appropriate?",
+      "options": [
+        "queueScheduler",
+        "asapScheduler",
+        "asyncScheduler",
+        "animationFrameScheduler"
+      ],
+      "correctAnswer": 3,
+      "explanation": "animationFrameScheduler schedules work to run in coordination with the browser's animation frame, which is ideal for render-related updates.",
+      "tags": [
+        "schedulers",
+        "rendering",
+        "performance"
+      ],
+      "references": [
+        "Core Components",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q27",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A sensor stream emits temperature readings every second. You need to derive whether the trend is rising or falling by comparing each reading to the immediately previous one.",
+      "prompt": "Which operator gives the cleanest starting shape for that comparison?",
+      "options": [
+        "scan",
+        "pairwise",
+        "groupBy",
+        "windowTime"
+      ],
+      "correctAnswer": 1,
+      "explanation": "pairwise emits tuples containing the previous and current values, which is exactly the shape needed for step-to-step trend detection.",
+      "tags": [
+        "pairwise",
+        "time-series",
+        "analysis"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Real-World Examples"
+      ]
+    },
+    {
+      "id": "rxjs-q28",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A dashboard widget should fail a stale request if no value arrives within 2 seconds, then recover with a cached snapshot instead of spinning forever.",
+      "prompt": "Which operator most directly enforces the latency boundary before recovery logic runs?",
+      "options": [
+        "timeout",
+        "delayWhen",
+        "repeat",
+        "skipUntil"
+      ],
+      "correctAnswer": 0,
+      "explanation": "timeout converts excessive silence into an error, which can then be handled with catchError or another recovery strategy.",
+      "tags": [
+        "timeout",
+        "fallback",
+        "latency"
+      ],
+      "references": [
+        "Advanced Operators",
+        "Error Handling",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q29",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "You are reviewing four small error-handling patterns and need to verify the runtime effect each one produces before approving a refactor.",
+      "prompt": "Match each pattern to its runtime effect.",
+      "premises": [
+        "retry(2)",
+        "catchError(() => of([]))",
+        "finalize(() => log('done'))",
+        "throwError(() => err)"
+      ],
+      "responses": [
+        "Creates a stream that immediately errors with the supplied error when subscribed",
+        "Runs teardown side effects when the stream completes, errors, or is unsubscribed",
+        "Resubscribes up to the configured number of times before allowing failure to escape",
+        "Replaces the failure with a fallback value stream and completes successfully"
+      ],
+      "correctAnswer": [
+        2,
+        3,
+        1,
+        0
+      ],
+      "explanation": "retry resubscribes, catchError replaces failure with a recovery stream, finalize performs teardown-side effects, and throwError creates an observable that errors upon subscription.",
+      "tags": [
+        "retry",
+        "catchError",
+        "finalize",
+        "throwError"
+      ],
+      "references": [
+        "Error Handling",
+        "Core Components"
+      ]
+    },
+    {
+      "id": "rxjs-q30",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A real-time operations dashboard combines CPU, memory, and deployment streams. Some inputs are quiet at startup, widgets mount late, and the combined view should avoid blank initial panels where practical.",
+      "prompt": "Which approaches are useful for this setup?",
+      "options": [
+        "Seed quiet sources with startWith so combineLatest can produce an initial aggregate sooner",
+        "Use shareReplay(1) on the combined stream if late-subscribing widgets should see the latest derived state immediately",
+        "Replace combineLatest with zip when you want ongoing updates from the latest value of each source",
+        "If one source should only sample others when it emits, consider withLatestFrom instead of combineLatest",
+        "Depend on combineLatest alone to invent startup values for sources that have not emitted yet"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "startWith can seed missing initial values, shareReplay helps late subscribers catch up immediately, and withLatestFrom is the right alternative when one stream should act as the sole trigger.",
+      "tags": [
+        "combineLatest",
+        "startWith",
+        "shareReplay",
+        "withLatestFrom"
+      ],
+      "references": [
+        "Operators",
+        "Subjects",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "rxjs-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A regression appears only when switchMap should cancel the previous inner subscription. The team is writing a marble test and wants proof of cancellation, not just matching output values.",
+      "prompt": "Which testing technique gives the strongest evidence that cancellation actually happened?",
+      "options": [
+        "Assert only the emitted values from the outer observable",
+        "Use expectSubscriptions on the inner stream marbles to verify the previous subscription was unsubscribed early",
+        "Wrap the test in setTimeout and inspect console logs",
+        "Use a ReplaySubject so cancellation no longer matters"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Output assertions can miss incorrect subscription lifecycles. expectSubscriptions lets you assert the exact subscription and unsubscription windows for inner observables.",
+      "tags": [
+        "TestScheduler",
+        "expectSubscriptions",
+        "switchMap"
+      ],
+      "references": [
+        "Marble Diagrams",
+        "Visualization Tool",
+        "Quiz"
+      ]
+    }
+  ]
+}

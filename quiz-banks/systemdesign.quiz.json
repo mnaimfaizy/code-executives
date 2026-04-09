@@ -1,0 +1,855 @@
+{
+  "moduleId": "systemdesign",
+  "moduleTitle": "System Design",
+  "description": "Scenario-driven assessment of advanced system design trade-offs, distributed systems constraints, scaling patterns, architectural governance, and architecture communication techniques.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "systemdesign-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A B2B SaaS startup has one product team, fewer than 10 engineers, and needs to ship a first version in three months. The core workflow spans billing, user management, and reporting in one transactional path, and forecasted traffic is moderate.",
+      "prompt": "Which architecture is the most defensible starting point?",
+      "options": [
+        "Monolithic architecture",
+        "Microservices architecture",
+        "Event-driven architecture with separate services",
+        "Serverless-only architecture"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A monolith is usually the most practical starting point for a small team with tight timelines, shared transactions, and modest scale. It minimizes operational overhead while preserving strong internal consistency.",
+      "tags": [
+        "monolith",
+        "trade-offs",
+        "time-to-market",
+        "transactions"
+      ],
+      "references": [
+        "Introduction",
+        "Architecture Patterns"
+      ]
+    },
+    {
+      "id": "systemdesign-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "Six months later, the same company splits into 12 domain teams and decomposes the platform into services. Early staging tests show request chains spanning five services, and incidents take hours to trace.",
+      "prompt": "Which capabilities become immediately necessary to operate this design responsibly?",
+      "options": [
+        "Service discovery and versioned service contracts",
+        "Distributed tracing with correlation IDs",
+        "A single in-process transaction spanning every service call",
+        "Timeouts, retries, and circuit breakers between services",
+        "A rule that every service must use the same programming language"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Once the system becomes distributed, service discovery, tracing, and resilience patterns become operational essentials. A single in-process transaction is not realistic across independent services, and mandatory language uniformity does not solve the core runtime problems.",
+      "tags": [
+        "microservices",
+        "observability",
+        "resilience",
+        "operations"
+      ],
+      "references": [
+        "Architecture Patterns",
+        "Distributed Systems",
+        "Design Principles"
+      ]
+    },
+    {
+      "id": "systemdesign-q03",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A social feed runs across two regions and decides to remain available during an inter-region partition, even if some replicas lag behind.",
+      "prompt": "True or false: during the partition, some users may read stale data even though the service still responds.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Choosing availability during a partition often means accepting stale or divergent reads until replicas converge again. That is the core trade-off behind AP-style behavior.",
+      "tags": [
+        "cap-theorem",
+        "availability",
+        "eventual-consistency",
+        "partitions"
+      ],
+      "references": [
+        "Distributed Systems"
+      ]
+    },
+    {
+      "id": "systemdesign-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "You are preparing an architecture deck for audiences ranging from executives to the implementation team.",
+      "prompt": "Arrange the C4 views from the highest level of abstraction to the deepest level of detail.",
+      "items": [
+        "Component diagram",
+        "Code diagram",
+        "Container diagram",
+        "System Context diagram"
+      ],
+      "correctAnswer": [
+        "System Context diagram",
+        "Container diagram",
+        "Component diagram",
+        "Code diagram"
+      ],
+      "explanation": "The C4 model moves from broad context to implementation detail: System Context, then Container, then Component, then Code. That sequence progressively narrows the audience and technical depth.",
+      "tags": [
+        "c4-model",
+        "visualization",
+        "communication",
+        "architecture-diagrams"
+      ],
+      "references": [
+        "Visualization"
+      ]
+    },
+    {
+      "id": "systemdesign-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "An architecture review board is mapping production problems to the most appropriate design concept.",
+      "prompt": "Match each situation to the best response.",
+      "premises": [
+        "A payment ledger cannot tolerate stale reads after a successful charge",
+        "A feed ranking service can accept temporary divergence across replicas",
+        "An order event should trigger billing, analytics, and email without tight coupling",
+        "A downstream dependency becomes slow and repeated failures should be cut off quickly"
+      ],
+      "responses": [
+        "Strong consistency",
+        "Eventual consistency",
+        "Event-driven architecture",
+        "Circuit breaker"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Critical financial state favors strong consistency, less critical replicated views can tolerate eventual consistency, multi-consumer workflows fit event-driven design, and repeated dependency failures are a classic circuit-breaker use case.",
+      "tags": [
+        "consistency-models",
+        "event-driven",
+        "resilience",
+        "mapping"
+      ],
+      "references": [
+        "Distributed Systems",
+        "Architecture Patterns"
+      ]
+    },
+    {
+      "id": "systemdesign-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A global live-streaming product serves identical video segments to viewers across continents, and origin servers are saturating during major sports events.",
+      "prompt": "Which change most directly reduces origin load and median latency for this traffic pattern?",
+      "options": [
+        "Deploy a CDN with edge caching close to viewers",
+        "Move the metadata database from SQL to NoSQL",
+        "Increase the monolith's heap size",
+        "Force every client to reconnect more often"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A CDN is designed to serve repeatable content from edge locations near users, which lowers latency and shields origins from redundant requests. The other options do not directly address the dominant traffic pattern.",
+      "tags": [
+        "cdn",
+        "edge-caching",
+        "latency",
+        "origin-offload"
+      ],
+      "references": [
+        "Scaling Strategies",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A chat platform keeps session state in memory and runs on a mixed fleet where some nodes have twice the CPU and RAM of others. Connection duration is highly uneven across users.",
+      "prompt": "Which strategies directly address either session affinity or uneven node and connection load?",
+      "options": [
+        "IP hash to keep a given client on the same node",
+        "Weighted round robin so stronger nodes receive more traffic",
+        "Pure round robin with no awareness of session locality",
+        "Least connections for workloads with uneven connection duration",
+        "Vertical scaling the database instead of balancing application traffic"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "IP hash helps with sticky routing, weighted round robin reflects heterogeneous capacity, and least connections is well suited to long-lived or uneven connection workloads. Pure round robin ignores the stated constraints, and database scaling does not solve application-tier distribution.",
+      "tags": [
+        "load-balancing",
+        "session-affinity",
+        "weighted-round-robin",
+        "least-connections"
+      ],
+      "references": [
+        "Scaling Strategies"
+      ]
+    },
+    {
+      "id": "systemdesign-q08",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An order pipeline must let inventory, billing, fraud detection, and email react independently to an OrderPlaced event without the checkout service waiting on each consumer.",
+      "prompt": "Which architecture best fits that requirement?",
+      "options": [
+        "Event-driven architecture",
+        "Monolithic architecture",
+        "Shared-library integration",
+        "Strongly consistent two-phase commit between every consumer"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Event-driven architecture decouples producers from multiple downstream consumers and supports asynchronous fan-out. The alternative options either increase coupling or force unnecessary synchronous coordination.",
+      "tags": [
+        "event-driven",
+        "decoupling",
+        "async-processing",
+        "workflows"
+      ],
+      "references": [
+        "Architecture Patterns",
+        "Scaling Strategies"
+      ]
+    },
+    {
+      "id": "systemdesign-q09",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A multi-region configuration store must keep all readers on the same value during a partition, even if that means refusing some requests.",
+      "prompt": "True or false: once partition tolerance is required, preserving that consistency guarantee may force the system to sacrifice availability for some operations.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Under the CAP trade-off, a partition-tolerant system that insists on strong consistency may need to reject or delay requests rather than serve potentially stale answers.",
+      "tags": [
+        "cap-theorem",
+        "consistency",
+        "availability",
+        "multi-region"
+      ],
+      "references": [
+        "Distributed Systems"
+      ]
+    },
+    {
+      "id": "systemdesign-q10",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A streaming catalog receives far more search and browse reads than writes. Product changes must commit reliably, but the read path needs denormalized, low-latency search documents optimized separately from the write model.",
+      "prompt": "Which pattern is the best fit?",
+      "options": [
+        "CQRS with a separate read model and write model",
+        "A single global mutex around the database",
+        "Pure round robin load balancing",
+        "A monolith with only vertical scaling"
+      ],
+      "correctAnswer": 0,
+      "explanation": "CQRS is a good fit when read and write workloads have different scaling and modeling needs. It allows the write side to preserve correctness while the read side is optimized for fast queries and denormalized views.",
+      "tags": [
+        "cqrs",
+        "read-model",
+        "write-model",
+        "read-heavy-systems"
+      ],
+      "references": [
+        "Scaling Strategies",
+        "Case Studies",
+        "Architecture Patterns"
+      ]
+    },
+    {
+      "id": "systemdesign-q11",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A video service is adding multi-level caching for title metadata. The team wants lower origin traffic without allowing stale data to persist indefinitely after updates.",
+      "prompt": "Which design choices help achieve that balance?",
+      "options": [
+        "Apply TTLs so stale entries eventually expire",
+        "Emit invalidation events when metadata changes",
+        "Cache objects forever and rely on manual purges only",
+        "Layer caches across browser, CDN, and application tiers",
+        "Bypass caches on every read so caches stay accurate"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "TTL-based expiry, explicit invalidation, and layered caches are common ways to reduce origin traffic while controlling staleness. Permanent caches and universal bypasses each undermine the goal for opposite reasons.",
+      "tags": [
+        "caching",
+        "ttl",
+        "invalidation",
+        "multi-level-cache"
+      ],
+      "references": [
+        "Scaling Strategies",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q12",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A marketing platform processes unpredictable bursts of webhook events a few times per day. Each task is stateless, runs for under a second, and the company wants minimal operational overhead.",
+      "prompt": "Which architecture is the most defensible default?",
+      "options": [
+        "Serverless functions triggered by events",
+        "A stateful monolith with fixed capacity",
+        "A synchronous microservice mesh for every webhook",
+        "A primary-secondary database cluster"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Short-lived, bursty, stateless tasks map well to serverless because capacity scales with demand and operational management is minimized. The other options add complexity or solve a different problem.",
+      "tags": [
+        "serverless",
+        "spiky-traffic",
+        "event-processing",
+        "operational-overhead"
+      ],
+      "references": [
+        "Architecture Patterns",
+        "Scaling Strategies"
+      ]
+    },
+    {
+      "id": "systemdesign-q13",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A product manager asks for a diagram showing your platform, its users, the payment gateway, and the identity provider, but not the internals of each application.",
+      "prompt": "Which C4 level should you start with?",
+      "options": [
+        "System Context diagram",
+        "Container diagram",
+        "Component diagram",
+        "Code diagram"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A System Context diagram is the right starting point when the audience needs to understand external actors, neighboring systems, and boundaries without implementation detail.",
+      "tags": [
+        "c4-model",
+        "system-context",
+        "stakeholder-communication",
+        "visualization"
+      ],
+      "references": [
+        "Visualization",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "systemdesign-q14",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "Your architecture review board wants a disciplined decision process instead of ad hoc debates.",
+      "prompt": "Order the steps from earliest to latest in a sane governance workflow.",
+      "items": [
+        "Record the decision and trade-offs in an ADR",
+        "Compare candidate patterns against the required quality attributes",
+        "Revisit the decision when production metrics or constraints change",
+        "Capture the most important constraints and quality attributes",
+        "Automate fitness functions to guard the chosen architecture"
+      ],
+      "correctAnswer": [
+        "Capture the most important constraints and quality attributes",
+        "Compare candidate patterns against the required quality attributes",
+        "Record the decision and trade-offs in an ADR",
+        "Automate fitness functions to guard the chosen architecture",
+        "Revisit the decision when production metrics or constraints change"
+      ],
+      "explanation": "A mature governance loop starts with constraints, evaluates options, records the decision, enforces it with fitness functions, and revisits it when reality changes.",
+      "tags": [
+        "governance",
+        "adrs",
+        "fitness-functions",
+        "quality-attributes"
+      ],
+      "references": [
+        "Design Principles",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "systemdesign-q15",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A staff engineer is mapping desired qualities to the technique most likely to produce them.",
+      "prompt": "Match each goal to the most appropriate principle or mechanism.",
+      "premises": [
+        "A billing rule change should not require modifying unrelated notification code",
+        "A flaky recommendation dependency should not consume all checkout threads",
+        "Popular static assets should be served from infrastructure close to users",
+        "Adding a new payment provider should avoid editing stable calling code"
+      ],
+      "responses": [
+        "Single Responsibility principle",
+        "Circuit breaker",
+        "CDN edge caching",
+        "Open-Closed principle"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Separation of concerns reduces unrelated reasons to change, circuit breakers protect resources from unhealthy dependencies, CDNs move content closer to users, and Open-Closed supports extension without modifying stable core code.",
+      "tags": [
+        "solid",
+        "resilience",
+        "cdn",
+        "design-principles"
+      ],
+      "references": [
+        "Design Principles",
+        "Scaling Strategies",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q16",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A ride-hailing platform splits trip creation, driver assignment, billing, and notifications into separate services. One customer action now spans several services, and the team wants to avoid brittle distributed transactions.",
+      "prompt": "Which design choices make the architecture more practical?",
+      "options": [
+        "Make commands and event handlers idempotent",
+        "Define compensating actions for steps that may need reversal",
+        "Hold a global database lock across all services until the workflow ends",
+        "Accept eventual consistency across service boundaries where the business can tolerate it",
+        "Force every service to share the same schema in one database"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Idempotency, compensating actions, and selective acceptance of eventual consistency are practical ways to coordinate multi-service workflows. Global locking and a shared schema undermine service autonomy and scale poorly.",
+      "tags": [
+        "distributed-transactions",
+        "idempotency",
+        "saga-thinking",
+        "eventual-consistency"
+      ],
+      "references": [
+        "Distributed Systems",
+        "Architecture Patterns",
+        "Design Principles"
+      ]
+    },
+    {
+      "id": "systemdesign-q17",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "In a monolith, thumbnail generation is CPU-bound and spikes during uploads, but checkout and search traffic remain steady. Scaling the whole application is becoming wasteful.",
+      "prompt": "Which change most directly improves resource efficiency?",
+      "options": [
+        "Extract thumbnail processing into a separate service or async worker that scales independently",
+        "Add more CPU to the existing database server",
+        "Use stronger consistency across all requests",
+        "Replace architecture diagrams with code diagrams"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Separating the hot, CPU-intensive workload allows targeted scaling and avoids overprovisioning unrelated parts of the system. The other options do not address the actual bottleneck.",
+      "tags": [
+        "independent-scaling",
+        "microservices",
+        "async-workers",
+        "resource-efficiency"
+      ],
+      "references": [
+        "Architecture Patterns",
+        "Scaling Strategies"
+      ]
+    },
+    {
+      "id": "systemdesign-q18",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A data-import endpoint publishes jobs to a queue and returns immediately with an accepted status while workers process the backlog.",
+      "prompt": "True or false: this design can improve user-facing resilience during spikes even though the underlying work completes asynchronously.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Queues decouple request ingestion from expensive processing, smoothing spikes and protecting interactive request paths. The user-visible operation can remain responsive even if the full workflow finishes later.",
+      "tags": [
+        "message-queues",
+        "async-processing",
+        "backpressure",
+        "resilience"
+      ],
+      "references": [
+        "Scaling Strategies",
+        "Architecture Patterns"
+      ]
+    },
+    {
+      "id": "systemdesign-q19",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A collaboration app keeps tens of thousands of long-lived websocket connections. Some nodes end up much busier than others because connection durations vary widely.",
+      "prompt": "Which balancing algorithm is the strongest default starting point?",
+      "options": [
+        "Least connections",
+        "Round robin",
+        "IP hash",
+        "Weighted random without health checks"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Least connections is a strong default for workloads with long-lived or uneven session lengths because it directs new work toward nodes with fewer active connections rather than blindly rotating.",
+      "tags": [
+        "load-balancing",
+        "websockets",
+        "least-connections",
+        "traffic-distribution"
+      ],
+      "references": [
+        "Scaling Strategies"
+      ]
+    },
+    {
+      "id": "systemdesign-q20",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "During an inter-datacenter partition, a payment authorization service chooses a CP posture rather than AP because duplicate or contradictory authorizations are unacceptable.",
+      "prompt": "What is the most likely effect on some client requests during the partition?",
+      "options": [
+        "They may time out or be rejected to preserve consistency",
+        "They will all succeed with the latest state everywhere",
+        "They will be transparently routed to stale replicas with no trade-off",
+        "The partition becomes irrelevant because the database is relational"
+      ],
+      "correctAnswer": 0,
+      "explanation": "If the system chooses consistency under partition, some operations may need to fail or wait rather than risk contradictory state. That is the practical cost of a CP choice.",
+      "tags": [
+        "cp-systems",
+        "cap-theorem",
+        "payments",
+        "availability-trade-off"
+      ],
+      "references": [
+        "Distributed Systems",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q21",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A platform team is deciding whether a mature monolith should be decomposed. They want evidence, not fashion.",
+      "prompt": "Which signals support moving toward microservices now?",
+      "options": [
+        "Multiple teams are blocked by a shared release train",
+        "Different domains need independent scaling characteristics",
+        "The entire product is still simple and maintained by four engineers",
+        "Specific workloads would benefit from different technology stacks or runtime profiles",
+        "The organization still lacks observability and operational ownership, but wants microservices for resume value"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Independent team velocity, divergent scaling needs, and meaningful workload specialization are legitimate drivers for microservices. A tiny, simple system and weak operational maturity argue against decomposition.",
+      "tags": [
+        "microservices-migration",
+        "team-topology",
+        "scaling",
+        "trade-offs"
+      ],
+      "references": [
+        "Architecture Patterns",
+        "Design Principles",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q22",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An architect wants one diagram that shows the web app, mobile backend, auth service, database, cache, and message queue inside the system boundary, but not the internal classes of those services.",
+      "prompt": "Which C4 diagram is the best fit?",
+      "options": [
+        "Container diagram",
+        "System Context diagram",
+        "Component diagram",
+        "Code diagram"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A Container diagram is the right level when you need the main deployable pieces and data stores inside the system, without dropping into class-level or implementation detail.",
+      "tags": [
+        "container-diagram",
+        "c4-model",
+        "visualization",
+        "system-boundary"
+      ],
+      "references": [
+        "Visualization"
+      ]
+    },
+    {
+      "id": "systemdesign-q23",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A principal engineer is choosing a default pattern for several new initiatives.",
+      "prompt": "Match each project to the architecture that best fits its dominant constraints.",
+      "premises": [
+        "A five-person team needs an MVP in eight weeks with one shared transactional database",
+        "An upload should trigger transcoding, moderation, analytics, and notifications independently",
+        "A webhook processor sees spiky traffic and runs short stateless handlers",
+        "A global platform has many teams, domain boundaries, and a need for independent deployments"
+      ],
+      "responses": [
+        "Monolithic architecture",
+        "Event-driven architecture",
+        "Serverless architecture",
+        "Microservices architecture"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "The right architecture depends on constraints. Small, fast-moving, transactional MVPs fit monoliths; multi-consumer workflows fit event-driven systems; spiky stateless handlers fit serverless; and large multi-team platforms often justify microservices.",
+      "tags": [
+        "architecture-selection",
+        "monolith",
+        "event-driven",
+        "serverless",
+        "microservices"
+      ],
+      "references": [
+        "Architecture Patterns",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q24",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A team claims architecture governance is complete once diagrams are approved and stored in a wiki.",
+      "prompt": "True or false: fitness functions are intended to continuously verify architectural characteristics, not just document them once.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Fitness functions translate architectural intent into repeatable automated checks. They exist precisely because static documentation alone does not keep real systems aligned with their intended qualities.",
+      "tags": [
+        "fitness-functions",
+        "governance",
+        "automation",
+        "architecture-drift"
+      ],
+      "references": [
+        "Design Principles",
+        "Visualization"
+      ]
+    },
+    {
+      "id": "systemdesign-q25",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A streaming company knows that the same few episodes will dominate traffic in a region right after release. The goal is to reduce startup latency and shield the origin from repeated identical requests.",
+      "prompt": "Which tactic will produce the biggest benefit first?",
+      "options": [
+        "Pre-position hot content in edge caches close to viewers",
+        "Increase write consistency on the user-profile database",
+        "Replace the CDN with a single larger origin cluster",
+        "Move all processing into one monolith"
+      ],
+      "correctAnswer": 0,
+      "explanation": "When demand is highly repetitive and geographically concentrated, serving hot content from edge caches is the fastest way to reduce startup time and origin load.",
+      "tags": [
+        "case-study",
+        "cdn",
+        "predictive-caching",
+        "latency"
+      ],
+      "references": [
+        "Case Studies",
+        "Scaling Strategies"
+      ]
+    },
+    {
+      "id": "systemdesign-q26",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A recommendation service calls profile, catalog, and ranking dependencies. When catalog slows down, latency spikes propagate and unrelated requests begin to fail.",
+      "prompt": "Which measures reduce blast radius in this kind of distributed call graph?",
+      "options": [
+        "Use timeouts and circuit breakers around downstream calls",
+        "Isolate critical resources with bulkheads",
+        "Retry immediately and indefinitely from every layer",
+        "Offload non-critical work to async queues instead of holding synchronous request threads",
+        "Wrap every remote call in a synchronous distributed transaction"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Circuit breakers, timeouts, and bulkheads are classic containment tools, and async offloading prevents synchronous paths from absorbing avoidable work. Infinite layered retries and distributed transactions usually amplify failure instead of containing it.",
+      "tags": [
+        "circuit-breaker",
+        "bulkhead",
+        "async-processing",
+        "failure-isolation"
+      ],
+      "references": [
+        "Distributed Systems",
+        "Design Principles",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q27",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "Six months after a controversial migration, a new tech lead needs to understand why the team accepted operational complexity to gain deployment independence.",
+      "prompt": "Which artifact is most likely to preserve that reasoning?",
+      "options": [
+        "Architecture Decision Record (ADR)",
+        "A rotated on-call schedule",
+        "A CDN cache report",
+        "A load balancer health dashboard"
+      ],
+      "correctAnswer": 0,
+      "explanation": "An ADR exists to capture context, decision, consequences, and trade-offs so later engineers can understand why a path was chosen. Operational artifacts show runtime facts, not architectural reasoning.",
+      "tags": [
+        "adr",
+        "decision-history",
+        "governance",
+        "trade-offs"
+      ],
+      "references": [
+        "Design Principles"
+      ]
+    },
+    {
+      "id": "systemdesign-q28",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "You are tracing a cacheable read request through a layered delivery stack.",
+      "prompt": "Arrange the lookup layers from closest to the user to deepest in the backend path.",
+      "items": [
+        "Application cache",
+        "Primary database",
+        "Browser cache",
+        "CDN edge cache"
+      ],
+      "correctAnswer": [
+        "Browser cache",
+        "CDN edge cache",
+        "Application cache",
+        "Primary database"
+      ],
+      "explanation": "A well-layered read path checks the cheapest and closest caches first, then progressively falls back to deeper system layers. That ordering minimizes both latency and backend load.",
+      "tags": [
+        "cache-hierarchy",
+        "browser-cache",
+        "cdn",
+        "application-cache"
+      ],
+      "references": [
+        "Scaling Strategies",
+        "Case Studies"
+      ]
+    },
+    {
+      "id": "systemdesign-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A service called BillingManager calculates invoices, sends reminder emails, formats PDFs, and writes audit logs. Small policy changes now force risky edits across unrelated behavior.",
+      "prompt": "Which design principle is being violated most directly?",
+      "options": [
+        "Single Responsibility principle",
+        "CAP theorem",
+        "Least connections",
+        "CQRS"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The service clearly has multiple unrelated reasons to change. That is the essence of violating Single Responsibility, which in turn makes testing and maintenance harder.",
+      "tags": [
+        "single-responsibility",
+        "solid",
+        "maintainability",
+        "coupling"
+      ],
+      "references": [
+        "Design Principles"
+      ]
+    },
+    {
+      "id": "systemdesign-q30",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A non-technical stakeholder wants to understand system boundaries and external dependencies before funding a redesign.",
+      "prompt": "True or false: a code-level diagram is the best first artifact for that audience.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Code-level diagrams are far too detailed for that audience. Stakeholders evaluating boundaries and external relationships should start with higher-level visualizations such as a System Context view.",
+      "tags": [
+        "stakeholder-communication",
+        "c4-model",
+        "code-diagram",
+        "abstraction"
+      ],
+      "references": [
+        "Visualization",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "systemdesign-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A global subscription platform can tolerate slightly stale recommendation results, but billing balances and renewal state must never drift across concurrent updates.",
+      "prompt": "Which overall design approach is the most defensible?",
+      "options": [
+        "Use strong consistency or ACID-style guarantees for billing, while allowing eventual consistency in less critical read-heavy domains",
+        "Force every subsystem into the same eventual-consistency model for simplicity",
+        "Route all traffic through one server to avoid trade-offs",
+        "Use CDN caching as the primary correctness mechanism for payments"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Different domains often deserve different consistency models. Critical financial state should favor correctness guarantees, while less critical read-heavy features can trade some freshness for scale and availability.",
+      "tags": [
+        "consistency-models",
+        "bounded-contexts",
+        "acid-vs-base",
+        "domain-trade-offs"
+      ],
+      "references": [
+        "Distributed Systems",
+        "Design Principles",
+        "Case Studies"
+      ]
+    }
+  ]
+}

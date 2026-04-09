@@ -1,0 +1,864 @@
+{
+  "moduleId": "nodejs",
+  "moduleTitle": "Node.js",
+  "description": "Scenario-based assessment focused on advanced Node.js runtime behavior, event-loop scheduling, async coordination, streams and backpressure, scaling strategies, memory diagnostics, module-system edge cases, package-manager discipline, framework tradeoffs, and cross-runtime portability.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "nodejs-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An API gateway looks asynchronous on paper, but one route computes password hashes with crypto.pbkdf2Sync inside the request handler. During traffic spikes, unrelated lightweight requests also suffer 800 ms latency jumps.",
+      "prompt": "Which root cause best explains why a few expensive requests delay unrelated clients in the same process?",
+      "options": [
+        "Each synchronous hash blocks the event loop thread for the process",
+        "The hashes are transparently moved to the libuv thread pool because they are crypto operations",
+        "The kernel pauses all sockets until the slowest request finishes",
+        "V8 automatically parallelizes synchronous crypto across idle CPU cores"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The synchronous variant runs on the main thread, so it blocks the event loop and delays every other callback in that process until the hash finishes.",
+      "tags": [
+        "event-loop",
+        "cpu-bound",
+        "latency",
+        "crypto"
+      ],
+      "references": [
+        "Introduction",
+        "Event Loop",
+        "Scaling"
+      ]
+    },
+    {
+      "id": "nodejs-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A telemetry agent schedules a recursive chain of process.nextTick callbacks while also receiving steady TCP traffic. Once the chain starts, socket handlers stop firing until the recursion ends.",
+      "prompt": "Which observations accurately explain the stall?",
+      "options": [
+        "Node drains the nextTick queue before re-entering other event loop phases",
+        "A long self-scheduling nextTick chain can starve poll and check work",
+        "Promise microtasks always preempt nextTick in Node.js",
+        "Yielding periodically with setImmediate would let I/O phases make progress",
+        "Increasing socket highWaterMark would eliminate the starvation"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "process.nextTick has extremely high priority in Node.js. If code keeps refilling that queue, the runtime can delay I/O phases until the recursion finally yields.",
+      "tags": [
+        "process-nexttick",
+        "starvation",
+        "io",
+        "scheduling"
+      ],
+      "references": [
+        "Event Loop",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q03",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A diagnostics library queues both process.nextTick callbacks and Promise.then reactions from the same synchronous function and wants deterministic ordering.",
+      "prompt": "True or false: in Node.js, a process.nextTick callback queued at the same moment as a Promise.then reaction will run first.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Node.js processes the nextTick queue before ordinary Promise microtasks, which is why excessive nextTick usage can starve other work.",
+      "tags": [
+        "microtasks",
+        "process-nexttick",
+        "promises",
+        "ordering"
+      ],
+      "references": [
+        "Event Loop",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "You are walking a new platform engineer through the simplified visible phases of the Node.js event loop after the current script has finished executing.",
+      "prompt": "Arrange the event loop phases from earliest to latest for a normal Node.js iteration after the current script has finished.",
+      "items": [
+        "Timers",
+        "Pending callbacks",
+        "Poll",
+        "Check",
+        "Close callbacks"
+      ],
+      "correctAnswer": [
+        "Timers",
+        "Pending callbacks",
+        "Poll",
+        "Check",
+        "Close callbacks"
+      ],
+      "explanation": "In the simplified view most developers use, timers run first, then pending callbacks, then poll, then check, and finally close callbacks.",
+      "tags": [
+        "event-loop-phases",
+        "timers",
+        "poll",
+        "setimmediate"
+      ],
+      "references": [
+        "Event Loop"
+      ]
+    },
+    {
+      "id": "nodejs-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A platform team is standardizing concurrency choices across several services and wants the least-complicated primitive that still fits each workload.",
+      "prompt": "Match each workload to the concurrency primitive that best fits it.",
+      "premises": [
+        "A single process already has enough CPU headroom, and the hard part is multiplexing 50,000 mostly idle WebSocket connections",
+        "Image thumbnail generation is CPU-heavy JavaScript and should run in parallel without full process isolation",
+        "An untrusted PDF tool must be invoked with separate memory space and independent crash boundaries",
+        "One stateless HTTP service should use all CPU cores while continuing to accept connections on one port"
+      ],
+      "responses": [
+        "Keep it on the main event loop in one process",
+        "Use worker_threads",
+        "Use child_process",
+        "Use cluster"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Evented I/O excels at many mostly idle connections, worker_threads fit CPU-bound parallel JavaScript with shared memory options, child processes provide stronger isolation, and cluster scales stateless network handling across cores.",
+      "tags": [
+        "concurrency",
+        "worker-threads",
+        "cluster",
+        "child-process"
+      ],
+      "references": [
+        "Introduction",
+        "Scaling",
+        "Event Loop"
+      ]
+    },
+    {
+      "id": "nodejs-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A file-upload proxy currently concatenates incoming chunks in arrays and writes the full body to a slow object store client only after the upload completes. Under burst traffic, memory spikes before uploads finish.",
+      "prompt": "Which redesign most directly applies backpressure instead of buffering the entire transfer in user space?",
+      "options": [
+        "Replace the manual buffering loop with a streamed pipeline that writes as data arrives",
+        "Convert every incoming chunk to UTF-8 strings before storing it",
+        "Increase every stream's highWaterMark so the buffer can absorb the burst",
+        "Use Promise.all to flush the buffered chunks in parallel after the upload ends"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A proper stream pipeline preserves backpressure, so the slow destination throttles the source instead of forcing the application to accumulate the whole payload in memory.",
+      "tags": [
+        "streams",
+        "backpressure",
+        "memory-pressure",
+        "uploads"
+      ],
+      "references": [
+        "Buffers & Streams",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A binary framing parser slices headers and payloads out of a shared Buffer pool to avoid extra copies while decoding packets from a TCP stream.",
+      "prompt": "Which statements are correct about Buffer behavior in this situation?",
+      "options": [
+        "Buffer.allocUnsafe may expose previously used memory until the code overwrites it",
+        "Buffer.subarray can share the same underlying memory as the original Buffer",
+        "Buffer.concat is guaranteed to be zero-copy for all inputs",
+        "Using readUInt32BE instead of readUInt32LE changes how the same bytes are interpreted",
+        "Converting arbitrary binary chunks to UTF-8 strings before framing is safe"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "allocUnsafe does not zero memory, subarray creates a view, and endianness changes interpretation. Buffer.concat copies into a new allocation, and blindly stringifying binary data can corrupt protocol framing.",
+      "tags": [
+        "buffer",
+        "binary-protocols",
+        "endianness",
+        "zero-copy"
+      ],
+      "references": [
+        "Buffers & Streams",
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "nodejs-q08",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A response compression chain uses manual data, error, and end listeners across req, zlib, and res. When the transform errors, sockets sometimes stay open and completion callbacks fire inconsistently.",
+      "prompt": "Which Node.js API best coordinates teardown and error propagation across the stream chain?",
+      "options": [
+        "stream.pipeline",
+        "Promise.race",
+        "Readable.from",
+        "stream.finished"
+      ],
+      "correctAnswer": 0,
+      "explanation": "stream.pipeline is designed to wire streams together with correct error propagation and cleanup across the entire chain. finished observes completion on a stream, but it does not replace pipeline's orchestration role.",
+      "tags": [
+        "pipeline",
+        "error-handling",
+        "streams",
+        "cleanup"
+      ],
+      "references": [
+        "Buffers & Streams",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q09",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A developer raises a writable stream's highWaterMark to 16 MB and tells the team that this guarantees memory use can never exceed that threshold per stream.",
+      "prompt": "True or false: setting a writable stream's highWaterMark to 16 MB guarantees its internal buffer can never grow beyond 16 MB.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "highWaterMark is a backpressure threshold, not an absolute safety ceiling. Actual buffering behavior can still exceed that number depending on the stream implementation and surrounding flow.",
+      "tags": [
+        "highwatermark",
+        "backpressure",
+        "writable-stream",
+        "buffering"
+      ],
+      "references": [
+        "Buffers & Streams"
+      ]
+    },
+    {
+      "id": "nodejs-q10",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A log ingestion service is using proper backpressure. The sink falls behind for a moment and flow control kicks in.",
+      "prompt": "Arrange the backpressure-aware sequence from earliest to latest once the sink becomes slower than the source.",
+      "items": [
+        "Readable produces a chunk",
+        "Transform processes the chunk and forwards it",
+        "Writable.write returns false",
+        "Upstream stops pulling or pauses",
+        "The writable emits drain and flow resumes"
+      ],
+      "correctAnswer": [
+        "Readable produces a chunk",
+        "Transform processes the chunk and forwards it",
+        "Writable.write returns false",
+        "Upstream stops pulling or pauses",
+        "The writable emits drain and flow resumes"
+      ],
+      "explanation": "Once the writable signals pressure by returning false, upstream components should stop pulling more data until drain indicates the sink can accept new chunks again.",
+      "tags": [
+        "backpressure",
+        "drain",
+        "writable",
+        "transform"
+      ],
+      "references": [
+        "Buffers & Streams",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q11",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A recommendation service performs CPU-heavy scoring in pure JavaScript and wants parallel execution plus low-overhead shared memory transfer between workers.",
+      "prompt": "Which scaling primitive is the best fit when low-overhead CPU parallelism and shared memory transfer matter more than process isolation?",
+      "options": [
+        "worker_threads",
+        "cluster",
+        "child_process",
+        "setImmediate"
+      ],
+      "correctAnswer": 0,
+      "explanation": "worker_threads provide parallel JavaScript execution within one process and support efficient shared memory patterns such as SharedArrayBuffer.",
+      "tags": [
+        "worker-threads",
+        "shared-memory",
+        "cpu-bound",
+        "parallelism"
+      ],
+      "references": [
+        "Scaling",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "nodejs-q12",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A service performs many concurrent fs.readFile operations while also using crypto hashing under load. Tail latency worsens even though the main event loop itself is not obviously blocked all the time.",
+      "prompt": "Which interventions can legitimately reduce tail latency in this situation?",
+      "options": [
+        "Increase UV_THREADPOOL_SIZE if the hot path is dominated by thread-pool-backed operations",
+        "Replace pbkdf2Sync with asynchronous pbkdf2 or move hashing into worker_threads",
+        "Use cluster so multiple processes can exploit multiple CPU cores",
+        "Wrap each fs.readFile call in process.nextTick to get ahead of the queue",
+        "Assume worker_threads will make already non-blocking socket I/O faster by themselves"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "fs and some crypto work use the libuv thread pool, CPU-bound sync work can still block the main thread, and cluster can increase overall parallel capacity. process.nextTick does not solve thread-pool contention, and worker_threads do not automatically improve already non-blocking socket I/O.",
+      "tags": [
+        "libuv",
+        "threadpool",
+        "throughput",
+        "worker-threads",
+        "cluster"
+      ],
+      "references": [
+        "Scaling",
+        "Async Programming",
+        "Event Loop"
+      ]
+    },
+    {
+      "id": "nodejs-q13",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A production memory review shows several different growth patterns, and the team wants to map each symptom to its most likely retention mechanism.",
+      "prompt": "Match each symptom to the most likely retention mechanism.",
+      "premises": [
+        "RSS grows after introducing a large Buffer cache, while heap snapshots look smaller than expected",
+        "Heap usage climbs because response objects remain keyed by userId forever",
+        "Memory leak appears after repeatedly adding listeners to long-lived emitters",
+        "Detached request context survives because closures still reference it"
+      ],
+      "responses": [
+        "External memory held outside the ordinary V8 heap",
+        "Unbounded strong-reference cache",
+        "Listener accumulation on long-lived emitters",
+        "Closure retention of request state"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Buffers often contribute external memory, Maps and similar structures can retain objects indefinitely, listener buildup can pin emitters and callbacks, and closures can keep otherwise dead request data alive.",
+      "tags": [
+        "memory-leak",
+        "buffers",
+        "eventemitter",
+        "closures"
+      ],
+      "references": [
+        "Memory Management",
+        "Buffers & Streams"
+      ]
+    },
+    {
+      "id": "nodejs-q14",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A service caches per-tenant metadata using tenant object instances as keys. Tenants are deleted elsewhere, but cached entries never disappear and memory keeps growing.",
+      "prompt": "Which change best allows cached entries to disappear when a tenant key object is no longer strongly referenced elsewhere?",
+      "options": [
+        "Replace Map with WeakMap for object keys that should not keep entries alive",
+        "Call Object.freeze on every tenant object before caching it",
+        "Increase the cache size limit so eviction happens less often",
+        "Stringify each tenant object into JSON and use that string as the key"
+      ],
+      "correctAnswer": 0,
+      "explanation": "WeakMap entries do not keep object keys alive. When the key becomes unreachable elsewhere, the runtime may reclaim the entry automatically.",
+      "tags": [
+        "weakmap",
+        "caching",
+        "garbage-collection",
+        "object-keys"
+      ],
+      "references": [
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "nodejs-q15",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "Operations sees process RSS far above heapUsed and wants to explain why overall memory consumption is still rising even though ordinary JavaScript object graphs look fairly stable.",
+      "prompt": "Which factors can make process RSS materially exceed V8 heapUsed even when ordinary JavaScript objects look stable?",
+      "options": [
+        "Large Buffer or ArrayBuffer allocations tracked as external memory",
+        "Native addon or runtime C/C++ allocations",
+        "Promises that have already settled and been garbage-collected",
+        "Stacks and runtime overhead from additional worker threads",
+        "Only package-lock.json growth on disk"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "heapUsed does not account for every byte in the process. External memory, native allocations, and extra thread stacks all contribute to RSS outside the ordinary managed heap.",
+      "tags": [
+        "rss",
+        "heapused",
+        "external-memory",
+        "worker-threads"
+      ],
+      "references": [
+        "Memory Management",
+        "Buffers & Streams",
+        "Scaling"
+      ]
+    },
+    {
+      "id": "nodejs-q16",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A parser takes a small header view with buf.subarray(0, 8) and later normalizes bytes in that view before logging the full packet.",
+      "prompt": "True or false: mutating a Buffer returned by subarray can change bytes visible through the original Buffer.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "subarray creates a view over the same underlying memory, so writes through the view are reflected in the original Buffer as well.",
+      "tags": [
+        "buffer",
+        "subarray",
+        "shared-memory",
+        "views"
+      ],
+      "references": [
+        "Buffers & Streams",
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "nodejs-q17",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A package is configured as type: module, and analytics.js tries to call require('./lib.js') at top level during startup.",
+      "prompt": "What is the most accurate outcome of this module setup?",
+      "options": [
+        "The file is treated as native ESM, and require is not available unless you explicitly bridge it",
+        "Node silently rewrites require into dynamic import",
+        "The file runs as CommonJS because it contains require",
+        "The code works only if package-lock.json exists"
+      ],
+      "correctAnswer": 0,
+      "explanation": "In native ESM, require is not a built-in top-level binding. Code must use import syntax or explicitly create a CommonJS bridge such as createRequire.",
+      "tags": [
+        "esm",
+        "commonjs",
+        "createRequire",
+        "module-resolution"
+      ],
+      "references": [
+        "Module System"
+      ]
+    },
+    {
+      "id": "nodejs-q18",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A library maintainer wants to publish one package that exposes only supported entry points and can serve both import and require consumers without encouraging deep imports into internal build files.",
+      "prompt": "Which package.json practices help achieve that goal?",
+      "options": [
+        "Define an exports map",
+        "Use conditional exports such as import and require when dual entry points are needed",
+        "Treat arbitrary deep paths under dist as stable public API",
+        "Use explicit .cjs or .mjs boundaries or an appropriate type field where necessary",
+        "Omit exports so every internal file remains reachable"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "exports lets a package define public entry points precisely, conditional exports support multiple consumers, and clear file or package type boundaries reduce ambiguity between ESM and CommonJS.",
+      "tags": [
+        "exports",
+        "conditional-exports",
+        "package-json",
+        "dual-package"
+      ],
+      "references": [
+        "Module System",
+        "Package Managers"
+      ]
+    },
+    {
+      "id": "nodejs-q19",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A startup module wants to await remote configuration before exporting initialized clients, and the team does not want to wrap the file in an async IIFE.",
+      "prompt": "Under which module system does this pattern work natively without wrapping the file in an async IIFE?",
+      "options": [
+        "ESM only",
+        "CommonJS only",
+        "Both ESM and CommonJS",
+        "Neither"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Top-level await is supported in ESM, not in traditional CommonJS modules.",
+      "tags": [
+        "top-level-await",
+        "esm",
+        "startup",
+        "async-init"
+      ],
+      "references": [
+        "Module System",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q20",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A migration team inherits packages with conflicting file extensions and package-level module settings and needs to predict how Node.js will interpret each case.",
+      "prompt": "Match each setup to the runtime interpretation Node.js will apply.",
+      "premises": [
+        "In a package with type: module, analytics.js is executed",
+        "In a package with type: commonjs, server.mjs is executed",
+        "In a package with type: module, legacy.cjs is executed",
+        "A consumer imports a subpath that is absent from the package exports map"
+      ],
+      "responses": [
+        "Treated as ESM because package type marks .js as a module",
+        "Treated as ESM because the .mjs extension overrides package type",
+        "Treated as CommonJS because the .cjs extension overrides package type",
+        "Resolution fails because that subpath is not exported"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Package type influences plain .js files, while .mjs and .cjs are explicit overrides. The exports map can also block unlisted subpaths even if the files exist on disk.",
+      "tags": [
+        "module-resolution",
+        "mjs",
+        "cjs",
+        "exports-map"
+      ],
+      "references": [
+        "Module System"
+      ]
+    },
+    {
+      "id": "nodejs-q21",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A CI pipeline must perform a clean install using the lockfile only, remove any preexisting node_modules state, and fail if package.json and the lockfile disagree.",
+      "prompt": "Which command best matches that CI requirement?",
+      "options": [
+        "npm ci",
+        "npm install",
+        "npm update",
+        "npm audit fix"
+      ],
+      "correctAnswer": 0,
+      "explanation": "npm ci is designed for deterministic CI installs from the lockfile and will fail when the dependency manifest and lockfile are out of sync.",
+      "tags": [
+        "npm-ci",
+        "lockfile",
+        "ci",
+        "reproducibility"
+      ],
+      "references": [
+        "Package Managers"
+      ]
+    },
+    {
+      "id": "nodejs-q22",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "After a malicious transitive package incident, a platform team is tightening npm hygiene for a fleet of Node.js services.",
+      "prompt": "Which controls materially reduce npm supply-chain risk for this service?",
+      "options": [
+        "Commit and review package-lock.json changes",
+        "Use exact versions for direct dependencies when policy requires it",
+        "Run npm ci in CI instead of a floating install",
+        "Allow install scripts from new transitive packages without review to avoid blocking developers",
+        "Ignore lockfile diffs as long as package.json did not change"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Lockfile review, deterministic CI installs, and disciplined version pinning reduce unexpected dependency drift. Ignoring transitive changes or blindly trusting new install scripts increases risk.",
+      "tags": [
+        "supply-chain",
+        "lockfile",
+        "version-pinning",
+        "ci"
+      ],
+      "references": [
+        "Package Managers"
+      ]
+    },
+    {
+      "id": "nodejs-q23",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A plugin library extends a host web framework and must share the host's singleton instance rather than bundling a private copy inside the plugin package.",
+      "prompt": "Which package.json field communicates that the host framework must be supplied by the consumer instead of bundled privately?",
+      "options": [
+        "peerDependencies",
+        "optionalDependencies",
+        "bundledDependencies",
+        "overrides"
+      ],
+      "correctAnswer": 0,
+      "explanation": "peerDependencies declare compatibility with a host package that the consuming application is expected to provide.",
+      "tags": [
+        "peerdependencies",
+        "plugins",
+        "framework-integration",
+        "package-json"
+      ],
+      "references": [
+        "Package Managers",
+        "Frameworks"
+      ]
+    },
+    {
+      "id": "nodejs-q24",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An Express 4 application defines app.get('/users', async (req, res) => { throw new Error('boom'); }). In production, the rejection bypasses the central error middleware.",
+      "prompt": "Which change most directly makes rejected async handlers reach centralized error middleware?",
+      "options": [
+        "Wrap the handler so rejections call next(err), or use a helper that forwards async errors",
+        "Add an uncaughtException listener and keep the route unchanged",
+        "Move the route body into process.nextTick so Express notices the throw",
+        "Replace res.json with res.sendStatus"
+      ],
+      "correctAnswer": 0,
+      "explanation": "In Express 4, rejected async handlers are not automatically forwarded to next. The route must explicitly pass errors into the middleware chain or use a compatible wrapper.",
+      "tags": [
+        "express",
+        "error-handling",
+        "async-routes",
+        "middleware"
+      ],
+      "references": [
+        "Frameworks",
+        "Async Programming"
+      ]
+    },
+    {
+      "id": "nodejs-q25",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is evaluating Fastify for a high-throughput JSON API and wants to distinguish its architecture from classic Express.",
+      "prompt": "Which characteristics align more closely with Fastify than with classic Express?",
+      "options": [
+        "Built-in schema-driven validation and serialization hooks",
+        "An encapsulation-oriented plugin model",
+        "A minimal middleware stack centered mainly on mutating req and res objects directly",
+        "A strong emphasis on low overhead and throughput",
+        "Dependency injection containers as the default architectural core"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Fastify is known for encapsulated plugins, schema-aware validation and serialization, and strong performance goals. The looser req/res middleware style is more associated with Express, while DI-first structure is more associated with NestJS.",
+      "tags": [
+        "fastify",
+        "express",
+        "validation",
+        "performance"
+      ],
+      "references": [
+        "Frameworks"
+      ]
+    },
+    {
+      "id": "nodejs-q26",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A NestJS service stores the current user object inside a singleton provider, and under load one request occasionally sees another user's data.",
+      "prompt": "Which fix best matches the framework's architecture?",
+      "options": [
+        "Move request-specific state into request-scoped providers or request-bound context and keep singleton services stateless",
+        "Mark every controller method async so NestJS isolates state automatically",
+        "Switch to the Fastify adapter because request data leaks disappear there",
+        "Store the current user in a module-level variable instead of the provider"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Singleton providers should remain stateless across requests. Request-specific data belongs in request-scoped providers, request context, or explicit method parameters.",
+      "tags": [
+        "nestjs",
+        "dependency-injection",
+        "request-scope",
+        "state-leak"
+      ],
+      "references": [
+        "Frameworks",
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "nodejs-q27",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A team tries to run a Node.js CLI under Deno without changing anything. The tool assumes npm-style package management, package.json scripts, and CommonJS require-based loading.",
+      "prompt": "What is the most likely first incompatibility?",
+      "options": [
+        "Assumptions about npm-style package management and CommonJS resolution will not carry over directly",
+        "Deno cannot execute TypeScript source files",
+        "Deno has no file system APIs",
+        "Deno lacks promises and async I/O"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Cross-runtime differences often surface first in module resolution and package-management assumptions. A Node-oriented tool that expects npm conventions and CommonJS behavior may require adaptation before it runs cleanly elsewhere.",
+      "tags": [
+        "deno",
+        "commonjs",
+        "package-management",
+        "portability"
+      ],
+      "references": [
+        "Runtime Wars",
+        "Module System",
+        "Package Managers"
+      ]
+    },
+    {
+      "id": "nodejs-q28",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A benchmark shows Bun starting a local dev server faster than Node.js, and leadership wants to decide whether production services should switch runtimes.",
+      "prompt": "Which evaluation points are legitimate before changing runtimes?",
+      "options": [
+        "Compatibility with required Node core APIs and native addons",
+        "Package-install behavior, lockfile conventions, and lifecycle script semantics",
+        "Benchmarks captured under the team's actual workload profile",
+        "A hello-world benchmark is enough to infer framework compatibility",
+        "Observability and debugging tooling can be ignored if startup time looks good"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Runtime changes affect more than startup time. Production decisions should consider API compatibility, package ecosystem behavior, tooling maturity, and representative workload performance rather than toy benchmarks alone.",
+      "tags": [
+        "bun",
+        "benchmarking",
+        "compatibility",
+        "tooling"
+      ],
+      "references": [
+        "Runtime Wars",
+        "Package Managers",
+        "Frameworks"
+      ]
+    },
+    {
+      "id": "nodejs-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A service fans out to three upstream HTTP APIs and enforces a strict global timeout. When one upstream exceeds the SLA, the team wants the underlying request cancelled instead of merely ignored.",
+      "prompt": "Which approach best enforces timeout-driven cancellation across fetch-based upstream calls?",
+      "options": [
+        "Use AbortController and pass its signal into the outbound requests",
+        "Race the promises against a timeout without aborting the underlying I/O",
+        "Set a cancelled boolean in JavaScript and let the request finish in the background",
+        "Call process.exit when the timeout expires"
+      ],
+      "correctAnswer": 0,
+      "explanation": "AbortController integrates with modern fetch-based APIs so the timeout can cancel the underlying operation rather than just ignoring a still-running request.",
+      "tags": [
+        "abortcontroller",
+        "fetch",
+        "timeouts",
+        "cancellation"
+      ],
+      "references": [
+        "Async Programming",
+        "Event Loop"
+      ]
+    },
+    {
+      "id": "nodejs-q30",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A server fires Promise.all over 500 database calls while the database pool allows only 20 active connections. Engineers disagree about whether Promise.all guarantees 500-way real throughput.",
+      "prompt": "True or false: Promise.all creates logical concurrency, but actual throughput is still capped by downstream resources such as the connection pool.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Promise.all can schedule many asynchronous operations at once, but external bottlenecks like connection pools, rate limits, and CPU capacity still determine real execution throughput.",
+      "tags": [
+        "promise-all",
+        "concurrency",
+        "connection-pool",
+        "throughput"
+      ],
+      "references": [
+        "Async Programming",
+        "Scaling"
+      ]
+    },
+    {
+      "id": "nodejs-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An ingestion endpoint accepts 500 MB NDJSON uploads, concatenates the full body into memory, and only then starts parsing and writing records to storage. During bursts, containers are OOM-killed.",
+      "prompt": "Which redesign most directly lowers memory pressure without giving up streaming throughput?",
+      "options": [
+        "Parse incrementally from the request stream and preserve backpressure all the way to the sink",
+        "Raise --max-old-space-size until the burst fits in memory",
+        "Convert each chunk to base64 before concatenating it",
+        "Throttle parsing with setInterval while keeping the full payload buffered"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Incremental parsing keeps working sets small and lets storage speed regulate the source through backpressure. Simply raising heap limits or re-encoding buffered data does not address the architectural problem.",
+      "tags": [
+        "ndjson",
+        "streaming",
+        "backpressure",
+        "oom"
+      ],
+      "references": [
+        "Buffers & Streams",
+        "Memory Management",
+        "Scaling"
+      ]
+    }
+  ]
+}

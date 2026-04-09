@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 import Introduction from './components/sections/Introduction';
 import TypeScriptBasics from './components/sections/TypeScriptBasics';
 import TypeScriptVsJavaScript from './components/sections/TypeScriptVsJavaScript';
@@ -20,6 +21,8 @@ import SOLIDPrinciples from './components/sections/SOLIDPrinciples';
 import AdvancedTypes from './components/sections/AdvancedTypes';
 import Generics from './components/sections/Generics';
 import TypeScriptVisualization from './components/sections/TypeScriptVisualization';
+
+const Quiz = () => <ModuleQuizSection moduleId="typescript" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -42,6 +45,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Advanced Types': AdvancedTypes,
   Generics: Generics,
   'TypeScript Visualization': TypeScriptVisualization,
+  Quiz,
 };
 
 function useQuery() {

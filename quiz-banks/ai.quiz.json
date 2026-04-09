@@ -1,0 +1,798 @@
+{
+  "moduleId": "ai",
+  "moduleTitle": "Artificial Intelligence",
+  "description": "A difficult scenario-based quiz on ML systems, neural networks, embeddings, and RAG.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "ai-q01",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "An ICU team is deploying a sepsis alert where only 0.5% of encounters are positive. The current model reaches 99.4% accuracy with standard binary cross-entropy, but it misses too many true cases to be clinically useful.",
+      "prompt": "Which change most directly aligns training with the need to catch the rare positive cases while still producing probabilities?",
+      "options": [
+        "Increase hidden layer width and keep the unweighted loss",
+        "Apply class-weighted loss or focal loss during training",
+        "Lower the inference threshold during preprocessing",
+        "Replace the binary labels with percentile ranks"
+      ],
+      "correctAnswer": 1,
+      "explanation": "With extreme class imbalance, standard loss is dominated by easy negatives. Class-weighted or focal loss increases the contribution of rare positive errors, so optimization pays more attention to recall without abandoning probabilistic outputs.",
+      "tags": [
+        "class-imbalance",
+        "loss-design",
+        "medical-ml"
+      ],
+      "references": [
+        "Loss Functions",
+        "Generalization"
+      ]
+    },
+    {
+      "id": "ai-q02",
+      "type": "true-false",
+      "difficulty": "hard",
+      "scenario": "A demand forecasting model evaluated with a random split across 24 months looks strong offline, but it fails on a last-quarter holdout after pricing policy changes.",
+      "prompt": "True or false: The random-split validation score is a reliable estimate of future performance simply because it used unseen rows.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Unseen rows are not enough when the split ignores time and policy drift. If evaluation does not mirror the production decision point, the offline score can look excellent while future performance collapses.",
+      "tags": [
+        "temporal-split",
+        "distribution-shift",
+        "evaluation"
+      ],
+      "references": [
+        "ML Lifecycle",
+        "Generalization"
+      ]
+    },
+    {
+      "id": "ai-q03",
+      "type": "multi-select",
+      "difficulty": "hard",
+      "scenario": "A subscription churn model is built from a warehouse snapshot taken one day after some cancellation events. The team is deciding which features are safe to keep.",
+      "prompt": "Which choices introduce leakage or target contamination?",
+      "options": [
+        "Using the last support ticket status at snapshot time when some of those tickets happened after churn",
+        "Using the number of failed renewals observed before the prediction cutoff",
+        "Using account age measured at the prediction cutoff",
+        "Using days since cancel request when the cancel request can occur after the intended prediction time",
+        "Using the last invoice amount recorded strictly before the prediction cutoff"
+      ],
+      "correctAnswer": [
+        0,
+        3
+      ],
+      "explanation": "Any feature that depends on events after the true prediction moment leaks information from the future. Pre-cutoff renewals, account age, and pre-cutoff invoice amounts are defensible; post-event support state and post-cutoff cancel signals are not.",
+      "tags": [
+        "leakage",
+        "feature-selection",
+        "churn"
+      ],
+      "references": [
+        "ML Lifecycle",
+        "Feature Engineering",
+        "Generalization"
+      ]
+    },
+    {
+      "id": "ai-q04",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A credit underwriting linear model underfits because debt-to-income ratio and a recent utilization spike matter mostly in combination, not separately.",
+      "prompt": "What is the best feature engineering change if the team wants the linear model to capture this pattern without switching model families?",
+      "options": [
+        "Standardize each variable separately and retrain",
+        "Add an interaction feature combining debt-to-income ratio and utilization spike",
+        "Drop both variables to reduce noise",
+        "Increase the training set size without changing the inputs"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A plain linear model cannot express multiplicative effects unless the interaction is explicitly engineered. Adding the interaction term lets the model represent the combined risk signal directly.",
+      "tags": [
+        "linear-models",
+        "interaction-terms",
+        "credit-risk"
+      ],
+      "references": [
+        "Feature Engineering"
+      ]
+    },
+    {
+      "id": "ai-q05",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A deep tabular network uses sigmoid activations in every hidden layer. Early in training, lower-layer gradients are nearly zero, and activations cluster near 0 or 1 after large random initialization.",
+      "prompt": "Which intervention most directly addresses the root cause of the stalled learning?",
+      "options": [
+        "Use smaller variance-aware initialization and switch to a less saturating activation such as ReLU",
+        "Increase batch size so gradients average out",
+        "Remove the output-layer bias term",
+        "Replace the labels with a larger one-hot vector"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Large initial weights push sigmoids into saturation, where gradients become tiny. Better initialization and non-saturating activations reduce vanishing-gradient behavior and let error signals reach earlier layers.",
+      "tags": [
+        "vanishing-gradients",
+        "initialization",
+        "deep-learning"
+      ],
+      "references": [
+        "Neural Networks",
+        "Backpropagation"
+      ]
+    },
+    {
+      "id": "ai-q06",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A multiclass classifier predicts probabilities [0.97, 0.02, 0.01] for an example whose true class is the second one. The team is debating mean squared error versus cross-entropy.",
+      "prompt": "Which loss will produce the stronger corrective signal for this confident mistake, and why?",
+      "options": [
+        "Mean squared error, because squared error always grows faster near 1",
+        "Cross-entropy, because confidently wrong probabilities are penalized sharply through the log term",
+        "Either loss, because gradients are identical after softmax",
+        "Neither, because loss choice only changes calibration, not learning"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Cross-entropy heavily penalizes confident mistakes, which yields a strong gradient pushing probability mass toward the correct class. That is why it is usually preferred for classification.",
+      "tags": [
+        "cross-entropy",
+        "classification",
+        "optimization"
+      ],
+      "references": [
+        "Loss Functions",
+        "Gradient Descent"
+      ]
+    },
+    {
+      "id": "ai-q07",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "Training loss oscillates sharply between steps, although the epoch average still trends downward. The run uses a high learning rate, small mini-batches, and mildly noisy labels.",
+      "prompt": "What is the most defensible first adjustment if the goal is steadier optimization without changing the objective?",
+      "options": [
+        "Lower the learning rate or use a schedule with warmup and decay",
+        "Increase model depth so it can absorb the noise",
+        "Disable data shuffling to stabilize batches",
+        "Evaluate only every ten epochs"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Large step sizes combined with gradient noise often create unstable updates. Reducing the learning rate or introducing a schedule is the most direct way to make descent smoother.",
+      "tags": [
+        "learning-rate",
+        "mini-batches",
+        "stability"
+      ],
+      "references": [
+        "Gradient Descent"
+      ]
+    },
+    {
+      "id": "ai-q08",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A vision model stops improving after several ReLU units become permanently inactive. Gradient inspection shows those neurons output zero for almost all inputs.",
+      "prompt": "Which intervention most directly reduces this failure mode?",
+      "options": [
+        "Increase weight decay",
+        "Use leaky ReLU or better initialization to avoid dead units",
+        "Convert labels to ordinal targets",
+        "Freeze the earlier layers"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Dead ReLUs arise when neurons are pushed into a regime where they never activate and therefore never receive useful gradients. Leaky ReLU and better initialization both reduce that risk.",
+      "tags": [
+        "dead-relu",
+        "activation-functions",
+        "debugging"
+      ],
+      "references": [
+        "Neural Networks",
+        "Backpropagation"
+      ]
+    },
+    {
+      "id": "ai-q09",
+      "type": "true-false",
+      "difficulty": "hard",
+      "scenario": "A semantic search team normalizes every document embedding and query embedding to unit length before retrieval.",
+      "prompt": "True or false: After unit normalization, ranking by dot product is equivalent to ranking by cosine similarity.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Cosine similarity is the dot product divided by the vector norms. Once all vectors have norm 1, the two rankings are identical.",
+      "tags": [
+        "embeddings",
+        "similarity",
+        "retrieval"
+      ],
+      "references": [
+        "Word Embeddings"
+      ]
+    },
+    {
+      "id": "ai-q10",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A RAG assistant indexes PDF chunks of about 2500 tokens each. Relevant evidence is often buried in the middle of a chunk, and the top retrieved passages consume too much prompt budget while still missing the exact answer.",
+      "prompt": "Which change is most likely to improve grounding without increasing model size?",
+      "options": [
+        "Use smaller semantically coherent chunks with overlap and rebuild the index",
+        "Raise generation temperature so the model explores more possibilities",
+        "Remove retrieval and rely on parametric memory",
+        "Train the generator directly on retrieved passages as labels"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Very large chunks blur retrieval signals and waste context window space. Smaller, coherent chunks with overlap usually improve recall of the exact evidence the generator should ground on.",
+      "tags": [
+        "chunking",
+        "retrieval-quality",
+        "context-window"
+      ],
+      "references": [
+        "RAG Pipeline"
+      ]
+    },
+    {
+      "id": "ai-q11",
+      "type": "multi-select",
+      "difficulty": "hard",
+      "scenario": "A product classifier reaches 99% training accuracy but only 81% validation accuracy, and many wrong validation predictions have confidence near 1.0.",
+      "prompt": "Which actions specifically target overfitting or miscalibration rather than simply making optimization faster?",
+      "options": [
+        "Add regularization or reduce model capacity",
+        "Collect more representative data or apply stronger augmentation",
+        "Increase batch size only to speed throughput",
+        "Use early stopping based on validation behavior",
+        "Raise the learning rate so training reaches 100% accuracy sooner"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Regularization, stronger data coverage, and early stopping all improve generalization or reduce overconfidence. Increasing batch size for speed or pushing training accuracy even faster does not directly solve the validation gap.",
+      "tags": [
+        "overfitting",
+        "calibration",
+        "validation-gap"
+      ],
+      "references": [
+        "Generalization",
+        "ML Lifecycle"
+      ]
+    },
+    {
+      "id": "ai-q12",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "An image model with batch normalization performs well during training but degrades badly in a single-request production service. Investigation shows the serving path recomputes batch statistics from the current request.",
+      "prompt": "What is the root issue?",
+      "options": [
+        "The model is using training-mode batch normalization behavior during inference",
+        "The optimizer state was not shipped with the model",
+        "The labels were one-hot encoded",
+        "The embeddings are too low-dimensional"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Batch normalization should use frozen running statistics at inference time. Recomputing batch stats from a single request creates unstable behavior and a clear training-serving mismatch.",
+      "tags": [
+        "batch-normalization",
+        "serving",
+        "inference-bugs"
+      ],
+      "references": [
+        "Training vs Inference",
+        "Neural Networks"
+      ]
+    },
+    {
+      "id": "ai-q13",
+      "type": "ordering",
+      "difficulty": "hard",
+      "scenario": "A team is rebuilding a recommendation model after business goals changed and wants a sequence that will hold up in production, not just in a notebook.",
+      "prompt": "Place these steps in the most defensible order for an ML project that must survive deployment.",
+      "items": [
+        "Define the prediction target and success metric",
+        "Split data to match the production decision point",
+        "Engineer features and train candidate models",
+        "Evaluate on held-out data and inspect failures",
+        "Deploy with monitoring for drift and quality"
+      ],
+      "correctAnswer": [
+        "Define the prediction target and success metric",
+        "Split data to match the production decision point",
+        "Engineer features and train candidate models",
+        "Evaluate on held-out data and inspect failures",
+        "Deploy with monitoring for drift and quality"
+      ],
+      "explanation": "Good ML work begins with objective definition, then a production-faithful split. Training comes after data framing, evaluation comes before launch, and deployment must include monitoring because the lifecycle does not end at shipping.",
+      "tags": [
+        "ml-lifecycle",
+        "ordering",
+        "productionization"
+      ],
+      "references": [
+        "Introduction",
+        "ML Lifecycle",
+        "Feature Engineering"
+      ]
+    },
+    {
+      "id": "ai-q14",
+      "type": "matching",
+      "difficulty": "hard",
+      "scenario": "You are reviewing postmortems from several failed launches and need to connect each symptom to the most likely root cause.",
+      "prompt": "Match each symptom to the most likely underlying problem.",
+      "premises": [
+        "Validation AUC is high, but production AUC collapses immediately after launch",
+        "Training loss keeps falling while validation loss rises",
+        "Nearest-neighbor retrieval returns documents with overlapping keywords but the wrong meaning",
+        "Online latency spikes after adding a cross-encoder reranker to every retrieved chunk"
+      ],
+      "responses": [
+        "Overfitting and weak generalization",
+        "An evaluation split that failed to mirror production or contained leakage",
+        "An embedding space that does not capture domain semantics well",
+        "A RAG ranking stage that is too expensive at inference time"
+      ],
+      "correctAnswer": [
+        1,
+        0,
+        2,
+        3
+      ],
+      "explanation": "Immediate failure after launch points to evaluation mismatch or leakage, not ordinary optimization noise. Rising validation loss with falling training loss is classic overfitting. Semantically wrong nearest neighbors implicate embeddings, and reranking every chunk is a direct latency cost in the retrieval pipeline.",
+      "tags": [
+        "postmortem",
+        "root-cause-analysis",
+        "systems-debugging"
+      ],
+      "references": [
+        "ML Lifecycle",
+        "Generalization",
+        "Word Embeddings",
+        "RAG Pipeline"
+      ]
+    },
+    {
+      "id": "ai-q15",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A legal-domain search system uses general-purpose embeddings trained on web text. Queries containing terms like consideration, estoppel, and constructive notice retrieve consumer advice blogs instead of case law.",
+      "prompt": "Which next step is most likely to improve semantic retrieval quality?",
+      "options": [
+        "Increase top-k from 5 to 50 without changing embeddings",
+        "Use domain-adapted embeddings or fine-tune on legal similarity pairs",
+        "Sort retrieved documents alphabetically before generation",
+        "Decrease the vector dimension by half to remove noise"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The failure is semantic mismatch, not just insufficient breadth. Domain-adapted embeddings or contrastive fine-tuning on legal relevance pairs are the most direct fix.",
+      "tags": [
+        "domain-adaptation",
+        "legal-ai",
+        "semantic-search"
+      ],
+      "references": [
+        "Word Embeddings",
+        "RAG Pipeline"
+      ]
+    },
+    {
+      "id": "ai-q16",
+      "type": "true-false",
+      "difficulty": "hard",
+      "scenario": "Two models have identical validation accuracy, but Model A keeps lowering training loss for 50 extra epochs while validation loss stays flat.",
+      "prompt": "True or false: Model A is necessarily the better deployment choice because it optimized the training objective more completely.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Lower training loss alone does not imply better generalization. If validation quality is flat, the extra optimization may offer no benefit and can even increase deployment risk through overfitting or poorer calibration.",
+      "tags": [
+        "model-selection",
+        "overtraining",
+        "deployment"
+      ],
+      "references": [
+        "Generalization",
+        "Training vs Inference"
+      ]
+    },
+    {
+      "id": "ai-q17",
+      "type": "multi-select",
+      "difficulty": "hard",
+      "scenario": "An internal knowledge assistant sometimes fabricates policy details. Logs show that top-3 retrieval occasionally misses the current policy revision entirely.",
+      "prompt": "Which changes can reduce grounded-answer failures?",
+      "options": [
+        "Add citation checking against retrieved passages before finalizing the answer",
+        "Improve retrieval with better chunking or stronger embeddings",
+        "Increase generation temperature so the model explores more possibilities",
+        "Use query rewriting or expansion before retrieval",
+        "Remove retrieved context whenever it conflicts with the model prior"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Grounded failures are best addressed by improving retrieval quality and validating that the generated answer is actually supported by the retrieved evidence. Higher temperature and ignoring retrieved context both move in the wrong direction.",
+      "tags": [
+        "hallucination-control",
+        "retrieval",
+        "grounding"
+      ],
+      "references": [
+        "RAG Pipeline"
+      ]
+    },
+    {
+      "id": "ai-q18",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "Two identical models are trained on the same data. Full-batch gradient descent converges to a sharp solution with brittle validation behavior, while a mini-batch run is noisier but generalizes better.",
+      "prompt": "What is the best explanation for the stronger validation performance of the mini-batch run?",
+      "options": [
+        "Mini-batch noise can act as an implicit regularizer and help optimization settle in flatter regions",
+        "Full-batch gradients are mathematically incorrect",
+        "Mini-batches remove the need for learning-rate tuning",
+        "Validation accuracy is unrelated to the optimization path"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Stochasticity from mini-batches can bias training toward flatter minima that often generalize better. That does not make full-batch gradients wrong; it means optimization dynamics affect generalization.",
+      "tags": [
+        "implicit-regularization",
+        "optimization",
+        "flat-minima"
+      ],
+      "references": [
+        "Gradient Descent",
+        "Generalization"
+      ]
+    },
+    {
+      "id": "ai-q19",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "An engineer adds an auxiliary branch for interpretability and accidentally calls detach() on the shared representation before the main loss is computed. Upper layers still learn, but the encoder barely changes.",
+      "prompt": "Why does the encoder stop improving?",
+      "options": [
+        "detach() stopped gradients from backpropagating into the shared encoder",
+        "detach() doubled the effective learning rate",
+        "detach() only affects inference speed, not learning",
+        "detach() converted the objective into cross-entropy"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Calling detach() breaks the computation graph at that point. The loss can no longer send gradients into the encoder, so those parameters stop receiving meaningful updates.",
+      "tags": [
+        "autograd",
+        "gradient-flow",
+        "debugging"
+      ],
+      "references": [
+        "Backpropagation"
+      ]
+    },
+    {
+      "id": "ai-q20",
+      "type": "ordering",
+      "difficulty": "hard",
+      "scenario": "You are explaining one training iteration of a feedforward network to a new teammate who keeps mixing up prediction, error calculation, and parameter updates.",
+      "prompt": "Order the operations for one supervised training step from prediction to parameter update.",
+      "items": [
+        "Compute the forward activations",
+        "Evaluate the loss against the target",
+        "Backpropagate gradients through the network",
+        "Update parameters with the optimizer"
+      ],
+      "correctAnswer": [
+        "Compute the forward activations",
+        "Evaluate the loss against the target",
+        "Backpropagate gradients through the network",
+        "Update parameters with the optimizer"
+      ],
+      "explanation": "A training step first produces predictions, then measures error, then propagates gradients backward, and only then changes parameters. Reversing any of those dependencies breaks the logic of supervised learning.",
+      "tags": [
+        "training-step",
+        "ordering",
+        "deep-learning-basics"
+      ],
+      "references": [
+        "Neural Networks",
+        "Loss Functions",
+        "Backpropagation",
+        "Gradient Descent"
+      ]
+    },
+    {
+      "id": "ai-q21",
+      "type": "matching",
+      "difficulty": "hard",
+      "scenario": "A platform team is standardizing learning objectives across products and wants each task matched to the right loss family.",
+      "prompt": "Match each modeling situation to the most suitable loss.",
+      "premises": [
+        "Binary fraud detection with calibrated probabilities",
+        "Predicting a continuous house price",
+        "Multiclass document labeling with exactly one correct class",
+        "Learning a search model where relevant items should outrank irrelevant ones"
+      ],
+      "responses": [
+        "Binary cross-entropy / log loss",
+        "Mean squared error",
+        "Softmax cross-entropy",
+        "Pairwise ranking loss"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Binary probabilistic classification maps naturally to binary cross-entropy, regression to mean squared error, multiclass single-label classification to softmax cross-entropy, and ranking tasks to pairwise ranking losses.",
+      "tags": [
+        "objective-selection",
+        "matching",
+        "loss-functions"
+      ],
+      "references": [
+        "Loss Functions"
+      ]
+    },
+    {
+      "id": "ai-q22",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A logistics ETA model uses only raw latitude and longitude differences between stops. It consistently misses traffic behavior around city centers during rush hour.",
+      "prompt": "Which engineered feature is most likely to help a simpler model capture the missing pattern?",
+      "options": [
+        "An interaction between location region and time-of-day bucket",
+        "Removing geographic features entirely",
+        "Replacing labels with route IDs",
+        "Increasing batch size"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The missed structure is contextual: location alone is insufficient, and time alone is insufficient. An interaction between region and time-of-day lets a simple model express location-specific rush-hour effects.",
+      "tags": [
+        "feature-design",
+        "eta-prediction",
+        "contextual-features"
+      ],
+      "references": [
+        "Feature Engineering"
+      ]
+    },
+    {
+      "id": "ai-q23",
+      "type": "true-false",
+      "difficulty": "hard",
+      "scenario": "A language classifier has poor training accuracy and equally poor validation accuracy. A teammate suggests stronger dropout and weight decay as the first fix.",
+      "prompt": "True or false: Stronger regularization is the best first move because the model is obviously overfitting.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "When both training and validation performance are poor, the model is more likely underfitting or the features are weak. Stronger regularization usually makes that situation worse, not better.",
+      "tags": [
+        "underfitting",
+        "regularization",
+        "diagnosis"
+      ],
+      "references": [
+        "Generalization",
+        "Neural Networks"
+      ]
+    },
+    {
+      "id": "ai-q24",
+      "type": "multi-select",
+      "difficulty": "hard",
+      "scenario": "A recommendation model uses only request-time features offline, but online predictions are noticeably worse. Investigation reveals several differences between training and serving.",
+      "prompt": "Which findings are genuine examples of training-inference skew?",
+      "options": [
+        "The serving pipeline uses stale category encodings from last month",
+        "The online system imputes missing prices with 0, while training used median imputation",
+        "Validation loss was computed once per epoch",
+        "Training normalized a feature with training-set statistics, but serving skips normalization",
+        "The deployed weights were quantized only after acceptable offline equivalence tests"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Skew occurs when the model sees different feature representations at serving time than it saw during training. Stale encodings, different imputation, and missing normalization all qualify; evaluation cadence and validated quantization do not.",
+      "tags": [
+        "serving-skew",
+        "feature-pipeline",
+        "mlops"
+      ],
+      "references": [
+        "Training vs Inference",
+        "ML Lifecycle"
+      ]
+    },
+    {
+      "id": "ai-q25",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "In a sentence-embedding system, almost all cosine similarities fall between 0.82 and 0.90, making nearest-neighbor rankings unstable. The team suspects anisotropy in the embedding space.",
+      "prompt": "Which remedy is most aligned with that diagnosis?",
+      "options": [
+        "Apply centering or whitening, or retrain with a contrastive objective that spreads representations apart",
+        "Switch from cosine similarity to alphabetical sorting",
+        "Increase prompt length during generation",
+        "Use mean squared error on document IDs"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Anisotropic embeddings cluster too tightly, so many candidates look similarly close. Techniques that re-spread the space or retrain the encoder with a discriminative similarity objective address the actual geometry problem.",
+      "tags": [
+        "anisotropy",
+        "embedding-space",
+        "retrieval-debugging"
+      ],
+      "references": [
+        "Word Embeddings"
+      ]
+    },
+    {
+      "id": "ai-q26",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A classifier is accurate overall but overconfident, which causes bad threshold decisions in a downstream triage system.",
+      "prompt": "Which training change most directly targets overconfidence while preserving classification learning?",
+      "options": [
+        "Apply label smoothing during training",
+        "Increase the number of classes",
+        "Shuffle the labels once per epoch",
+        "Optimize accuracy directly and stop computing loss"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Label smoothing discourages extreme probability assignments and often improves calibration while still training the classifier on the same task. The other options either change nothing useful or destroy the learning signal.",
+      "tags": [
+        "calibration",
+        "label-smoothing",
+        "classification"
+      ],
+      "references": [
+        "Loss Functions",
+        "Generalization"
+      ]
+    },
+    {
+      "id": "ai-q27",
+      "type": "true-false",
+      "difficulty": "hard",
+      "scenario": "A retrieval team replaced 384-dimensional embeddings with 3072-dimensional embeddings and saw no improvement because domain labels are scarce and the index grew noisier.",
+      "prompt": "True or false: Higher-dimensional embeddings necessarily improve retrieval quality if the encoder architecture is unchanged.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Embedding quality depends on representation learning and domain fit, not just dimensionality. Larger vectors can add cost and noise without improving semantic structure.",
+      "tags": [
+        "embedding-dimension",
+        "retrieval-quality",
+        "representation-learning"
+      ],
+      "references": [
+        "Word Embeddings"
+      ]
+    },
+    {
+      "id": "ai-q28",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "A RAG assistant must answer under 700 ms p95. The current pipeline embeds the query, retrieves 40 chunks, reranks all 40 with a heavy cross-encoder, and then generates a response. Answer quality is good, but latency misses the budget.",
+      "prompt": "Which change is most likely to preserve quality while cutting latency?",
+      "options": [
+        "Reduce first-stage retrieval breadth moderately and rerank only a smaller candidate set",
+        "Increase generator temperature so fewer tokens are needed",
+        "Remove the vector index and scan all documents",
+        "Replace dense embeddings with one-hot vectors"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The expensive step is reranking too many candidates. A narrower candidate set usually preserves most of the quality while sharply reducing inference cost.",
+      "tags": [
+        "latency",
+        "reranking",
+        "rag-optimization"
+      ],
+      "references": [
+        "RAG Pipeline",
+        "Training vs Inference"
+      ]
+    },
+    {
+      "id": "ai-q29",
+      "type": "multi-select",
+      "difficulty": "hard",
+      "scenario": "After a model refactor, validation accuracy collapses. You suspect a gradient bug rather than bad data.",
+      "prompt": "Which checks are appropriate for debugging backpropagation?",
+      "options": [
+        "Numerically compare analytical gradients to finite-difference estimates on a tiny network",
+        "Verify that parameters meant to train actually receive nonzero gradients",
+        "Randomly reorder class labels each batch to see whether learning resumes",
+        "Inspect activation distributions for saturation or dead units",
+        "Skip the loss computation and optimize logits directly"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Gradient checking, verifying gradient flow, and inspecting activations are all standard ways to diagnose backprop failures. Random label scrambling and removing the loss break the problem rather than debug it.",
+      "tags": [
+        "gradient-checking",
+        "backprop-debugging",
+        "neural-networks"
+      ],
+      "references": [
+        "Backpropagation",
+        "Neural Networks"
+      ]
+    },
+    {
+      "id": "ai-q30",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "You have 18,000 medical images from 600 patients, with multiple scans per patient. Reported leaderboard gains disappeared in clinical pilots because the original train and validation sets shared patients.",
+      "prompt": "Which evaluation strategy is most defensible now?",
+      "options": [
+        "Use patient-grouped holdout or cross-validation so no patient appears in both splits",
+        "Use a random image-level split because it maximizes sample count",
+        "Use training accuracy because labels are expensive",
+        "Tune repeatedly on the test set for stability"
+      ],
+      "correctAnswer": 0,
+      "explanation": "When multiple samples come from the same entity, the split must respect that grouping. Otherwise the model can exploit patient-specific signatures and validation performance becomes unrealistically optimistic.",
+      "tags": [
+        "grouped-splits",
+        "medical-imaging",
+        "evaluation-leakage"
+      ],
+      "references": [
+        "ML Lifecycle",
+        "Generalization"
+      ]
+    },
+    {
+      "id": "ai-q31",
+      "type": "single-choice",
+      "difficulty": "hard",
+      "scenario": "An executive asks whether an internal assistant that uses retrieval plus a generator counts as AI, since part of the system looks like search rather than pure end-to-end supervised classification.",
+      "prompt": "Which statement is the most technically accurate response for the design review?",
+      "options": [
+        "It is not AI unless every component is a neural network trained end to end",
+        "It is an AI system because it combines learned representations and probabilistic generation to perform tasks that normally require human intelligence",
+        "It is just a database query engine because retrieval is involved",
+        "It is equivalent to a standard supervised classifier"
+      ],
+      "correctAnswer": 1,
+      "explanation": "AI is broader than a single model family. A system that combines retrieval, learned representations, and generation to answer questions or reason over information is still an AI system even if it is not trained end to end.",
+      "tags": [
+        "ai-definition",
+        "system-design",
+        "rag"
+      ],
+      "references": [
+        "Introduction",
+        "RAG Pipeline"
+      ]
+    }
+  ]
+}

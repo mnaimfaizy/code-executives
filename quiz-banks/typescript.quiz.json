@@ -1,0 +1,876 @@
+{
+  "moduleId": "typescript",
+  "moduleTitle": "TypeScript",
+  "description": "Scenario-based assessment focused on advanced TypeScript type-system reasoning, OOP modeling, migration strategy, and compile-time versus runtime tradeoffs.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "typescript-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A reducer handles a discriminated union of commands. After a new command variant was added, one code path silently fell through to a generic fallback and production metrics were wrong.",
+      "prompt": "Which change most directly turns the missing case into a compile-time error the next time the union grows?",
+      "options": [
+        "Replace the fallback with an assertNever-style check on the remaining value",
+        "Cast the fallback value to any before returning",
+        "Move the switch into a try/catch",
+        "Add a default branch that returns undefined"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A never-based exhaustiveness check forces the compiler to prove that no union members remain. If a new variant is added and not handled, the remaining value is no longer never and the code stops compiling.",
+      "tags": [
+        "discriminated-unions",
+        "exhaustiveness",
+        "never",
+        "reducers"
+      ],
+      "references": [
+        "Advanced Types",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is migrating a dynamic payments module from JavaScript to TypeScript under a strict configuration, and they want the migration to expose genuine defects rather than hide them behind assertions.",
+      "prompt": "Which actions support that goal?",
+      "options": [
+        "Enable noImplicitAny so untyped parameters and variables are surfaced",
+        "Treat external payloads as unknown and validate them before use",
+        "Add broad as any casts around failing branches to keep velocity high",
+        "Enable strictNullChecks so absent values cannot flow unchecked",
+        "Model dynamic dictionaries as Record<string, any> wherever shapes are unclear"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Strict compiler settings and unknown at trust boundaries reveal unsound assumptions. Broad any and assertion-heavy modeling suppress the very defects the migration should uncover.",
+      "tags": [
+        "migration",
+        "strict-mode",
+        "unknown",
+        "null-safety"
+      ],
+      "references": [
+        "Migration Guide",
+        "Best Practices",
+        "Type Guards"
+      ]
+    },
+    {
+      "id": "typescript-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A shared config object is declared with readonly properties in TypeScript, then passed to older JavaScript utilities that mutate objects in place.",
+      "prompt": "True or false: the readonly modifier alone prevents those runtime mutations after compilation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "readonly is a compile-time restriction. TypeScript does not freeze the emitted JavaScript object, so plain JavaScript code can still mutate it unless runtime immutability is added separately.",
+      "tags": [
+        "readonly",
+        "runtime-vs-compile-time",
+        "immutability"
+      ],
+      "references": [
+        "TypeScript vs JavaScript",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A webhook handler receives untrusted JSON from several partners. You need a flow that preserves type safety all the way to variant-specific logic.",
+      "prompt": "Arrange the safest TypeScript workflow from earliest to latest.",
+      "items": [
+        "Receive the parsed payload as unknown",
+        "Check that the value is an object with the expected outer shape",
+        "Narrow on a discriminant or other validated field",
+        "Access variant-specific properties only inside the narrowed branch",
+        "Use a never-based exhaustiveness check for remaining variants"
+      ],
+      "correctAnswer": [
+        "Receive the parsed payload as unknown",
+        "Check that the value is an object with the expected outer shape",
+        "Narrow on a discriminant or other validated field",
+        "Access variant-specific properties only inside the narrowed branch",
+        "Use a never-based exhaustiveness check for remaining variants"
+      ],
+      "explanation": "The safe sequence is to begin with unknown, validate structure, narrow by evidence, access specific fields only after narrowing, and finish with exhaustiveness checking so future variants are not silently missed.",
+      "tags": [
+        "unknown",
+        "narrowing",
+        "webhooks",
+        "control-flow"
+      ],
+      "references": [
+        "Type Guards",
+        "Advanced Types",
+        "TypeScript Visualization"
+      ]
+    },
+    {
+      "id": "typescript-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "During a type-system review, four language features are being matched to the problem each one solves best.",
+      "prompt": "Match each feature to its primary purpose.",
+      "premises": [
+        "never",
+        "unknown",
+        "satisfies",
+        "as const"
+      ],
+      "responses": [
+        "Represents values that should be impossible after exhaustive narrowing",
+        "Represents an input that must be checked before use",
+        "Verifies compatibility without widening away the expression's own literal information",
+        "Preserves literal types and readonly-ness for a value expression"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "never is for impossible states, unknown is the safe top type for unchecked data, satisfies validates shape while preserving the original expression type, and as const preserves literal precision on values.",
+      "tags": [
+        "never",
+        "unknown",
+        "satisfies",
+        "const-assertions"
+      ],
+      "references": [
+        "Advanced TypeScript",
+        "Advanced Types",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A library author stores an API token on class instances and wants a guarantee that consumers cannot reach it through normal property access, structural typing, or subclass field collisions.",
+      "prompt": "Which feature provides the strongest runtime-backed encapsulation?",
+      "options": [
+        "A JavaScript private field declared as #token",
+        "A TypeScript private member declared as token: string",
+        "A protected member declared as token: string",
+        "A readonly member declared as token: string"
+      ],
+      "correctAnswer": 0,
+      "explanation": "JavaScript private fields use runtime-enforced encapsulation. TypeScript private is checked only by the type system, while protected and readonly solve different problems.",
+      "tags": [
+        "private-fields",
+        "encapsulation",
+        "classes",
+        "runtime"
+      ],
+      "references": [
+        "Encapsulation",
+        "Classes & Objects",
+        "TypeScript vs JavaScript"
+      ]
+    },
+    {
+      "id": "typescript-q07",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An analytics pipeline filters an array of union results to keep only successes, but the next map call still sees the element type as the full union.",
+      "prompt": "Which helper signature most directly teaches the compiler that the filter narrows the array?",
+      "options": [
+        "function isSuccess(value: Result): value is SuccessResult",
+        "function isSuccess(value: Result): boolean",
+        "function isSuccess<T>(value: T): T",
+        "function isSuccess(value: any): asserts value"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A user-defined type predicate tells TypeScript exactly which subtype remains after the predicate returns true. A plain boolean return does not carry narrowing information across array methods.",
+      "tags": [
+        "type-predicates",
+        "filter",
+        "unions",
+        "narrowing"
+      ],
+      "references": [
+        "Type Guards",
+        "Advanced TypeScript"
+      ]
+    },
+    {
+      "id": "typescript-q08",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "You are designing a generic configuration registry that loads unknown JSON, offers typed property access, and may miss lookups at runtime.",
+      "prompt": "Which API design choices improve type safety without breaking the relationship between inputs and outputs?",
+      "options": [
+        "Constrain the stored type parameter, for example T extends BaseConfig",
+        "Use a key parameter K extends keyof T and return T[K] from property readers",
+        "Cast JSON.parse(...) directly to T at the trust boundary with no validation",
+        "Return T | undefined for lookups that may not find an entry",
+        "Default unresolved type parameters to any so callers rarely see errors"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Constraints, keyed generics, and honest undefined modeling preserve type relationships safely. Blind assertions and defaulting to any erase useful guarantees instead of strengthening them.",
+      "tags": [
+        "generics",
+        "keyof",
+        "indexed-access",
+        "api-design"
+      ],
+      "references": [
+        "Generics",
+        "Type Guards",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q09",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A teaching framework needs to wrap class methods for tracing so students can observe call timing without changing every call site.",
+      "prompt": "Which TypeScript feature is intended for attaching runtime behavior like that to a class member?",
+      "options": [
+        "A method decorator",
+        "A conditional type",
+        "Declaration merging",
+        "A namespace import alias"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Method decorators are designed for applying runtime behavior or metadata to class members. Conditional types and declaration merging are type-system or declaration-structure features, not runtime wrappers.",
+      "tags": [
+        "decorators",
+        "methods",
+        "instrumentation",
+        "classes"
+      ],
+      "references": [
+        "Decorators",
+        "Advanced TypeScript"
+      ]
+    },
+    {
+      "id": "typescript-q10",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A developer tells the team that once a class implements an interface, they can later check that interface with instanceof in production code.",
+      "prompt": "True or false: implemented interfaces survive in emitted JavaScript as runtime values that instanceof can inspect.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Interfaces are erased during compilation and do not exist at runtime. instanceof works with runtime constructor functions or classes, not erased TypeScript interfaces.",
+      "tags": [
+        "interfaces",
+        "runtime-vs-compile-time",
+        "instanceof",
+        "oop"
+      ],
+      "references": [
+        "TypeScript vs JavaScript",
+        "OOP Fundamentals"
+      ]
+    },
+    {
+      "id": "typescript-q11",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A teammate is confused about why a generic pluck helper returns different types for different keys without using overloads.",
+      "prompt": "Arrange the type-resolution steps from earliest to latest.",
+      "items": [
+        "Infer the object type T from the object argument",
+        "Infer the specific key type K from the key argument",
+        "Check that K is assignable to keyof T",
+        "Compute the indexed access result type T[K]",
+        "Return a value typed with that computed property type"
+      ],
+      "correctAnswer": [
+        "Infer the object type T from the object argument",
+        "Infer the specific key type K from the key argument",
+        "Check that K is assignable to keyof T",
+        "Compute the indexed access result type T[K]",
+        "Return a value typed with that computed property type"
+      ],
+      "explanation": "The compiler first infers the participating generic types from the arguments, verifies the key constraint, computes the property lookup type T[K], and then uses that result as the function's return type.",
+      "tags": [
+        "generics",
+        "inference",
+        "keyof",
+        "indexed-access"
+      ],
+      "references": [
+        "Generics",
+        "Advanced TypeScript",
+        "TypeScript Visualization"
+      ]
+    },
+    {
+      "id": "typescript-q12",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A reviewer wants to map several advanced utility types to the transformations they perform on a domain model.",
+      "prompt": "Match each utility type to its effect.",
+      "premises": [
+        "Exclude<T, U>",
+        "Extract<T, U>",
+        "NonNullable<T>",
+        "Record<K, V>"
+      ],
+      "responses": [
+        "Removes from T the members assignable to U",
+        "Keeps from T only the members assignable to U",
+        "Removes null and undefined from a type",
+        "Builds an object type from a key union and a value type"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Exclude subtracts assignable members, Extract keeps them, NonNullable removes nullish values, and Record constructs an object type whose keys come from a union and whose values share one type.",
+      "tags": [
+        "utility-types",
+        "exclude",
+        "extract",
+        "record"
+      ],
+      "references": [
+        "Advanced Types",
+        "Advanced TypeScript"
+      ]
+    },
+    {
+      "id": "typescript-q13",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A fluent query builder has a base class method select(), but after calling it on a subclass instance the chain loses subclass-specific methods.",
+      "prompt": "Which return type on the base-class fluent methods preserves polymorphic chaining for subclasses?",
+      "options": [
+        "this",
+        "BaseBuilder",
+        "unknown",
+        "never"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The special this type is polymorphic over subclasses. It allows a base method to return the most specific current instance type so subclass-only methods remain available in the chain.",
+      "tags": [
+        "polymorphic-this",
+        "fluent-apis",
+        "classes",
+        "polymorphism"
+      ],
+      "references": [
+        "Polymorphism",
+        "Classes & Objects",
+        "Advanced TypeScript"
+      ]
+    },
+    {
+      "id": "typescript-q14",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A generic serializer uses conditional types over unions and the resulting types are unexpectedly distributed member by member.",
+      "prompt": "Which statements about distributive conditional types are correct?",
+      "options": [
+        "Wrapping both sides in tuples, as in [T] extends [U], disables distribution",
+        "A conditional type with a naked type parameter can distribute over union members",
+        "Using infer inside a conditional type is forbidden when unions are involved",
+        "T extends unknown ? X : Y will distribute when T is a union",
+        "Adding an extends constraint to T automatically disables distribution"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Distribution happens when a naked type parameter is checked against a condition. Tuple-wrapping suppresses that behavior, while infer remains valid and constraints alone do not turn distribution off.",
+      "tags": [
+        "conditional-types",
+        "distribution",
+        "unions",
+        "advanced-generics"
+      ],
+      "references": [
+        "Generics",
+        "Advanced Types"
+      ]
+    },
+    {
+      "id": "typescript-q15",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A route table object should be checked against an interface so missing keys are reported, but each path string must remain a literal type for downstream inference.",
+      "prompt": "Which operator best fits that requirement?",
+      "options": [
+        "satisfies",
+        "as",
+        "keyof",
+        "typeof"
+      ],
+      "correctAnswer": 0,
+      "explanation": "satisfies verifies that the value conforms to the target shape while preserving the expression's own inferred type. A cast with as can hide errors and usually loses the precision you want to keep.",
+      "tags": [
+        "satisfies",
+        "literal-types",
+        "configuration",
+        "inference"
+      ],
+      "references": [
+        "Advanced TypeScript",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q16",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "You are wrapping JSON.parse for a security-sensitive ingestion pipeline and want every consumer to prove safety before touching fields.",
+      "prompt": "What should the wrapper return instead of any?",
+      "options": [
+        "unknown",
+        "never",
+        "object",
+        "{}"
+      ],
+      "correctAnswer": 0,
+      "explanation": "unknown forces downstream code to validate or narrow before property access. any would silently permit unsafe operations and undermine the point of the wrapper.",
+      "tags": [
+        "unknown",
+        "trust-boundaries",
+        "json",
+        "validation"
+      ],
+      "references": [
+        "Type Guards",
+        "Best Practices",
+        "Migration Guide"
+      ]
+    },
+    {
+      "id": "typescript-q17",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A checkout platform supports multiple payment providers. The team wants swappable implementations, shared workflow steps, and compiler help when subclasses drift from the base contract.",
+      "prompt": "Which design choices best support that architecture?",
+      "options": [
+        "Create an abstract PaymentProvider base class for shared lifecycle logic",
+        "Expose credentials on public mutable fields so tests can patch them directly",
+        "Define an interface for the capabilities consumed by the checkout service",
+        "Mark subclass methods with override where they replace base behavior",
+        "Let callers update retry counters through public state on each provider"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "An abstract base class shares implementation, an interface supports substitution at the call site, and override helps catch accidental drift. Public mutable internals weaken encapsulation and invite invalid states.",
+      "tags": [
+        "abstraction",
+        "inheritance",
+        "interfaces",
+        "override"
+      ],
+      "references": [
+        "Abstraction",
+        "Inheritance",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q18",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A subclass method was meant to replace a base implementation, but a small signature mismatch created a new method instead and the bug survived review.",
+      "prompt": "Which TypeScript feature most directly catches that mistake at the subclass declaration?",
+      "options": [
+        "The override modifier with noImplicitOverride",
+        "A readonly modifier",
+        "An enum discriminator",
+        "A namespace export"
+      ],
+      "correctAnswer": 0,
+      "explanation": "override tells the compiler a member is intended to replace a base-class member. With noImplicitOverride enabled, TypeScript catches accidental non-overrides and missing override keywords.",
+      "tags": [
+        "override",
+        "inheritance",
+        "compiler-options",
+        "safety"
+      ],
+      "references": [
+        "Inheritance",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q19",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "Two teams compare builds and notice that one version added several interfaces and type aliases but kept the executable logic identical.",
+      "prompt": "True or false: if the programs differ only in erased type constructs, the emitted JavaScript can still be identical.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Most TypeScript-specific type constructs are erased during compilation. If only those erased constructs change, the runtime JavaScript output can remain exactly the same.",
+      "tags": [
+        "type-erasure",
+        "emit",
+        "interfaces",
+        "compile-time"
+      ],
+      "references": [
+        "TypeScript vs JavaScript",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "typescript-q20",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A persistence layer should convert a partially edited draft type into one where every property is required before a database write.",
+      "prompt": "Which mapped type form removes optional modifiers from every property in T?",
+      "options": [
+        "{ [K in keyof T]-?: T[K] }",
+        "{ [K in keyof T]+?: T[K] }",
+        "{ readonly [K in keyof T]: T[K] }",
+        "{ [K in keyof T]: T | undefined }"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The -? mapped modifier removes optionality from each property. The other forms either add optionality, add readonly, or change the property type altogether.",
+      "tags": [
+        "mapped-types",
+        "optionality",
+        "advanced-types",
+        "drafts"
+      ],
+      "references": [
+        "Advanced Types"
+      ]
+    },
+    {
+      "id": "typescript-q21",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A visualization of control-flow narrowing shows that a union payload is still too wide in nested branches, and the team wants patterns that give the compiler more evidence.",
+      "prompt": "Which techniques improve narrowing in that situation?",
+      "options": [
+        "Add a stable discriminant property with distinct literal values on each variant",
+        "Use a user-defined predicate returning value is SpecificVariant",
+        "Replace unknown with any at the boundary so the compiler stops resisting",
+        "Use checks like 'kind' in value or equality tests on the discriminant before property access",
+        "Cast each branch with as SpecificVariant even when no runtime evidence exists"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Control-flow analysis relies on evidence such as discriminants, in checks, equality checks, and user-defined predicates. any and assertion-heavy code remove evidence instead of improving narrowing.",
+      "tags": [
+        "type-guards",
+        "control-flow-analysis",
+        "discriminated-unions",
+        "narrowing"
+      ],
+      "references": [
+        "Type Guards",
+        "Advanced Types",
+        "TypeScript Visualization"
+      ]
+    },
+    {
+      "id": "typescript-q22",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A method decorator adds runtime logging around a service method, and a teammate expects that decoration alone to tighten the method's static call signature throughout the codebase.",
+      "prompt": "Which statement is most accurate?",
+      "options": [
+        "Decorators can wrap runtime behavior, but they do not automatically teach the type system a new call contract",
+        "Decorators are erased before runtime and only affect static types",
+        "Decorators guarantee exhaustive checking for union parameters",
+        "Decorators convert private members into public ones"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Decorators operate in the runtime layer. They can alter behavior or attach metadata, but static typing still depends on the declared types unless you explicitly model changes in the type system.",
+      "tags": [
+        "decorators",
+        "runtime",
+        "static-types",
+        "methods"
+      ],
+      "references": [
+        "Decorators",
+        "TypeScript vs JavaScript",
+        "Best Practices"
+      ]
+    },
+    {
+      "id": "typescript-q23",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An event bus should only allow channel names composed from a domain union and an action union, such as user:created or billing:failed.",
+      "prompt": "Which TypeScript feature models that string space most directly?",
+      "options": [
+        "Template literal types",
+        "Namespaces",
+        "Decorators",
+        "Module augmentation"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Template literal types let you construct new string literal unions from other unions. That makes them the natural fit for constrained channel naming schemes.",
+      "tags": [
+        "template-literal-types",
+        "string-unions",
+        "event-bus",
+        "advanced-types"
+      ],
+      "references": [
+        "Advanced Types",
+        "Advanced TypeScript"
+      ]
+    },
+    {
+      "id": "typescript-q24",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "During an architecture review, the team is pairing object-oriented principles with concrete TypeScript design decisions.",
+      "prompt": "Match each principle to the best scenario.",
+      "premises": [
+        "Encapsulation",
+        "Abstraction",
+        "Polymorphism",
+        "Inheritance"
+      ],
+      "responses": [
+        "Hide internal state behind methods and restricted member visibility",
+        "Expose a stable contract while leaving implementation details to derived classes or implementations",
+        "Use a base-typed reference to call different concrete implementations through the same API",
+        "Create a subclass that reuses and extends behavior from a parent class"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Encapsulation controls access to state, abstraction focuses on the contract, polymorphism enables one interface with multiple concrete behaviors, and inheritance reuses and extends parent behavior.",
+      "tags": [
+        "oop",
+        "encapsulation",
+        "abstraction",
+        "polymorphism",
+        "inheritance"
+      ],
+      "references": [
+        "OOP Fundamentals",
+        "Encapsulation",
+        "Abstraction",
+        "Polymorphism",
+        "Inheritance"
+      ]
+    },
+    {
+      "id": "typescript-q25",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "You are writing a helper that reads a property from an object and want the return type to stay linked to the specific key passed by the caller.",
+      "prompt": "Which signature preserves that relationship most precisely?",
+      "options": [
+        "function pluck<T, K extends keyof T>(obj: T, key: K): T[K]",
+        "function pluck<T>(obj: T, key: string): unknown",
+        "function pluck(obj: object, key: PropertyKey): any",
+        "function pluck<T>(obj: T, key: keyof T): T"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The combination of K extends keyof T and the indexed access return type T[K] preserves the exact relationship between the chosen key and the resulting property type.",
+      "tags": [
+        "generics",
+        "keyof",
+        "indexed-access",
+        "api-design"
+      ],
+      "references": [
+        "Generics",
+        "Advanced TypeScript"
+      ]
+    },
+    {
+      "id": "typescript-q26",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A type-level utility must extract nested pieces from promises and callback signatures without changing runtime code.",
+      "prompt": "Which statements about infer are correct?",
+      "options": [
+        "Promise<infer U> can capture the resolved value type inside a conditional type",
+        "infer introduces a type variable that exists only within the conditional type branch",
+        "infer cannot be used with tuple or function-pattern matching",
+        "Nested conditional types can use infer to extract pieces such as callback arguments or return types",
+        "Using infer changes the emitted JavaScript for the generic function"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "infer is a type-level pattern-matching tool within conditional types. It can extract pieces from promises, tuples, functions, and other structured types, but it does not alter emitted JavaScript.",
+      "tags": [
+        "infer",
+        "conditional-types",
+        "promises",
+        "callbacks"
+      ],
+      "references": [
+        "Advanced Types",
+        "Generics"
+      ]
+    },
+    {
+      "id": "typescript-q27",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A JavaScript application consumes your compiled library. The team wants editors and downstream builds to see the public TypeScript shapes even though interfaces are erased at runtime.",
+      "prompt": "Which artifact should you ship for that tooling experience?",
+      "options": [
+        ".d.ts declaration files",
+        "Source maps",
+        "tsbuildinfo files",
+        "Decorator metadata"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Declaration files preserve the public type surface for consumers and tooling. Source maps support debugging, tsbuildinfo supports incremental compilation, and decorator metadata is unrelated to general API typing.",
+      "tags": [
+        "declarations",
+        "library-authoring",
+        "tooling",
+        "emit"
+      ],
+      "references": [
+        "TypeScript vs JavaScript",
+        "Migration Guide"
+      ]
+    },
+    {
+      "id": "typescript-q28",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A teammate applies as const to a nested settings object and assumes no one can mutate the actual object at runtime.",
+      "prompt": "True or false: as const freezes the object in emitted JavaScript.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "as const narrows the type of the expression and marks properties readonly in the type system, but it does not call Object.freeze or otherwise enforce runtime immutability.",
+      "tags": [
+        "const-assertions",
+        "immutability",
+        "runtime-vs-compile-time"
+      ],
+      "references": [
+        "Advanced Types",
+        "Best Practices",
+        "TypeScript vs JavaScript"
+      ]
+    },
+    {
+      "id": "typescript-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A base class has a member that subclasses should use, but external callers must not access it directly.",
+      "prompt": "Which visibility modifier best communicates that requirement?",
+      "options": [
+        "protected",
+        "public",
+        "private",
+        "readonly"
+      ],
+      "correctAnswer": 0,
+      "explanation": "protected exposes a member to the declaring class and its subclasses while hiding it from outside callers. private would also hide it from subclasses, and readonly is unrelated to visibility.",
+      "tags": [
+        "protected",
+        "visibility",
+        "inheritance",
+        "encapsulation"
+      ],
+      "references": [
+        "Encapsulation",
+        "Inheritance"
+      ]
+    },
+    {
+      "id": "typescript-q30",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A notification system needs interchangeable implementations, but all notifiers should inherit common retry and telemetry logic from one shared place.",
+      "prompt": "Which design is the best fit?",
+      "options": [
+        "An abstract base class that can share implementation while defining required operations",
+        "A plain interface, because interfaces can provide shared method bodies",
+        "A union type of concrete notifier classes with no shared parent",
+        "A namespace containing helper functions and global mutable state"
+      ],
+      "correctAnswer": 0,
+      "explanation": "An abstract base class is the right choice when you need both a common contract and shared implementation. Interfaces define shape but cannot carry the reusable method bodies described in the scenario.",
+      "tags": [
+        "abstraction",
+        "abstract-classes",
+        "shared-implementation",
+        "oop"
+      ],
+      "references": [
+        "Abstraction",
+        "OOP Fundamentals",
+        "Classes & Objects"
+      ]
+    },
+    {
+      "id": "typescript-q31",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is preparing a long-lived TypeScript codebase for scale and wants review rules that reduce unsoundness instead of merely silencing diagnostics.",
+      "prompt": "Which practices align with that goal?",
+      "options": [
+        "Prefer unknown over any at trust boundaries",
+        "Model impossible combinations with discriminated unions instead of loosely related flags",
+        "Use broad type assertions to bypass edge cases during review",
+        "Enable strict compiler options and patterns such as override and exhaustiveness checks",
+        "Use satisfies when validating config objects so literal information is preserved"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "explanation": "These practices preserve useful compiler feedback and make invalid states harder to represent. Broad assertions do the opposite by discarding evidence and hiding real problems.",
+      "tags": [
+        "best-practices",
+        "strictness",
+        "discriminated-unions",
+        "satisfies",
+        "unknown"
+      ],
+      "references": [
+        "Best Practices",
+        "Migration Guide",
+        "Advanced Types"
+      ]
+    }
+  ]
+}

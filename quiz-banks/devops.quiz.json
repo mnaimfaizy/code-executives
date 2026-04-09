@@ -1,0 +1,833 @@
+{
+  "moduleId": "devops",
+  "moduleTitle": "DevOps",
+  "description": "Scenario-based assessment focused on advanced DevOps delivery, cloud operating models, container orchestration, infrastructure as code, and production observability.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "devops-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A retail platform ships features from one team while a separate operations group owns uptime. Every Friday release turns into a blame-heavy handoff, and emergency changes bypass normal review because each side is optimizing different KPIs.",
+      "prompt": "Which structural change best addresses the root cause rather than only speeding up the handoff?",
+      "options": [
+        "Create a cross-functional service team with shared delivery and reliability metrics",
+        "Add a mandatory change advisory board meeting before every production deployment",
+        "Move all production access from developers to operations permanently",
+        "Require releases to happen only once per month"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The failure mode is misaligned incentives and ownership. A cross-functional team with shared delivery and reliability goals removes the wall of confusion, while extra approvals, stricter separation, or less frequent releases preserve the same siloed structure.",
+      "tags": [
+        "devops-culture",
+        "shared-ownership",
+        "team-topologies"
+      ],
+      "references": [
+        "Introduction",
+        "Modern Dev Roles"
+      ]
+    },
+    {
+      "id": "devops-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A payment service compiles successfully on every commit, but the team still sees production-only breakages caused by schema drift, unsigned artifacts, and last-minute environment differences.",
+      "prompt": "Which controls belong in the delivery pipeline before production promotion?",
+      "options": [
+        "Run integration and contract tests against a production-like environment",
+        "Validate database migrations in a rehearsal step before deploy",
+        "Allow engineers to rebuild the artifact on the target server so fixes can be applied quickly",
+        "Sign or otherwise attest the artifact that was tested",
+        "Rely on manual smoke testing in production as the first full-system check"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Prod-like validation, migration rehearsal, and artifact integrity checks reduce the exact failure modes described. Rebuilding on target servers and treating production as the first real integration environment destroy reproducibility.",
+      "tags": [
+        "ci-cd",
+        "artifact-integrity",
+        "release-safety",
+        "database-migrations"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Infrastructure as Code"
+      ]
+    },
+    {
+      "id": "devops-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A team claims it already practices continuous deployment because every merge to main creates a release candidate and requires one human approval before production.",
+      "prompt": "True or false: this workflow is continuous deployment rather than continuous delivery.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A human approval gate means the system is continuously delivering a production-ready artifact, not continuously deploying every eligible change automatically.",
+      "tags": [
+        "continuous-delivery",
+        "continuous-deployment",
+        "release-governance"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "devops-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "An organization is redesigning its release process so the same tested artifact moves progressively from commit to production with rollback gates.",
+      "prompt": "Arrange the pipeline stages from earliest to latest.",
+      "items": [
+        "Build an immutable artifact from the merged commit",
+        "Execute automated tests and security checks on that artifact",
+        "Deploy the artifact to a production-like pre-release environment",
+        "Roll out the exact artifact progressively to production",
+        "Evaluate live health signals and trigger rollback if thresholds are breached"
+      ],
+      "correctAnswer": [
+        "Build an immutable artifact from the merged commit",
+        "Execute automated tests and security checks on that artifact",
+        "Deploy the artifact to a production-like pre-release environment",
+        "Roll out the exact artifact progressively to production",
+        "Evaluate live health signals and trigger rollback if thresholds are breached"
+      ],
+      "explanation": "A trustworthy pipeline builds once, validates that exact artifact, rehearses it in a prod-like environment, then promotes it progressively while observing health and enforcing rollback thresholds.",
+      "tags": [
+        "progressive-delivery",
+        "artifact-promotion",
+        "rollback"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Observability"
+      ]
+    },
+    {
+      "id": "devops-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "An enterprise is deciding which cloud service model fits four very different workloads.",
+      "prompt": "Match each workload to the most appropriate cloud service model.",
+      "premises": [
+        "A team needs full operating-system control to run a legacy application that depends on custom kernel modules",
+        "Developers want to deploy web code without managing servers or patching the runtime",
+        "The company wants a fully managed collaboration suite for email and documents",
+        "A bursty image-resizing step should execute only when files land in object storage"
+      ],
+      "responses": [
+        "Infrastructure as a Service (IaaS)",
+        "Platform as a Service (PaaS)",
+        "Software as a Service (SaaS)",
+        "Function as a Service (FaaS)"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "IaaS fits workloads needing operating-system control, PaaS removes server management for application deployment, SaaS provides a finished application, and FaaS is best for event-driven code that runs only when triggered.",
+      "tags": [
+        "cloud-service-models",
+        "shared-responsibility",
+        "workload-fit"
+      ],
+      "references": [
+        "Cloud Service Models",
+        "Cloud Architecture"
+      ]
+    },
+    {
+      "id": "devops-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A team runs workloads on a managed Kubernetes service. They assume the provider is responsible for all security because the control plane is managed.",
+      "prompt": "Which responsibility still belongs most directly to the customer team?",
+      "options": [
+        "Patching vulnerabilities inside the application containers they build and deploy",
+        "Designing the cloud provider's hypervisor isolation model",
+        "Replacing failed disks in the provider's data center",
+        "Maintaining the Kubernetes API server binaries for every control-plane node"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Managed control planes reduce infrastructure burden, but the customer still owns the software supply chain and the security of the container images and application logic they ship.",
+      "tags": [
+        "shared-responsibility",
+        "managed-kubernetes",
+        "container-security"
+      ],
+      "references": [
+        "Cloud Service Models",
+        "Container Orchestration"
+      ]
+    },
+    {
+      "id": "devops-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A flash-sale platform must survive sudden regional traffic spikes while keeping catalog reads fast and preventing single-instance hotspots.",
+      "prompt": "Which architectural choices are most aligned with that goal?",
+      "options": [
+        "Distribute traffic across healthy instances with load balancing",
+        "Use a cache-aside layer for high-read catalog data",
+        "Keep one stateful application server as the only write and read path for all traffic",
+        "Design stateless services so replicas can scale horizontally",
+        "Force every large file upload to pass through the monolith before reaching object storage"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Load balancing, cache-aside, and stateless horizontal scaling are standard ways to absorb spiky traffic. A single hot server or routing all large transfers through the monolith creates bottlenecks.",
+      "tags": [
+        "load-balancing",
+        "cache-aside",
+        "horizontal-scaling",
+        "resilience"
+      ],
+      "references": [
+        "Cloud Architecture",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "devops-q08",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A browser uploads large media files directly to cloud storage using a short-lived token issued by the backend, reducing load on the origin application.",
+      "prompt": "Which architecture pattern is being used?",
+      "options": [
+        "Valet Key",
+        "Blue-green deployment",
+        "Sidecar injection",
+        "Canary release"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The backend is granting limited direct access to a specific storage resource with a temporary credential, which is the Valet Key pattern.",
+      "tags": [
+        "valet-key",
+        "object-storage",
+        "direct-upload"
+      ],
+      "references": [
+        "Cloud Architecture",
+        "Cloud Service Models"
+      ]
+    },
+    {
+      "id": "devops-q09",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A leadership team breaks a monolith into dozens of services and expects operations to become simpler because each deployable unit is smaller.",
+      "prompt": "True or false: microservices automatically reduce overall operational complexity.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Microservices reduce the size of individual deployable units, but they add distributed-system complexity in networking, deployments, observability, data consistency, and ownership boundaries.",
+      "tags": [
+        "microservices",
+        "distributed-systems",
+        "operational-complexity"
+      ],
+      "references": [
+        "Cloud Architecture",
+        "Modern Dev Roles"
+      ]
+    },
+    {
+      "id": "devops-q10",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A managed web platform auto-scales correctly, but each new instance spends several minutes compiling assets during startup, delaying scale-out during traffic surges.",
+      "prompt": "What is the best pipeline-level fix?",
+      "options": [
+        "Move compilation into CI and ship a prebuilt deployable artifact or image",
+        "Increase instance memory so the runtime compiler can work faster",
+        "Add more manual approval gates before release",
+        "Switch from HTTPS to HTTP inside the cluster"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Heavy build work belongs in CI, not in runtime instance startup. Shipping a prebuilt artifact reduces cold-start latency and makes scaling behavior more predictable.",
+      "tags": [
+        "build-vs-runtime",
+        "autoscaling",
+        "artifact-promotion"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Cloud Service Models"
+      ]
+    },
+    {
+      "id": "devops-q11",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "During a Kubernetes rolling update, users intermittently receive 502s even though the deployment never fully fails.",
+      "prompt": "Which configuration problems could plausibly explain the outage symptoms?",
+      "options": [
+        "A readiness check reports success before the application and its dependencies are actually ready",
+        "An aggressive liveness probe restarts slow-starting containers",
+        "Resource requests and limits are correctly sized for steady-state traffic",
+        "The Service selector no longer matches the labels on the new pods",
+        "A rollout policy allows too many old pods to terminate before enough new pods are ready"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3,
+        4
+      ],
+      "explanation": "Early readiness, restart loops, selector mismatches, and unsafe rollout parameters can all create intermittent unavailability during a rolling update. Properly sized resources alone would not explain those specific symptoms.",
+      "tags": [
+        "kubernetes",
+        "rolling-updates",
+        "probes",
+        "service-routing"
+      ],
+      "references": [
+        "Container Orchestration",
+        "Observability"
+      ]
+    },
+    {
+      "id": "devops-q12",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A queue-processing deployment scales on CPU, but real user latency is driven by backlog growth. CPU stays low while jobs pile up.",
+      "prompt": "Which autoscaling signal is most appropriate?",
+      "options": [
+        "A custom metric such as queue depth or lag per replica",
+        "Container image size in megabytes",
+        "Node uptime since the last reboot",
+        "Whether the last deployment used blue-green strategy"
+      ],
+      "correctAnswer": 0,
+      "explanation": "If user impact is caused by backlog rather than CPU saturation, scaling should follow the business-relevant load signal, such as queue depth, lag, or time-to-drain.",
+      "tags": [
+        "autoscaling",
+        "custom-metrics",
+        "queue-workers"
+      ],
+      "references": [
+        "Container Orchestration",
+        "Observability"
+      ]
+    },
+    {
+      "id": "devops-q13",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A platform team is teaching new engineers how core Kubernetes mechanisms map to day-to-day operational goals.",
+      "prompt": "Match each operational goal to the Kubernetes feature that best fits it.",
+      "premises": [
+        "Give each replica a stable identity and durable volume for an ordered cluster member",
+        "Prevent voluntary maintenance from evicting too many replicas at once",
+        "Keep a pod out of service discovery until it can actually serve traffic",
+        "Adjust replica count automatically when demand metrics rise"
+      ],
+      "responses": [
+        "StatefulSet",
+        "PodDisruptionBudget",
+        "Readiness probe",
+        "HorizontalPodAutoscaler"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "StatefulSet handles stable identity and storage, PodDisruptionBudget protects availability during maintenance, readiness controls traffic admission, and HPA automates scaling based on metrics.",
+      "tags": [
+        "kubernetes-primitives",
+        "availability",
+        "autoscaling"
+      ],
+      "references": [
+        "Container Orchestration",
+        "Modern Dev Roles"
+      ]
+    },
+    {
+      "id": "devops-q14",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An engineer manually changes production load balancer settings in the cloud console. The next Terraform run proposes replacing or rewriting resources that the team did not expect.",
+      "prompt": "Which control most directly surfaces this risk before production is touched?",
+      "options": [
+        "Require reviewed Terraform plan output in CI against shared remote state",
+        "Let each engineer keep a personal local state file for production",
+        "Apply infrastructure changes only from laptops after a quick chat",
+        "Disable drift detection because it generates noisy differences"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A reviewed plan against shared state makes drift visible before apply. Local state files and informal laptop workflows hide coordination risk rather than controlling it.",
+      "tags": [
+        "terraform",
+        "drift-detection",
+        "change-review"
+      ],
+      "references": [
+        "Infrastructure as Code",
+        "Cloud Architecture"
+      ]
+    },
+    {
+      "id": "devops-q15",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A team stores production Terraform state on individual laptops because the actual infrastructure is remote anyway.",
+      "prompt": "True or false: the location of the state file is mostly a convenience issue and has little effect on coordination or safety.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "State location affects locking, concurrency control, drift visibility, auditability, and who can safely coordinate changes. Treating it as a local convenience creates real operational risk.",
+      "tags": [
+        "terraform-state",
+        "coordination",
+        "iac-safety"
+      ],
+      "references": [
+        "Infrastructure as Code",
+        "Modern Dev Roles"
+      ]
+    },
+    {
+      "id": "devops-q16",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A backend team needs a zero-downtime database change for a busy service where old and new application versions will run side by side during rollout.",
+      "prompt": "Place the migration steps in the safest order.",
+      "items": [
+        "Add a backward-compatible schema change that old and new code can both tolerate",
+        "Deploy application code that can read and write both old and new representations",
+        "Backfill or transform historical data in the background",
+        "Switch reads and writes fully to the new representation after validation",
+        "Remove the obsolete schema path in a later cleanup release"
+      ],
+      "correctAnswer": [
+        "Add a backward-compatible schema change that old and new code can both tolerate",
+        "Deploy application code that can read and write both old and new representations",
+        "Backfill or transform historical data in the background",
+        "Switch reads and writes fully to the new representation after validation",
+        "Remove the obsolete schema path in a later cleanup release"
+      ],
+      "explanation": "The safe pattern is expand, support both versions, migrate data, cut over after validation, then contract later. This avoids breaking mixed-version deployments during rollout.",
+      "tags": [
+        "zero-downtime-migrations",
+        "expand-contract",
+        "backward-compatibility"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Modern Dev Roles"
+      ]
+    },
+    {
+      "id": "devops-q17",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A review of an infrastructure repository finds several practices that may undermine reproducibility and safe promotion.",
+      "prompt": "Which changes would strengthen immutable and reviewable infrastructure delivery?",
+      "options": [
+        "Pin provider and module versions explicitly",
+        "Apply the exact reviewed plan artifact rather than recalculating a new plan at deploy time",
+        "Select the base machine image by an unbounded latest wildcard on every apply",
+        "Commit plaintext secrets to version control so plans are deterministic",
+        "Keep bootstrap scripts versioned and rendered from source-controlled templates"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "Pinned versions, reviewed plan artifacts, and versioned bootstrap inputs improve reproducibility. Unbounded latest selectors and plaintext secrets introduce non-determinism and security problems.",
+      "tags": [
+        "immutable-infrastructure",
+        "terraform",
+        "reproducibility",
+        "secrets-management"
+      ],
+      "references": [
+        "Infrastructure as Code",
+        "CI/CD Pipeline"
+      ]
+    },
+    {
+      "id": "devops-q18",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A company has 80 services with different compliance, test, and rollback needs. A central platform team is deciding how much of CI/CD to standardize.",
+      "prompt": "Which approach best balances consistency with service-level autonomy?",
+      "options": [
+        "Provide a paved-road pipeline template with mandatory core controls and service-specific extensions",
+        "Force every service to use one identical monolithic pipeline regardless of risk profile",
+        "Let every team invent tooling and release logic from scratch",
+        "Eliminate automated pipelines and rely on manual release checklists"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A paved road standardizes the critical controls while still allowing service teams to adapt to their delivery context. Total uniformity or total fragmentation both create avoidable operational cost.",
+      "tags": [
+        "platform-engineering",
+        "golden-path",
+        "pipeline-standardization"
+      ],
+      "references": [
+        "Modern Dev Roles",
+        "CI/CD Pipeline"
+      ]
+    },
+    {
+      "id": "devops-q19",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A frontend platform team moves authentication checks and personalization logic to CDN edge functions close to users.",
+      "prompt": "What primary benefit are they seeking?",
+      "options": [
+        "Reducing origin round-trips and latency before requests reach the core backend",
+        "Making relational database joins cheaper",
+        "Eliminating the need for cache-control headers",
+        "Guaranteeing that all bugs are caught before deployment"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Edge execution is primarily about handling work near the requester so less traffic travels back to the origin, which improves latency and often reduces backend load.",
+      "tags": [
+        "edge-computing",
+        "frontend-platform",
+        "latency"
+      ],
+      "references": [
+        "Modern Dev Roles",
+        "Cloud Architecture"
+      ]
+    },
+    {
+      "id": "devops-q20",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "During a checkout incident, engineers need different kinds of telemetry to answer different questions quickly.",
+      "prompt": "Match each investigative need to the telemetry signal that fits it best.",
+      "premises": [
+        "Track whether p99 latency is burning the user-facing error budget over time",
+        "See the causal path of one request across API gateway, payment service, and database",
+        "Inspect the exact payload and exception context for a failed background job",
+        "Jump from an anomalous latency point to representative request traces"
+      ],
+      "responses": [
+        "Metrics",
+        "Distributed traces",
+        "Structured logs",
+        "Metrics with trace exemplars"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Metrics summarize health over time, traces show a single request path across services, logs capture rich event context, and exemplars link aggregated metric points to concrete trace samples.",
+      "tags": [
+        "observability",
+        "metrics",
+        "tracing",
+        "logging"
+      ],
+      "references": [
+        "Observability",
+        "Modern Dev Roles"
+      ]
+    },
+    {
+      "id": "devops-q21",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A service has almost exhausted its monthly error budget, but product leadership still wants a risky feature release this afternoon.",
+      "prompt": "Which responses are consistent with SRE-style reliability governance?",
+      "options": [
+        "Pause high-risk releases and prioritize stabilization work",
+        "Page engineers immediately on every 4xx regardless of user impact",
+        "Alert on burn rate and other symptoms tied to user-facing objectives",
+        "Skip the post-incident review because the team already knows the proximate cause",
+        "Use canary rollout gates that automatically halt or roll back on SLO regression"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Error budgets exist to guide release risk, alerting should map to user impact, and rollout automation should enforce objective guardrails. Blanket paging and skipped learning loops make reliability worse.",
+      "tags": [
+        "sre",
+        "error-budgets",
+        "slo",
+        "canary"
+      ],
+      "references": [
+        "Observability",
+        "CI/CD Pipeline"
+      ]
+    },
+    {
+      "id": "devops-q22",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "Distributed tracing is sampled at 1%, and the team keeps missing rare failures because the bad requests often fall outside the sample.",
+      "prompt": "Which change improves insight while keeping telemetry cost under control?",
+      "options": [
+        "Adopt tail-based or policy-based sampling that retains error and high-latency traces",
+        "Disable tracing entirely and rely only on dashboard averages",
+        "Sample traces purely at random but lower the rate further",
+        "Log only stack traces without request correlation identifiers"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Policy-aware sampling preserves the traces that matter most, such as failures and high latency, without paying to retain every successful request at full fidelity.",
+      "tags": [
+        "distributed-tracing",
+        "sampling",
+        "telemetry-cost"
+      ],
+      "references": [
+        "Observability"
+      ]
+    },
+    {
+      "id": "devops-q23",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "An operations team centralizes logs in a searchable platform and concludes that dedicated metrics are now redundant.",
+      "prompt": "True or false: centralized logs alone are usually sufficient for low-latency alerting and high-level capacity signals.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Logs are rich but expensive and noisy for constant aggregation. Metrics provide cheap, low-latency summaries that are better suited to alerting, trending, and capacity planning.",
+      "tags": [
+        "logging",
+        "metrics",
+        "alerting"
+      ],
+      "references": [
+        "Observability",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "devops-q24",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "In a shared SaaS platform, one noisy enterprise tenant saturates worker pools and degrades latency for everyone else.",
+      "prompt": "Which control most directly protects other tenants while preserving shared-infrastructure economics?",
+      "options": [
+        "Introduce tenant-aware rate limits and workload isolation boundaries",
+        "Move every customer to a dedicated on-premises deployment",
+        "Disable caching so all requests are treated equally",
+        "Route every request through a single global worker queue with no quotas"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Well-designed multi-tenancy depends on fairness and isolation controls such as quotas, rate limits, or pool partitioning so one tenant cannot consume the shared platform at everyone else's expense.",
+      "tags": [
+        "multi-tenancy",
+        "rate-limiting",
+        "fairness",
+        "isolation"
+      ],
+      "references": [
+        "Cloud Architecture",
+        "Observability"
+      ]
+    },
+    {
+      "id": "devops-q25",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A deployment job rebuilds a Docker image during release instead of promoting the exact image that passed tests and security scans earlier in CI.",
+      "prompt": "What is the principal risk in that design?",
+      "options": [
+        "Production may run a different artifact than the one that was validated",
+        "Horizontal scaling will stop working for the service",
+        "The cluster control plane will require manual patching",
+        "Terraform state will become unreadable"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Rebuilding during deployment breaks provenance and reproducibility. The artifact in production can diverge from the one that passed validation, which weakens both reliability and supply-chain assurance.",
+      "tags": [
+        "artifact-promotion",
+        "supply-chain",
+        "container-images"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Container Orchestration"
+      ]
+    },
+    {
+      "id": "devops-q26",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A stateful service must stay available while Kubernetes nodes are drained weekly for security patching.",
+      "prompt": "Which measures improve availability during planned node maintenance?",
+      "options": [
+        "Define a PodDisruptionBudget for the service",
+        "Run a single replica to simplify quorum decisions",
+        "Spread replicas across failure domains with anti-affinity or topology rules",
+        "Use readiness checks that verify the instance can safely rejoin and serve traffic",
+        "Cordon and drain all nodes at once to shorten the maintenance window"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Maintenance safety depends on limiting simultaneous disruption, spreading replicas so one node action cannot remove all healthy instances, and only admitting traffic when a restarted member is truly ready.",
+      "tags": [
+        "poddisruptionbudget",
+        "anti-affinity",
+        "node-maintenance",
+        "stateful-workloads"
+      ],
+      "references": [
+        "Container Orchestration",
+        "Cloud Architecture"
+      ]
+    },
+    {
+      "id": "devops-q27",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A bursty serverless image processor scales from zero to thousands of invocations and overwhelms a relational database with connection storms.",
+      "prompt": "Which architectural adjustment best addresses the root cause?",
+      "options": [
+        "Introduce a connection pool or proxy and buffer work so concurrency reaching the database is controlled",
+        "Increase function timeout so each invocation holds its database connection longer",
+        "Disable autoscaling for the function platform",
+        "Move the SQL schema into application logs"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The problem is unconstrained fan-out to a database with limited connection capacity. Pooling, proxies, or queue-based smoothing control concurrency without giving up the elasticity of event-driven compute.",
+      "tags": [
+        "serverless",
+        "database-connections",
+        "backpressure",
+        "faas"
+      ],
+      "references": [
+        "Cloud Architecture",
+        "Cloud Service Models"
+      ]
+    },
+    {
+      "id": "devops-q28",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "An executive dashboard shows CPU, memory, and disk utilization for production hosts, and leadership declares the platform fully observable.",
+      "prompt": "True or false: infrastructure dashboards alone are enough to claim real observability for a distributed product.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Host dashboards are useful, but observability requires enough correlated service, dependency, and request-level telemetry to explain unknown failure modes in the product itself.",
+      "tags": [
+        "observability",
+        "service-telemetry",
+        "distributed-systems"
+      ],
+      "references": [
+        "Observability",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "devops-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "Platform engineers build self-service templates that let product teams create ephemeral environments mirroring production through approved APIs and guardrails.",
+      "prompt": "Which DevOps capability does this most closely represent?",
+      "options": [
+        "An internal developer platform or paved road built on infrastructure automation",
+        "A replacement for observability because environments are short-lived",
+        "A pure SaaS adoption strategy with no infrastructure ownership",
+        "A manual break-glass process for exceptional outages only"
+      ],
+      "correctAnswer": 0,
+      "explanation": "This is the essence of a platform or paved-road model: standardize safe infrastructure automation so teams can self-serve without opening up unsafe snowflake environments.",
+      "tags": [
+        "platform-engineering",
+        "self-service",
+        "ephemeral-environments",
+        "iac"
+      ],
+      "references": [
+        "Modern Dev Roles",
+        "Infrastructure as Code"
+      ]
+    },
+    {
+      "id": "devops-q30",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "After moving to canary deployments, release decisions are still made by humans staring at dashboards for 30 minutes, and different operators make different calls on the same data.",
+      "prompt": "What is the strongest next improvement?",
+      "options": [
+        "Automate progressive delivery analysis with objective rollback thresholds tied to service health",
+        "Shorten the observation window to two minutes so humans decide faster",
+        "Stop collecting metrics during rollout to reduce noise",
+        "Return to big-bang deployments so success is easier to judge"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Canary delivery becomes far more reliable when promotion and rollback are driven by explicit health analysis instead of inconsistent human interpretation under time pressure.",
+      "tags": [
+        "canary",
+        "progressive-delivery",
+        "automated-rollbacks",
+        "release-analysis"
+      ],
+      "references": [
+        "CI/CD Pipeline",
+        "Observability"
+      ]
+    },
+    {
+      "id": "devops-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "Post-incident reviews show that alerts fire quickly, but recovery is slow because database, application, and infrastructure responsibilities are unclear during active incidents.",
+      "prompt": "Which change is most likely to reduce mean time to recovery?",
+      "options": [
+        "Define clear service ownership, on-call roles, and tested runbooks for incident response",
+        "Send every alert to every engineer so someone will pick it up",
+        "Replace all paging with a daily summary email",
+        "Increase deployment frequency without changing incident process"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Low MTTR depends on clear ownership, explicit escalation paths, and runbooks that have been exercised before the incident. Broadcasting alerts widely without structure usually increases confusion instead of speed.",
+      "tags": [
+        "mttr",
+        "incident-response",
+        "ownership",
+        "runbooks"
+      ],
+      "references": [
+        "Modern Dev Roles",
+        "Observability"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,827 @@
+{
+  "moduleId": "python",
+  "moduleTitle": "Python",
+  "description": "Scenario-based assessment focused on advanced Python philosophy, execution semantics, memory management, concurrency limits, and powerful language features such as generators, decorators, context managers, and metaclasses.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "python-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A team is migrating a Python 2 service that mixed binary protocol frames with human-readable text, and subtle data corruption appeared after the port to Python 3.",
+      "prompt": "Which architectural motivation best explains Python 3's decision to keep text and binary data as separate types?",
+      "options": [
+        "To force explicit encoding and decoding boundaries instead of implicit coercion",
+        "To let the virtual machine skip bytecode generation for string literals",
+        "To enable multiple inheritance for built-in sequence types",
+        "To reduce reference-count overhead for immutable objects"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Python 3 separates str and bytes so programs must make text-binary boundaries explicit. That design matches Python's preference for clarity over ambiguous implicit conversions.",
+      "tags": [
+        "python3",
+        "bytes",
+        "unicode",
+        "language-design"
+      ],
+      "references": [
+        "Introduction",
+        "Python Philosophy"
+      ]
+    },
+    {
+      "id": "python-q02",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "An internal platform team is designing a new configuration API and wants it to feel Pythonic without becoming magical.",
+      "prompt": "Which proposals align most closely with the Zen of Python?",
+      "options": [
+        "Require callers to pass an explicit timezone object instead of guessing from server locale",
+        "Silently ignore malformed configuration keys to keep startup smooth",
+        "Expose one clear constructor for common cases and reserve advanced hooks for edge cases",
+        "Hide network retries behind dynamic attribute access so call sites look shorter",
+        "Use namespaces for plugin identifiers to avoid collisions"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Explicit inputs, one obvious path, and strong use of namespaces reflect core Zen principles. Silent failure and surprising magic push in the opposite direction.",
+      "tags": [
+        "zen-of-python",
+        "api-design",
+        "explicitness",
+        "namespaces"
+      ],
+      "references": [
+        "Python Philosophy"
+      ]
+    },
+    {
+      "id": "python-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A new engineer claims Python skips compilation entirely because it is described as an interpreted language.",
+      "prompt": "True or false: in CPython, module source is compiled to bytecode before the Python Virtual Machine executes it.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "CPython does not execute source text directly. It compiles source into bytecode and then runs that bytecode inside the Python Virtual Machine.",
+      "tags": [
+        "cpython",
+        "bytecode",
+        "pvm",
+        "execution"
+      ],
+      "references": [
+        "Introduction",
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A build-system team wants to explain what happens from module source to top-level execution when a program starts.",
+      "prompt": "Arrange the stages from earliest to latest.",
+      "items": [
+        "Python reads source text and performs lexical analysis and parsing",
+        "CPython produces code objects and bytecode",
+        "A frame is created for module execution",
+        "The Python Virtual Machine begins executing bytecode instructions",
+        "Top-level names become bound in the module namespace as statements run"
+      ],
+      "correctAnswer": [
+        "Python reads source text and performs lexical analysis and parsing",
+        "CPython produces code objects and bytecode",
+        "A frame is created for module execution",
+        "The Python Virtual Machine begins executing bytecode instructions",
+        "Top-level names become bound in the module namespace as statements run"
+      ],
+      "explanation": "Parsing and compilation come before execution. Once the module frame exists, the PVM runs bytecode and top-level names are bound as the statements execute.",
+      "tags": [
+        "execution-pipeline",
+        "module-loading",
+        "frames",
+        "bytecode"
+      ],
+      "references": [
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A profiler report shows several different lifetime patterns for objects, and the team wants to map each symptom to the correct memory-management mechanism.",
+      "prompt": "Match each situation to the best explanation.",
+      "premises": [
+        "A temporary list created inside a helper becomes unreachable when the helper returns",
+        "Two container objects reference each other after all external names are deleted",
+        "A cache entry should disappear automatically when its key object has no other strong references",
+        "A long-lived object survives many collections and is scanned less aggressively than young objects"
+      ],
+      "responses": [
+        "Reference count hits zero and memory can be reclaimed immediately",
+        "Cyclic garbage collection is needed to detect an unreachable reference cycle",
+        "Use a weak-reference-based association so the key does not stay alive",
+        "Generational collection treats older surviving objects differently from newer ones"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Reference counting handles ordinary short-lived objects, cyclic GC handles unreachable cycles, weak references avoid keeping keys alive, and generational GC treats older survivors differently from young objects.",
+      "tags": [
+        "reference-counting",
+        "cyclic-gc",
+        "weakref",
+        "generational-gc"
+      ],
+      "references": [
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "python-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A nested function originally read an outer variable successfully, but after a later edit added an assignment to the same name inside the nested function, the code started failing with UnboundLocalError.",
+      "prompt": "Why does CPython treat that name as local inside the nested function?",
+      "options": [
+        "The compiler determines scope from assignments in the function body before execution",
+        "The GIL converts free variables into locals to avoid races",
+        "Reference counting duplicates outer objects into each child frame",
+        "The bytecode loader resolves names only after the first function call"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Scope is a compile-time decision in CPython. If a function assigns to a name, that name is treated as local unless declared otherwise with global or nonlocal.",
+      "tags": [
+        "scope",
+        "closures",
+        "unboundlocalerror",
+        "compiler"
+      ],
+      "references": [
+        "Execution Model",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A serverless deployment team wants to understand what benefits they get from shipping warm bytecode caches along with unchanged source.",
+      "prompt": "Which statements about .pyc bytecode caches are correct in CPython?",
+      "options": [
+        ".pyc files cache compiled bytecode so unchanged source can skip recompilation work",
+        ".pyc files contain native machine code specialized for the deployment CPU",
+        "Changing the source invalidates reuse of the previous bytecode cache",
+        "Deleting .pyc files makes Python unable to import the module at all",
+        "Bytecode caches can reduce startup work but do not remove the PVM execution step"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": ".pyc files cache bytecode, not native code. They can reduce import-time compilation overhead, but Python still executes bytecode in the VM, and missing caches do not prevent import.",
+      "tags": [
+        "pyc",
+        "imports",
+        "startup",
+        "bytecode-cache"
+      ],
+      "references": [
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q08",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A generator-based ETL pipeline emits one batch, pauses, and then resumes later without recomputing earlier state.",
+      "prompt": "What is preserved so the generator can continue from the next yield point?",
+      "options": [
+        "The generator frame, including instruction position and local bindings",
+        "A cloned OS thread blocked in kernel space",
+        "A copy of the module's full heap segment",
+        "A rewritten AST with executed branches removed"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A generator keeps its execution state in a suspended frame. That includes the current instruction position and local variables needed to resume.",
+      "tags": [
+        "generators",
+        "frames",
+        "yield",
+        "lazy-evaluation"
+      ],
+      "references": [
+        "Execution Model",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q09",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A threaded downloader performs better than a single-threaded version even though it runs on CPython.",
+      "prompt": "True or false: this can happen because CPython may release the GIL while threads wait on blocking I/O.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The GIL prevents multiple threads from executing Python bytecode at the same instant, but blocking I/O often releases the GIL so another thread can make progress.",
+      "tags": [
+        "gil",
+        "threads",
+        "io-bound",
+        "concurrency"
+      ],
+      "references": [
+        "Global Interpreter Lock"
+      ]
+    },
+    {
+      "id": "python-q10",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A transaction manager wraps database work in a with block and must guarantee cleanup even if business logic raises an exception halfway through.",
+      "prompt": "Which guarantee does the context manager protocol provide?",
+      "options": [
+        "__exit__ is invoked during block teardown, allowing cleanup or rollback",
+        "The block is retried automatically until it succeeds",
+        "All nested frames are discarded and exceptions are always swallowed",
+        "Reference counts inside the block are frozen until commit"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The with statement ensures the context manager's exit logic runs during teardown. That is what makes reliable cleanup and rollback patterns possible.",
+      "tags": [
+        "context-managers",
+        "with-statement",
+        "cleanup",
+        "exceptions"
+      ],
+      "references": [
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q11",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A payment service stacks several decorators on a handler, and the team wants to reason about what happens when the function definition itself executes.",
+      "prompt": "Arrange these events from earliest to latest when Python executes a decorated function definition.",
+      "items": [
+        "Decorator expressions are evaluated in the surrounding scope",
+        "A function object is created from the code object",
+        "The decorators are applied from the bottommost decorator upward",
+        "The final wrapped callable is bound to the function name in the namespace"
+      ],
+      "correctAnswer": [
+        "Decorator expressions are evaluated in the surrounding scope",
+        "A function object is created from the code object",
+        "The decorators are applied from the bottommost decorator upward",
+        "The final wrapped callable is bound to the function name in the namespace"
+      ],
+      "explanation": "Decorator expressions are evaluated first, then Python creates the function object, applies decorators bottom-up, and binds the resulting callable to the name.",
+      "tags": [
+        "decorators",
+        "function-definition",
+        "name-binding",
+        "execution-order"
+      ],
+      "references": [
+        "Execution Model",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q12",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "An architecture review compares several advanced Python features and wants to connect each one to the requirement it solves most directly.",
+      "prompt": "Match each requirement to the Python feature that best fits it.",
+      "premises": [
+        "Guarantee setup and teardown around a block of resource-using code",
+        "Compute values lazily while preserving suspension state between iterations",
+        "Intercept attribute access logic for a managed class attribute",
+        "Customize how a class object itself is constructed"
+      ],
+      "responses": [
+        "Context manager",
+        "Generator",
+        "Descriptor",
+        "Metaclass"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Context managers structure setup and teardown, generators preserve suspended execution, descriptors participate in attribute access, and metaclasses customize class creation.",
+      "tags": [
+        "context-managers",
+        "generators",
+        "descriptors",
+        "metaclasses"
+      ],
+      "references": [
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q13",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "An analytics platform mixes CPU-heavy transformations with network polling and runs under CPython on a multi-core machine.",
+      "prompt": "Which decisions are likely to improve overall throughput for this mixed workload?",
+      "options": [
+        "Move CPU-bound work to separate processes",
+        "Keep adding pure Python threads that perform the same CPU-bound loop",
+        "Use a C-backed or native extension path that can release the GIL during heavy work",
+        "Handle blocking network waits with threads or asyncio while isolating CPU-heavy work",
+        "Assume the GIL lets all Python bytecode execute on all cores simultaneously"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "CPU-heavy pure Python threads do not scale across cores under the GIL. Separate processes, native code that can release the GIL, and sensible handling of I/O concurrency are the effective options.",
+      "tags": [
+        "gil",
+        "multiprocessing",
+        "asyncio",
+        "performance"
+      ],
+      "references": [
+        "Global Interpreter Lock",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q14",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A plugin host stores metadata about plugin objects in a cache, but unloaded plugins remain alive because the cache still references them.",
+      "prompt": "Which change most directly avoids keeping entries alive solely because the cache still holds their keys?",
+      "options": [
+        "Use weakref.WeakKeyDictionary for key-based metadata",
+        "Replace the dictionary with a tuple of key-value pairs",
+        "Increase GC thresholds so collection runs less often",
+        "Store plugin IDs in a global list for faster lookup"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Weak-key storage lets entries disappear when the key object has no other strong references. The other options preserve or worsen retention.",
+      "tags": [
+        "weakref",
+        "caching",
+        "memory-leak",
+        "object-lifetime"
+      ],
+      "references": [
+        "Memory Management",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q15",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A request handler uses a default list argument for memoized state and unexpectedly accumulates data across unrelated requests.",
+      "prompt": "True or false: the default list object is created once when the function is defined, not each time the function is called.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Default argument expressions are evaluated at function definition time. That is why a mutable default can persist state across later calls.",
+      "tags": [
+        "default-arguments",
+        "function-definition",
+        "mutable-state",
+        "pitfalls"
+      ],
+      "references": [
+        "Execution Model",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q16",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A teammate calls an async function and expects it to start executing immediately, but nothing seems to happen until the result is awaited later.",
+      "prompt": "What best explains the behavior of an async def function call in Python?",
+      "options": [
+        "Calling it creates a coroutine object that must be awaited or scheduled to execute",
+        "Calling it immediately starts a new OS thread",
+        "Calling it recompiles the function body into a fresh .pyc file",
+        "Calling it bypasses the event loop and runs synchronously until completion"
+      ],
+      "correctAnswer": 0,
+      "explanation": "An async def call returns a coroutine object. Execution does not progress until the coroutine is awaited or otherwise scheduled by an event loop.",
+      "tags": [
+        "asyncio",
+        "coroutines",
+        "event-loop",
+        "async-def"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q17",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A log-processing pipeline must handle terabytes of records without exhausting memory while still composing multiple transformation stages.",
+      "prompt": "Which properties make generators a better fit than eagerly built lists in this situation?",
+      "options": [
+        "They yield values incrementally instead of materializing the whole result at once",
+        "They preserve suspension state between yields",
+        "They guarantee parallel execution across CPU cores",
+        "They can be chained into pipelines that keep working-set size small",
+        "They provide constant-time random access to any produced item"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Generators are valuable here because they are lazy, preserve state, and can be composed into streaming pipelines. They do not provide random access or automatic parallelism.",
+      "tags": [
+        "generators",
+        "streaming",
+        "memory-efficiency",
+        "pipelines"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "python-q18",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A function prints a global config object, but after adding config = config.merge(local) later in the function body, it now fails before reaching the assignment line.",
+      "prompt": "Which rule explains the failure?",
+      "options": [
+        "Any assignment in the function body makes the name local unless declared global or nonlocal",
+        "The interpreter evaluates print arguments only after reaching the assignment statement",
+        "The module namespace is discarded when entering a function",
+        "The GIL forbids reading globals before local initialization"
+      ],
+      "correctAnswer": 0,
+      "explanation": "CPython determines scope at compile time. Once the function assigns to config, the name is treated as local throughout that function unless explicitly declared otherwise.",
+      "tags": [
+        "scope-rules",
+        "global",
+        "nonlocal",
+        "name-resolution"
+      ],
+      "references": [
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q19",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A backend team debates whether Python variables are typed containers or labels bound to objects.",
+      "prompt": "True or false: in Python, names are bindings to objects, and the object's type belongs to the object rather than to the name.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Python names are labels bound to objects. The object carries its type and behavior; the name is simply a reference in a namespace.",
+      "tags": [
+        "object-model",
+        "bindings",
+        "dynamic-typing",
+        "namespaces"
+      ],
+      "references": [
+        "Introduction",
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q20",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A numerical library backed by native code achieves better parallel throughput than an equivalent pure-Python threaded implementation of the same algorithm.",
+      "prompt": "Which explanation is most accurate?",
+      "options": [
+        "The library can perform heavy work in native code and may release the GIL around that work",
+        "Native code automatically disables reference counting for the full interpreter process",
+        "Importing a C extension makes CPython skip bytecode generation globally",
+        "Module namespaces are shared across processes instead of threads"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Native extensions can move expensive work outside ordinary Python bytecode execution and may release the GIL while doing that work, enabling better parallel utilization.",
+      "tags": [
+        "gil",
+        "c-extensions",
+        "parallelism",
+        "performance"
+      ],
+      "references": [
+        "Global Interpreter Lock",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q21",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A custom context manager needs to log failures and optionally suppress one specific transient exception after cleanup runs.",
+      "prompt": "Which statements about the context manager protocol are correct?",
+      "options": [
+        "__enter__ runs before the block body",
+        "__exit__ receives exception details if the block raises",
+        "Returning True from __exit__ can suppress the exception",
+        "Using with creates a new interpreter process isolated from the caller",
+        "Context managers are only for files and cannot model logical transactions"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The protocol brackets a block with enter and exit hooks, passes exception details to exit, and permits suppression by returning a truthy value. It is general-purpose, not file-specific.",
+      "tags": [
+        "context-managers",
+        "exception-handling",
+        "resource-management",
+        "protocols"
+      ],
+      "references": [
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q22",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An API endpoint transforms a very large sequence and then iterates over the result exactly once, but list comprehension spikes peak memory.",
+      "prompt": "Which refactor best reduces peak memory while preserving one-pass iteration semantics?",
+      "options": [
+        "Replace the list comprehension with a generator expression consumed lazily",
+        "Move the transformation into a class body so names live longer",
+        "Wrap the result in tuple() before iterating",
+        "Cache the full list in a default argument"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A generator expression delays production until iteration happens, which reduces peak memory for one-pass consumption. Materializing a tuple or list defeats that goal.",
+      "tags": [
+        "generator-expressions",
+        "memory-usage",
+        "lazy-evaluation",
+        "iteration"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "python-q23",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A framework must enforce that every model class registers a schema attribute at the moment the class itself is created.",
+      "prompt": "Which mechanism is the most direct fit for altering class creation behavior itself?",
+      "options": [
+        "A metaclass",
+        "A generator",
+        "A context manager",
+        "A weak reference proxy"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Metaclasses customize how class objects are constructed. That makes them the direct mechanism for enforcing rules during class creation.",
+      "tags": [
+        "metaclasses",
+        "class-creation",
+        "frameworks",
+        "advanced-python"
+      ],
+      "references": [
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q24",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "Two ORM entities point to each other, and all external names to both objects have been dropped.",
+      "prompt": "True or false: reference counting alone is sufficient to reclaim both objects in this case.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "If two objects still reference each other, their reference counts may remain above zero even though the cycle is unreachable. Cyclic garbage collection is needed for that case.",
+      "tags": [
+        "reference-counting",
+        "cycles",
+        "garbage-collection",
+        "orm"
+      ],
+      "references": [
+        "Memory Management"
+      ]
+    },
+    {
+      "id": "python-q25",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A debugger inspects a live CPython frame while stepping through deeply nested calls to understand why a name resolves the way it does.",
+      "prompt": "Which pieces of execution state are associated with a frame object or its surrounding call-stack machinery?",
+      "options": [
+        "Local variable bindings for that execution context",
+        "A link to the previous frame or caller context",
+        "The current instruction position within the code object",
+        "A dedicated OS process created for each frame",
+        "References used for global and builtins name lookup"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "explanation": "Frames capture the execution context: locals, instruction position, links to other frames, and namespace references needed for lookups. They are not separate OS processes.",
+      "tags": [
+        "frames",
+        "call-stack",
+        "debugging",
+        "name-resolution"
+      ],
+      "references": [
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q26",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A library author wants obj.field access to trigger validation logic without changing any call sites that read or write the attribute.",
+      "prompt": "Which Python feature is designed to participate directly in attribute access on classes and instances?",
+      "options": [
+        "Descriptor protocol",
+        "Bytecode cache",
+        "Reference-cycle detector",
+        "Import-path hook"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Descriptors are objects that define methods such as __get__ and __set__, allowing them to participate directly in attribute access semantics.",
+      "tags": [
+        "descriptors",
+        "attribute-access",
+        "properties",
+        "protocols"
+      ],
+      "references": [
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "python-q27",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A large application imports the same module from several places, but its expensive top-level initialization normally runs only once per process.",
+      "prompt": "Why is that initialization code usually executed only once per interpreter session?",
+      "options": [
+        "The imported module object is cached in sys.modules after the first successful import",
+        "The GIL forbids top-level code from executing twice",
+        "A .pyc file stores fully initialized global variables as live objects",
+        "Reference counting pins imported modules to a single CPU core"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Python caches imported module objects in sys.modules. Later imports typically reuse that cached module instead of rerunning its top-level code.",
+      "tags": [
+        "imports",
+        "sys-modules",
+        "module-cache",
+        "startup"
+      ],
+      "references": [
+        "Execution Model"
+      ]
+    },
+    {
+      "id": "python-q28",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An asyncio web service directly calls a pure-Python image resize inside an awaited request handler, and all other requests stall until it finishes.",
+      "prompt": "What is the most accurate diagnosis?",
+      "options": [
+        "The CPU-bound function blocks the event-loop thread, so other coroutines cannot make progress",
+        "The event loop duplicates the coroutine across worker processes and waits for consensus",
+        "Await automatically releases the GIL even for synchronous CPU work",
+        "The stalled requests are caused by .pyc cache invalidation"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Asyncio relies on cooperative scheduling. A synchronous CPU-heavy function blocks the event loop thread, preventing other coroutines from advancing until it returns.",
+      "tags": [
+        "asyncio",
+        "event-loop",
+        "cpu-bound",
+        "latency"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Global Interpreter Lock"
+      ]
+    },
+    {
+      "id": "python-q29",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A team discusses a hypothetical no-GIL runtime and assumes all thread-safety concerns would disappear if the global lock were removed.",
+      "prompt": "True or false: removing the GIL would eliminate the need for synchronization around shared mutable state.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The GIL is not a substitute for all synchronization. Shared mutable state can still require explicit coordination to avoid races and preserve invariants.",
+      "tags": [
+        "gil",
+        "thread-safety",
+        "shared-state",
+        "synchronization"
+      ],
+      "references": [
+        "Global Interpreter Lock"
+      ]
+    },
+    {
+      "id": "python-q30",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An API review rejects a helper that guesses a caller's desired timezone from several ambiguous signals instead of requiring a direct argument.",
+      "prompt": "Which Zen principle most directly argues against that design?",
+      "options": [
+        "In the face of ambiguity, refuse the temptation to guess",
+        "Sparse is better than dense",
+        "Now is better than never",
+        "Flat is better than nested"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The Zen explicitly warns against guessing in ambiguous situations. Requiring explicit intent is more Pythonic than hiding uncertainty behind guesswork.",
+      "tags": [
+        "zen-of-python",
+        "ambiguity",
+        "api-design",
+        "explicitness"
+      ],
+      "references": [
+        "Python Philosophy"
+      ]
+    },
+    {
+      "id": "python-q31",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A long-running data service shows steady memory growth even after each batch is reported as finished, and the team is trying to distinguish a retention bug from normal load.",
+      "prompt": "Which observations would most strongly suggest the growth is caused by lingering Python references rather than by active workload alone?",
+      "options": [
+        "Objects expected to die remain reachable from global caches or closures",
+        "Weak-reference-backed caches release entries when external owners disappear",
+        "Generation counts keep rising while logically finished objects still appear in heap snapshots",
+        "Peak memory drops promptly when batch-scoped containers go out of scope",
+        "A debug list of processed records is appended to forever"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Reachability from globals or closures, persistent dead-looking objects in snapshots, and intentionally unbounded debug retention all indicate references are keeping data alive beyond its useful lifetime.",
+      "tags": [
+        "memory-leak",
+        "reachability",
+        "heap-analysis",
+        "retention"
+      ],
+      "references": [
+        "Memory Management",
+        "Advanced Concepts"
+      ]
+    }
+  ]
+}

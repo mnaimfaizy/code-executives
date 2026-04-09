@@ -1,16 +1,16 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load section components for better performance
 import Introduction from './components/sections/Introduction';
-const ArchitecturePatterns = React.lazy(
-  () => import('./components/sections/ArchitecturePatterns')
-);
+const ArchitecturePatterns = React.lazy(() => import('./components/sections/ArchitecturePatterns'));
 const DistributedSystems = React.lazy(() => import('./components/sections/DistributedSystems'));
 const ScalingStrategies = React.lazy(() => import('./components/sections/ScalingStrategies'));
 const DesignPrinciples = React.lazy(() => import('./components/sections/DesignPrinciples'));
 const CaseStudies = React.lazy(() => import('./components/sections/CaseStudies'));
 const Visualization = React.lazy(() => import('./components/sections/Visualization'));
+const Quiz = () => <ModuleQuizSection moduleId="systemdesign" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -20,6 +20,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Design Principles': DesignPrinciples,
   'Case Studies': CaseStudies,
   Visualization,
+  Quiz,
 };
 
 function useQuery() {

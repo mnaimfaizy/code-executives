@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 // Import Big-O sections as they are created
 import Introduction from './components/sections/Introduction';
 import AdvancedConcepts from './components/sections/AdvancedConcepts';
@@ -11,6 +12,7 @@ import AlgorithmAnalysis from './components/sections/AlgorithmAnalysis';
 import RealWorldApplications from './components/sections/RealWorldApplications';
 import AdvancedTopics from './components/sections/AdvancedTopics';
 import Playground from '../../components/playground/Playground';
+const Quiz = () => <ModuleQuizSection moduleId="bigo" />;
 // import AlgorithmAnalysis from './components/sections/AlgorithmAnalysis';
 // import RealWorldApplications from './components/sections/RealWorldApplications';
 // import PracticeChallenges from './components/sections/PracticeChallenges';
@@ -51,6 +53,8 @@ const BigOPage: React.FC = () => {
         return <GamificationHub />;
       case 'playground':
         return <Playground />;
+      case 'quiz':
+        return <Quiz />;
       default:
         return <Introduction />;
     }

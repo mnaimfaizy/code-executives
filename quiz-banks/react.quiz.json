@@ -1,0 +1,844 @@
+{
+  "moduleId": "react",
+  "moduleTitle": "React",
+  "description": "Scenario-based assessment covering advanced React concepts including JSX, component architecture, state and props, hooks, DOM interaction, virtual DOM behavior, and reconciliation strategies.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "react-q01",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A product page renders a heavy price calculator component. The parent rerenders every time analytics state updates, even when the calculator inputs are unchanged. The calculator receives a config object literal and an inline callback as props.",
+      "prompt": "What change is most likely to reduce unnecessary rerenders of the calculator without changing its behavior?",
+      "options": [
+        "Wrap the calculator in React.memo and stabilize the object and callback props",
+        "Move the calculator lower in the JSX tree without changing props",
+        "Replace all props with a single JSON string",
+        "Force the calculator to update only inside useEffect"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React.memo only helps when prop identities remain stable. If the parent recreates object literals and callbacks on every render, the memoized child still rerenders. Stabilizing those props addresses the root cause.",
+      "tags": [
+        "components",
+        "performance",
+        "props",
+        "memoization"
+      ],
+      "references": [
+        "Components",
+        "State & Props",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A dashboard component fetches user metrics in a useEffect. In development, the team sees duplicate network requests after enabling Strict Mode, and they are trying to separate real bugs from expected behavior.",
+      "prompt": "Which explanations are valid for why a fetch effect may appear to run twice in development?",
+      "options": [
+        "Strict Mode may intentionally mount, unmount, and remount components to surface unsafe side effects",
+        "An unstable dependency value can cause the effect to rerun",
+        "useEffect always runs twice in production for parity with development",
+        "A state update inside the effect can trigger another render and another effect run when dependencies change",
+        "React duplicates requests automatically to warm the browser cache"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Development Strict Mode can intentionally replay effects. Separately, unstable dependencies or state changes that affect dependencies can rerun the effect. React does not double-run effects in production by default and does not issue duplicate requests for cache warming.",
+      "tags": [
+        "hooks",
+        "effects",
+        "strict-mode",
+        "debugging"
+      ],
+      "references": [
+        "Hooks",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A teammate stores a derived fullName string in state and updates it in useEffect whenever firstName or lastName changes.",
+      "prompt": "True or false: when a value can be derived directly from current props or state during render, storing it in separate state is usually unnecessary.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Derived values that can be computed during render generally should not be duplicated in state. Duplicating them creates synchronization risk and extra updates.",
+      "tags": [
+        "state",
+        "derived-state",
+        "rendering"
+      ],
+      "references": [
+        "State & Props",
+        "Hooks"
+      ]
+    },
+    {
+      "id": "react-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A team is analyzing what happens after a button click updates component state in a standard client-rendered React app.",
+      "prompt": "Order the high-level steps from the user interaction to the DOM update.",
+      "items": [
+        "React schedules and processes the state update",
+        "The event handler calls the state setter",
+        "React compares the new element tree with the previous one",
+        "React commits the necessary DOM mutations"
+      ],
+      "correctAnswer": [
+        "The event handler calls the state setter",
+        "React schedules and processes the state update",
+        "React compares the new element tree with the previous one",
+        "React commits the necessary DOM mutations"
+      ],
+      "explanation": "The click handler triggers a state update, React processes the update and renders a new tree, reconciliation compares it to the previous tree, and the commit phase applies the minimal DOM changes.",
+      "tags": [
+        "virtual-dom",
+        "reconciliation",
+        "state",
+        "render-cycle"
+      ],
+      "references": [
+        "Virtual DOM",
+        "Reconciliation",
+        "DOM Fundamentals"
+      ]
+    },
+    {
+      "id": "react-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "You are mentoring a team that confuses React terms during performance investigations.",
+      "prompt": "Match each premise to the most appropriate response.",
+      "premises": [
+        "A component function is called again",
+        "React updates the browser DOM",
+        "React compares previous and next UI descriptions",
+        "State updates are queued before the UI changes appear"
+      ],
+      "responses": [
+        "Render phase",
+        "Commit phase",
+        "Reconciliation",
+        "Scheduling and batching"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Calling the component is part of rendering, actual browser DOM mutations happen in the commit phase, comparison is reconciliation, and queued updates are part of scheduling and batching behavior.",
+      "tags": [
+        "rendering",
+        "virtual-dom",
+        "reconciliation",
+        "terminology"
+      ],
+      "references": [
+        "Virtual DOM",
+        "Reconciliation",
+        "DOM Fundamentals"
+      ]
+    },
+    {
+      "id": "react-q06",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A list of editable invoice rows uses array indexes as keys. When the finance team inserts a new row near the top, input focus and local row state jump to the wrong row.",
+      "prompt": "What is the best explanation for this bug?",
+      "options": [
+        "Index keys can cause React to associate existing component instances with the wrong items after reordering",
+        "React does not support editable inputs inside lists",
+        "Keys only matter for server-rendered lists",
+        "Using indexes forces React to fully reload the page"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Keys help React preserve identity across renders. Index keys break that identity when items are inserted, removed, or reordered, which can move local state and focus to the wrong element.",
+      "tags": [
+        "lists",
+        "keys",
+        "reconciliation",
+        "state-preservation"
+      ],
+      "references": [
+        "Components",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A search page passes state through six intermediate components before it reaches the filter panel and results summary. The team wants to reduce prop drilling without turning every value into global state.",
+      "prompt": "Which approaches are reasonable depending on the actual sharing needs?",
+      "options": [
+        "Use composition so intermediate components render children without owning unrelated props",
+        "Use context for values that are broadly needed in a subtree",
+        "Duplicate the same state independently in every component that needs it",
+        "Lift state to the nearest common owner when multiple siblings truly share it",
+        "Replace props with direct DOM queries to read values from inputs"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Composition, context, and lifting state are standard ways to reduce prop drilling while preserving React data flow. Duplicating state or reading through the DOM undermines consistency and predictability.",
+      "tags": [
+        "components",
+        "context",
+        "state-sharing",
+        "props"
+      ],
+      "references": [
+        "Components",
+        "State & Props",
+        "Hooks"
+      ]
+    },
+    {
+      "id": "react-q08",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A component mutates an array stored in state with push and then calls the setter with the same array reference.",
+      "prompt": "True or false: mutating state in place can prevent React from detecting the intended change reliably.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React state updates should be treated immutably. Reusing the same reference can produce stale UI and makes update logic harder to reason about.",
+      "tags": [
+        "state",
+        "immutability",
+        "updates"
+      ],
+      "references": [
+        "State & Props"
+      ]
+    },
+    {
+      "id": "react-q09",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A form field should show the latest server default when the selected record changes, but once the user starts typing, local edits must remain isolated from parent rerenders.",
+      "prompt": "Which design is the best fit?",
+      "options": [
+        "Initialize local state from the selected record when identity changes, then let the field own subsequent edits",
+        "Mirror the prop into state on every render unconditionally",
+        "Write directly to the DOM input value and skip React state entirely",
+        "Store every keystroke only in a module-level variable"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The component needs controlled ownership after initialization, tied to record identity changes rather than unconditional prop mirroring. Constantly syncing prop to state would overwrite user edits.",
+      "tags": [
+        "forms",
+        "state",
+        "props",
+        "controlled-components"
+      ],
+      "references": [
+        "State & Props",
+        "Components"
+      ]
+    },
+    {
+      "id": "react-q10",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A teammate writes JSX with a component invocation inside braces like regular JavaScript function output and gets confused about element creation.",
+      "prompt": "What does JSX primarily provide in React code?",
+      "options": [
+        "A declarative syntax for describing element trees that React can render",
+        "A required templating language executed by the browser at runtime only",
+        "A DOM querying API for selecting existing nodes",
+        "A replacement for JavaScript expressions inside components"
+      ],
+      "correctAnswer": 0,
+      "explanation": "JSX is syntax for expressing UI trees declaratively. It compiles to element creation calls and still allows normal JavaScript expressions within braces.",
+      "tags": [
+        "jsx",
+        "syntax",
+        "elements"
+      ],
+      "references": [
+        "Introduction",
+        "JSX"
+      ]
+    },
+    {
+      "id": "react-q11",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "A review session is separating hook responsibilities to fix a messy component.",
+      "prompt": "Match each hook usage to the most appropriate purpose.",
+      "premises": [
+        "Persist a mutable value across renders without causing rerenders",
+        "Run logic after React commits updates to the screen",
+        "Store data that should trigger a rerender when changed",
+        "Reuse stateful behavior across components"
+      ],
+      "responses": [
+        "useRef",
+        "useEffect",
+        "useState",
+        "Custom hook"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "useRef holds mutable values without triggering rerenders, useEffect runs post-commit side effects, useState drives reactive rerenders, and custom hooks package reusable stateful logic.",
+      "tags": [
+        "hooks",
+        "useRef",
+        "useEffect",
+        "useState"
+      ],
+      "references": [
+        "Hooks"
+      ]
+    },
+    {
+      "id": "react-q12",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A modal registers window event listeners and starts a polling timer when opened. After opening and closing it repeatedly, memory usage grows and duplicate handlers fire.",
+      "prompt": "Which fixes directly address the likely React-side problem?",
+      "options": [
+        "Return a cleanup function from the effect to remove listeners and stop timers",
+        "Ensure the effect dependencies reflect when the side effect should be recreated",
+        "Replace the modal with a class component because function components cannot clean up",
+        "Store listeners in state so React can render them",
+        "Avoid creating side effects during render"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        4
+      ],
+      "explanation": "Effects should clean up subscriptions, timers, and listeners, and dependency lists should reflect when they need to rerun. Side effects do not belong in render. Function components can clean up perfectly well through effects.",
+      "tags": [
+        "hooks",
+        "effects",
+        "cleanup",
+        "memory-leaks"
+      ],
+      "references": [
+        "Hooks",
+        "DOM Fundamentals"
+      ]
+    },
+    {
+      "id": "react-q13",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An accessibility audit flags a custom button implemented with a div and click handler. Keyboard activation and semantics are inconsistent across browsers.",
+      "prompt": "What is the best first fix in React?",
+      "options": [
+        "Replace the div with a semantic button element and preserve the React handler",
+        "Keep the div and add more nested spans",
+        "Add a CSS cursor pointer rule to the div",
+        "Move the click handler to document.addEventListener"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React encourages semantic DOM usage. A real button gives keyboard behavior, focus handling, and accessibility semantics by default while still working with React events.",
+      "tags": [
+        "dom",
+        "accessibility",
+        "events",
+        "semantics"
+      ],
+      "references": [
+        "DOM Fundamentals",
+        "Components"
+      ]
+    },
+    {
+      "id": "react-q14",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A component subscribes to a chat channel in an effect and also returns a cleanup function. The roomId prop changes from one room to another.",
+      "prompt": "Order the effect lifecycle around that dependency change.",
+      "items": [
+        "React commits the render for the new roomId",
+        "The previous cleanup unsubscribes from the old room",
+        "The new effect subscribes to the new room",
+        "A render occurs with the updated roomId"
+      ],
+      "correctAnswer": [
+        "A render occurs with the updated roomId",
+        "React commits the render for the new roomId",
+        "The previous cleanup unsubscribes from the old room",
+        "The new effect subscribes to the new room"
+      ],
+      "explanation": "With a dependency change, React renders the new output, commits it, then runs cleanup for the old effect before running the new effect setup.",
+      "tags": [
+        "hooks",
+        "effects",
+        "lifecycle",
+        "subscriptions"
+      ],
+      "references": [
+        "Hooks",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q15",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A teammate asks why React can update a large table quickly even though the component tree is rerendered conceptually after a filter change.",
+      "prompt": "Which statement best describes the role of the virtual DOM here?",
+      "options": [
+        "React computes a new UI description in memory and then applies only the necessary DOM changes",
+        "React bypasses the real DOM entirely after the first render",
+        "The browser provides a built-in virtual DOM that React delegates to",
+        "Virtual DOM means components never rerender, only DOM nodes do"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React renders a new element tree in memory, compares it to the previous one, and commits only the required changes to the real DOM.",
+      "tags": [
+        "virtual-dom",
+        "performance",
+        "rendering"
+      ],
+      "references": [
+        "Virtual DOM",
+        "Reconciliation",
+        "DOM Fundamentals"
+      ]
+    },
+    {
+      "id": "react-q16",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A developer assumes that calling a state setter always updates the screen immediately before the next line in the same event handler runs.",
+      "prompt": "True or false: React may batch and defer visible state updates, so reading the old state value synchronously in the same handler can still happen.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React schedules state updates and may batch them. Code later in the same synchronous handler can still observe the pre-update value unless using an updater function or derived next value.",
+      "tags": [
+        "state",
+        "batching",
+        "events"
+      ],
+      "references": [
+        "State & Props",
+        "Hooks"
+      ]
+    },
+    {
+      "id": "react-q17",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is reviewing why a memoized child still rerenders unexpectedly. The parent passes several props, some primitive and some recreated every render.",
+      "prompt": "Which props are most likely to break shallow memoization when recreated on each render?",
+      "options": [
+        "A newly constructed object literal",
+        "A stable string primitive with the same value",
+        "A newly created arrow function",
+        "A newly created array literal",
+        "A number primitive with the same value"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Shallow comparison treats objects, arrays, and functions by reference identity. Recreating them each render makes them appear changed even if their contents or behavior are effectively the same.",
+      "tags": [
+        "memoization",
+        "props",
+        "components",
+        "performance"
+      ],
+      "references": [
+        "Components",
+        "State & Props",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q18",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A profile component sometimes renders before async user data arrives. The current code throws because it reads nested properties unconditionally.",
+      "prompt": "What is the most React-appropriate way to handle this rendering path?",
+      "options": [
+        "Render conditionally based on available data and show a loading or fallback UI",
+        "Block the entire component tree with a while loop until data exists",
+        "Catch the error from property access in every JSX expression",
+        "Store a fake user object in a global variable and overwrite it later"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React components should render appropriate fallback states when required data is unavailable. Conditional rendering keeps the UI predictable and avoids runtime errors.",
+      "tags": [
+        "components",
+        "conditional-rendering",
+        "async-ui"
+      ],
+      "references": [
+        "Components",
+        "JSX"
+      ]
+    },
+    {
+      "id": "react-q19",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A rich text editor component must preserve its internal selection state across parent rerenders, but when the documentId changes it should reset completely.",
+      "prompt": "What is the cleanest React mechanism to express this requirement?",
+      "options": [
+        "Give the editor a key based on documentId so identity resets only when that key changes",
+        "Force a full page reload whenever documentId changes",
+        "Copy every internal field into the parent on each keystroke and recreate the editor",
+        "Use array index as a key because it changes more often"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Keys control component identity. A stable key preserves local state across ordinary rerenders, while changing the key tells React to remount and reset the editor for a different document.",
+      "tags": [
+        "keys",
+        "identity",
+        "state-preservation",
+        "reconciliation"
+      ],
+      "references": [
+        "Components",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q20",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A code reviewer says hooks can be called from inside a loop as long as the loop runs the same number of times most of the time.",
+      "prompt": "True or false: hooks must be called in a consistent order on every render, not conditionally or inside loops with variable execution paths.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React relies on consistent hook call ordering to associate state with the correct hook positions. Conditional or variable-order calls break that model.",
+      "tags": [
+        "hooks",
+        "rules-of-hooks",
+        "rendering"
+      ],
+      "references": [
+        "Hooks"
+      ]
+    },
+    {
+      "id": "react-q21",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A teammate wants a child component to modify parent state and proposes importing the parent's setter directly from another file where it was declared.",
+      "prompt": "Which pattern best follows React's one-way data flow?",
+      "options": [
+        "Pass a callback from the parent to the child so the child can request the change",
+        "Let the child mutate the parent's local variables directly",
+        "Read and write parent DOM nodes instead of passing data",
+        "Duplicate the parent state in the child and hope they stay aligned"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React data generally flows down through props, while children communicate requested changes upward through callbacks passed from parents.",
+      "tags": [
+        "state",
+        "props",
+        "callbacks",
+        "data-flow"
+      ],
+      "references": [
+        "State & Props",
+        "Components"
+      ]
+    },
+    {
+      "id": "react-q22",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A review of a custom hook finds several responsibilities mixed together: data fetching, event listeners, and imperative DOM focus handling.",
+      "prompt": "Which statements reflect sound hook design principles in this situation?",
+      "options": [
+        "Custom hooks can extract and reuse stateful logic without sharing state instances between components",
+        "Effects should be grouped only by lifecycle timing, never by concern",
+        "Separating unrelated side effects into different effects can improve clarity and correctness",
+        "A custom hook may internally use multiple built-in hooks",
+        "A custom hook automatically becomes global state for every caller"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "Custom hooks package reusable logic, not shared component instances. Multiple focused effects are often clearer than one large effect, and custom hooks can compose built-in hooks internally.",
+      "tags": [
+        "hooks",
+        "custom-hooks",
+        "effects",
+        "architecture"
+      ],
+      "references": [
+        "Hooks",
+        "Components"
+      ]
+    },
+    {
+      "id": "react-q23",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A long feed rerenders after a filter change. One item switches from <ArticleCard> to <VideoCard> at the same position in the tree.",
+      "prompt": "How will React typically treat that position during reconciliation?",
+      "options": [
+        "It will unmount the previous component type and mount the new one because the element type changed",
+        "It will preserve the old component instance because the position is the same",
+        "It will only update text nodes and ignore the component type change",
+        "It will throw because mixed component types are not allowed in lists"
+      ],
+      "correctAnswer": 0,
+      "explanation": "When the element type changes at a given position, React generally treats it as a different subtree, so the old one is removed and a new one is mounted.",
+      "tags": [
+        "reconciliation",
+        "component-identity",
+        "rendering"
+      ],
+      "references": [
+        "Reconciliation",
+        "Components"
+      ]
+    },
+    {
+      "id": "react-q24",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A component receives count as a prop. Inside an event handler, a teammate increments count directly with count++ and expects the UI to refresh.",
+      "prompt": "Why is this incorrect in React?",
+      "options": [
+        "Props are read-only inputs and mutating them does not tell React to rerender",
+        "JavaScript does not allow incrementing numbers in functions",
+        "Props can only be changed in useEffect",
+        "React forbids arithmetic inside event handlers"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Props are immutable from the receiving component's perspective. Updating UI requires state changes in the owning component, not direct prop mutation.",
+      "tags": [
+        "props",
+        "immutability",
+        "data-flow"
+      ],
+      "references": [
+        "State & Props",
+        "Components"
+      ]
+    },
+    {
+      "id": "react-q25",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "You are preparing a training session on how React concepts connect to practical UI behavior.",
+      "prompt": "Match each premise to the best corresponding concept.",
+      "premises": [
+        "Choosing stable identifiers for list items",
+        "Embedding JavaScript expressions inside markup-like syntax",
+        "Passing data downward from parent to child",
+        "Reading the latest input element node imperatively"
+      ],
+      "responses": [
+        "Keys",
+        "JSX",
+        "Props",
+        "Ref"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Stable identifiers map to keys, embedded expressions are part of JSX, downward data flow uses props, and direct element access is typically done with refs.",
+      "tags": [
+        "jsx",
+        "keys",
+        "props",
+        "refs"
+      ],
+      "references": [
+        "JSX",
+        "Components",
+        "State & Props",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q26",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A parent component conditionally renders a child panel. Users report that the panel's local form state disappears whenever they toggle visibility off and back on.",
+      "prompt": "What is the most accurate reason?",
+      "options": [
+        "Unmounting removes the child component instance, so its local state is lost when it mounts again",
+        "React clears all application state when any branch is hidden",
+        "Local state only works in root components",
+        "Conditional rendering converts controlled inputs into uncontrolled ones automatically"
+      ],
+      "correctAnswer": 0,
+      "explanation": "When a component is removed from the tree, its instance and local state are discarded. Mounting it again creates a fresh instance.",
+      "tags": [
+        "components",
+        "state-preservation",
+        "conditional-rendering"
+      ],
+      "references": [
+        "Components",
+        "Reconciliation",
+        "State & Props"
+      ]
+    },
+    {
+      "id": "react-q27",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "An engineer claims that because React uses a virtual DOM, direct DOM manipulation through external scripts is always safe and React will automatically reconcile with those changes.",
+      "prompt": "True or false: arbitrary external DOM mutations can conflict with React's assumptions about the rendered tree.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "React expects the DOM to reflect what it previously committed. External mutations can create mismatches and unpredictable behavior unless carefully isolated.",
+      "tags": [
+        "dom",
+        "virtual-dom",
+        "integration"
+      ],
+      "references": [
+        "DOM Fundamentals",
+        "Virtual DOM"
+      ]
+    },
+    {
+      "id": "react-q28",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A performance regression appears after moving expensive filtering logic into a child component that rerenders on every keystroke from an unrelated parent input.",
+      "prompt": "What is the best first diagnosis before adding optimizations everywhere?",
+      "options": [
+        "Check whether the child actually depends on the changing parent state and whether its props are stable",
+        "Convert every component in the app to useRef",
+        "Replace React state with manual DOM mutation",
+        "Assume the virtual DOM is slow and remove JSX"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Performance work should start by identifying why a component rerenders and whether the rerender is necessary. Dependency analysis and prop stability are more reliable than blanket optimization.",
+      "tags": [
+        "performance",
+        "components",
+        "rendering",
+        "props"
+      ],
+      "references": [
+        "Components",
+        "Virtual DOM",
+        "Reconciliation"
+      ]
+    },
+    {
+      "id": "react-q29",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A checkout flow calculates totals from cart items, shipping rules, and discount codes. The team is debating what should live in state versus what should be recomputed during render.",
+      "prompt": "Which values are usually better treated as derived values rather than independently stored state, assuming the source inputs are already available?",
+      "options": [
+        "The formatted grand total computed from cart lines and discount rules",
+        "The raw user-entered coupon code text field value",
+        "A filtered subset of visible items based on current search criteria",
+        "The source cart items array fetched from the server",
+        "A boolean that can be computed directly from whether the cart length is zero"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Computed totals, filtered subsets, and booleans derivable from existing inputs generally need not be separate state. Source inputs such as the cart data and raw form input are primary state or props.",
+      "tags": [
+        "state",
+        "derived-state",
+        "rendering",
+        "data-modeling"
+      ],
+      "references": [
+        "State & Props",
+        "Hooks"
+      ]
+    },
+    {
+      "id": "react-q30",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A new developer asks why a component must return one parent element or an explicit fragment around siblings in JSX.",
+      "prompt": "What is the best explanation?",
+      "options": [
+        "A component render must produce a single React element tree root, which can be a fragment grouping siblings",
+        "Browsers reject adjacent elements in HTML generated by JavaScript",
+        "React components can only render div elements at the top level",
+        "Fragments are required only for styling purposes"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A component returns one tree root. Fragments allow multiple siblings to be grouped without adding unnecessary DOM nodes.",
+      "tags": [
+        "jsx",
+        "components",
+        "fragments"
+      ],
+      "references": [
+        "JSX",
+        "Components",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "react-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A senior engineer reviews a bug where a stale closure in an effect logs an outdated value after several renders. The effect intentionally omits a changing dependency.",
+      "prompt": "What is the most accurate assessment?",
+      "options": [
+        "Omitting a changing dependency can cause the effect to capture outdated values from an earlier render",
+        "Effects always read live state values even when dependencies are omitted",
+        "Closures do not apply to React components",
+        "The bug is caused only by JSX syntax, not by effect dependencies"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Effects capture values from the render in which they were created. If a changing value is omitted from dependencies, the effect may keep using a stale closure from an older render.",
+      "tags": [
+        "hooks",
+        "effects",
+        "closures",
+        "debugging"
+      ],
+      "references": [
+        "Hooks",
+        "Quiz"
+      ]
+    }
+  ]
+}

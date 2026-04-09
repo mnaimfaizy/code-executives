@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load section components for better performance
 import Introduction from './components/sections/Introduction';
@@ -12,6 +13,7 @@ const ContainerOrchestration = React.lazy(
 const InfrastructureAsCode = React.lazy(() => import('./components/sections/InfrastructureAsCode'));
 const ModernDevRoles = React.lazy(() => import('./components/sections/ModernDevRoles'));
 const Observability = React.lazy(() => import('./components/sections/Observability'));
+const Quiz = () => <ModuleQuizSection moduleId="devops" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -22,6 +24,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Infrastructure as Code': InfrastructureAsCode,
   'Modern Dev Roles': ModernDevRoles,
   Observability,
+  Quiz,
 };
 
 function useQuery(): URLSearchParams {

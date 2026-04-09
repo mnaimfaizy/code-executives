@@ -1,0 +1,530 @@
+{
+  "moduleId": "datastructures",
+  "moduleTitle": "Data Structures",
+  "description": "Scenario-driven assessment of advanced data structure selection, invariants, and performance tradeoffs in real systems.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "datastructures-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A distributed job runner keeps receiving new tasks with deadlines, and the scheduler repeatedly needs the next task with the smallest deadline while inserts continue throughout the day.",
+      "prompt": "Which core structure is the best fit for this workload if ordered iteration of all tasks is not required?",
+      "explanation": "A binary min-heap is designed for repeated insert plus extract-min operations, both in O(log n), with O(1) access to the current minimum. The other options do not match the priority-queue access pattern as directly.",
+      "tags": ["heaps", "priority-queue", "scheduling", "performance"],
+      "references": ["Heaps", "Real-World Applications", "Complexity Analysis"],
+      "options": [
+        "Sorted dynamic array of tasks",
+        "Binary min-heap priority queue",
+        "FIFO queue of tasks",
+        "Hash set of tasks"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q02",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "You are implementing a bounded packet buffer for a network appliance using a circular array so the queue never allocates after startup.",
+      "prompt": "Which rules are necessary for the array-backed ring buffer to behave as a correct FIFO queue?",
+      "explanation": "A circular queue must advance head after dequeue and tail after enqueue using wraparound arithmetic, and it must distinguish full from empty with a size counter or by reserving one slot. Overwriting on full and removing from the tail would violate the intended FIFO semantics.",
+      "tags": ["queues", "arrays", "ring-buffer", "fifo"],
+      "references": ["Queues", "Arrays", "Complexity Analysis"],
+      "options": [
+        "Advance the head index after each dequeue using modulo capacity",
+        "Overwrite the oldest element automatically whenever the buffer is full",
+        "Track size or reserve one empty slot so full and empty states are distinguishishable",
+        "Remove items from the tail to preserve FIFO order",
+        "Advance the tail index after each enqueue using modulo capacity"
+      ],
+      "correctAnswer": [0, 2, 4]
+    },
+    {
+      "id": "datastructures-q03",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "An engineer is debugging an AVL tree insert path and claims the repair process may require rebalancing at multiple different ancestors after a single insertion.",
+      "prompt": "True or false: after one insertion into an AVL tree, fixing the first unbalanced ancestor with the appropriate single or double rotation is sufficient because the subtree height above that point stops increasing.",
+      "explanation": "For AVL insertion, the first unbalanced node encountered on the path to the root is the only rotation site needed. After the correct rotation, the subtree height is restored so no additional rebalancing rotations are required higher up.",
+      "tags": ["avl", "rotations", "balance", "trees"],
+      "references": ["AVL Trees", "Binary Search Trees"],
+      "options": ["True", "False"],
+      "correctAnswer": 0
+    },
+    {
+      "id": "datastructures-q04",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A routing simulator stores a sparse road network with millions of intersections, and the hot path repeatedly iterates through each vertex's outgoing neighbors.",
+      "prompt": "Which graph representation best matches this workload?",
+      "explanation": "For sparse graphs with frequent neighbor iteration, adjacency lists are the standard choice because they avoid the O(V^2) space of a matrix and make iteration over existing neighbors efficient.",
+      "tags": ["graphs", "adjacency-list", "representation", "sparse-graph"],
+      "references": ["Graph Representation", "Graph Structures", "Complexity Analysis"],
+      "options": [
+        "Adjacency matrix",
+        "Edge list scanned for every query",
+        "Adjacency list",
+        "Binary heap"
+      ],
+      "correctAnswer": 2
+    },
+    {
+      "id": "datastructures-q05",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A production scheduler uses a binary min-heap. During an extract-min operation, the root has already been chosen for removal and the team wants the exact repair sequence reviewed.",
+      "prompt": "Order the heap-repair steps after removing the root element.",
+      "explanation": "The standard extract-min repair moves the last element to the root, shrinks the heap, then repeatedly compares with the smaller child and swaps downward until the heap property holds again.",
+      "tags": ["heaps", "extract-min", "ordering", "repair"],
+      "references": ["Heaps", "Practice Problems"],
+      "items": [
+        "Repeat the comparison-and-swap process until the heap property holds",
+        "Move the last element into the root position",
+        "Compare the current node with its smaller child",
+        "Reduce the heap size by one",
+        "Swap with the smaller child if the heap property is violated"
+      ],
+      "correctAnswer": [
+        "Move the last element into the root position",
+        "Reduce the heap size by one",
+        "Compare the current node with its smaller child",
+        "Swap with the smaller child if the heap property is violated",
+        "Repeat the comparison-and-swap process until the heap property holds"
+      ]
+    },
+    {
+      "id": "datastructures-q06",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "An architecture review is mapping subsystems to the simplest data structure that matches their dominant access pattern.",
+      "prompt": "Match each subsystem to the most appropriate primary data structure.",
+      "explanation": "Back and undo navigation is naturally LIFO, print spooling is FIFO, a live leaderboard needs priority access, and LRU ordering relies on constant-time node movement in a doubly linked list.",
+      "tags": ["matching", "real-world", "access-patterns", "selection"],
+      "references": ["Stacks", "Queues", "Heaps", "Linked Lists", "Real-World Applications"],
+      "premises": [
+        "Browser back navigation history",
+        "Print spooler processing jobs in submission order",
+        "Real-time leaderboard that must expose the top score quickly",
+        "LRU cache eviction order maintenance"
+      ],
+      "responses": ["Stack", "Queue", "Max-heap", "Doubly linked list"],
+      "correctAnswer": [0, 1, 2, 3]
+    },
+    {
+      "id": "datastructures-q07",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A storage engine is designing an on-disk index. The team wants high fan-out so tree height stays low and range scans touch as few disk pages as possible.",
+      "prompt": "Which structure is the best fit?",
+      "explanation": "B-trees are optimized for external storage by storing many keys per node, reducing height and the number of block reads. AVL trees and heaps are not designed around page-oriented fan-out.",
+      "tags": ["b-trees", "disk-index", "range-scan", "storage"],
+      "references": ["B-Trees", "Tree Structures", "Real-World Applications"],
+      "options": ["AVL tree", "B-tree", "Binary heap", "Hash set"],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q08",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "You are implementing an O(1) LRU cache for API responses and need to verify the design before coding.",
+      "prompt": "Which components or behaviors are required for the classic constant-time LRU approach?",
+      "explanation": "The standard LRU design combines a hash table for direct key lookup with a doubly linked list for recency order, and it moves touched nodes in O(1). A BST is unnecessary, and full compaction on hits would destroy the required performance.",
+      "tags": ["lru-cache", "hash-tables", "linked-lists", "design"],
+      "references": ["Hash Tables", "Linked Lists", "Real-World Applications"],
+      "options": [
+        "A hash table from key to linked-list node",
+        "A doubly linked list that stores recency order",
+        "A binary search tree sorted by key",
+        "An O(1) operation that moves an accessed node to the most-recent position",
+        "A full compaction pass after every cache hit"
+      ],
+      "correctAnswer": [0, 1, 3]
+    },
+    {
+      "id": "datastructures-q09",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A compiler front-end stores tokens for a parser that frequently peeks several positions ahead and jumps to arbitrary token indices during error recovery.",
+      "prompt": "Which representation best supports that access pattern?",
+      "explanation": "A resizable array gives O(1) indexing and strong cache locality, which is exactly what indexed parser lookahead benefits from. Linked lists are poor for arbitrary indexed access.",
+      "tags": ["arrays", "linked-lists", "parsing", "locality"],
+      "references": ["Arrays", "Linked Lists", "Strings", "Real-World Applications"],
+      "options": [
+        "A singly linked list, because random access remains constant time",
+        "A resizable array, because it supports indexed access efficiently",
+        "A queue, because parsing is only FIFO consumption",
+        "A hash set, because token positions are unique"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q10",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A stream-processing service uses a monotonic deque to compute sliding-window maxima over a very long metric series.",
+      "prompt": "True or false: when a new value enters the window, removing smaller values from the back of the deque preserves correctness and keeps update cost amortized O(1).",
+      "explanation": "A monotonic deque maintains candidates in decreasing order. Any smaller value behind a newly inserted larger value can never become the maximum before the newer value leaves the window, so removing it is both correct and efficient.",
+      "tags": ["deques", "sliding-window", "amortized-analysis", "streaming"],
+      "references": ["Deques", "Queues", "Complexity Analysis"],
+      "options": ["False", "True"],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q11",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A recommendation system receives two massive campaign exports of viewer IDs and needs fast deduplication plus repeated intersection checks between the two populations.",
+      "prompt": "Which structure is the best first choice for each campaign's collection?",
+      "explanation": "A hash set is built around membership and uniqueness, making deduplication and set operations such as intersection straightforward and efficient when element order is irrelevant.",
+      "tags": ["sets", "membership", "deduplication", "analytics"],
+      "references": ["Sets", "Hash Tables", "Real-World Applications"],
+      "options": [
+        "Hash set of viewer IDs",
+        "Queue of viewer IDs in arrival order",
+        "Stack of viewer IDs",
+        "Singly linked list without membership index"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "datastructures-q12",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A teammate claims a red-black tree fix-up is complete after insertion because the tree still looks roughly balanced by eye.",
+      "prompt": "Which properties must hold after the insertion repair is actually correct?",
+      "explanation": "Red-black trees require uniform black-height across root-to-leaf paths, no red node with a red child, and preservation of BST in-order ordering. The root is not required to be red, and leaves are not stored as contiguous array positions.",
+      "tags": ["red-black-trees", "invariants", "bst", "rebalancing"],
+      "references": ["Red-Black Trees", "Binary Search Trees", "Tree Structures"],
+      "options": [
+        "Every path from a node to descendant NIL leaves has the same number of black nodes",
+        "The root must be red to simplify future insertions",
+        "No red node has a red child",
+        "An in-order traversal still yields keys in sorted order",
+        "All leaves must occupy contiguous array slots"
+      ],
+      "correctAnswer": [0, 2, 3]
+    },
+    {
+      "id": "datastructures-q13",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A job scheduler must support insert, extract-highest-priority, and priority updates for arbitrary job IDs that may already be in the structure.",
+      "prompt": "Which design best supports all three operations efficiently?",
+      "explanation": "A heap provides efficient priority ordering, and a hash map from job ID to heap index lets the scheduler locate any existing job before bubbling it up or down. Without the index map, arbitrary updates are awkward.",
+      "tags": ["heaps", "hash-tables", "priority-update", "scheduler"],
+      "references": ["Heaps", "Hash Tables", "Real-World Applications"],
+      "options": [
+        "Binary heap plus a hash map from job ID to current heap index",
+        "Plain FIFO queue",
+        "Sorted singly linked list",
+        "B-tree keyed only by insertion time"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "datastructures-q14",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A platform team is pairing graph problems with the algorithm that should be applied first during incident-response tooling design.",
+      "prompt": "Match each graph problem to the most appropriate algorithm.",
+      "explanation": "Unweighted shortest-hop paths use BFS, nonnegative weighted shortest paths use Dijkstra, minimum-cost network connection uses Prim, and recursive full exploration from a start node is naturally DFS.",
+      "tags": ["graphs", "algorithms", "matching", "optimization"],
+      "references": [
+        "Shortest Path",
+        "Minimum Spanning Tree",
+        "Graph Traversal",
+        "Graph Structures"
+      ],
+      "premises": [
+        "Compute the fewest hops between two services in an unweighted dependency graph",
+        "Compute the least-latency route when edge weights are nonnegative",
+        "Connect all offices with minimum total cable cost",
+        "Recursively explore an entire reachable component from a root node"
+      ],
+      "responses": [
+        "Breadth-first search",
+        "Dijkstra's algorithm",
+        "Prim's algorithm",
+        "Depth-first search"
+      ],
+      "correctAnswer": [0, 1, 2, 3]
+    },
+    {
+      "id": "datastructures-q15",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "A service graph has edges A-B, A-C, B-D, C-E, and D-F. During a breadth-first traversal from A, neighbors are enqueued alphabetically.",
+      "prompt": "Order the nodes by the sequence in which BFS dequeues and visits them.",
+      "explanation": "BFS visits level by level: first A, then its neighbors B and C, then D and E from the next frontier, and finally F from D.",
+      "tags": ["bfs", "graph-traversal", "ordering", "practice"],
+      "references": ["Graph Traversal", "Graph Overview", "Practice Problems"],
+      "items": ["E", "B", "A", "F", "D", "C"],
+      "correctAnswer": ["A", "B", "C", "D", "E", "F"]
+    },
+    {
+      "id": "datastructures-q16",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A public API is under a deliberate hash-collision attack, and the engineering team wants a mitigation that improves the worst-case complexity of overloaded buckets.",
+      "prompt": "Which strategy changes bucket lookup from linear time toward logarithmic time once collisions become extreme?",
+      "explanation": "Treeifying highly-collided buckets with a balanced tree such as a red-black tree changes operations inside those buckets from O(k) to O(log k). Lowering load factor helps average behavior but does not solve adversarial worst cases by itself.",
+      "tags": ["hash-tables", "security", "collisions", "red-black-trees"],
+      "references": ["Hash Tables", "Red-Black Trees", "Complexity Analysis"],
+      "options": [
+        "Switch to linear probing only",
+        "Use separate chaining and convert overloaded buckets to balanced trees",
+        "Lower the load factor target but keep linked-list buckets forever",
+        "Replace the table with a queue"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q17",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "An embedded runtime is considering a singly linked list instead of a dynamic array for a task list because memory usage patterns are irregular.",
+      "prompt": "Which tradeoffs are genuinely true for the singly linked list choice?",
+      "explanation": "Linked lists support O(1) head insertion, but they add pointer overhead and lose the spatial locality of arrays. Random access is not constant time, and tail append is not always O(1) unless a tail pointer is maintained.",
+      "tags": ["linked-lists", "arrays", "tradeoffs", "memory"],
+      "references": ["Linked Lists", "Arrays", "Complexity Analysis"],
+      "options": [
+        "Inserting at the head can be O(1) without shifting existing elements",
+        "Random access to the kth element remains O(1)",
+        "Each node usually carries pointer overhead in addition to payload data",
+        "Traversal is typically less cache-friendly than an array",
+        "Appending to the tail is always O(1) even without a tail pointer"
+      ],
+      "correctAnswer": [0, 2, 3]
+    },
+    {
+      "id": "datastructures-q18",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A database engineer is reviewing page-split logic for B-tree insertion after a node becomes full.",
+      "prompt": "Statement check: when a full internal B-tree node splits, the median key is promoted to the parent so the resulting child pages still cover sorted key ranges.",
+      "explanation": "That is exactly how B-tree splitting preserves sorted partitioning and keeps the tree balanced. Promoting the median divides the key space cleanly between the two children.",
+      "tags": ["b-trees", "page-split", "storage", "invariants"],
+      "references": ["B-Trees", "Tree Structures"],
+      "options": ["Statement is true", "Statement is false"],
+      "correctAnswer": 0
+    },
+    {
+      "id": "datastructures-q19",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A memory allocator maintains a free-list of blocks and frequently removes a known block from the middle once a pointer to its node is already available.",
+      "prompt": "Which structure most directly supports O(1) splicing for that removal pattern?",
+      "explanation": "A doubly linked list can remove a known node in O(1) by relinking predecessor and successor pointers. Arrays and queues require shifting or do not target middle-node splicing.",
+      "tags": ["linked-lists", "splicing", "allocator", "mutation"],
+      "references": ["Linked Lists", "Real-World Applications", "Linear Structures"],
+      "options": ["Dynamic array", "Doubly linked list", "Binary heap", "Circular queue"],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q20",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A simulation uses a dense graph of 50,000 entities where nearly every entity can interact with most others, and the hottest operation is checking whether an edge already exists.",
+      "prompt": "Which representation makes direct edge-existence checks simplest, despite its memory cost?",
+      "explanation": "For dense graphs, an adjacency matrix provides O(1) edge existence checks by indexing directly into the matrix. Its memory cost is high, but in dense cases the tradeoff can be justified.",
+      "tags": ["graphs", "adjacency-matrix", "dense-graph", "lookup"],
+      "references": ["Graph Representation", "Graph Types", "Complexity Analysis"],
+      "options": [
+        "Adjacency list",
+        "Adjacency matrix",
+        "Singly linked list per vertex",
+        "Binary search tree of vertices"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q21",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A performance postmortem is analyzing why an array-backed event buffer showed occasional latency spikes even though append was documented as amortized O(1).",
+      "prompt": "Which events can legitimately produce an O(n) cost in that design?",
+      "explanation": "Dynamic arrays can incur linear work when growth or aggressive shrinking copies many elements, and front insertions require shifting existing values. Simple reads or appends while spare capacity remains do not trigger that spike.",
+      "tags": ["arrays", "amortized-analysis", "latency", "resizing"],
+      "references": ["Arrays", "Complexity Analysis", "Linear Structures"],
+      "options": [
+        "A growth resize that copies all current elements into a larger buffer",
+        "Inserting at index 0 and shifting existing elements right",
+        "Reading the last element by index",
+        "Appending while spare capacity already exists",
+        "Shrinking aggressively after many pops and copying elements into a smaller buffer"
+      ],
+      "correctAnswer": [0, 1, 4]
+    },
+    {
+      "id": "datastructures-q22",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A messaging appliance has a fixed memory budget and needs a bounded queue where producers enqueue at one end and consumers dequeue at the other without any runtime allocation.",
+      "prompt": "Which implementation is the most appropriate starting point?",
+      "explanation": "A circular array queue matches a bounded FIFO buffer well because it uses fixed storage, supports wraparound, and avoids heap allocation after initialization.",
+      "tags": ["queues", "bounded-buffer", "arrays", "systems"],
+      "references": ["Queues", "Arrays", "Real-World Applications"],
+      "options": [
+        "Fixed-size circular array queue",
+        "AVL tree",
+        "Hash table",
+        "Singly linked list with no tail pointer"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "datastructures-q23",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A work-stealing task scheduler lets each worker push and pop local tasks from one end, while idle workers steal from the opposite end.",
+      "prompt": "Which structure best matches this access pattern?",
+      "explanation": "A deque is explicitly built for efficient insertion and removal at both ends, which is why it appears in work-stealing scheduler designs.",
+      "tags": ["deques", "work-stealing", "scheduler", "concurrency"],
+      "references": ["Deques", "Real-World Applications"],
+      "options": ["Deque", "Stack", "Binary search tree", "Set"],
+      "correctAnswer": 0
+    },
+    {
+      "id": "datastructures-q24",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A team is deciding whether to store session IDs in a hash table or a balanced binary search tree.",
+      "prompt": "Which requirements specifically favor the balanced binary search tree option?",
+      "explanation": "Balanced BSTs are the right choice when ordered iteration, range queries, or guaranteed O(log n) worst-case lookup matter. Hash tables dominate when only average-case exact-match membership is needed.",
+      "tags": ["bst", "hash-tables", "tradeoffs", "ordered-data"],
+      "references": ["Binary Search Trees", "Hash Tables", "Complexity Analysis"],
+      "options": [
+        "The system needs ordered iteration by session key",
+        "The system needs guaranteed O(log n) worst-case lookup without relying on hash quality",
+        "The system only needs average O(1) exact-match membership checks and no ordering",
+        "The system needs range queries such as all keys between K1 and K2",
+        "The system never iterates and only does exact-key lookups"
+      ],
+      "correctAnswer": [0, 1, 3]
+    },
+    {
+      "id": "datastructures-q25",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A timer service must return the next expiring timer quickly, while also supporting cancellation and rescheduling by timer ID.",
+      "prompt": "Which design is the strongest fit?",
+      "explanation": "A min-heap gives fast access to the next expiration, and a hash table from timer ID to heap slot allows efficient cancellation or rescheduling of arbitrary existing timers.",
+      "tags": ["heaps", "timers", "hash-tables", "systems"],
+      "references": ["Heaps", "Hash Tables", "Real-World Applications"],
+      "options": [
+        "Unsorted array only",
+        "Min-heap combined with a hash table from timer ID to heap slot",
+        "Singly linked list",
+        "Hash set only"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q26",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A service that models partner relationships as next pointers occasionally loops forever during traversal, suggesting a cycle in the linked structure.",
+      "prompt": "Which technique detects the cycle without extra memory proportional to the list length?",
+      "explanation": "Floyd's tortoise-and-hare algorithm uses two pointers moving at different speeds. If a cycle exists, the fast pointer eventually meets the slow pointer without needing a visited set.",
+      "tags": ["linked-lists", "cycle-detection", "practice", "pointers"],
+      "references": ["Linked Lists", "Practice Problems"],
+      "options": [
+        "Maintain an adjacency matrix",
+        "Use Floyd's tortoise-and-hare traversal",
+        "Rebalance the structure with AVL rotations",
+        "Sort the nodes by memory address first"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q27",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "An ETL pipeline inserts already sorted keys into a plain binary search tree implementation that performs no self-balancing.",
+      "prompt": "Evaluate the statement: in this situation, search and insertion can degrade from O(log n) expected behavior to O(n) because the tree may collapse into a chain.",
+      "explanation": "That statement is true. Sorted insertion order into a naive BST creates a highly skewed tree, and operations follow a path whose length approaches n.",
+      "tags": ["bst", "degeneration", "complexity", "worst-case"],
+      "references": ["Binary Search Trees", "Complexity Analysis"],
+      "options": ["The statement is false", "The statement is true"],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q28",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An incident tool needs the minimum-hop path between two services in a huge unweighted dependency graph that already fits in memory.",
+      "prompt": "Which algorithm is the correct and simplest first choice?",
+      "explanation": "Breadth-first search explores nodes by increasing distance in an unweighted graph, so the first time it reaches the destination it has found a minimum-hop path.",
+      "tags": ["graphs", "bfs", "shortest-path", "incident-response"],
+      "references": ["Shortest Path", "Graph Traversal", "Graph Structures"],
+      "options": [
+        "Depth-first search with recursion",
+        "Breadth-first search",
+        "Prim's algorithm",
+        "Bellman-Ford"
+      ],
+      "correctAnswer": 1
+    },
+    {
+      "id": "datastructures-q29",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "A database engineer is comparing several tree families and wants to align each one with the property that most clearly defines it.",
+      "prompt": "Match each structure to its defining property.",
+      "explanation": "AVL trees enforce tight balance by tracking height differences, red-black trees use coloring and black-height rules, heaps care about parent-child priority in a complete tree, and B-trees are multiway trees optimized for storage blocks.",
+      "tags": ["trees", "matching", "invariants", "comparison"],
+      "references": ["AVL Trees", "Red-Black Trees", "Heaps", "B-Trees"],
+      "premises": ["AVL tree", "Red-black tree", "Binary heap", "B-tree"],
+      "responses": [
+        "Height is kept tightly balanced using balance factors",
+        "Color rules keep black-height uniform across root-to-leaf paths",
+        "A complete tree maintains parent ordering relative to children",
+        "A multiway node layout is optimized for block-based storage"
+      ],
+      "correctAnswer": [0, 1, 2, 3]
+    },
+    {
+      "id": "datastructures-q30",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A design review document makes several claims about asymptotic behavior across common data structures, and you need to approve only the accurate ones.",
+      "prompt": "Select all correct claims.",
+      "explanation": "Average O(1) in hash tables does not imply worst-case O(1), heaps expose their extremum in O(1) but do not support efficient arbitrary search, and balanced BSTs can traverse all keys in sorted order in O(n) total time.",
+      "tags": ["complexity", "analysis", "tradeoffs", "review"],
+      "references": [
+        "Complexity Analysis",
+        "Hash Tables",
+        "Heaps",
+        "Binary Search Trees",
+        "Graph Representation"
+      ],
+      "options": [
+        "A hash table's average O(1) lookup does not guarantee O(1) worst-case under severe collisions",
+        "A binary heap can return the minimum in O(1), but arbitrary search is not generally O(log n)",
+        "An adjacency matrix stores only existing edges, so it is optimal for sparse graphs",
+        "A balanced BST can output all keys in sorted order in O(n) total time",
+        "A queue cannot be implemented with linked lists"
+      ],
+      "correctAnswer": [0, 1, 3]
+    },
+    {
+      "id": "datastructures-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A 3D editor stores scene objects with parent-child transforms so that moving a parent object should update an entire hierarchy of descendants coherently.",
+      "prompt": "Which abstraction best models this hierarchy?",
+      "explanation": "A tree captures parent-child structure directly, making subtree traversal and hierarchical transform propagation natural. The other options discard or flatten the relationships the editor depends on.",
+      "tags": ["trees", "scene-graph", "3d", "hierarchy"],
+      "references": ["Tree Structures", "3D Visualizations", "Real-World Applications"],
+      "options": [
+        "Tree with parent-child links",
+        "Hash table with no edges",
+        "Queue ordered by creation time",
+        "Flat set of unrelated nodes"
+      ],
+      "correctAnswer": 0
+    }
+  ]
+}

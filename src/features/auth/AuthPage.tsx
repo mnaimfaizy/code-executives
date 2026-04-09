@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
 import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
 import { SEO } from '../../shared/components/SEO/SEO';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -14,6 +15,7 @@ const PKCEFlow = lazy(() => import('./components/sections/PKCEFlow'));
 const BFFPattern = lazy(() => import('./components/sections/BFFPattern'));
 const AIAgentAuth = lazy(() => import('./components/sections/AIAgentAuth'));
 const Visualization = lazy(() => import('./components/sections/Visualization'));
+const Quiz = () => <ModuleQuizSection moduleId="auth" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -25,6 +27,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'BFF Pattern': BFFPattern,
   'AI Agent Authentication': AIAgentAuth,
   Visualization,
+  Quiz,
 };
 
 function useQuery(): URLSearchParams {

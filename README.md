@@ -4,7 +4,7 @@
 
 **🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 14 complete learning modules with 90+ interactive visualizations covering Git, JavaScript Engine, RxJS, Data Structures, Next.js, Big-O Notation, Python Programming, AI Fundamentals, Node.js Ecosystem, DevOps & Cloud Computing, Auth & Security and a LeetCode-style playground with advanced debugging and gamification.**
+**✨ Now featuring 14 complete learning modules with 90+ interactive visualizations, root-level scenario quiz banks for every module, shared timed quizzes with local progress tracking, and a LeetCode-style playground with advanced debugging and gamification.**
 
 > **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
@@ -23,6 +23,7 @@
 - **Node.js Ecosystem**: Deep dive into Event Loop, V8 memory, Streams, Clustering, module systems, package managers, frameworks, and runtime wars (Node vs Deno vs Bun)
 - **DevOps & Cloud Computing**: CI/CD pipelines, cloud service models (IaaS/PaaS/SaaS/FaaS), container orchestration with Kubernetes, Infrastructure as Code, observability, and modern DevOps roles
 - **Auth & Security**: Modern authentication and authorization — OAuth 2.0, OIDC, PKCE, WebAuthn/Passkeys, Zero Trust, BFF Pattern, and AI agent authentication
+- **Shared Timed Module Quizzes**: Every learning module ends with a 5-question, 10-minute scenario quiz backed by a root-level JSON bank and localStorage result history
 - **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
 
 ### 🎮 **Interactive Visualizations**
@@ -46,6 +47,16 @@
 - **Example Snippets**: Curated per-language examples with pre-selected visualization lenses
 - **Keyboard Shortcuts**: F10 (step), F5 (continue/pause), F11 (reset), Space (pause/resume)
 - **Rate-Limited Output**: Console entries capped at 500, oversized strings truncated to 50 KB
+
+### 🧠 **Timed Module Quizzes**
+
+- **Shared Quiz Runtime**: One reusable quiz system powers every learning module while preserving module-specific styling and references
+- **Root-Level Quiz Banks**: Each module has a dedicated JSON file in `quiz-banks/{module}.quiz.json`
+- **Scenario-Based Questions**: Every bank contains 30+ harder prompts with single-choice, multi-select, true/false, ordering, and matching formats
+- **10-Minute Timer**: Each run samples 5 questions and persists the active attempt across refreshes
+- **Local Progress History**: Scores, tiers, and recent attempts are stored in localStorage on the learner's machine
+- **Wrong-Answer References**: Review mode links learners back to the exact module sections that support the missed concept
+- **Authoring Workflow**: The workspace agent `.github/agents/module-quiz-generator.agent.md` maintains quiz banks without duplicating questions or answer sets
 
 ### 🎨 **Modern User Experience**
 
@@ -78,6 +89,7 @@
 ## 📁 Project Structure
 
 ```
+quiz-banks/              # Root-level module quiz banks named {module}.quiz.json
 src/
 ├── components/           # Reusable UI components
 │   ├── models2d/        # 2D visualization components
@@ -118,20 +130,48 @@ src/
 │   ├── bigo/           # Big-O notation concepts (8 sections)
 │   └── python/         # Python programming concepts (5 sections)
 ├── hooks/              # Custom React hooks
+├── shared/
+│   ├── components/
+│   │   └── quiz/       # Shared timed quiz UI and answer renderers
+│   ├── constants/
+│   │   └── moduleNavigation.ts # Shared module navigation and reference metadata
+│   └── hooks/
+│       └── useQuizSession.ts # Timed quiz session and localStorage persistence
 ├── types/              # TypeScript type definitions
 │   ├── nextjs.ts       # Next.js type definitions
 │   ├── datastructures.ts # Data structures type definitions
 │   ├── bigo.ts         # Big-O notation type definitions
 │   ├── python.ts       # Python programming type definitions
-│   └── playground.ts   # Playground type definitions
+│   ├── playground.ts   # Playground type definitions
+│   └── quiz.ts         # Shared quiz schema and result types
 ├── utils/              # Utility functions
 │   ├── instrument.ts   # Code instrumentation for debugging
 │   ├── memoryMonitor.ts # Performance monitoring
+│   ├── quiz.ts         # Quiz loading, scoring, and answer utilities
 │   └── theme.ts        # Theme and styling utilities
 ├── data/               # Static data and problem sets
 │   └── problems.ts     # LeetCode-style coding problems
 └── three/              # Three.js 3D models and scenes
 ```
+
+### Quiz Bank Naming
+
+- `quiz-banks/javascript.quiz.json`
+- `quiz-banks/rxjs.quiz.json`
+- `quiz-banks/git.quiz.json`
+- `quiz-banks/datastructures.quiz.json`
+- `quiz-banks/react.quiz.json`
+- `quiz-banks/nextjs.quiz.json`
+- `quiz-banks/bigo.quiz.json`
+- `quiz-banks/python.quiz.json`
+- `quiz-banks/systemdesign.quiz.json`
+- `quiz-banks/typescript.quiz.json`
+- `quiz-banks/ai.quiz.json`
+- `quiz-banks/nodejs.quiz.json`
+- `quiz-banks/devops.quiz.json`
+- `quiz-banks/auth.quiz.json`
+
+See `docs/Quiz-System-Guide.md` for the JSON schema, localStorage behavior, and the quiz-bank authoring workflow.
 
 ## 🚀 Quick Start
 

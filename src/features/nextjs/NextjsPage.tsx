@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
 import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -11,6 +12,7 @@ const ServerClientComponents = lazy(() => import('./components/sections/ServerCl
 const DataFetching = lazy(() => import('./components/sections/DataFetching'));
 const Middleware = lazy(() => import('./components/sections/Middleware'));
 const Optimization = lazy(() => import('./components/sections/Optimization'));
+const Quiz = () => <ModuleQuizSection moduleId="nextjs" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -20,6 +22,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Data Fetching & Mutations': DataFetching,
   'Middleware & Route Handlers': Middleware,
   'Optimization & Performance': Optimization,
+  Quiz,
 };
 
 function useQuery() {
