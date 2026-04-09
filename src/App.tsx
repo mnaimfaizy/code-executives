@@ -31,6 +31,7 @@ const AIFundamentalsPage = lazy(() => import('./features/ai'));
 const NodeJSPage = lazy(() => import('./features/nodejs'));
 const AuthPage = lazy(() => import('./features/auth'));
 const DevOpsPage = lazy(() => import('./features/devops'));
+const BackendPage = lazy(() => import('./features/backend'));
 
 // Standalone pages (rendered without main app layout)
 const PlaygroundEntry = lazy(() => import('./features/playground/PlaygroundEntry'));
@@ -208,6 +209,14 @@ const App: React.FC = () => {
                               element={
                                 <SuspenseRoute>
                                   <DevOpsPage />
+                                </SuspenseRoute>
+                              }
+                            />
+                            <Route
+                              path="/backend"
+                              element={
+                                <SuspenseRoute>
+                                  <BackendPage />
                                 </SuspenseRoute>
                               }
                             />

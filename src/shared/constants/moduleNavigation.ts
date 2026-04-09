@@ -18,7 +18,8 @@ export type LearningModuleId =
   | 'ai'
   | 'nodejs'
   | 'devops'
-  | 'auth';
+  | 'auth'
+  | 'backend';
 
 export interface LearningModuleConfig {
   id: LearningModuleId;
@@ -126,6 +127,13 @@ export const learningModuleConfigs: Record<LearningModuleId, LearningModuleConfi
     path: '/auth',
     bankFile: 'auth.quiz.json',
     theme: 'auth',
+  },
+  backend: {
+    id: 'backend',
+    title: 'Backend Architecture',
+    path: '/backend',
+    bankFile: 'backend.quiz.json',
+    theme: 'backend',
   },
 };
 
@@ -415,6 +423,18 @@ const baseModuleNavigationSections: Record<string, SidebarItem[]> = {
     { label: 'BFF Pattern', path: '/auth?section=BFF%20Pattern' },
     { label: 'AI Agent Authentication', path: '/auth?section=AI%20Agent%20Authentication' },
     { label: 'Visualization', path: '/auth?section=Visualization' },
+  ],
+  '/backend': [
+    { label: 'Introduction', path: '/backend?section=Introduction' },
+    { label: 'Backend Evolution', path: '/backend?section=Backend%20Evolution' },
+    { label: 'Architecture Patterns', path: '/backend?section=Architecture%20Patterns' },
+    { label: 'Resilience Patterns', path: '/backend?section=Resilience%20Patterns' },
+    { label: 'Database Theory', path: '/backend?section=Database%20Theory' },
+    { label: 'API Design', path: '/backend?section=API%20Design' },
+    { label: 'Real-Time Communication', path: '/backend?section=Real-Time%20Communication' },
+    { label: 'Observability', path: '/backend?section=Observability' },
+    { label: 'Request Lifecycle', path: '/backend?section=Request%20Lifecycle' },
+    { label: 'Visualization', path: '/backend?section=Visualization' },
   ],
   '/': [],
   '/about': [],

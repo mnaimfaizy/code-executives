@@ -4,7 +4,7 @@
 
 **🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 14 complete learning modules with 90+ interactive visualizations, root-level scenario quiz banks for every module, shared timed quizzes with local progress tracking, and a LeetCode-style playground with advanced debugging and gamification.**
+**✨ Now featuring 15 complete learning modules with 96+ interactive visualizations, root-level scenario quiz banks for every module, shared timed quizzes with local progress tracking, and a LeetCode-style playground with advanced debugging and gamification.**
 
 > **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
@@ -23,6 +23,7 @@
 - **Node.js Ecosystem**: Deep dive into Event Loop, V8 memory, Streams, Clustering, module systems, package managers, frameworks, and runtime wars (Node vs Deno vs Bun)
 - **DevOps & Cloud Computing**: CI/CD pipelines, cloud service models (IaaS/PaaS/SaaS/FaaS), container orchestration with Kubernetes, Infrastructure as Code, observability, and modern DevOps roles
 - **Auth & Security**: Modern authentication and authorization — OAuth 2.0, OIDC, PKCE, WebAuthn/Passkeys, Zero Trust, BFF Pattern, and AI agent authentication
+- **Backend Architecture**: Architecture patterns (Monolithic, Layered, Microservices, Event-Driven, Hexagonal), resilience patterns (Circuit Breaker, Sidecar, Saga), API design (REST, GraphQL, gRPC), CAP theorem, ACID vs BASE, real-time communication, observability, and the complete request lifecycle
 - **Shared Timed Module Quizzes**: Every learning module ends with a 5-question, 10-minute scenario quiz backed by a root-level JSON bank and localStorage result history
 - **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
 
@@ -381,6 +382,19 @@ Comprehensive DevOps and cloud computing module with 6 interactive visualization
 
 Multi-language coding environment with AST-based instrumentation and live data-structure visualizations:
 
+### 🏛️ **Backend Architecture (Complete)**
+
+Comprehensive backend architecture module with 6+ interactive visualizations covering the full backend stack:
+
+- **Backend Evolution**: Interactive timeline from 1950s hardware intimacy to modern containers and microservices
+- **Architecture Patterns**: Interactive comparison of Monolithic, Layered, Microservices, Event-Driven, and Hexagonal architectures with animated diagrams
+- **Resilience Patterns**: Circuit Breaker state machine simulation, Sidecar pattern visualization, and Saga pattern with compensating actions
+- **Database Theory**: Interactive CAP Theorem triangle with CP/AP toggle, ACID vs BASE tabbed comparison, and property deep-dives
+- **API Design**: REST vs GraphQL vs gRPC comparison with real-world analogies, code examples, and API evolution timeline
+- **Real-Time Communication**: Webhooks, WebSockets, and Server-Sent Events with data flow visualizations and comparison matrix
+- **Observability**: Three pillars (Logs, Metrics, Traces) with interactive triangle diagram, tool recommendations, and incident response workflow
+- **Request Lifecycle**: Animated "Buy Now" journey through DNS → TCP/TLS → Load Balancer → API Gateway → Cache → Database → Message Queue → Response with latency budgets
+
 - **Multi-Language Execution**: JavaScript, TypeScript (transpiled), and Python (Pyodide WASM) — all in-browser, no server
 - **AST Instrumentation**: Acorn/Astring pipeline injects `__snapshot()` calls around every statement; Python uses `sys.settrace` wrapper with base64-encoded source
 - **Timeline Player**: Step forward/backward through execution snapshots, inspect variables and call stack at each point
@@ -466,7 +480,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 13 complete interactive modules with 84+ visualizations
+- 🎓 **Learning Modules**: 15 complete interactive modules with 96+ visualizations
 - 🎯 **Playground**: LeetCode-style coding environment with debugging and gamification
 
 ---
