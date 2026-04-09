@@ -1,0 +1,861 @@
+{
+  "moduleId": "nextjs",
+  "moduleTitle": "Next.js",
+  "description": "Scenario-based assessment focused on advanced Next.js architecture, routing, rendering strategies, server-first data flows, middleware behavior, and performance optimization tradeoffs.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "nextjs-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A SaaS team is migrating a dashboard from the Pages Router. They want the dashboard shell to persist while users move between nested screens, and they want the default path to remain server-first instead of shipping unnecessary client JavaScript.",
+      "prompt": "Which design best matches that goal?",
+      "options": [
+        "Place shared dashboard UI in app/dashboard/layout.tsx and keep route-specific screens in nested page.tsx files",
+        "Keep every screen in pages/ and rely on _app.tsx plus client-side data fetching for persistence",
+        "Mark the entire app/ tree with 'use client' so layout state is always preserved",
+        "Move the dashboard shell into middleware so it runs before each request"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The App Router's nested layout model is built for persistent shared UI across related routes. Keeping the shared shell in a segment layout preserves structure during navigation while still allowing route pages to remain server-first by default.",
+      "tags": [
+        "app-router",
+        "nested-layouts",
+        "routing",
+        "server-first"
+      ],
+      "references": [
+        "Routing Systems",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is standardizing file conventions in a new App Router codebase and wants to avoid inventing custom patterns that fight the framework.",
+      "prompt": "Which statements about built-in route segment files are correct?",
+      "options": [
+        "A layout.tsx file can wrap descendant pages and nested segments with shared UI",
+        "A loading.tsx file can provide an immediate fallback while a segment is waiting on data",
+        "A page.tsx file represents the leaf UI for a route segment",
+        "A route.ts file is the preferred place to render visible page markup for browser navigation",
+        "An _app.tsx file is required to share UI in the App Router"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "layout.tsx, loading.tsx, and page.tsx are core App Router conventions. route.ts is for HTTP request handling, not visual page UI, and _app.tsx belongs to the legacy Pages Router model rather than the App Router.",
+      "tags": [
+        "file-conventions",
+        "app-router",
+        "layouts",
+        "loading-states"
+      ],
+      "references": [
+        "Routing Systems"
+      ]
+    },
+    {
+      "id": "nextjs-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A public article page is server-rendered and then hydrated on the client. Product managers are confused because they see content appear before buttons become interactive.",
+      "prompt": "True or false: users can see meaningful HTML content before client-side interactivity is attached.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Server-rendered HTML can be visible as soon as it arrives, while hydration happens later to attach interactivity. That separation is a major reason server rendering improves initial perception and SEO.",
+      "tags": [
+        "hydration",
+        "ssr",
+        "initial-render",
+        "seo"
+      ],
+      "references": [
+        "Rendering Strategies",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "You are explaining the high-level lifecycle of a first request to an App Router page that uses middleware and includes some interactive client islands.",
+      "prompt": "Arrange the events from earliest to latest.",
+      "items": [
+        "Middleware evaluates the incoming request",
+        "The server matches route segments and renders the response",
+        "The browser receives initial content and can display it",
+        "Client-side JavaScript hydrates the interactive parts"
+      ],
+      "correctAnswer": [
+        "Middleware evaluates the incoming request",
+        "The server matches route segments and renders the response",
+        "The browser receives initial content and can display it",
+        "Client-side JavaScript hydrates the interactive parts"
+      ],
+      "explanation": "Middleware runs before the route logic, then the server resolves segments and renders output. The browser can show that output before the client bundle completes hydration for interactive islands.",
+      "tags": [
+        "request-lifecycle",
+        "middleware",
+        "rendering",
+        "hydration"
+      ],
+      "references": [
+        "Middleware & Route Handlers",
+        "Rendering Strategies",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A platform review compares several page types and wants each one mapped to the rendering strategy that best fits its constraints.",
+      "prompt": "Match each page scenario to the best rendering strategy.",
+      "premises": [
+        "A product launch page changes only when marketing republishes the site",
+        "A banking dashboard shows per-user balances that must be fresh on each request",
+        "A catalog page needs CDN speed but should refresh every few minutes as inventory changes",
+        "An internal browser-based tool is highly interactive and SEO is irrelevant"
+      ],
+      "responses": [
+        "Static Site Generation",
+        "Server-Side Rendering",
+        "Incremental Static Regeneration",
+        "Client-Side Rendering"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Stable public content is best suited to SSG, personalized per-request content aligns with SSR, periodically changing but cache-friendly content fits ISR, and SEO-insensitive interactive tools often tolerate CSR.",
+      "tags": [
+        "rendering-strategies",
+        "ssg",
+        "ssr",
+        "isr",
+        "csr"
+      ],
+      "references": [
+        "Rendering Strategies"
+      ]
+    },
+    {
+      "id": "nextjs-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An article page needs a complex comparison widget with browser events and local state, but the rest of the page is static text fetched on the server. Bundle size has become a problem.",
+      "prompt": "What is the best architectural move?",
+      "options": [
+        "Keep the page server-rendered and isolate the comparison widget behind the smallest possible client boundary",
+        "Add 'use client' to the entire route so the widget can coexist with the article content",
+        "Move all article fetching into useEffect so everything lives in one client tree",
+        "Run the comparison widget in middleware before the page is rendered"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The best pattern is to keep as much of the tree on the server as possible and introduce a client island only where interactivity is required. Marking the entire route as client-rendered increases bundle size and throws away the server-first model.",
+      "tags": [
+        "client-boundaries",
+        "bundle-size",
+        "client-islands",
+        "rsc"
+      ],
+      "references": [
+        "Server & Client Components",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is reviewing a mixed component tree and wants to identify which pieces truly require the browser.",
+      "prompt": "Which components must be Client Components?",
+      "options": [
+        "A color picker that uses useState and onClick handlers",
+        "A theme toggle that writes to localStorage",
+        "A product description component that only renders serializable props from the server",
+        "A chart that reads window resize events to redraw itself",
+        "A database-backed component that directly accesses server-only credentials"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Stateful event handling, browser APIs like localStorage, and direct window access require client execution. Pure presentational server-fed markup can stay on the server, and secret-bearing server-only logic must not move into the client bundle.",
+      "tags": [
+        "use-client",
+        "browser-apis",
+        "component-boundaries",
+        "interactivity"
+      ],
+      "references": [
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q08",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "Two sibling Server Components call the same fetch URL with the same options during one render of a catalog page. Ops expects two origin hits but only sees one.",
+      "prompt": "What is the most likely explanation?",
+      "options": [
+        "Next.js memoizes identical fetch requests during the same render pass",
+        "The browser automatically merges server fetches before the request reaches the network",
+        "Middleware converts duplicate server fetches into cached route handlers",
+        "React prevents multiple awaits for the same promise only inside Client Components"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Next.js deduplicates identical fetch calls during a render pass, which reduces repeated work and avoids duplicate origin calls when the URL and options match.",
+      "tags": [
+        "fetch",
+        "memoization",
+        "data-fetching",
+        "server-components"
+      ],
+      "references": [
+        "Data Fetching & Mutations"
+      ]
+    },
+    {
+      "id": "nextjs-q09",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A checkout form must continue working for users behind restrictive corporate networks that block or delay client-side JavaScript. The team also wants server-side validation and mutation logic.",
+      "prompt": "Which pattern is the best fit?",
+      "options": [
+        "Submit an HTML form to a Server Action so the flow progressively enhances when JavaScript is available",
+        "Handle submission only in a Client Component with fetch inside an onSubmit handler",
+        "Perform the purchase mutation inside middleware because it runs before every request",
+        "Render the form statically and ask the browser to store the order in localStorage until JavaScript loads"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Server Actions are designed for server-side mutations and progressive enhancement. A standard form can submit even without client JavaScript, while enhanced behavior is layered on when the browser is capable.",
+      "tags": [
+        "server-actions",
+        "forms",
+        "progressive-enhancement",
+        "mutations"
+      ],
+      "references": [
+        "Data Fetching & Mutations",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q10",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "An authentication team plans to perform multiple database joins in middleware for every request because the code will run at the edge.",
+      "prompt": "True or false: heavy business logic in middleware is usually a good default because middleware sits early in the pipeline.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Middleware should stay lightweight because it runs on matched requests and directly affects latency. Expensive business logic is usually better handled deeper in the application where it is needed rather than on every request path.",
+      "tags": [
+        "middleware",
+        "latency",
+        "edge-runtime",
+        "performance"
+      ],
+      "references": [
+        "Middleware & Route Handlers",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q11",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An e-commerce catalog contains 100,000 product pages. Search visibility matters, pages should be fast globally, and inventory changes every 15 minutes, but the business wants to avoid request-time rendering for every visit.",
+      "prompt": "Which rendering strategy is the strongest fit?",
+      "options": [
+        "Server-Side Rendering",
+        "Static Site Generation without regeneration",
+        "Incremental Static Regeneration",
+        "Client-Side Rendering"
+      ],
+      "correctAnswer": 2,
+      "explanation": "ISR provides CDN-speed static delivery while allowing content to refresh periodically. It is specifically useful when content changes regularly but not on every single request.",
+      "tags": [
+        "isr",
+        "catalog",
+        "seo",
+        "cdn"
+      ],
+      "references": [
+        "Rendering Strategies",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q12",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A public landing page has poor Largest Contentful Paint and excessive initial JavaScript. The team wants improvements without deleting important features.",
+      "prompt": "Which changes are most likely to help?",
+      "options": [
+        "Use Next.js image optimization with responsive sizing for above-the-fold imagery",
+        "Dynamically import non-critical interactive widgets so they are not in the initial bundle",
+        "Promote the entire page to a Client Component to simplify the tree",
+        "Keep above-the-fold textual content server-rendered or statically generated when possible",
+        "Send the same oversized hero image to all devices to reduce variant generation"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Responsive image optimization, code splitting for non-critical widgets, and shipping server-rendered primary content all improve initial load behavior. Expanding the client boundary or shipping oversized assets usually worsens it.",
+      "tags": [
+        "lcp",
+        "image-optimization",
+        "dynamic-import",
+        "bundle-size"
+      ],
+      "references": [
+        "Optimization & Performance",
+        "Rendering Strategies",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q13",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "After migrating to the App Router, a team notices that a simple route now ships far more JavaScript than expected. The root layout was marked with 'use client' to support one interactive search box in the header.",
+      "prompt": "What is the most likely cause of the bundle increase?",
+      "options": [
+        "A client boundary high in the tree pulls a much larger subtree into the client-side graph",
+        "The App Router always ships more JavaScript than the Pages Router for equivalent pages",
+        "Middleware duplicates every layout file into the browser bundle",
+        "Server Actions automatically force all ancestors to run on the client"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Placing 'use client' high in the tree can expand the client-side portion of the application dramatically. The better pattern is to isolate the interactive header behavior behind a smaller client boundary rather than converting the root layout.",
+      "tags": [
+        "use-client",
+        "bundle-analysis",
+        "layout-boundaries",
+        "performance"
+      ],
+      "references": [
+        "Server & Client Components",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q14",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A content editor submits a form backed by a Server Action that writes to the database and refreshes the listing page.",
+      "prompt": "Order the mutation flow from start to finish.",
+      "items": [
+        "The browser submits the form to the server-side action",
+        "The server validates input and performs the mutation",
+        "The affected path or cache entry is revalidated",
+        "The response returns updated UI or fresh data to the user"
+      ],
+      "correctAnswer": [
+        "The browser submits the form to the server-side action",
+        "The server validates input and performs the mutation",
+        "The affected path or cache entry is revalidated",
+        "The response returns updated UI or fresh data to the user"
+      ],
+      "explanation": "A progressive form submission reaches the Server Action first, then the server performs validation and mutation, triggers revalidation where necessary, and finally returns a refreshed result to the user.",
+      "tags": [
+        "server-actions",
+        "forms",
+        "revalidation",
+        "data-mutations"
+      ],
+      "references": [
+        "Data Fetching & Mutations"
+      ]
+    },
+    {
+      "id": "nextjs-q15",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A new engineer keeps mixing up App Router file roles during code reviews.",
+      "prompt": "Match each file convention to its primary responsibility.",
+      "premises": [
+        "layout.tsx inside app/dashboard/",
+        "loading.tsx inside a route segment",
+        "error.tsx for a route segment",
+        "route.ts inside app/api/orders/"
+      ],
+      "responses": [
+        "Persistent shared UI for descendant routes",
+        "Immediate fallback while a segment is loading",
+        "Recoverable boundary for segment-level failures",
+        "HTTP request handling for methods such as GET or POST"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Each file has a specific role in App Router structure. layout.tsx shares UI, loading.tsx provides pending UI, error.tsx handles segment-level failures, and route.ts defines request handlers rather than visible page markup.",
+      "tags": [
+        "app-router",
+        "file-conventions",
+        "error-boundaries",
+        "route-handlers"
+      ],
+      "references": [
+        "Routing Systems",
+        "Middleware & Route Handlers"
+      ]
+    },
+    {
+      "id": "nextjs-q16",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A developer inspects an RSC payload and is surprised that it contains serializable data and component structure but not click handlers or direct DOM behavior.",
+      "prompt": "Which explanation is most accurate?",
+      "options": [
+        "Server Components describe what should render and pass serializable data, while interactivity is attached later by Client Components during hydration",
+        "The payload is incomplete because middleware strips all event handlers before streaming the page",
+        "React sends event listeners only when the page is using SSR rather than Server Components",
+        "The browser refuses to hydrate handlers that originate from TypeScript source files"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Server Components are not responsible for browser event handling. They produce render instructions and serializable props, and client-side interactivity is introduced by Client Components once the browser hydrates them.",
+      "tags": [
+        "rsc-payload",
+        "hydration",
+        "serializable-props",
+        "server-components"
+      ],
+      "references": [
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q17",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A platform team is deciding which cross-cutting concerns belong in middleware rather than in individual pages or deeper API logic.",
+      "prompt": "Which tasks are strong candidates for middleware?",
+      "options": [
+        "Redirect anonymous users away from protected routes before the page logic runs",
+        "Attach security-related headers for matched requests",
+        "Run expensive report aggregation for every incoming request",
+        "Perform locale-based rewrites or redirects close to the edge",
+        "Render personalized dashboard JSX directly in the middleware file"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Middleware is well suited to lightweight request interception such as auth gating, rewrites, redirects, and security header manipulation. Heavy business logic and full page rendering do not belong there.",
+      "tags": [
+        "middleware",
+        "auth",
+        "headers",
+        "rewrites"
+      ],
+      "references": [
+        "Middleware & Route Handlers",
+        "Routing Systems"
+      ]
+    },
+    {
+      "id": "nextjs-q18",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An editor updates a blog post through a Server Action. The write succeeds, but readers keep seeing the cached page until the next scheduled refresh window.",
+      "prompt": "What is the most direct fix?",
+      "options": [
+        "Call revalidatePath for the affected route after the mutation",
+        "Add 'use client' to the blog page so it ignores the cache",
+        "Move the blog fetch into useEffect so the browser always refetches",
+        "Wrap the post body in Suspense without touching the cache strategy"
+      ],
+      "correctAnswer": 0,
+      "explanation": "When a mutation should invalidate cached or statically regenerated content immediately, revalidatePath is the targeted mechanism for refreshing the affected route.",
+      "tags": [
+        "revalidatePath",
+        "cache-invalidation",
+        "server-actions",
+        "content-updates"
+      ],
+      "references": [
+        "Data Fetching & Mutations"
+      ]
+    },
+    {
+      "id": "nextjs-q19",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A company needs a stable JSON endpoint consumed by a mobile app and third-party partners. The web app also uses internal form mutations elsewhere, but this endpoint must expose standard HTTP semantics.",
+      "prompt": "Which Next.js abstraction should power that public endpoint?",
+      "options": [
+        "A Server Action",
+        "A Route Handler",
+        "A Client Component",
+        "A loading.tsx segment file"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Route Handlers are the correct fit for explicit HTTP endpoints with methods such as GET and POST. Server Actions are primarily designed for app-internal mutation flows rather than general external API contracts.",
+      "tags": [
+        "route-handlers",
+        "api",
+        "http",
+        "integration"
+      ],
+      "references": [
+        "Middleware & Route Handlers",
+        "Data Fetching & Mutations"
+      ]
+    },
+    {
+      "id": "nextjs-q20",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A teammate writes a component under app/ that does not reference browser APIs, hooks, or 'use client'. They assume it still runs in the browser unless configured otherwise.",
+      "prompt": "True or false: in the App Router, that component is treated as a Server Component by default.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "App Router components are server components by default unless a client boundary is introduced. That default is what enables the server-first architecture and smaller client bundles.",
+      "tags": [
+        "defaults",
+        "server-components",
+        "app-router",
+        "use-client"
+      ],
+      "references": [
+        "Introduction",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q21",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A stock information page was initially built with plain static generation. It now serves stale numbers until the next deployment, but the company still does not want the cost of full request-time rendering for every view.",
+      "prompt": "What is the best compromise?",
+      "options": [
+        "Switch to Client-Side Rendering for the primary content",
+        "Use Incremental Static Regeneration with an appropriate revalidation window",
+        "Keep plain Static Site Generation and trigger a full redeploy after every quote change",
+        "Run all quote updates through middleware on every request"
+      ],
+      "correctAnswer": 1,
+      "explanation": "ISR preserves static delivery for speed while allowing scheduled freshness. It is the standard middle ground between permanently static content and rendering everything anew on each request.",
+      "tags": [
+        "isr",
+        "staleness",
+        "caching",
+        "freshness"
+      ],
+      "references": [
+        "Rendering Strategies",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q22",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A page loads a client shell, then the parent fetches the user, then a child fetches projects after the user arrives, producing a visible waterfall and poor initial load.",
+      "prompt": "Which redesign aligns best with Next.js server-first data flow?",
+      "options": [
+        "Move the relevant data fetching into Server Components so requests can start higher in the tree and avoid client-side waterfalls",
+        "Keep the waterfall but hide it behind a longer skeleton animation",
+        "Fetch everything sequentially in middleware before routing so the client never sees loading states",
+        "Convert the entire route into a Client Component to keep all data logic in one place"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Server-side fetching higher in the tree reduces client waterfalls and often allows parallelism. Hiding the problem with skeletons or broad client boundaries does not solve the latency root cause.",
+      "tags": [
+        "waterfalls",
+        "server-fetching",
+        "data-flow",
+        "performance"
+      ],
+      "references": [
+        "Data Fetching & Mutations",
+        "Server & Client Components",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q23",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A performance incident review lists four symptoms and asks the team to map each one to the most relevant optimization technique.",
+      "prompt": "Match each symptom to the best response.",
+      "premises": [
+        "The largest visible element is an oversized hero image on mobile devices",
+        "A rarely used admin chart library inflates the initial JavaScript bundle",
+        "Search crawlers receive a mostly empty shell before JavaScript executes",
+        "Two sibling Server Components make the same data request during one render"
+      ],
+      "responses": [
+        "Use Next.js image optimization with responsive sizing and modern formats",
+        "Split the chart into a dynamically loaded chunk",
+        "Prefer server-rendered or pre-rendered HTML for the primary content",
+        "Rely on identical fetch memoization during the render pass"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Each symptom points to a different built-in advantage: next/image for media delivery, dynamic imports for trimming the initial bundle, server rendering for crawler-visible content, and fetch memoization for duplicate request elimination.",
+      "tags": [
+        "performance-audit",
+        "image-optimization",
+        "dynamic-import",
+        "seo",
+        "memoization"
+      ],
+      "references": [
+        "Optimization & Performance",
+        "Data Fetching & Mutations",
+        "Rendering Strategies"
+      ]
+    },
+    {
+      "id": "nextjs-q24",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A user navigates from /dashboard to /dashboard/settings in an App Router application that uses a shared dashboard layout and a loading.tsx file for the target segment.",
+      "prompt": "Put the navigation events in the most likely order.",
+      "items": [
+        "The user clicks a client-side link to the sibling segment",
+        "The shared parent layout remains mounted during the transition",
+        "The incoming segment can show its loading UI immediately",
+        "The new server-rendered segment payload arrives",
+        "The target segment becomes interactive with the updated UI"
+      ],
+      "correctAnswer": [
+        "The user clicks a client-side link to the sibling segment",
+        "The shared parent layout remains mounted during the transition",
+        "The incoming segment can show its loading UI immediately",
+        "The new server-rendered segment payload arrives",
+        "The target segment becomes interactive with the updated UI"
+      ],
+      "explanation": "App Router navigation can preserve shared layouts, reveal loading UI for the incoming segment, then apply the streamed result and hydrate any interactive pieces needed for the updated view.",
+      "tags": [
+        "navigation",
+        "nested-layouts",
+        "loading-ui",
+        "hydration"
+      ],
+      "references": [
+        "Routing Systems",
+        "Rendering Strategies",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q25",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A platform group wants public pages to stay as cache-friendly and deterministic as possible. They are reviewing patterns that quietly push routes into more dynamic behavior.",
+      "prompt": "Which practices support more static or cacheable rendering?",
+      "options": [
+        "Pre-render marketing pages whose content only changes when the site is republished",
+        "Use a revalidation window for content that changes periodically but not per request",
+        "Read request cookies in the page render to personalize HTML for every visitor",
+        "Keep request-time randomness out of rendered output when deterministic HTML is desired",
+        "Promote every layout to a Client Component before deciding on a rendering strategy"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Predictable shared content and explicit revalidation windows preserve static or cache-friendly behavior. Per-request personalization and unnecessary client promotion make it harder to keep routes deterministic and efficiently cached.",
+      "tags": [
+        "static-rendering",
+        "cacheability",
+        "determinism",
+        "isr"
+      ],
+      "references": [
+        "Rendering Strategies",
+        "Data Fetching & Mutations"
+      ]
+    },
+    {
+      "id": "nextjs-q26",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A dashboard sidebar contains tabs and local interaction state that should survive navigation between /dashboard/analytics and /dashboard/billing.",
+      "prompt": "Where should the shared shell live?",
+      "options": [
+        "In dashboard/layout.tsx so sibling pages swap underneath a persistent parent segment",
+        "In middleware.ts so it is recreated before every matched request",
+        "Inside each page.tsx file so every route owns its own copy",
+        "Inside route.ts so the sidebar is rendered by HTTP handlers"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Shared layout UI belongs in the segment layout so it can persist while child routes change. Duplicating it per page or trying to move it into middleware or route handlers breaks the App Router model.",
+      "tags": [
+        "persistent-ui",
+        "layouts",
+        "navigation",
+        "state-preservation"
+      ],
+      "references": [
+        "Routing Systems",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q27",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A middleware file unintentionally runs for font files, images, and static assets, adding measurable latency to pages that do not need request interception.",
+      "prompt": "What is the most direct correction?",
+      "options": [
+        "Narrow the matcher configuration so middleware runs only on intended paths",
+        "Move the middleware logic into the root layout so assets bypass it",
+        "Replace the middleware with a Client Component that checks every request in the browser",
+        "Convert all assets into Route Handlers so the middleware becomes faster"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Broad matching causes needless middleware execution. Tightening matcher scope is the direct way to keep the edge layer focused on the routes that actually require interception.",
+      "tags": [
+        "matcher",
+        "middleware",
+        "latency",
+        "request-scope"
+      ],
+      "references": [
+        "Middleware & Route Handlers",
+        "Optimization & Performance"
+      ]
+    },
+    {
+      "id": "nextjs-q28",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A startup wants its public pricing page to load as fast as possible worldwide and be easy for search engines to crawl. The content only changes during infrequent campaign launches.",
+      "prompt": "Which rendering strategy is the clearest fit?",
+      "options": [
+        "Static Site Generation",
+        "Server-Side Rendering",
+        "Client-Side Rendering",
+        "Per-request middleware composition"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Stable public content with high SEO and global speed requirements is the classic SSG use case. Pre-rendering and CDN delivery minimize work per request and maximize crawlability.",
+      "tags": [
+        "ssg",
+        "marketing-pages",
+        "seo",
+        "cdn"
+      ],
+      "references": [
+        "Introduction",
+        "Rendering Strategies"
+      ]
+    },
+    {
+      "id": "nextjs-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A Client Component tries to import a database helper directly so an autocomplete widget can query production data from the browser. The prototype works locally but fails architectural review.",
+      "prompt": "What is the core problem?",
+      "options": [
+        "Client Components cannot safely own server-only code or secrets, so the read must move behind a server boundary",
+        "Database queries are forbidden in the App Router even on the server",
+        "Only middleware is allowed to communicate with a database in Next.js",
+        "Hydration fails whenever a component reads remote data after mount"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Client Components run in the browser and therefore cannot safely execute server-only logic or carry private credentials. The correct fix is to keep data access on the server and pass results through a safe boundary.",
+      "tags": [
+        "server-only",
+        "security",
+        "client-components",
+        "data-access"
+      ],
+      "references": [
+        "Server & Client Components",
+        "Data Fetching & Mutations"
+      ]
+    },
+    {
+      "id": "nextjs-q30",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A long-form article page added an advanced visualization that is useful to only a small fraction of readers. The article remains server-rendered, but initial JavaScript cost rose sharply.",
+      "prompt": "Which change most directly improves first load without removing the visualization entirely?",
+      "options": [
+        "Load the visualization dynamically so it is excluded from the critical initial bundle",
+        "Mark the entire article page with 'use client' so the bundle becomes more consistent",
+        "Move the visualization logic into middleware so it runs before the article is served",
+        "Render the visualization server-side and immediately hydrate the whole page regardless of need"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Dynamic loading is the targeted fix when a rarely used interactive feature bloats the initial bundle. It preserves functionality while keeping that code out of the critical path for most readers.",
+      "tags": [
+        "dynamic-import",
+        "code-splitting",
+        "bundle-size",
+        "article-pages"
+      ],
+      "references": [
+        "Optimization & Performance",
+        "Server & Client Components"
+      ]
+    },
+    {
+      "id": "nextjs-q31",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "An architecture review asks for decisions that improve both SEO and initial load behavior on public content routes without giving up interactive enhancements where they are truly necessary.",
+      "prompt": "Which decisions best align with that goal?",
+      "options": [
+        "Render stable primary content on the server or at build time instead of relying on client-only fetching",
+        "Keep non-interactive sections as Server Components whenever possible",
+        "Split rarely used interactive widgets out of the critical path",
+        "Fetch the primary article body in useEffect after mount so the HTML stays minimal",
+        "Apply personalization middleware to every asset request for consistency"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Server-rendered or pre-rendered primary content, smaller client boundaries, and code splitting for low-priority widgets all support better crawlability and faster initial delivery. Deferring primary content to the client or intercepting every asset request works against those goals.",
+      "tags": [
+        "seo",
+        "initial-load",
+        "server-components",
+        "code-splitting"
+      ],
+      "references": [
+        "Introduction",
+        "Rendering Strategies",
+        "Server & Client Components",
+        "Optimization & Performance"
+      ]
+    }
+  ]
+}

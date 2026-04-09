@@ -1,0 +1,861 @@
+{
+  "moduleId": "git",
+  "moduleTitle": "Git",
+  "description": "Scenario-based assessment focused on advanced Git architecture, the three-tree model, object internals, branching strategy, professional collaboration workflows, history manipulation, and recovery decisions.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "git-q01",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A developer boards a long flight after cloning the repository the night before. Mid-flight, they review old commits, create a new branch, and make several commits even though the company VPN is unavailable.",
+      "prompt": "Which Git property best explains why that workflow still works?",
+      "options": [
+        "The working directory automatically mirrors the remote while offline",
+        "Each clone contains a complete local repository with full history",
+        "Git stores only the latest snapshot locally and reconstructs older commits from cache",
+        "The staging area proxies all write operations until the server becomes reachable"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Git is distributed, so every clone contains the full repository history and object database. That allows local history inspection, branching, and committing without network access.",
+      "tags": [
+        "distributed-vcs",
+        "offline-work",
+        "architecture"
+      ],
+      "references": [
+        "Introduction",
+        "Git Architecture"
+      ]
+    },
+    {
+      "id": "git-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "An engineering manager is comparing Git to a centralized VCS for a globally distributed team that frequently works with unstable connectivity.",
+      "prompt": "Which capabilities come directly from every clone containing full history?",
+      "options": [
+        "Developers can inspect logs and create commits offline",
+        "Any clone can serve as another backup copy of project history",
+        "Pushes can never be rejected because all clones are complete",
+        "Many branch and history operations run against local data instead of a central server",
+        "Repository permissions are no longer necessary"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Full local history enables offline commits and log inspection, makes each clone a backup, and keeps many operations local and fast. It does not eliminate conflicts or access control.",
+      "tags": [
+        "distributed-vcs",
+        "performance",
+        "collaboration",
+        "resilience"
+      ],
+      "references": [
+        "Git Architecture",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "git-q03",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "You staged only part of a file with interactive staging, then continued editing the same file before committing.",
+      "prompt": "True or false: the next git commit records the staged snapshot from the index even if the working directory now contains newer unstaged edits.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "git commit records the snapshot currently in the staging area, not whatever happens to be newest in the working directory. That separation is the core of the three-tree model.",
+      "tags": [
+        "index",
+        "partial-staging",
+        "three-tree-model"
+      ],
+      "references": [
+        "Three-Tree Model",
+        "Core Workflow"
+      ]
+    },
+    {
+      "id": "git-q04",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "A new team member wants the exact sequence of state transitions when a tracked file is edited and then published to the remote repository.",
+      "prompt": "Arrange the normal publish cycle from earliest to latest.",
+      "items": [
+        "Edit the tracked file in the working directory",
+        "Stage the selected snapshot in the index with git add",
+        "Create a commit object from the staged snapshot",
+        "Move the current branch reference to the new commit",
+        "Transfer the new commit objects to the remote with git push"
+      ],
+      "correctAnswer": [
+        "Edit the tracked file in the working directory",
+        "Stage the selected snapshot in the index with git add",
+        "Create a commit object from the staged snapshot",
+        "Move the current branch reference to the new commit",
+        "Transfer the new commit objects to the remote with git push"
+      ],
+      "explanation": "The file is edited in the working directory, copied into the index with git add, committed from the index, and then shared with the remote through push.",
+      "tags": [
+        "workflow",
+        "index",
+        "push",
+        "state-transition"
+      ],
+      "references": [
+        "Three-Tree Model",
+        "Core Workflow",
+        "Git Architecture"
+      ]
+    },
+    {
+      "id": "git-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A tooling team is documenting Git internals before building a repository visualizer.",
+      "prompt": "Match each Git object to its primary role.",
+      "premises": [
+        "Blob",
+        "Tree",
+        "Commit",
+        "Annotated tag"
+      ],
+      "responses": [
+        "Stores raw file contents without filename metadata",
+        "Represents a directory snapshot by pointing to blobs and other trees",
+        "Records a snapshot root, parent relationships, author data, and a message",
+        "Names another object and can carry release metadata"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Blobs store file content, trees describe directory structure, commits connect snapshots into history, and annotated tags add metadata to a referenced object such as a release commit.",
+      "tags": [
+        "object-model",
+        "blob",
+        "tree",
+        "commit",
+        "tag"
+      ],
+      "references": [
+        "Object Model",
+        "Visualization"
+      ]
+    },
+    {
+      "id": "git-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A monorepo contains many identical generated LICENSE files in different directories, yet the object database growth is smaller than expected.",
+      "prompt": "Which Git behavior best explains that outcome?",
+      "options": [
+        "Trees merge identical filenames into a single directory entry automatically",
+        "Identical content hashes to the same blob object and can be reused",
+        "Commits skip duplicated files when they are on different paths",
+        "Deduplication happens only on the remote during git push"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Git is content-addressable. Identical file content produces the same blob hash, so identical blobs can be reused regardless of path names.",
+      "tags": [
+        "content-addressing",
+        "deduplication",
+        "blob",
+        "sha1"
+      ],
+      "references": [
+        "Object Model",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "git-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A developer made one local commit too early on a private feature branch and wants to choose the correct reset mode without losing track of the effects.",
+      "prompt": "Which outcomes correctly describe the reset variants covered in the module?",
+      "options": [
+        "git reset --soft HEAD~1 moves branch and HEAD back while leaving the changes staged",
+        "git reset --mixed HEAD~1 keeps the file modifications but removes them from staging",
+        "git reset --hard HEAD~1 moves back one commit and discards the corresponding staged and working tree changes from the current checkout",
+        "git reset --soft HEAD~1 is the preferred fix for a published mistake on shared main",
+        "git reset --hard HEAD~1 is the safe replacement for revert on shared branches"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Soft keeps changes staged, mixed unstages them, and hard discards them from the current checkout. On shared published history, revert is the safer tool.",
+      "tags": [
+        "reset",
+        "history-management",
+        "index",
+        "safety"
+      ],
+      "references": [
+        "History Management",
+        "Three-Tree Model"
+      ]
+    },
+    {
+      "id": "git-q08",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A teammate runs git branch feature/api-cleanup and starts working, assuming they have already switched branches. Later they discover the new commits are still on main.",
+      "prompt": "What did git branch actually do?",
+      "options": [
+        "Created and checked out feature/api-cleanup in one step",
+        "Created a new branch pointer at the current commit without switching HEAD",
+        "Detached HEAD at the current commit",
+        "Copied the staged snapshot into a new remote branch"
+      ],
+      "correctAnswer": 1,
+      "explanation": "git branch creates the branch reference but does not switch to it. HEAD remains on the current branch until git switch or git checkout is used.",
+      "tags": [
+        "branches",
+        "head",
+        "refs"
+      ],
+      "references": [
+        "Branching & Merging",
+        "Visualization"
+      ]
+    },
+    {
+      "id": "git-q09",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "Two teammates have already based work on a shared feature branch. You want a cleaner history before release.",
+      "prompt": "True or false: rebasing that published branch is usually safer for the team than merging main into it because rebase avoids an extra merge commit.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Rebasing rewrites commit history. Once others have based work on those commits, rewriting the branch can disrupt them. Merging is usually the safer option for published shared branches.",
+      "tags": [
+        "rebase",
+        "merge",
+        "published-history",
+        "team-safety"
+      ],
+      "references": [
+        "Branching & Merging",
+        "History Management",
+        "Professional Workflows"
+      ]
+    },
+    {
+      "id": "git-q10",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A SaaS team deploys from main several times a day and relies on pull requests to review short-lived feature branches.",
+      "prompt": "Which workflow from the module best matches that operating model?",
+      "options": [
+        "Git Flow",
+        "GitHub Flow",
+        "GitLab Flow",
+        "Centralized Workflow"
+      ],
+      "correctAnswer": 1,
+      "explanation": "GitHub Flow is optimized for continuous deployment and a stable main branch with short-lived feature branches and pull requests.",
+      "tags": [
+        "github-flow",
+        "continuous-deployment",
+        "pull-requests"
+      ],
+      "references": [
+        "Professional Workflows"
+      ]
+    },
+    {
+      "id": "git-q11",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A bad commit landed on shared main and has already been pulled by the entire team. You need to undo it while minimizing disruption.",
+      "prompt": "Which actions align with the module's safe shared-branch guidance?",
+      "options": [
+        "Create a revert commit that undoes the bad change",
+        "Use git reset --hard on main and force-push immediately",
+        "Communicate with the team before any destructive history rewrite",
+        "Prefer revert over reset for published history",
+        "Start an interactive rebase on main to remove the bad commit from everyone's history"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "The module recommends preserving shared published history whenever possible. Revert is the safe default, and destructive rewrites require caution and communication.",
+      "tags": [
+        "revert",
+        "shared-branches",
+        "history-rewrite",
+        "team-workflow"
+      ],
+      "references": [
+        "History Management",
+        "Professional Workflows",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "id": "git-q12",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "git push origin main is rejected as non-fast-forward because another developer pushed first. There is no merge or rebase already in progress locally.",
+      "prompt": "What is the best next step?",
+      "options": [
+        "Delete origin/main locally and push again",
+        "Pull remote changes, resolve any conflicts if needed, then push",
+        "Run git commit --amend until the hashes match the remote",
+        "Run git gc and retry the push"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A non-fast-forward rejection means the remote has commits you do not have locally. You need to integrate them first through pull, often with merge or rebase, and then push.",
+      "tags": [
+        "non-fast-forward",
+        "push",
+        "remote",
+        "troubleshooting"
+      ],
+      "references": [
+        "Troubleshooting",
+        "Core Workflow"
+      ]
+    },
+    {
+      "id": "git-q13",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "A merge stops after Git inserts conflict markers into app.js and reports the conflict to the terminal.",
+      "prompt": "Put the conflict-resolution process in the safest order.",
+      "items": [
+        "Run git status to confirm which files are conflicted",
+        "Inspect the conflicted file and decide the final content",
+        "Remove the conflict markers and save the resolved file",
+        "Stage the resolved file with git add",
+        "Complete the operation with git commit or git rebase --continue"
+      ],
+      "correctAnswer": [
+        "Run git status to confirm which files are conflicted",
+        "Inspect the conflicted file and decide the final content",
+        "Remove the conflict markers and save the resolved file",
+        "Stage the resolved file with git add",
+        "Complete the operation with git commit or git rebase --continue"
+      ],
+      "explanation": "First confirm the conflicted files, then resolve the file contents, stage the resolution, and finally finish the suspended Git operation.",
+      "tags": [
+        "merge-conflicts",
+        "rebase-conflicts",
+        "resolution",
+        "workflow"
+      ],
+      "references": [
+        "Troubleshooting",
+        "Branching & Merging"
+      ]
+    },
+    {
+      "id": "git-q14",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "You are teaching interns why git add and git commit affect different internal areas, and you want the most directly relevant demo in the Git module.",
+      "prompt": "Which visualization should you open first?",
+      "options": [
+        "Git Architecture",
+        "Three-Tree Model",
+        "Object Model",
+        "History Management"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The three-tree visualization is designed to show the relationships among the working directory, staging area, and repository, which is exactly what git add and git commit change.",
+      "tags": [
+        "visualization",
+        "index",
+        "working-directory",
+        "repository"
+      ],
+      "references": [
+        "Visualization",
+        "Three-Tree Model"
+      ]
+    },
+    {
+      "id": "git-q15",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A platform organization is standardizing Git workflows across four teams with very different release constraints.",
+      "prompt": "Match each team situation to the workflow that fits best.",
+      "premises": [
+        "Enterprise product with scheduled releases, hotfixes, and parallel release preparation",
+        "Web application that deploys directly from main after approved pull requests",
+        "Service that promotes code through staging and production branches",
+        "Open-source project receiving contributions from developers without direct push access"
+      ],
+      "responses": [
+        "Git Flow",
+        "GitHub Flow",
+        "GitLab Flow",
+        "Fork and pull request model"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Git Flow fits structured release trains, GitHub Flow fits continuously deployed apps, GitLab Flow matches environment-based promotion, and fork plus pull request workflows fit external contribution models.",
+      "tags": [
+        "workflow-selection",
+        "git-flow",
+        "github-flow",
+        "gitlab-flow",
+        "fork-pr"
+      ],
+      "references": [
+        "Professional Workflows",
+        "Git Architecture"
+      ]
+    },
+    {
+      "id": "git-q16",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "On feature/auth, you modify src/login.ts and commit once. The file sits under src/ at the repository root, and no other paths changed.",
+      "prompt": "Which new Git objects are necessarily created for that commit?",
+      "options": [
+        "Only one new commit object, because the old tree can be reused unchanged",
+        "A new blob, a new tree for src, a new root tree, and a new commit",
+        "Only a new blob and a new tag",
+        "A new branch and a new blob, but no new commit until push"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A changed file creates a new blob. Any tree containing that entry must also be recreated, up to the repository root, and the new snapshot is then recorded in a new commit object.",
+      "tags": [
+        "object-model",
+        "trees",
+        "commits",
+        "snapshots"
+      ],
+      "references": [
+        "Object Model",
+        "Three-Tree Model"
+      ]
+    },
+    {
+      "id": "git-q17",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "You are writing an internal recovery runbook for advanced Git users and want each statement to align with the module's guidance.",
+      "prompt": "Which statements are correct?",
+      "options": [
+        "git revert preserves published history by adding a new inverse commit",
+        "git reflog can help recover states even after an accidental hard reset",
+        "Interactive rebase is useful for cleaning up local feature-branch commits before sharing them",
+        "Cherry-pick changes the original commit on its source branch",
+        "git reset --hard is the recommended default fix for mistakes on shared branches"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "Revert adds new history instead of rewriting old history, reflog records reference movements for recovery, and interactive rebase is appropriate before commits are shared. Cherry-pick copies changes; it does not mutate the source commit.",
+      "tags": [
+        "revert",
+        "reflog",
+        "interactive-rebase",
+        "recovery"
+      ],
+      "references": [
+        "History Management",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "id": "git-q18",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A remote outage hits during a release freeze, but your laptop still has a current local clone.",
+      "prompt": "True or false: you can still inspect history, create branches, and make commits locally until connectivity returns.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Those operations are local because the repository history and objects exist in the clone. Only remote synchronization is blocked by the outage.",
+      "tags": [
+        "offline-work",
+        "distributed-vcs",
+        "local-history"
+      ],
+      "references": [
+        "Git Architecture",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "git-q19",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "You stage api.ts, then continue editing api.ts without running git add again before committing.",
+      "prompt": "After the commit completes, where does the newer unstaged version of api.ts still exist?",
+      "options": [
+        "Only in the working directory",
+        "Only in the new commit",
+        "Only in the staging area",
+        "Nowhere, because git commit consumes every newer edit automatically"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The commit records the staged snapshot. Any later unstaged edits remain only in the working directory until staged explicitly.",
+      "tags": [
+        "index",
+        "working-directory",
+        "partial-staging",
+        "commit"
+      ],
+      "references": [
+        "Three-Tree Model",
+        "Core Workflow"
+      ]
+    },
+    {
+      "id": "git-q20",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A team lead wants to integrate feature/search while preserving the exact branch topology and avoiding history rewrite.",
+      "prompt": "Which approach best fits that goal?",
+      "options": [
+        "Squash merge",
+        "Rebase feature/search onto main and fast-forward",
+        "Merge feature/search with a merge commit",
+        "Cherry-pick only the last feature commit"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A merge commit preserves both parent histories and the visible branch structure. Rebase rewrites history, squash compresses it, and cherry-pick copies only selected changes.",
+      "tags": [
+        "merge-commit",
+        "branch-topology",
+        "integration"
+      ],
+      "references": [
+        "Branching & Merging",
+        "Professional Workflows"
+      ]
+    },
+    {
+      "id": "git-q21",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "The help desk wants a quick map from common Git failures to the first diagnostic command engineers should try.",
+      "prompt": "Match each problem to the most useful first command.",
+      "premises": [
+        "You think a lost commit vanished after a reset",
+        "A file is mysteriously not being tracked and may be ignored",
+        "Push was rejected as non-fast-forward",
+        "A merge stopped because of conflicts"
+      ],
+      "responses": [
+        "git reflog",
+        "git check-ignore <file>",
+        "git pull --rebase origin main",
+        "git status"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "reflog helps recover lost references, check-ignore explains ignore behavior, pull with rebase integrates remote changes after a rejection, and status identifies conflicted files and repository state.",
+      "tags": [
+        "diagnostics",
+        "reflog",
+        "check-ignore",
+        "non-fast-forward",
+        "status"
+      ],
+      "references": [
+        "Troubleshooting"
+      ]
+    },
+    {
+      "id": "git-q22",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A security review asks which Git design decision most directly removes the central server as the only durable copy of repository history.",
+      "prompt": "Which answer is best?",
+      "options": [
+        "Git stores commit messages in plain text",
+        "Every clone contains the full repository history",
+        "Git automatically mirrors all remotes to one another",
+        "The staging area duplicates each file three times"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Because every clone has the full history, the central server is not the only durable copy. That property is a core advantage of Git's distributed design.",
+      "tags": [
+        "resilience",
+        "distributed-vcs",
+        "backup"
+      ],
+      "references": [
+        "Introduction",
+        "Git Architecture"
+      ]
+    },
+    {
+      "id": "git-q23",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A staff engineer is validating assumptions before building internal tooling that reads raw Git objects.",
+      "prompt": "Which statements are true about the Git object model described in the module?",
+      "options": [
+        "Blobs store file contents, not filenames",
+        "Trees reference blobs and other trees to model directory structure",
+        "Commits point to parent commits and a root tree",
+        "Annotated tags can point to another object and include metadata",
+        "Editing an existing object in place preserves its hash"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Git objects are immutable. Blobs, trees, commits, and annotated tags all have specific roles, and changing object content would produce a different hash rather than mutating an existing object.",
+      "tags": [
+        "object-model",
+        "immutability",
+        "tags",
+        "trees",
+        "commits"
+      ],
+      "references": [
+        "Object Model",
+        "Visualization"
+      ]
+    },
+    {
+      "id": "git-q24",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "After running git reset --hard HEAD~3, a developer realizes the target was wrong and cannot remember the discarded commit hashes.",
+      "prompt": "Where should they look first for recovery information?",
+      "options": [
+        "git reflog",
+        "git blame",
+        "git bisect log",
+        ".gitignore"
+      ],
+      "correctAnswer": 0,
+      "explanation": "reflog records recent HEAD and reference movements, making it the primary recovery tool after an accidental reset or checkout mistake.",
+      "tags": [
+        "reflog",
+        "recovery",
+        "reset",
+        "history-management"
+      ],
+      "references": [
+        "History Management",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "id": "git-q25",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "Your team follows GitHub Flow for a continuously deployed service and wants the standard sequence documented.",
+      "prompt": "Order the workflow from branch start to release.",
+      "items": [
+        "Create a feature branch from main",
+        "Commit work on the feature branch",
+        "Open a pull request for review",
+        "Merge approved changes into main",
+        "Deploy main"
+      ],
+      "correctAnswer": [
+        "Create a feature branch from main",
+        "Commit work on the feature branch",
+        "Open a pull request for review",
+        "Merge approved changes into main",
+        "Deploy main"
+      ],
+      "explanation": "GitHub Flow centers on short-lived branches, pull requests, merging into a stable main branch, and deploying from main.",
+      "tags": [
+        "github-flow",
+        "pull-requests",
+        "deployment",
+        "workflow"
+      ],
+      "references": [
+        "Professional Workflows",
+        "Branching & Merging"
+      ]
+    },
+    {
+      "id": "git-q26",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A teammate claims git add physically moves a file out of the working directory into the staging area, which is why editors would lose access to it.",
+      "prompt": "True or false: git add copies the selected file state into the index; it does not remove the file from the working directory.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "git add updates the index with a snapshot of content. The working directory file remains present and editable after staging.",
+      "tags": [
+        "git-add",
+        "index",
+        "working-directory",
+        "three-tree-model"
+      ],
+      "references": [
+        "Three-Tree Model",
+        "Core Workflow"
+      ]
+    },
+    {
+      "id": "git-q27",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "You try to switch branches, but Git warns that local uncommitted edits would be overwritten. You want a clean temporary shelf so you can return later.",
+      "prompt": "Which command is the best fit?",
+      "options": [
+        "git stash",
+        "git tag temp-work",
+        "git revert HEAD",
+        "git fetch --all"
+      ],
+      "correctAnswer": 0,
+      "explanation": "git stash is designed to temporarily save uncommitted changes so other operations, such as switching branches, can proceed cleanly.",
+      "tags": [
+        "stash",
+        "branch-switching",
+        "workspace",
+        "troubleshooting"
+      ],
+      "references": [
+        "Troubleshooting",
+        "Core Workflow",
+        "History Management"
+      ]
+    },
+    {
+      "id": "git-q28",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A repository keeps hitting painful end-of-sprint merge conflicts across long-lived branches, and the team wants to change its habits.",
+      "prompt": "Which practices from the module are most likely to reduce that merge pain?",
+      "options": [
+        "Keep branches focused on one feature or fix",
+        "Integrate with main regularly through merge or rebase",
+        "Delay synchronization until the branch is very large and nearly finished",
+        "Pull frequently and coordinate with teammates working in the same areas",
+        "Use one branch for multiple unrelated features to reduce branch count"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Small focused branches, regular integration, and active coordination reduce surprise conflicts. Waiting until the end and combining unrelated work on one branch usually makes conflicts worse.",
+      "tags": [
+        "merge-conflicts",
+        "branching-strategy",
+        "integration",
+        "team-practices"
+      ],
+      "references": [
+        "Branching & Merging",
+        "Troubleshooting",
+        "Professional Workflows"
+      ]
+    },
+    {
+      "id": "git-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A faulty merge commit has already reached main. Team policy forbids rewriting published history, but the merge's effect must be removed.",
+      "prompt": "Which command pattern best fits that requirement?",
+      "options": [
+        "git reset --hard <merge-commit>^ and then force-push",
+        "git revert -m 1 <merge-commit>",
+        "git rebase -i <merge-commit>^",
+        "git cherry-pick -m 1 <merge-commit>"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Reverting the merge creates a new commit that undoes its effect without rewriting published history. The -m option tells Git which parent is the mainline.",
+      "tags": [
+        "revert",
+        "merge-commit",
+        "published-history",
+        "mainline-parent"
+      ],
+      "references": [
+        "History Management",
+        "Branching & Merging"
+      ]
+    },
+    {
+      "id": "git-q30",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "During a workshop, you want to demonstrate how reset, rebase, cherry-pick, and reflog alter the apparent timeline of commits.",
+      "prompt": "Which visualization from the module is the most relevant starting point?",
+      "options": [
+        "Git Architecture",
+        "History Management",
+        "Object Model",
+        "Professional Workflows"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The history visualization is the one focused on timeline-altering operations such as reset, rebase, cherry-pick, and recovery workflows.",
+      "tags": [
+        "visualization",
+        "history-management",
+        "rebase",
+        "reset",
+        "cherry-pick"
+      ],
+      "references": [
+        "Visualization",
+        "History Management"
+      ]
+    },
+    {
+      "id": "git-q31",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A release engineer amends a commit message on a local branch and expects the commit hash to remain unchanged because no file contents were edited.",
+      "prompt": "True or false: changing commit metadata like the message creates a new commit object with a different hash.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Commit hashes are derived from the full commit object, including metadata such as the message, tree reference, and parent links. Changing that metadata creates a different object and therefore a different hash.",
+      "tags": [
+        "commit-hash",
+        "immutability",
+        "amend",
+        "object-model"
+      ],
+      "references": [
+        "Object Model",
+        "History Management"
+      ]
+    }
+  ]
+}

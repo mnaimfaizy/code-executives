@@ -1,102 +1,135 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, ChevronDown } from 'lucide-react';
-import { getSectionTheme } from '../utils/theme';
-import { useUI } from '../shared/contexts';
-import {
-  getModuleIdFromPathname,
-  getSectionQueryValue,
-} from '../shared/constants/moduleNavigation';
-
-// Helper function to get theme color classes
-const getThemeColorClass = (
-  theme: {
-    primary: string;
-    secondary: string;
-    accent: string;
-    gradient: string;
-    border: string;
-    shadow: string;
-  },
-  type: 'active' | 'hover' | 'buttonActive' | 'buttonHover' | 'border'
-) => {
-  const colorMap: Record<string, Record<string, string>> = {
-    purple: {
-      active: 'bg-purple-100 text-purple-800 border-purple-500',
-      hover: 'hover:bg-purple-50 hover:text-purple-700',
-      buttonActive: 'text-purple-600 hover:text-purple-700',
-      buttonHover: 'hover:text-purple-600',
-      border: 'border-purple-100',
-    },
-    orange: {
-      active: 'bg-orange-100 text-orange-800 border-orange-500',
-      hover: 'hover:bg-orange-50 hover:text-orange-700',
-      buttonActive: 'text-orange-600 hover:text-orange-700',
-      buttonHover: 'hover:text-orange-600',
-      border: 'border-orange-200',
-    },
-    indigo: {
-      active: 'bg-indigo-100 text-indigo-800 border-indigo-500',
-      hover: 'hover:bg-indigo-50 hover:text-indigo-700',
-      buttonActive: 'text-indigo-600 hover:text-indigo-700',
-      buttonHover: 'hover:text-indigo-600',
-      border: 'border-indigo-100',
-    },
-    blue: {
-      active: 'bg-blue-100 text-blue-800 border-blue-500',
-      hover: 'hover:bg-blue-50 hover:text-blue-700',
-      buttonActive: 'text-blue-600 hover:text-blue-700',
-      buttonHover: 'hover:text-blue-600',
-      border: 'border-blue-100',
-    },
-    emerald: {
-      active: 'bg-emerald-100 text-emerald-800 border-emerald-500',
-      hover: 'hover:bg-emerald-50 hover:text-emerald-700',
-      buttonActive: 'text-emerald-600 hover:text-emerald-700',
-      buttonHover: 'hover:text-emerald-600',
-      border: 'border-emerald-100',
-    },
-    rose: {
-      active: 'bg-rose-100 text-rose-800 border-rose-500',
-      hover: 'hover:bg-rose-50 hover:text-rose-700',
-      buttonActive: 'text-rose-600 hover:text-rose-700',
-      buttonHover: 'hover:text-rose-600',
-      border: 'border-rose-100',
-    },
-    green: {
-      active: 'bg-green-100 text-green-800 border-green-500',
-      hover: 'hover:bg-green-50 hover:text-green-700',
-      buttonActive: 'text-green-600 hover:text-green-700',
-      buttonHover: 'hover:text-green-600',
-      border: 'border-green-100',
-    },
-    sky: {
-      active: 'bg-sky-100 text-sky-800 border-sky-500',
-      hover: 'hover:bg-sky-50 hover:text-sky-700',
-      buttonActive: 'text-sky-600 hover:text-sky-700',
-      buttonHover: 'hover:text-sky-600',
-      border: 'border-sky-100',
-    },
-    amber: {
-      active: 'bg-amber-100 text-amber-800 border-amber-500',
-      hover: 'hover:bg-amber-50 hover:text-amber-700',
-      buttonActive: 'text-amber-600 hover:text-amber-700',
-      buttonHover: 'hover:text-amber-600',
-      border: 'border-amber-100',
-    },
-  };
-
-  const colors = colorMap[theme.primary] || colorMap.blue;
-  return colors[type];
-};
-
-interface SidebarItem {
+export interface SidebarItem {
   label: string;
   path: string;
   subItems?: SidebarItem[];
 }
 
-const sidebarSections: Record<string, Array<SidebarItem>> = {
+export type LearningModuleId =
+  | 'javascript'
+  | 'rxjs'
+  | 'git'
+  | 'datastructures'
+  | 'react'
+  | 'nextjs'
+  | 'bigo'
+  | 'python'
+  | 'systemdesign'
+  | 'typescript'
+  | 'ai'
+  | 'nodejs'
+  | 'devops'
+  | 'auth';
+
+export interface LearningModuleConfig {
+  id: LearningModuleId;
+  title: string;
+  path: `/${LearningModuleId}`;
+  bankFile: `${LearningModuleId}.quiz.json`;
+  theme: LearningModuleId;
+}
+
+export const learningModuleConfigs: Record<LearningModuleId, LearningModuleConfig> = {
+  javascript: {
+    id: 'javascript',
+    title: 'JavaScript',
+    path: '/javascript',
+    bankFile: 'javascript.quiz.json',
+    theme: 'javascript',
+  },
+  rxjs: {
+    id: 'rxjs',
+    title: 'RxJS',
+    path: '/rxjs',
+    bankFile: 'rxjs.quiz.json',
+    theme: 'rxjs',
+  },
+  git: {
+    id: 'git',
+    title: 'Git',
+    path: '/git',
+    bankFile: 'git.quiz.json',
+    theme: 'git',
+  },
+  datastructures: {
+    id: 'datastructures',
+    title: 'Data Structures',
+    path: '/datastructures',
+    bankFile: 'datastructures.quiz.json',
+    theme: 'datastructures',
+  },
+  react: {
+    id: 'react',
+    title: 'React',
+    path: '/react',
+    bankFile: 'react.quiz.json',
+    theme: 'react',
+  },
+  nextjs: {
+    id: 'nextjs',
+    title: 'Next.js',
+    path: '/nextjs',
+    bankFile: 'nextjs.quiz.json',
+    theme: 'nextjs',
+  },
+  bigo: {
+    id: 'bigo',
+    title: 'Big-O Notation',
+    path: '/bigo',
+    bankFile: 'bigo.quiz.json',
+    theme: 'bigo',
+  },
+  python: {
+    id: 'python',
+    title: 'Python',
+    path: '/python',
+    bankFile: 'python.quiz.json',
+    theme: 'python',
+  },
+  systemdesign: {
+    id: 'systemdesign',
+    title: 'System Design',
+    path: '/systemdesign',
+    bankFile: 'systemdesign.quiz.json',
+    theme: 'systemdesign',
+  },
+  typescript: {
+    id: 'typescript',
+    title: 'TypeScript',
+    path: '/typescript',
+    bankFile: 'typescript.quiz.json',
+    theme: 'typescript',
+  },
+  ai: {
+    id: 'ai',
+    title: 'AI Fundamentals',
+    path: '/ai',
+    bankFile: 'ai.quiz.json',
+    theme: 'ai',
+  },
+  nodejs: {
+    id: 'nodejs',
+    title: 'Node.js',
+    path: '/nodejs',
+    bankFile: 'nodejs.quiz.json',
+    theme: 'nodejs',
+  },
+  devops: {
+    id: 'devops',
+    title: 'DevOps',
+    path: '/devops',
+    bankFile: 'devops.quiz.json',
+    theme: 'devops',
+  },
+  auth: {
+    id: 'auth',
+    title: 'Authentication & Authorization',
+    path: '/auth',
+    bankFile: 'auth.quiz.json',
+    theme: 'auth',
+  },
+};
+
+const baseModuleNavigationSections: Record<string, SidebarItem[]> = {
   '/javascript': [
     { label: 'Introduction', path: '/javascript?section=Introduction' },
     { label: 'JavaScript History', path: '/javascript?section=JavaScript%20History' },
@@ -387,254 +420,53 @@ const sidebarSections: Record<string, Array<SidebarItem>> = {
   '/about': [],
 };
 
-const Sidebar: React.FC = () => {
-  const location = useLocation();
-  const { sidebarOpen, closeSidebar } = useUI();
-  const sidebarRef = useRef<HTMLElement>(null);
-  const touchStartX = useRef<number>(0);
-  const touchCurrentX = useRef<number>(0);
-
-  const getSidebarItems = (path: string): SidebarItem[] => {
-    const baseItems = sidebarSections[path] || [];
-    return getModuleIdFromPathname(path)
-      ? [...baseItems, { label: 'Quiz', path: `${path}?section=Quiz` }]
-      : baseItems;
-  };
-
-  const section = getModuleIdFromPathname(location.pathname) ?? 'javascript';
-  const theme = getSectionTheme(section);
-
-  // Initialize expanded items based on current section
-  const getInitialExpandedItems = () => {
-    const basePath = location.pathname;
-    const sections = getSidebarItems(basePath);
-    const query = new URLSearchParams(location.search);
-    const currentSection =
-      query.get('section') || getSectionQueryValue(sections[0]?.path ?? '') || 'Introduction';
-
-    const expanded: string[] = [];
-    sections.forEach((item) => {
-      if (item.subItems) {
-        const shouldExpand =
-          getSectionQueryValue(item.path) === currentSection ||
-          item.subItems.some((sub) => getSectionQueryValue(sub.path) === currentSection);
-        if (shouldExpand) {
-          expanded.push(item.label);
-        }
-      }
-    });
-    return expanded;
-  };
-
-  const [expandedItems, setExpandedItems] = useState<string[]>(getInitialExpandedItems);
-
-  // Get the base path (e.g., '/javascript')
-  const basePath = location.pathname;
-  const sections = getSidebarItems(basePath);
-  const currentSection =
-    new URLSearchParams(location.search).get('section') ||
-    getSectionQueryValue(sections[0]?.path ?? '') ||
-    'Introduction';
-
-  const toggleExpanded = (label: string) => {
-    setExpandedItems((prev) =>
-      prev.includes(label) ? prev.filter((item) => item !== label) : [...prev, label]
-    );
-  };
-
-  const isExpanded = (label: string) => expandedItems.includes(label);
-
-  // Swipe gesture handling for mobile
-  useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      if (sidebarOpen && sidebarRef.current) {
-        touchStartX.current = e.touches[0].clientX;
-        touchCurrentX.current = e.touches[0].clientX;
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (sidebarOpen && sidebarRef.current) {
-        touchCurrentX.current = e.touches[0].clientX;
-        const diff = touchCurrentX.current - touchStartX.current;
-
-        // Only allow left swipe (closing gesture)
-        if (diff < 0) {
-          const translateX = Math.max(diff, -256); // Limit to sidebar width (w-64 = 256px)
-          sidebarRef.current.style.transform = `translateX(${translateX}px)`;
-        }
-      }
-    };
-
-    const handleTouchEnd = () => {
-      if (sidebarOpen && sidebarRef.current) {
-        const diff = touchCurrentX.current - touchStartX.current;
-
-        // If swiped more than 50px to the left, close the sidebar
-        if (diff < -50) {
-          closeSidebar();
-        }
-
-        // Reset transform
-        sidebarRef.current.style.transform = '';
-      }
-    };
-
-    document.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchmove', handleTouchMove);
-    document.addEventListener('touchend', handleTouchEnd);
-
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [sidebarOpen, closeSidebar]);
-
-  // Prevent body scroll when sidebar is open on mobile
-  useEffect(() => {
-    if (sidebarOpen && window.innerWidth < 1024) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [sidebarOpen]);
-
-  // Handle escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && sidebarOpen) {
-        closeSidebar();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [sidebarOpen, closeSidebar]);
-
-  const renderMenuItem = (item: SidebarItem, isSubItem = false) => {
-    const hasSubItems = item.subItems && item.subItems.length > 0;
-    const expanded = isExpanded(item.label);
-    const isActive =
-      getSectionQueryValue(item.path) === currentSection ||
-      item.subItems?.some((sub) => getSectionQueryValue(sub.path) === currentSection);
-
-    return (
-      <li key={item.label} className="relative">
-        <div className="flex items-center group">
-          <Link
-            to={item.path}
-            onClick={() => {
-              closeSidebar();
-              // Auto-expand parent when clicking on it
-              if (hasSubItems && !expanded) {
-                toggleExpanded(item.label);
-              }
-            }}
-            className={`flex-1 block rounded-lg px-3 py-2.5 text-sm transition-all duration-200 border-l-4 ${
-              isActive
-                ? `${getThemeColorClass(theme, 'active')} font-semibold shadow-sm`
-                : `text-gray-700 border-transparent ${getThemeColorClass(
-                    theme,
-                    'hover'
-                  )} hover:pl-4 hover:border-l-2 hover:border-gray-300`
-            } ${isSubItem ? 'ml-4 text-xs py-2' : ''}`}
-            aria-current={isActive ? 'page' : undefined}
-          >
-            <span className="flex items-center justify-between">
-              {item.label}
-              {hasSubItems && !isSubItem && (
-                <span className="text-gray-400 text-xs ml-2">{item.subItems?.length}</span>
-              )}
-            </span>
-          </Link>
-          {hasSubItems && !isSubItem && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpanded(item.label);
-              }}
-              className={`p-2 rounded-lg transition-all duration-200 ${
-                isActive
-                  ? getThemeColorClass(theme, 'buttonActive')
-                  : `text-gray-400 ${getThemeColorClass(theme, 'buttonHover')}`
-              }`}
-              aria-label={`${expanded ? 'Collapse' : 'Expand'} ${item.label}`}
-              aria-expanded={expanded}
-            >
-              {expanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </button>
-          )}
-        </div>
-        {hasSubItems && expanded && (
-          <ul className="mt-1 space-y-0.5 ml-2 animate-in slide-in-from-top-2 duration-200">
-            {item.subItems?.map((subItem) => renderMenuItem(subItem, true))}
-          </ul>
-        )}
-      </li>
-    );
-  };
-
-  // Don't render sidebar if there are no sections
-  if (sections.length === 0) {
+export const getSectionQueryValue = (path: string): string | null => {
+  const queryStart = path.indexOf('?');
+  if (queryStart === -1) {
     return null;
   }
 
-  return (
-    <>
-      {/* Backdrop overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-in fade-in duration-200"
-          onClick={closeSidebar}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Sidebar */}
-      <aside
-        ref={sidebarRef}
-        aria-hidden={!sidebarOpen}
-        aria-label="Sidebar navigation"
-        className={[
-          // Base styles
-          'fixed left-0 top-16 z-50 h-[calc(100vh-4rem)] w-64 bg-white shadow-lg transition-transform duration-300 ease-out border-r overflow-y-auto',
-          // Mobile behavior
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-          // Desktop behavior - sticky and always visible
-          'lg:translate-x-0 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:z-30 lg:shadow-sm',
-          // Dynamic border color
-          getThemeColorClass(theme, 'border'),
-          // Smooth scrolling
-          'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent hover:scrollbar-thumb-gray-400',
-        ].join(' ')}
-      >
-        <nav className="p-4" role="navigation">
-          {/* Section title */}
-          <div className="mb-4 pb-3 border-b border-gray-200">
-            <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3">
-              On This Page
-            </h2>
-          </div>
-
-          {/* Navigation items */}
-          <ul className="space-y-1">{sections.map((item) => renderMenuItem(item))}</ul>
-
-          {/* Footer hint for mobile gestures */}
-          <div className="mt-8 px-3 py-4 border-t border-gray-200 lg:hidden">
-            <p className="text-xs text-gray-500 text-center">💡 Swipe left to close sidebar</p>
-          </div>
-        </nav>
-      </aside>
-    </>
-  );
+  const query = path.slice(queryStart + 1);
+  return new URLSearchParams(query).get('section');
 };
 
-export default Sidebar;
+const createQuizSidebarItem = (path: string): SidebarItem => ({
+  label: 'Quiz',
+  path: `${path}?section=Quiz`,
+});
+
+export const moduleNavigationSections: Record<string, SidebarItem[]> = Object.fromEntries(
+  Object.entries(baseModuleNavigationSections).map(([path, items]) => {
+    if (path === '/' || path === '/about') {
+      return [path, items];
+    }
+
+    return [path, [...items, createQuizSidebarItem(path)]];
+  })
+);
+
+export const learningModuleIds = Object.keys(learningModuleConfigs) as LearningModuleId[];
+
+export const getModuleIdFromPathname = (pathname: string): LearningModuleId | null => {
+  const match = learningModuleIds.find(
+    (moduleId) => learningModuleConfigs[moduleId].path === pathname
+  );
+  return match ?? null;
+};
+
+export const getModuleConfigFromPathname = (pathname: string): LearningModuleConfig | null => {
+  const moduleId = getModuleIdFromPathname(pathname);
+  return moduleId ? learningModuleConfigs[moduleId] : null;
+};
+
+const flattenSidebarItems = (items: SidebarItem[]): SidebarItem[] =>
+  items.flatMap((item) => [item, ...(item.subItems ? flattenSidebarItems(item.subItems) : [])]);
+
+export const getSectionPathByLabel = (
+  moduleId: LearningModuleId,
+  sectionLabel: string
+): string | null => {
+  const items = moduleNavigationSections[learningModuleConfigs[moduleId].path] ?? [];
+  const match = flattenSidebarItems(items).find((item) => item.label === sectionLabel);
+  return match?.path ?? null;
+};

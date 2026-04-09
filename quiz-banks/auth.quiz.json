@@ -1,0 +1,861 @@
+{
+  "moduleId": "auth",
+  "moduleTitle": "Authentication & Authorization",
+  "description": "Scenario-based assessment focused on advanced authentication and authorization architecture, identity evolution, federation protocols, PKCE mechanics, BFF security, tenant isolation, and AI agent access control.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "auth-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A consumer bank is retiring passwords after a credential-dump incident and is moving premium customers to passkey-based sign-in.",
+      "prompt": "Which WebAuthn property most directly prevents the stolen database material from being replayed as a login secret against the new portal?",
+      "options": [
+        "The server stores only a public key while the private key remains on the user's authenticator",
+        "The server stores a reversible biometric template and compares it on every login",
+        "The browser reuses one signed challenge across every relying party",
+        "The relying party can reconstruct the private key from the attestation certificate"
+      ],
+      "correctAnswer": 0,
+      "explanation": "With WebAuthn and passkeys, the relying party stores a public key rather than a reusable shared secret. The private key never leaves the authenticator, so a database dump does not provide a credential the attacker can replay.",
+      "tags": [
+        "passkeys",
+        "webauthn",
+        "public-key-crypto",
+        "phishing-resistance"
+      ],
+      "references": [
+        "Authentication Types",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A security team is deprecating legacy MFA methods for administrators after several adversary-in-the-middle phishing simulations succeeded.",
+      "prompt": "Which existing factors are still considered weak or phishable enough to prioritize for retirement?",
+      "options": [
+        "SMS one-time passwords sent to a phone number",
+        "TOTP codes from an authenticator app",
+        "Push approval prompts without device-bound cryptographic proof",
+        "Hardware FIDO2 security keys",
+        "Synced passkeys unlocked locally with biometrics"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "SMS, TOTP, and generic push approvals remain vulnerable to SIM-swapping, real-time proxy phishing, or MFA fatigue. Hardware FIDO keys and passkeys are the stronger, phishing-resistant direction because they rely on asymmetric cryptography tied to the origin.",
+      "tags": [
+        "mfa",
+        "totp",
+        "sms",
+        "push-fatigue",
+        "fido2"
+      ],
+      "references": [
+        "Authentication Types",
+        "Evolution of Digital Identity"
+      ]
+    },
+    {
+      "id": "auth-q03",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A product manager claims that passkeys are just another way of sending a secret back to the server during login.",
+      "prompt": "True or false: during a passkey authentication ceremony, the application server receives a reusable shared secret that can be stolen and replayed later.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Passkeys use a challenge-response ceremony based on public-key cryptography. The server verifies a signature with the stored public key, but it does not receive a reusable shared secret.",
+      "tags": [
+        "passkeys",
+        "challenge-response",
+        "shared-secrets",
+        "authentication"
+      ],
+      "references": [
+        "Authentication Types",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "You are preparing a briefing for new security engineers on how digital identity controls evolved from mainframes to cloud-native systems.",
+      "prompt": "Arrange these eras from earliest to latest.",
+      "items": [
+        "Simple passwords and access control lists on shared mainframes",
+        "Dynamic passwords and formal role separation in growing networks",
+        "Public key infrastructure and attribute-aware policy concepts",
+        "MFA and single sign-on with centralized identity providers",
+        "Passkeys and Zero Trust continuous authorization"
+      ],
+      "correctAnswer": [
+        "Simple passwords and access control lists on shared mainframes",
+        "Dynamic passwords and formal role separation in growing networks",
+        "Public key infrastructure and attribute-aware policy concepts",
+        "MFA and single sign-on with centralized identity providers",
+        "Passkeys and Zero Trust continuous authorization"
+      ],
+      "explanation": "Identity controls moved from simple shared secrets and ACLs toward stronger cryptography, centralized federation, and finally passwordless and continuously evaluated trust models.",
+      "tags": [
+        "history",
+        "digital-identity",
+        "zero-trust",
+        "evolution"
+      ],
+      "references": [
+        "Evolution of Digital Identity",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "An architecture review compares several authentication methods and wants each one tied to the mechanism that best explains its risk profile.",
+      "prompt": "Match each method to its most accurate underlying mechanism.",
+      "premises": [
+        "A legacy intranet still relies on a memorized credential stored as a verifier",
+        "A bank sends a six-digit code to a phone during sign-in",
+        "An administrator inserts a physical security key and touches it to approve login",
+        "A consumer signs in with a synced passkey unlocked by Face ID"
+      ],
+      "responses": [
+        "Shared-secret authentication that remains vulnerable to reuse and phishing",
+        "Out-of-band one-time code that is still exposed to SIM-swapping or real-time proxy attacks",
+        "Origin-bound asymmetric cryptography requiring physical possession",
+        "Public-key credential that can sync across devices while staying resistant to phishing"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Passwords remain shared secrets, SMS codes are still interceptable or proxyable, hardware keys use possession plus asymmetric cryptography, and passkeys preserve the public-key model while improving usability through device sync.",
+      "tags": [
+        "passwords",
+        "sms-otp",
+        "hardware-keys",
+        "passkeys"
+      ],
+      "references": [
+        "Authentication Types",
+        "Evolution of Digital Identity"
+      ]
+    },
+    {
+      "id": "auth-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A SaaS HR platform now has hundreds of narrowly tailored roles, and auditors can no longer explain why contractors retained payroll-edit permissions after changing departments.",
+      "prompt": "Which diagnosis best explains the core authorization failure?",
+      "options": [
+        "Role explosion has made RBAC brittle, overlapping, and hard to audit",
+        "PKCE verifier leakage is causing privilege escalation across departments",
+        "ReBAC cannot model reporting hierarchies in enterprise systems",
+        "WebAuthn is incompatible with HR applications that use approval workflows"
+      ],
+      "correctAnswer": 0,
+      "explanation": "This is the classic RBAC scaling failure known as role explosion. When too many exception roles accumulate, users often inherit overlapping permissions that become difficult to review and revoke cleanly.",
+      "tags": [
+        "rbac",
+        "role-explosion",
+        "auditing",
+        "enterprise-security"
+      ],
+      "references": [
+        "Authorization Models",
+        "Evolution of Digital Identity"
+      ]
+    },
+    {
+      "id": "auth-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A payroll export policy says finance staff may read classified reports only from managed devices during business hours and only when they request the export action.",
+      "prompt": "Which inputs belong in an ABAC decision for that policy?",
+      "options": [
+        "The user's department claim",
+        "The report's classification level",
+        "The requested action such as read or export",
+        "Environmental context such as time and managed-device status",
+        "The color of the employee's laptop sticker"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "ABAC evaluates user, resource, action, and environmental attributes. Irrelevant trivia that is not part of policy logic should not influence the decision engine.",
+      "tags": [
+        "abac",
+        "policy-engine",
+        "context-aware-access",
+        "attributes"
+      ],
+      "references": [
+        "Authorization Models"
+      ]
+    },
+    {
+      "id": "auth-q08",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A collaboration tool wants a director to automatically see documents created by direct reports without manually assigning an exception role every time the org chart changes.",
+      "prompt": "Which authorization model fits that requirement best?",
+      "options": [
+        "Relationship-Based Access Control",
+        "Role-Based Access Control",
+        "Attribute-Based Access Control",
+        "Access Control Lists managed per document owner"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The access rule depends on the relationship between entities, not just a static role or a simple attribute set. ReBAC is designed for exactly these graph-like, relationship-driven permissions.",
+      "tags": [
+        "rebac",
+        "hierarchies",
+        "document-access",
+        "relationships"
+      ],
+      "references": [
+        "Authorization Models"
+      ]
+    },
+    {
+      "id": "auth-q09",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A network team argues that requests originating from the corporate office should bypass expensive policy checks because the user already authenticated earlier in the day.",
+      "prompt": "True or false: in a Zero Trust architecture, internal network location can substitute for per-request authorization once the session is established.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Zero Trust explicitly rejects the idea of a permanently trusted network zone. Each interaction must be strongly authenticated and authorized using current trust context rather than location alone.",
+      "tags": [
+        "zero-trust",
+        "continuous-authorization",
+        "network-security",
+        "least-privilege"
+      ],
+      "references": [
+        "Authorization Models",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q10",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A frontend engineer wants to use an OAuth 2.0 access token as the application's login proof because adding OIDC feels redundant.",
+      "prompt": "What is the precise architectural objection to that plan?",
+      "options": [
+        "An access token expresses delegated API authority, not a relying-party proof of who the user is",
+        "OAuth 2.0 cannot issue any tokens over HTTPS",
+        "Access tokens are always XML assertions designed only for SAML bridges",
+        "OAuth 2.0 requires hardware keys for every confidential client"
+      ],
+      "correctAnswer": 0,
+      "explanation": "OAuth 2.0 is primarily about delegated authorization. OIDC adds standardized identity semantics, especially the ID token, so the relying party can verify who authenticated.",
+      "tags": [
+        "oauth2",
+        "oidc",
+        "identity",
+        "authorization"
+      ],
+      "references": [
+        "OAuth 2.0 & OpenID Connect",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q11",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A mobile team is adding social sign-in and wants to understand which capabilities make the solution OpenID Connect instead of plain OAuth 2.0.",
+      "prompt": "Which additions are characteristic of OIDC?",
+      "options": [
+        "Issuing a signed ID token that carries identity claims",
+        "Defining a standard /userinfo endpoint",
+        "Using the openid scope and standardized claims model",
+        "Replacing HTTPS bearer tokens with custom per-request signatures",
+        "Eliminating access tokens entirely from the flow"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "OIDC layers identity on top of OAuth 2.0 by standardizing identity claims, the ID token, and related endpoints. It does not eliminate access tokens or replace transport security with bespoke signature schemes.",
+      "tags": [
+        "oidc",
+        "id-token",
+        "userinfo",
+        "claims"
+      ],
+      "references": [
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q12",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "You are walking a team through the correct Authorization Code Flow with PKCE for a public client that cannot safely embed a client secret.",
+      "prompt": "Arrange the PKCE flow from the first client action to token issuance.",
+      "items": [
+        "The client generates a code_verifier and derives a code_challenge",
+        "The client redirects the user to the authorization endpoint with the code_challenge",
+        "The user authenticates and consents at the identity provider",
+        "The identity provider redirects back with a short-lived authorization code",
+        "The client sends the authorization code and original code_verifier to the token endpoint",
+        "The identity provider validates the verifier against the stored challenge and returns tokens"
+      ],
+      "correctAnswer": [
+        "The client generates a code_verifier and derives a code_challenge",
+        "The client redirects the user to the authorization endpoint with the code_challenge",
+        "The user authenticates and consents at the identity provider",
+        "The identity provider redirects back with a short-lived authorization code",
+        "The client sends the authorization code and original code_verifier to the token endpoint",
+        "The identity provider validates the verifier against the stored challenge and returns tokens"
+      ],
+      "explanation": "PKCE works because the code challenge is established before the redirect, and the original verifier is presented only during the token exchange. Token issuance must wait until the identity provider confirms that mathematical relationship.",
+      "tags": [
+        "pkce",
+        "authorization-code-flow",
+        "public-clients",
+        "token-exchange"
+      ],
+      "references": [
+        "PKCE Authorization Flow",
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q13",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A malicious app on the same device intercepts the redirect URI and steals the authorization code returned to a mobile client.",
+      "prompt": "Why does the attack still fail if PKCE is implemented correctly?",
+      "options": [
+        "The intercepted code can be redeemed only by a client that proves possession of the original code_verifier",
+        "The authorization code already contains the user's password hash",
+        "The redirect URI alone is enough to authenticate the client without any additional proof",
+        "The identity provider embeds the access token directly in the browser history entry"
+      ],
+      "correctAnswer": 0,
+      "explanation": "PKCE neutralizes code interception because the code alone is insufficient. The attacker also needs the original verifier whose hash matches the previously stored challenge.",
+      "tags": [
+        "pkce",
+        "code-interception",
+        "mobile-security",
+        "oauth2"
+      ],
+      "references": [
+        "PKCE Authorization Flow"
+      ]
+    },
+    {
+      "id": "auth-q14",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A SPA security review rejects localStorage token handling and asks whether a Backend for Frontend redesign would materially improve the threat model.",
+      "prompt": "Which properties are true if the BFF pattern is implemented correctly?",
+      "options": [
+        "OAuth and OIDC tokens remain on the server side rather than inside browser storage",
+        "The browser receives a session cookie that can be marked HttpOnly, Secure, and SameSite",
+        "The BFF can inject the access token when proxying requests to downstream APIs",
+        "The SPA must still read the raw access token from localStorage for every protected API call",
+        "The pattern reduces token theft from XSS because injected scripts cannot read HttpOnly cookies or server-side token caches"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "explanation": "The BFF shifts bearer-token handling away from the browser and into a confidential backend. The browser works with a hardened session cookie instead, which substantially lowers token-exfiltration risk from XSS.",
+      "tags": [
+        "bff",
+        "xss",
+        "session-cookies",
+        "token-handling"
+      ],
+      "references": [
+        "BFF Pattern",
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q15",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "An engineering manager wants every actor in the BFF architecture mapped to its exact responsibility before approving the redesign.",
+      "prompt": "Match each actor to its primary responsibility.",
+      "premises": [
+        "SPA browser",
+        "BFF service",
+        "Identity provider",
+        "Protected microservice API"
+      ],
+      "responses": [
+        "Sends application requests while automatically attaching the session cookie",
+        "Performs the confidential OIDC flow, caches tokens, and proxies outbound API calls",
+        "Authenticates the user and issues tokens to the confidential client",
+        "Validates the bearer token presented by the BFF and returns protected data"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "The browser never handles the raw bearer token in a proper BFF model. The BFF owns the confidential client behavior, the identity provider authenticates and issues tokens, and the protected API validates the token on each request.",
+      "tags": [
+        "bff",
+        "oidc",
+        "sequence-flow",
+        "responsibilities"
+      ],
+      "references": [
+        "BFF Pattern",
+        "Visualization"
+      ]
+    },
+    {
+      "id": "auth-q16",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A public SPA loads third-party analytics scripts, and the security team wants bearer tokens kept completely out of reach of any injected browser JavaScript.",
+      "prompt": "Which architecture most directly satisfies that requirement without abandoning OIDC?",
+      "options": [
+        "Introduce a Backend for Frontend that owns the tokens and uses a secure session cookie with the browser",
+        "Keep the SPA as a public client and store the access token in localStorage with a short expiration",
+        "Use the Implicit Flow so the browser receives the token earlier in the redirect",
+        "Move the access token into sessionStorage and rely on CSP alone"
+      ],
+      "correctAnswer": 0,
+      "explanation": "The BFF pattern is specifically designed to remove raw tokens from browser storage and keep them server-side. That changes the exposure model in a way localStorage or sessionStorage cannot.",
+      "tags": [
+        "bff",
+        "spa-security",
+        "token-exposure",
+        "oidc"
+      ],
+      "references": [
+        "BFF Pattern",
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q17",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A multi-tenant billing API returned Tenant B invoices after a Tenant A user manipulated a path parameter, even though the user had authenticated successfully.",
+      "prompt": "Which control should have been mandatory before the microservice read any invoice data?",
+      "options": [
+        "Enforce the tenant claim from the JWT against the requested resource context on every request",
+        "Trust the tenant selected in the URL if the session cookie is valid",
+        "Hide other tenants from the frontend navigation and skip server-side checks",
+        "Issue one shared administrative token to the gateway and let services infer tenant after the query"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Successful authentication does not imply correct tenant authorization. The service must validate that the token's tenant context matches the resource being accessed before any data is returned.",
+      "tags": [
+        "multi-tenant",
+        "tenant-isolation",
+        "jwt-claims",
+        "authorization"
+      ],
+      "references": [
+        "Authorization Models",
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q18",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "An AI assistant needs to summarize a signed-in executive's private messages without receiving broad, long-lived permissions across the whole organization.",
+      "prompt": "Which statements describe the correct token-exchange architecture for that agent?",
+      "options": [
+        "The human user first authenticates through OIDC so there is a verifiable subject context",
+        "The AI agent authenticates itself when requesting the exchanged token",
+        "The authorization server mints a short-lived token with tightly constrained scope for the requested task",
+        "Client Credentials alone preserve the end user's identity across trust domains",
+        "The exchanged token should usually be broader than the user's original permission set to avoid agent retries"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "For an agent acting on behalf of a user, token exchange preserves human identity context while still authenticating the machine actor. The resulting token should be narrow, task-specific, and short-lived rather than broad or user-agnostic.",
+      "tags": [
+        "ai-agents",
+        "token-exchange",
+        "least-privilege",
+        "delegation"
+      ],
+      "references": [
+        "AI Agent Authentication",
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q19",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A background reconciliation bot runs overnight and obtains its access token through the Client Credentials grant.",
+      "prompt": "True or false: that token should be interpreted as representing the bot's own identity rather than a delegated human user's identity.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Client Credentials identifies the client application or service itself. It does not preserve a human subject unless a separate delegation or token-exchange mechanism is involved.",
+      "tags": [
+        "client-credentials",
+        "service-identity",
+        "machine-to-machine",
+        "oauth2"
+      ],
+      "references": [
+        "AI Agent Authentication"
+      ]
+    },
+    {
+      "id": "auth-q20",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A CISO wants each access-control approach mapped to the type of policy problem it handles best before approving a platform-wide redesign.",
+      "prompt": "Match each scenario to the authorization model that fits it best.",
+      "premises": [
+        "Finance staff may export reports only during business hours from managed devices",
+        "Every warehouse picker needs the same handheld-scanner permissions",
+        "A director can access documents owned by their direct reports",
+        "Every request to an internal admin console is re-evaluated using device posture and least privilege"
+      ],
+      "responses": [
+        "ABAC",
+        "RBAC",
+        "ReBAC",
+        "Zero Trust"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "ABAC fits rich context-driven policies, RBAC works well for stable job functions, ReBAC models relationship-driven access, and Zero Trust requires ongoing verification and authorization for each interaction.",
+      "tags": [
+        "authorization-models",
+        "abac",
+        "rbac",
+        "rebac",
+        "zero-trust"
+      ],
+      "references": [
+        "Authorization Models"
+      ]
+    },
+    {
+      "id": "auth-q21",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A team is building a modern mobile app and browser-based SPA and wants federated sign-in with developer-friendly JSON-based identity semantics.",
+      "prompt": "Which protocol is the best fit for that requirement?",
+      "options": [
+        "OpenID Connect",
+        "SAML 2.0",
+        "OpenConnect",
+        "OAuth 1.0"
+      ],
+      "correctAnswer": 0,
+      "explanation": "OIDC is the modern identity layer built on OAuth 2.0 and is well suited to web, mobile, and SPA clients. SAML remains common in legacy enterprise SSO, but its XML-heavy model is less natural for modern app clients.",
+      "tags": [
+        "oidc",
+        "saml",
+        "spa",
+        "mobile-auth"
+      ],
+      "references": [
+        "OAuth 2.0 & OpenID Connect",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q22",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A network engineer says the same protocol stack can solve both remote VPN connectivity and browser-based identity federation because 'OpenConnect and OpenID Connect are basically the same thing.'",
+      "prompt": "Which correction is accurate?",
+      "options": [
+        "OpenConnect is a VPN protocol suite, while OpenID Connect is an application-layer identity protocol",
+        "OpenConnect is the mobile version of OIDC and differs only in token format",
+        "OpenID Connect is used only for network tunneling, not user authentication",
+        "Both terms describe the same protocol, but one is the legacy name"
+      ],
+      "correctAnswer": 0,
+      "explanation": "OpenConnect is used for secure network tunneling and VPN interoperability. OpenID Connect is an identity layer for authentication built on top of OAuth 2.0.",
+      "tags": [
+        "openconnect",
+        "openid-connect",
+        "protocols",
+        "federation"
+      ],
+      "references": [
+        "OAuth 2.0 & OpenID Connect",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q23",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "An enterprise wants phishing-resistant admin sign-in for privileged operators and is choosing which factors should be approved as the strategic standard.",
+      "prompt": "Which options align with that phishing-resistant goal?",
+      "options": [
+        "FIDO2 hardware security keys",
+        "WebAuthn passkeys",
+        "SMS one-time passwords",
+        "TOTP authenticator app codes",
+        "Password plus security question"
+      ],
+      "correctAnswer": [
+        0,
+        1
+      ],
+      "explanation": "Hardware FIDO keys and passkeys rely on asymmetric cryptography and origin binding, which makes them far more resistant to phishing than code-based or knowledge-based factors.",
+      "tags": [
+        "phishing-resistance",
+        "fido2",
+        "passkeys",
+        "admin-security"
+      ],
+      "references": [
+        "Authentication Types",
+        "Evolution of Digital Identity"
+      ]
+    },
+    {
+      "id": "auth-q24",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A BFF implementation is ready for production, but the security review finds the browser session cookie is missing important hardening attributes.",
+      "prompt": "Which cookie attribute set best matches the guidance for a secure BFF session?",
+      "options": [
+        "HttpOnly, Secure, and SameSite",
+        "Public, Cacheable, and Path=/",
+        "HttpOnly only",
+        "Base64-encoded in localStorage"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A BFF session cookie should be protected from client-side JavaScript, restricted to secure transport, and hardened against cross-site misuse. HttpOnly, Secure, and SameSite are the essential baseline attributes described for that pattern.",
+      "tags": [
+        "cookies",
+        "bff",
+        "session-security",
+        "browser-hardening"
+      ],
+      "references": [
+        "BFF Pattern"
+      ]
+    },
+    {
+      "id": "auth-q25",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A relying party needs standardized claims such as subject identifier and authentication time so it can establish a user's signed-in identity without inventing a custom profile contract.",
+      "prompt": "Which artifact should the client validate or consume for those standardized identity claims?",
+      "options": [
+        "The access token",
+        "The ID token",
+        "The code_verifier",
+        "The SAML metadata document"
+      ],
+      "correctAnswer": 1,
+      "explanation": "OIDC defines the ID token specifically for verifiable identity claims. Access tokens are for resource authorization, while the code_verifier is a PKCE proof artifact rather than an identity container.",
+      "tags": [
+        "id-token",
+        "claims",
+        "oidc",
+        "identity-proofs"
+      ],
+      "references": [
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q26",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A native mobile app cannot safely embed a static client secret because the binary can be inspected or decompiled by adversaries.",
+      "prompt": "Which flow is the correct modern choice for that client?",
+      "options": [
+        "Authorization Code Flow with PKCE",
+        "Client Credentials",
+        "Implicit Flow",
+        "Resource Owner Password Credentials"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Public clients such as native mobile apps should use the Authorization Code Flow with PKCE because PKCE provides proof-of-possession for the token exchange without relying on a static client secret.",
+      "tags": [
+        "pkce",
+        "native-apps",
+        "public-clients",
+        "oauth2"
+      ],
+      "references": [
+        "PKCE Authorization Flow",
+        "OAuth 2.0 & OpenID Connect"
+      ]
+    },
+    {
+      "id": "auth-q27",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A company is redesigning internal admin APIs around Zero Trust after discovering that a flat VPN was being treated as proof of safety.",
+      "prompt": "Which controls are consistent with a Zero Trust migration?",
+      "options": [
+        "Applying least-privilege permissions to every service interaction",
+        "Using micro-segmentation or software-defined perimeters to narrow lateral movement",
+        "Continuously evaluating device health and other context signals",
+        "Treating VPN presence as sufficient standing trust for the rest of the day",
+        "Authenticating and authorizing every access attempt rather than trusting location"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        4
+      ],
+      "explanation": "Zero Trust assumes nothing is trusted by default, including internal network position. It relies on least privilege, segmentation, and repeated trust evaluation instead of once-per-day perimeter checks.",
+      "tags": [
+        "zero-trust",
+        "micro-segmentation",
+        "device-posture",
+        "continuous-verification"
+      ],
+      "references": [
+        "Authorization Models",
+        "Introduction"
+      ]
+    },
+    {
+      "id": "auth-q28",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An adaptive authentication engine must decide whether to step up verification on a high-value login attempt.",
+      "prompt": "Which signal most strongly supports a risk-based step-up decision?",
+      "options": [
+        "The request comes from a familiar device fingerprint and expected IP range",
+        "The login appears to involve impossible travel and a previously unseen device fingerprint",
+        "The user logs in at the same time every Monday morning",
+        "The browser window is larger than usual on the login page"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Adaptive authentication evaluates contextual anomalies such as suspicious IP changes and unfamiliar devices. Impossible travel and a new fingerprint are strong indicators that additional verification may be warranted.",
+      "tags": [
+        "adaptive-auth",
+        "risk-based-auth",
+        "device-fingerprint",
+        "context-signals"
+      ],
+      "references": [
+        "Authentication Types",
+        "Evolution of Digital Identity"
+      ]
+    },
+    {
+      "id": "auth-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A shared SaaS platform routes employees from different customer tenants to distinct corporate identity providers before issuing tokens to the application.",
+      "prompt": "Which architectural component is doing the key federation work here?",
+      "options": [
+        "An identity broker that selects an external identity provider based on tenant context",
+        "A Backend for Frontend that stores browser session cookies",
+        "A hardware authenticator attestation service for passkey enrollment",
+        "A local TOTP seed generator inside the SPA"
+      ],
+      "correctAnswer": 0,
+      "explanation": "In multi-tenant federation, an identity broker can direct authentication to different external identity providers based on tenant context while preserving a unified application experience.",
+      "tags": [
+        "identity-broker",
+        "multi-tenant",
+        "federation",
+        "sso"
+      ],
+      "references": [
+        "OAuth 2.0 & OpenID Connect",
+        "Authorization Models"
+      ]
+    },
+    {
+      "id": "auth-q30",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An engineer drafts a Mermaid diagram for PKCE but shows the identity provider returning tokens immediately after the authorization code arrives, without any verifier validation.",
+      "prompt": "Which missing step must be inserted before token issuance for the sequence to be accurate?",
+      "options": [
+        "The identity provider hashes the received code_verifier and compares it to the stored code_challenge",
+        "The browser writes the access token to localStorage so the frontend can replay it",
+        "The user signs the access token with their biometric template",
+        "The API gateway exchanges the code for a SAML assertion"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A correct PKCE sequence must show the verifier check before token issuance. Without that comparison, the diagram omits the very control that protects public clients from intercepted authorization codes.",
+      "tags": [
+        "visualization",
+        "pkce",
+        "sequence-diagram",
+        "oauth2"
+      ],
+      "references": [
+        "Visualization",
+        "PKCE Authorization Flow"
+      ]
+    },
+    {
+      "id": "auth-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A company must support a browser SPA, a native mobile app, and an internal AI assistant that acts on behalf of signed-in employees against tenant-isolated APIs, all while minimizing token exposure.",
+      "prompt": "Which combined architecture is the strongest fit for that requirement set?",
+      "options": [
+        "Use a BFF for the SPA, Authorization Code Flow with PKCE for the mobile app, and token exchange for the AI assistant's user-scoped tasks",
+        "Store one long-lived refresh token in browser localStorage and share it with the mobile app and the AI assistant",
+        "Use the Implicit Flow for both the SPA and the mobile app, then give the AI assistant a broad Client Credentials token with admin scope",
+        "Use SAML assertions directly in browser storage for every client and let each downstream API infer tenant ownership"
+      ],
+      "correctAnswer": 0,
+      "explanation": "That combination matches each client type to the right trust model: the SPA avoids browser token exposure through a BFF, the mobile app uses PKCE because it is a public client, and the AI assistant uses narrow delegated tokens instead of broad standing privileges.",
+      "tags": [
+        "architecture",
+        "bff",
+        "pkce",
+        "ai-agents",
+        "tenant-isolation"
+      ],
+      "references": [
+        "BFF Pattern",
+        "PKCE Authorization Flow",
+        "AI Agent Authentication"
+      ]
+    }
+  ]
+}

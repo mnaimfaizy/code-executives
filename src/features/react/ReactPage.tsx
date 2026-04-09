@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 import Introduction from './components/sections/Introduction';
 import DOMFundamentals from './components/sections/DOMFundamentals';
 import VirtualDOM from './components/sections/VirtualDOM';
@@ -8,6 +9,8 @@ import Components from './components/sections/Components';
 import StateProps from './components/sections/StateProps';
 import Hooks from './components/sections/Hooks';
 import JSX from './components/sections/JSX';
+
+const Quiz = () => <ModuleQuizSection moduleId="react" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -18,6 +21,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'State & Props': StateProps,
   Hooks,
   JSX,
+  Quiz,
 };
 
 function useQuery() {

@@ -1,0 +1,841 @@
+{
+  "moduleId": "bigo",
+  "moduleTitle": "Big-O Notation",
+  "description": "Scenario-based assessment of asymptotic analysis, growth rates, tight bounds, amortized reasoning, and real-world algorithm tradeoffs.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "bigo-q01",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A ranking service is choosing between two implementations for next quarter's traffic spike. One does about 40n log n units of work, while the other does about 0.002n^2.",
+      "prompt": "Which conclusion is safest for long-term scalability?",
+      "options": [
+        "The 40n log n design is asymptotically preferable even if it is not fastest at today's smaller inputs",
+        "The 0.002n^2 design will always stay faster because its constant factor is smaller today",
+        "Both designs are the same asymptotic class because both depend on n",
+        "Big-O cannot compare these designs because one includes a decimal constant"
+      ],
+      "correctAnswer": 0,
+      "explanation": "n log n grows more slowly than n^2. Constants can delay the crossover point, but they do not change the long-run asymptotic ordering.",
+      "tags": [
+        "growth-rates",
+        "scalability",
+        "tradeoffs"
+      ],
+      "references": [
+        "Core Concepts",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q02",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A fraud-detection pipeline currently compares every incoming record against every other record to detect duplicates.",
+      "prompt": "Which proposed changes can reduce the asymptotic time complexity of duplicate detection?",
+      "options": [
+        "Sort the records once by key and then scan adjacent records",
+        "Keep the nested comparison loops but stop after the first 50 pair checks",
+        "Track seen keys in a hash set during a single pass",
+        "Run the quadratic comparison on more worker threads",
+        "Process the same pairwise comparison in batches of 10 records"
+      ],
+      "correctAnswer": [
+        0,
+        2
+      ],
+      "explanation": "Sorting followed by one pass changes the work to O(n log n), and a hash-set pass can make it O(n) average. Early stopping, batching, or fixed parallelism do not fundamentally repair quadratic worst-case growth.",
+      "tags": [
+        "hashing",
+        "sorting",
+        "optimization",
+        "real-world"
+      ],
+      "references": [
+        "Core Concepts",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q03",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "At n = 500, a high-overhead indexed implementation with O(n log n) time beats a simpler O(n) implementation because the linear version performs expensive I/O.",
+      "prompt": "True or false: because the O(n log n) implementation wins at n = 500, it is asymptotically more efficient than the O(n) implementation.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Asymptotic efficiency concerns how growth behaves as n increases, not who wins at one measured input size. A higher-overhead linear algorithm can lose at small n and still scale better overall.",
+      "tags": [
+        "benchmarking",
+        "asymptotics",
+        "tradeoffs"
+      ],
+      "references": [
+        "Introduction",
+        "Core Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q04",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "During a security review, you need to justify the complexity of code whose outer loop touches n users and whose inner loop halves a counter each time.",
+      "prompt": "Arrange the analysis steps from first to last.",
+      "items": [
+        "State the combined bound as O(n log n)",
+        "Identify that the outer loop contributes a factor of n",
+        "Determine that the halving inner loop runs O(log n) times",
+        "Multiply the loop costs because the inner work occurs for each outer iteration",
+        "Drop constant factors and lower-order terms"
+      ],
+      "correctAnswer": [
+        "Identify that the outer loop contributes a factor of n",
+        "Determine that the halving inner loop runs O(log n) times",
+        "Multiply the loop costs because the inner work occurs for each outer iteration",
+        "Drop constant factors and lower-order terms",
+        "State the combined bound as O(n log n)"
+      ],
+      "explanation": "You first isolate the cost of each loop, then multiply because the logarithmic inner work happens inside every outer iteration. After simplifying constants, the tight upper bound is O(n log n).",
+      "tags": [
+        "nested-loops",
+        "tight-bounds",
+        "analysis-workflow"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Core Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q05",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "An architecture review is mapping product tasks to their dominant asymptotic risk before traffic doubles.",
+      "prompt": "Match each workload to the most appropriate complexity class.",
+      "premises": [
+        "Scan every record in a nightly export once",
+        "Locate a customer ID in a sorted array using midpoint checks",
+        "Compare every pair of student submissions for similarity",
+        "Try every possible subset of 40 optional features"
+      ],
+      "responses": [
+        "O(n)",
+        "O(log n)",
+        "O(n^2)",
+        "O(2^n)"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "A full pass is linear, binary search is logarithmic, all-pairs comparison is quadratic, and exhaustive subset exploration is exponential.",
+      "tags": [
+        "complexity-classes",
+        "workloads",
+        "mapping"
+      ],
+      "references": [
+        "Common Complexities",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q06",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A mobile analytics SDK appends events into a dynamic array and sees rare latency spikes whenever the buffer grows.",
+      "prompt": "Which characterization of append cost is most accurate over a long sequence of appends?",
+      "options": [
+        "Each append is worst-case O(1)",
+        "Each append is Theta(log n) because capacity doubles",
+        "Append is O(1) amortized even though some individual appends are O(n)",
+        "Append is always O(n) because resizing eventually happens"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Doubling arrays occasionally pay O(n) to copy elements during resize, but those expensive operations are spread across many cheap appends, giving O(1) amortized cost.",
+      "tags": [
+        "amortized-analysis",
+        "dynamic-arrays",
+        "resizing"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q07",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A data engineering team is reviewing several candidate cost formulas from prototype ETL jobs.",
+      "prompt": "Which candidate runtimes all simplify to O(n^2)?",
+      "options": [
+        "n^2 + 200n",
+        "7n log n + n",
+        "0.5n^2 + n log n",
+        "n(n - 1)(n - 2)",
+        "3n^2 + 10"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        4
+      ],
+      "explanation": "Only expressions with a dominant quadratic term simplify to O(n^2). n(n - 1)(n - 2) is cubic, and 7n log n + n is O(n log n).",
+      "tags": [
+        "dominant-term",
+        "simplification",
+        "algebra"
+      ],
+      "references": [
+        "Common Complexities",
+        "Algorithm Analysis"
+      ]
+    },
+    {
+      "id": "bigo-q08",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "An incident review shows a recursive search procedure branching into two calls on n - 1 remaining candidates, with no memoization and only constant extra work per call.",
+      "prompt": "What is the best worst-case upper bound for the running time?",
+      "options": [
+        "O(n log n)",
+        "O(n^2)",
+        "O(2^n)",
+        "O(n!)"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Branching into two calls of size n - 1 roughly doubles the amount of work at each level, producing exponential growth on the order of O(2^n). O(n!) would require even faster branching growth.",
+      "tags": [
+        "recursion",
+        "exponential-time",
+        "search"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Algorithm Analysis"
+      ]
+    },
+    {
+      "id": "bigo-q09",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A batch job makes one full pass to validate n rows and a second separate full pass to compute totals.",
+      "prompt": "True or false: two separate full passes over n records should be classified as O(n^2).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Sequential passes add rather than multiply: O(n) + O(n) = O(n). Two loops are quadratic only when one is nested inside the other.",
+      "tags": [
+        "sequential-loops",
+        "addition-rule",
+        "analysis"
+      ],
+      "references": [
+        "Introduction",
+        "Core Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q10",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A catalog service already stores products in sorted memory and needs to answer a single lookup by ID with the lowest asymptotic query cost.",
+      "prompt": "Which asymptotic lookup time is the best fit if the service uses binary search on the existing sorted array?",
+      "options": [
+        "O(1)",
+        "O(log n)",
+        "O(n log n)",
+        "O(sqrt n)"
+      ],
+      "correctAnswer": 1,
+      "explanation": "With the array already sorted, binary search halves the remaining search interval each step, so lookup is O(log n). The sorting cost is separate if it has not already been paid.",
+      "tags": [
+        "binary-search",
+        "logarithmic-time",
+        "sorted-data"
+      ],
+      "references": [
+        "Common Complexities",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q11",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A graph analytics service uses BFS on adjacency lists, and a reviewer tries to oversimplify the complexity for documentation.",
+      "prompt": "Which statements are correct about the asymptotic cost of BFS on an adjacency-list graph?",
+      "options": [
+        "Without extra assumptions, the traversal cost is O(n + m)",
+        "It is always safe to replace O(n + m) with O(n) because every graph has at most n edges",
+        "For dense graphs, the same bound can behave like O(n^2)",
+        "For trees, where m = n - 1, the bound simplifies to O(n)",
+        "The queue's maximum frontier size never matters for space complexity"
+      ],
+      "correctAnswer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "BFS on adjacency lists processes each vertex and edge at most once, hence O(n + m). For dense graphs, m can be Theta(n^2), while tree inputs let the same expression simplify to O(n).",
+      "tags": [
+        "graphs",
+        "bfs",
+        "sparse-vs-dense"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q12",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A memory-constrained service traverses a very deep but narrow tree with recursive DFS.",
+      "prompt": "If the tree degenerates into a chain of n nodes, what is the worst-case auxiliary space from the call stack?",
+      "options": [
+        "O(1)",
+        "O(log n)",
+        "O(n)",
+        "O(n^2)"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Recursive DFS uses stack space proportional to traversal depth. In a chain-shaped tree, the height is n, so auxiliary stack space becomes O(n).",
+      "tags": [
+        "space-complexity",
+        "dfs",
+        "recursion"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q13",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "An autoscaling dashboard ranks candidate algorithms by long-run growth so the team can pick the safest design before launch.",
+      "prompt": "Order these complexity classes from slowest-growing to fastest-growing.",
+      "items": [
+        "O(n log n)",
+        "O(1)",
+        "O(2^n)",
+        "O(log n)",
+        "O(n)"
+      ],
+      "correctAnswer": [
+        "O(1)",
+        "O(log n)",
+        "O(n)",
+        "O(n log n)",
+        "O(2^n)"
+      ],
+      "explanation": "Constant growth is smallest, followed by logarithmic, then linear, then n log n, and finally exponential. The ranking reflects asymptotic growth, not current constants.",
+      "tags": [
+        "growth-rates",
+        "ordering",
+        "common-complexities"
+      ],
+      "references": [
+        "Common Complexities",
+        "Gamification Hub"
+      ]
+    },
+    {
+      "id": "bigo-q14",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A senior engineer is teaching new hires to recognize recurrence patterns quickly during design reviews.",
+      "prompt": "Match each recurrence-style description to the most appropriate complexity class.",
+      "premises": [
+        "Repeatedly halve the remaining search interval and do constant work per step",
+        "Split into two halves, solve both, and linearly combine the results",
+        "Shrink the problem by one element and do constant extra work",
+        "Branch into two highly overlapping recursive calls without caching"
+      ],
+      "responses": [
+        "O(log n)",
+        "O(n log n)",
+        "O(n)",
+        "O(2^n)"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Halving gives logarithmic time, divide-and-conquer with linear merge gives n log n, decrement-by-one gives linear time, and uncontrolled repeated branching produces exponential growth.",
+      "tags": [
+        "recurrences",
+        "divide-and-conquer",
+        "matching"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q15",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A protocol parser loops over n packets, and for each packet it checks exactly 64 fixed flag bits.",
+      "prompt": "What is the tight time complexity of the parser?",
+      "options": [
+        "O(1)",
+        "O(log n)",
+        "O(n)",
+        "O(n^2)"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The inner loop is bounded by a fixed constant 64, so the total work is 64n, which simplifies to Theta(n). Fixed-width work does not create a second factor of n.",
+      "tags": [
+        "tight-bounds",
+        "constants",
+        "protocols"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Core Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q16",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "During interview practice, you need to explain why a two-pointer strategy can beat a naive quadratic search on a sorted list.",
+      "prompt": "Which properties make the classic two-pointer approach run in O(n) time instead of O(n^2)?",
+      "options": [
+        "The input order lets you reason monotonically about whether to move left or right",
+        "Each pointer only moves inward and never resets",
+        "Every comparison gives enough information to eliminate one candidate pair direction",
+        "The method requires hashing every element before the scan begins",
+        "The method still performs an inner loop across all remaining elements on each step"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2
+      ],
+      "explanation": "The O(n) two-pointer method relies on monotonic movement: each comparison discards one direction, and each pointer advances at most n times total. Adding hashing or nested rescans breaks the point of the technique.",
+      "tags": [
+        "two-pointers",
+        "linear-time",
+        "practice"
+      ],
+      "references": [
+        "Practice Challenges",
+        "Algorithm Analysis"
+      ]
+    },
+    {
+      "id": "bigo-q17",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A CDN invalidation service inserts expirations continuously and must repeatedly retrieve the smallest expiry next.",
+      "prompt": "Which core structure gives the best asymptotic fit for inserts plus repeated extract-min operations?",
+      "options": [
+        "Binary min-heap",
+        "Resorted dynamic array after every insert",
+        "Unordered hash map with periodic full scans",
+        "Linked list kept in insertion order"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A binary min-heap supports O(log n) insert and O(log n) extract-min while keeping O(1) access to the smallest item. The other options require repeated resorting or full scans.",
+      "tags": [
+        "heaps",
+        "priority-queues",
+        "scheduling"
+      ],
+      "references": [
+        "Real-World Applications",
+        "Common Complexities"
+      ]
+    },
+    {
+      "id": "bigo-q18",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "A reviewer proves only that a cleanup algorithm runs in O(n) time and stops there.",
+      "prompt": "True or false: that upper bound alone is enough to conclude the algorithm is Theta(n).",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "O(n) only states an upper bound. Without a matching lower bound, the algorithm could still be Theta(log n), Theta(1), or some other smaller class that satisfies O(n).",
+      "tags": [
+        "big-theta",
+        "upper-bounds",
+        "notation"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Core Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q19",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A ranking pipeline first deduplicates n items with a hash set in O(n) average time, then sorts the surviving k items, where k can be as large as n.",
+      "prompt": "What is the tightest worst-case upper bound in terms of n for the whole pipeline?",
+      "options": [
+        "O(n)",
+        "O(log n)",
+        "O(n log n)",
+        "O(n^2)"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The total work is O(n + k log k). In the worst case k = n, so the pipeline simplifies to O(n log n).",
+      "tags": [
+        "pipeline-analysis",
+        "sorting",
+        "worst-case"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q20",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A performance review covers four optimization strategies and asks what kind of asymptotic change each one can realistically produce.",
+      "prompt": "Match each optimization to its most accurate asymptotic effect.",
+      "premises": [
+        "Memoize overlapping states in a Fibonacci-like pricing model",
+        "Replace repeated linear membership checks with a hash set",
+        "Split a quadratic image comparison job across 8 workers",
+        "Sort a static table once and then answer many point lookups with binary search"
+      ],
+      "responses": [
+        "Can reduce exponential work to linear or polynomial by reusing solved states",
+        "Often changes repeated membership checks from O(n) to O(1) average",
+        "Improves wall-clock time through parallelism but does not change the asymptotic class",
+        "Pays O(n log n) preprocessing to enable O(log n) queries"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Memoization changes how many unique states are explored, hash sets cut repeated lookup cost, fixed parallelism changes constants rather than class, and presorting trades upfront work for cheaper repeated queries.",
+      "tags": [
+        "memoization",
+        "hash-sets",
+        "preprocessing",
+        "parallelism"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Real-World Applications"
+      ]
+    },
+    {
+      "id": "bigo-q21",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "In a design review, one engineer proves a merge routine can never do better than c1 n log n comparisons in the worst case, and another proves it never exceeds c2 n log n.",
+      "prompt": "Which notation best summarizes the routine's tight asymptotic growth?",
+      "options": [
+        "O(n log n)",
+        "Omega(n log n)",
+        "Theta(n log n)",
+        "O(n^2)"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Theta notation is used when matching asymptotic upper and lower bounds are both established. Having O(n log n) and Omega(n log n) means the tight class is Theta(n log n).",
+      "tags": [
+        "theta-notation",
+        "tight-bounds",
+        "proofs"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Core Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q22",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "The interactive playground is showing several code patterns, and you need to identify the ones that are logarithmic in n.",
+      "prompt": "Which patterns have logarithmic time complexity with respect to n?",
+      "options": [
+        "Repeatedly halve n until it becomes 1",
+        "Binary search on a sorted array",
+        "Scan an unsorted array to find the maximum",
+        "Insert one element into a binary heap",
+        "Run merge sort on the entire array"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Halving loops, binary search, and heap insertion all grow logarithmically with input size. A full scan is linear, and merge sort over an entire array is O(n log n).",
+      "tags": [
+        "logarithmic-time",
+        "interactive-playground",
+        "patterns"
+      ],
+      "references": [
+        "Interactive Playground",
+        "Common Complexities"
+      ]
+    },
+    {
+      "id": "bigo-q23",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A retrospective is documenting why append-heavy behavior in a dynamic array still scales well in the interactive playground.",
+      "prompt": "Order the reasoning steps that justify O(1) amortized append time.",
+      "items": [
+        "Conclude the average append cost is O(1) amortized",
+        "Notice that most appends only write the new element",
+        "Add in the occasional resize operations that copy existing elements",
+        "Sum the copied elements across doublings as a geometric series",
+        "Divide total work by the number of appends"
+      ],
+      "correctAnswer": [
+        "Notice that most appends only write the new element",
+        "Add in the occasional resize operations that copy existing elements",
+        "Sum the copied elements across doublings as a geometric series",
+        "Divide total work by the number of appends",
+        "Conclude the average append cost is O(1) amortized"
+      ],
+      "explanation": "Most appends are cheap, resizes are occasional, and the copied elements across repeated doublings form a geometric series. Dividing total work by the number of appends yields O(1) amortized cost.",
+      "tags": [
+        "amortized-analysis",
+        "geometric-series",
+        "dynamic-arrays"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Interactive Playground"
+      ]
+    },
+    {
+      "id": "bigo-q24",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A recommendation service is comparing algorithm A with O(n log n) growth to algorithm B with O(n^1.1) growth for very large future datasets.",
+      "prompt": "Which asymptotic statement is correct?",
+      "options": [
+        "O(n^1.1) eventually grows more slowly than O(n log n)",
+        "O(n log n) eventually grows more slowly than O(n^1.1)",
+        "They are asymptotically equivalent",
+        "The comparison can be decided only by benchmark constants"
+      ],
+      "correctAnswer": 1,
+      "explanation": "n^1.1 equals n multiplied by n^0.1, and n^0.1 eventually outgrows log n. That means n^1.1 ultimately grows faster than n log n, so O(n log n) is asymptotically better.",
+      "tags": [
+        "growth-rates",
+        "n-log-n",
+        "polynomials"
+      ],
+      "references": [
+        "Common Complexities",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q25",
+      "type": "true-false",
+      "difficulty": "expert",
+      "scenario": "An operations team measures runtime at one fixed input size and wants to declare the slower implementation has the worse Big-O class immediately.",
+      "prompt": "True or false: one benchmark measurement at a single n is enough to determine an algorithm's Big-O class reliably.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Big-O is about how work grows as input size changes. A single benchmark point cannot separate asymptotic behavior from constants, cache effects, or measurement noise.",
+      "tags": [
+        "benchmarking",
+        "algorithm-analysis",
+        "measurement"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Gamification Hub"
+      ]
+    },
+    {
+      "id": "bigo-q26",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A product team is categorizing the dominant complexity of several features before setting performance budgets.",
+      "prompt": "Match each feature to the most appropriate asymptotic expectation.",
+      "premises": [
+        "Autocomplete walks each character of the query down a trie",
+        "A billing export visits each invoice exactly once",
+        "A moderation tool computes pairwise similarity for every pair of n documents",
+        "A release manager tests every combination of n optional flags"
+      ],
+      "responses": [
+        "O(k) in the query length",
+        "O(n)",
+        "O(n^2)",
+        "O(2^n)"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "explanation": "Trie lookup depends on query length k, a full export is linear in the number of records, all-pairs comparison is quadratic, and exhaustive feature combinations are exponential.",
+      "tags": [
+        "tries",
+        "quadratic",
+        "exponential",
+        "applications"
+      ],
+      "references": [
+        "Real-World Applications",
+        "Common Complexities"
+      ]
+    },
+    {
+      "id": "bigo-q27",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "During code review, an engineer claims a loop that starts at 1 and doubles i until i >= n should be considered linear because i eventually reaches n.",
+      "prompt": "If the loop does constant work each iteration, what is the time complexity?",
+      "options": [
+        "O(log n)",
+        "O(n)",
+        "O(sqrt n)",
+        "O(1)"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Doubling i reaches n after about log2 n iterations. With constant work per iteration, the total time is O(log n).",
+      "tags": [
+        "logarithmic-time",
+        "loops",
+        "code-review"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Interactive Playground"
+      ]
+    },
+    {
+      "id": "bigo-q28",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team is evaluating whether memoization will meaningfully reduce the runtime of a recursive solver before shipping it.",
+      "prompt": "Which conditions must hold for memoization to reduce asymptotic work significantly?",
+      "options": [
+        "Many calls revisit the same logical subproblem",
+        "Each subproblem can be identified with a stable cache key",
+        "Every recursive branch produces a completely unique state",
+        "The work per cached state remains manageable once the cache is introduced",
+        "The cache is cleared before sibling branches can reuse results"
+      ],
+      "correctAnswer": [
+        0,
+        1,
+        3
+      ],
+      "explanation": "Memoization helps only when subproblems repeat and can be keyed so cached results are reusable. If every state is unique or the cache is cleared before reuse, the asymptotic benefit disappears.",
+      "tags": [
+        "memoization",
+        "dynamic-programming",
+        "state-space"
+      ],
+      "references": [
+        "Advanced Concepts",
+        "Practice Challenges"
+      ]
+    },
+    {
+      "id": "bigo-q29",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A shard reprocessor handles n items in round one, then n/2, then n/4, then n/8, and continues until no items remain.",
+      "prompt": "What tight bound best matches the total work across all rounds?",
+      "options": [
+        "O(log n)",
+        "O(n)",
+        "O(n log n)",
+        "O(n^2)"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The total work forms the geometric series n + n/2 + n/4 + ..., which is bounded by 2n. That makes the tight bound O(n).",
+      "tags": [
+        "geometric-series",
+        "aggregate-analysis",
+        "tight-bounds"
+      ],
+      "references": [
+        "Algorithm Analysis",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q30",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A team rewrites a recursive divide-and-conquer routine iteratively and assumes the asymptotic time class must improve.",
+      "prompt": "True or false: rewriting a recursive algorithm iteratively automatically improves its asymptotic time complexity.",
+      "options": [
+        "True",
+        "False"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Changing recursion to iteration may reduce call-stack usage or constant overhead, but it does not automatically change how total work grows with n.",
+      "tags": [
+        "iteration-vs-recursion",
+        "time-complexity",
+        "refactoring"
+      ],
+      "references": [
+        "Core Concepts",
+        "Advanced Concepts"
+      ]
+    },
+    {
+      "id": "bigo-q31",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "The gamification hub shows algorithm X with O(n^2) time beating algorithm Y with O(n log n) on today's benchmark at n = 1000.",
+      "prompt": "Which conclusion is most defensible?",
+      "options": [
+        "X is asymptotically better because it wins on the current benchmark",
+        "Y can still be the asymptotically better choice even if X is faster at today's scale",
+        "Cache effects make asymptotic analysis irrelevant",
+        "Both algorithms have the same class because both compare elements"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Current benchmark wins do not override asymptotic growth. An O(n^2) algorithm can beat O(n log n) at small n, but the lower-growth algorithm is usually the safer long-run scaling choice.",
+      "tags": [
+        "benchmarking",
+        "gamification",
+        "scaling-decisions"
+      ],
+      "references": [
+        "Gamification Hub",
+        "Real-World Applications"
+      ]
+    }
+  ]
+}

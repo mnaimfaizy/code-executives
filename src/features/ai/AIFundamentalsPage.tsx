@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load section components for better performance
 import Introduction from './components/sections/Introduction';
@@ -13,6 +14,7 @@ const Generalization = React.lazy(() => import('./components/sections/Generaliza
 const TrainingVsInference = React.lazy(() => import('./components/sections/TrainingVsInference'));
 const WordEmbeddings = React.lazy(() => import('./components/sections/WordEmbeddings'));
 const RAGPipeline = React.lazy(() => import('./components/sections/RAGPipeline'));
+const Quiz = () => <ModuleQuizSection moduleId="ai" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -26,6 +28,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Training vs Inference': TrainingVsInference,
   'Word Embeddings': WordEmbeddings,
   'RAG Pipeline': RAGPipeline,
+  Quiz,
 };
 
 function useQuery(): URLSearchParams {

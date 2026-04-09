@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load section components for better performance
 import Introduction from './components/sections/Introduction';
@@ -12,6 +13,7 @@ const ModuleSystem = React.lazy(() => import('./components/sections/ModuleSystem
 const PackageManagers = React.lazy(() => import('./components/sections/PackageManagers'));
 const Frameworks = React.lazy(() => import('./components/sections/Frameworks'));
 const RuntimeWars = React.lazy(() => import('./components/sections/RuntimeWars'));
+const Quiz = () => <ModuleQuizSection moduleId="nodejs" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -24,6 +26,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Package Managers': PackageManagers,
   Frameworks,
   'Runtime Wars': RuntimeWars,
+  Quiz,
 };
 
 function useQuery(): URLSearchParams {

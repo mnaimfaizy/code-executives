@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
 import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
 import { SEO } from '../../shared/components/SEO/SEO';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 
 // Lazy load all section components for better code splitting
 const Introduction = lazy(() => import('./components/sections/Introduction'));
@@ -22,6 +23,7 @@ const JavaScriptRuntime = lazy(() => import('./components/sections/JavaScriptRun
 const WebAPIs = lazy(() => import('./components/sections/WebAPIs'));
 const TaskQueues = lazy(() => import('./components/sections/TaskQueues'));
 const V8Runtime = lazy(() => import('./components/sections/V8Runtime'));
+const Quiz = () => <ModuleQuizSection moduleId="javascript" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -44,6 +46,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Memory Management': MemoryManagement,
   'Memory Leaks': MemoryLeaks,
   Visualization,
+  Quiz,
 };
 
 function useQuery() {

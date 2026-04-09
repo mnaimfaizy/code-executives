@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { SEO } from '../../shared/components/SEO/SEO';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 import Introduction from './components/sections/Introduction';
 import Architecture from './components/sections/Architecture';
 import ThreeTreeModel from './components/sections/ThreeTreeModel';
@@ -11,6 +12,8 @@ import ProfessionalWorkflows from './components/sections/ProfessionalWorkflows';
 import HistoryManagement from './components/sections/HistoryManagement';
 import Troubleshooting from './components/sections/Troubleshooting';
 import Visualization from './components/sections/Visualization';
+
+const Quiz = () => <ModuleQuizSection moduleId="git" />;
 
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
@@ -23,6 +26,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'History Management': HistoryManagement,
   Troubleshooting,
   Visualization,
+  Quiz,
 };
 
 function useQuery() {

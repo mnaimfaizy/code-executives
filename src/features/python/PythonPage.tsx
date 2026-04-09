@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 import Introduction from './components/sections/Introduction';
 import PythonPhilosophy from './components/sections/PythonPhilosophy';
 import ExecutionModel from './components/sections/ExecutionModel';
@@ -9,6 +10,8 @@ import AdvancedConcepts from './components/sections/AdvancedConcepts';
 // Import additional sections as they are created
 // import Mastery from './components/sections/Mastery';
 
+const Quiz = () => <ModuleQuizSection moduleId="python" />;
+
 const sectionComponents: Record<string, React.ComponentType> = {
   Introduction,
   'Python Philosophy': PythonPhilosophy,
@@ -16,6 +19,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Memory Management': MemoryManagement,
   'Global Interpreter Lock': GlobalInterpreterLock,
   'Advanced Concepts': AdvancedConcepts,
+  Quiz,
   // Add more sections as they are implemented
   // Mastery: Mastery,
 };

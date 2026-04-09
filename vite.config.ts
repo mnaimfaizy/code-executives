@@ -1,14 +1,38 @@
+import { cpSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { visualizer } from 'rollup-plugin-visualizer';
 import type { Plugin } from 'vite';
 
+const copyQuizBanksPlugin = (): Plugin => {
+  let quizBanksSourceDir = '';
+  let quizBanksOutputDir = '';
+
+  return {
+    name: 'copy-quiz-banks',
+    apply: 'build',
+    configResolved(config) {
+      quizBanksSourceDir = resolve(config.root, 'quiz-banks');
+      quizBanksOutputDir = resolve(config.root, config.build.outDir, 'quiz-banks');
+    },
+    closeBundle() {
+      if (!existsSync(quizBanksSourceDir)) {
+        return;
+      }
+
+      cpSync(quizBanksSourceDir, quizBanksOutputDir, { recursive: true });
+    },
+  };
+};
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    copyQuizBanksPlugin(),
     // Bundle analyzer - generates stats.html
     visualizer({
       open: false,
@@ -40,67 +64,32 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Vendor chunks - split by library size
           if (id.includes('node_modules')) {
-            // Three.js and related (large library)
             if (id.includes('three')) {
               return 'vendor-three';
             }
-            // Monaco Editor (large, playground-only)
             if (id.includes('monaco-editor')) {
               return 'vendor-monaco';
             }
-            // React Flow / xyflow (playground-only)
             if (id.includes('@xyflow')) {
               return 'vendor-xyflow';
             }
-            // React ecosystem (core libraries)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react';
-            }
-            // Lucide icons (medium-sized)
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            // Other node_modules
-            return 'vendor-misc';
+
+            // Let Rollup group the rest of node_modules automatically.
+            // The previous manual vendor splitting created circular chunk dependencies
+            // that broke the production preview runtime.
+            return undefined;
           }
 
-          // Feature-based chunks (lazy loaded via routes)
-          // These will be automatically split by Vite's dynamic imports
-
-          // Shared components - split by type
-          if (id.includes('/src/components/shared/')) {
-            return 'shared-components';
-          }
-
-          // Python 3D visualizations (heavy)
           if (id.includes('/src/components/models3d/python/')) {
             return 'python-3d';
           }
 
-          // Other 3D visualizations
           if (id.includes('/src/components/models3d/')) {
             return 'models-3d';
           }
 
-          // 2D visualizations - keep with features for better initial load
-          // No manual chunking needed, will be in feature bundles
-
-          // Shared utilities
-          if (id.includes('/src/utils/')) {
-            return 'shared-utils';
-          }
-
-          // Context providers
-          if (id.includes('/src/shared/contexts/')) {
-            return 'shared-contexts';
-          }
-
-          // Hooks
-          if (id.includes('/src/hooks/') || id.includes('/src/shared/hooks/')) {
-            return 'shared-hooks';
-          }
+          return undefined;
         },
       },
     },
