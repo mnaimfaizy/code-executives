@@ -132,6 +132,14 @@ export const theme = {
       border: 'blue-200',
       shadow: 'blue-200',
     },
+    database: {
+      primary: 'teal',
+      secondary: 'cyan',
+      accent: 'emerald',
+      gradient: 'from-teal-50 via-white to-cyan-50',
+      border: 'teal-100',
+      shadow: 'teal-200',
+    },
   },
   layout: {
     // Standard section layout with hero + content grid

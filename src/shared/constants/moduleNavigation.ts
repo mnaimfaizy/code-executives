@@ -19,7 +19,8 @@ export type LearningModuleId =
   | 'nodejs'
   | 'devops'
   | 'auth'
-  | 'backend';
+  | 'backend'
+  | 'database';
 
 export interface LearningModuleConfig {
   id: LearningModuleId;
@@ -134,6 +135,13 @@ export const learningModuleConfigs: Record<LearningModuleId, LearningModuleConfi
     path: '/backend',
     bankFile: 'backend.quiz.json',
     theme: 'backend',
+  },
+  database: {
+    id: 'database',
+    title: 'Database & DBMS',
+    path: '/database',
+    bankFile: 'database.quiz.json',
+    theme: 'database',
   },
 };
 
@@ -435,6 +443,30 @@ const baseModuleNavigationSections: Record<string, SidebarItem[]> = {
     { label: 'Observability', path: '/backend?section=Observability' },
     { label: 'Request Lifecycle', path: '/backend?section=Request%20Lifecycle' },
     { label: 'Visualization', path: '/backend?section=Visualization' },
+  ],
+  '/database': [
+    { label: 'Introduction', path: '/database?section=Introduction' },
+    { label: 'Database Models', path: '/database?section=Database%20Models' },
+    {
+      label: 'DBMS Architecture',
+      path: '/database?section=DBMS%20Architecture',
+      subItems: [
+        { label: 'Query Processor', path: '/database?section=Query%20Processor' },
+        { label: 'Storage Engine', path: '/database?section=Storage%20Engine' },
+      ],
+    },
+    { label: 'SQL Fundamentals', path: '/database?section=SQL%20Fundamentals' },
+    {
+      label: 'Indexing & Optimization',
+      path: '/database?section=Indexing%20%26%20Optimization',
+    },
+    { label: 'Transactions & ACID', path: '/database?section=Transactions%20%26%20ACID' },
+    { label: 'Oracle vs PostgreSQL', path: '/database?section=Oracle%20vs%20PostgreSQL' },
+    {
+      label: 'SQL vs NoSQL vs Vector',
+      path: '/database?section=SQL%20vs%20NoSQL%20vs%20Vector',
+    },
+    { label: 'Visualization', path: '/database?section=Visualization' },
   ],
   '/': [],
   '/about': [],

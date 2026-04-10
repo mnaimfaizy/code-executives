@@ -19,6 +19,7 @@ import {
   Cloud,
   Shield,
   Rocket,
+  HardDrive,
 } from 'lucide-react';
 import { useUI } from '../shared/contexts';
 
@@ -143,6 +144,12 @@ const Header: React.FC = () => {
           path: '/backend',
           icon: <Server className="w-4 h-4" />,
           description: 'Backend patterns & API design',
+        },
+        {
+          label: 'Database & DBMS',
+          path: '/database',
+          icon: <HardDrive className="w-4 h-4" />,
+          description: 'Database internals & optimization',
         },
       ],
     },
