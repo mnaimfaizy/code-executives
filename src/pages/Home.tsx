@@ -227,11 +227,24 @@ const Home: React.FC = () => {
       level: 'Intermediate',
       duration: '4-5 hours',
     },
+    {
+      icon: <Database className="w-12 h-12" />,
+      title: 'Database & DBMS',
+      description:
+        'Master database internals, DBMS architecture, SQL optimization, B-Tree indexing, ACID transactions, and Oracle vs PostgreSQL',
+      path: '/database',
+      color: 'teal',
+      gradient: 'from-teal-600 to-cyan-600',
+      bgGradient: 'from-teal-50 to-cyan-50',
+      topics: ['DBMS Architecture', 'B-Tree Indexing', 'ACID & MVCC', 'Oracle vs PostgreSQL'],
+      level: 'Deep Dive',
+      duration: '4-5 hours',
+    },
   ];
 
   const stats = [
-    { value: '15+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
-    { value: '96+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
+    { value: '16+', label: 'Interactive Modules', icon: <Package className="w-5 h-5" /> },
+    { value: '103+', label: 'Visualizations', icon: <MonitorPlay className="w-5 h-5" /> },
     { value: '1000+', label: 'Code Examples', icon: <FileCode className="w-5 h-5" /> },
     { value: '24/7', label: 'Available Learning', icon: <Cpu className="w-5 h-5" /> },
   ];
@@ -269,7 +282,8 @@ const Home: React.FC = () => {
         allModules[12],
         allModules[13],
         allModules[14],
-      ], // Python, System Design, TypeScript, AI, Node.js, DevOps, Auth, Backend
+        allModules[15],
+      ], // Python, System Design, TypeScript, AI, Node.js, DevOps, Auth, Backend, Database
       icon: <Award className="w-6 h-6" />,
       color: 'emerald',
       description:
@@ -302,7 +316,7 @@ const Home: React.FC = () => {
   const features = [
     {
       icon: <MonitorPlay className="w-8 h-8 text-indigo-600" />,
-      title: '89+ Interactive Visualizations',
+      title: '96+ Interactive Visualizations',
       description: 'See how engines, compilers, and frameworks work internally',
     },
     {
@@ -326,7 +340,7 @@ const Home: React.FC = () => {
     <>
       <SEO
         title="Code Executives - Master Programming Internals"
-        description="Deep dive into JavaScript engines, Git internals, framework architectures, and system design. 89+ interactive visualizations for developers who want to understand how things really work under the hood."
+        description="Deep dive into JavaScript engines, Git internals, framework architectures, and system design. 96+ interactive visualizations for developers who want to understand how things really work under the hood."
         keywords={[
           'programming internals',
           'javascript engine internals',
@@ -359,7 +373,7 @@ const Home: React.FC = () => {
               <span className="font-semibold text-indigo-600">actually work</span> under the hood.
               For developers who want to understand JavaScript engines, Git internals, data
               structure performance, and framework architectures through{' '}
-              <span className="font-semibold text-purple-600">89+ interactive visualizations</span>.
+              <span className="font-semibold text-purple-600">96+ interactive visualizations</span>.
             </p>
 
             {/* CTA Buttons */}
@@ -474,7 +488,7 @@ const Home: React.FC = () => {
                 }}
                 className="inline-flex items-center space-x-2 text-indigo-600 font-semibold hover:text-indigo-700 transition-colors"
               >
-                <span>View All 14 Modules</span>
+                <span>View All 16 Modules</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

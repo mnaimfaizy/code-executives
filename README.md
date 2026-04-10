@@ -395,6 +395,21 @@ Comprehensive backend architecture module with 6+ interactive visualizations cov
 - **Observability**: Three pillars (Logs, Metrics, Traces) with interactive triangle diagram, tool recommendations, and incident response workflow
 - **Request Lifecycle**: Animated "Buy Now" journey through DNS → TCP/TLS → Load Balancer → API Gateway → Cache → Database → Message Queue → Response with latency budgets
 
+### 🗄️ **Database & DBMS (Complete)**
+
+Comprehensive database internals module with 7 interactive visualizations covering relational and NoSQL database architecture:
+
+- **Introduction**: Data vs Database vs DBMS, learning journey overview, stats grid, and module navigation
+- **Database Models**: Interactive comparison of 5 paradigms (Relational, Document, Key-Value, Graph, Vector) with Database Taxonomy visualization
+- **DBMS Architecture**: Query Processor + Storage Engine pillars, Oracle vs PostgreSQL background processes comparison
+- **Query Processor**: Parser → Rewriter → Cost-Based Optimizer → Execution Engine pipeline with animated SQL lifecycle visualization
+- **Storage Engine**: Buffer Manager, Access Methods (B-Tree, Hash), Lock Manager, Recovery Manager with interactive buffer cache simulation
+- **SQL Fundamentals**: Interactive CRUD examples with category tabs, Window Functions, SQL vs NoSQL comparison
+- **Indexing & Optimization**: Interactive B-Tree insertion/search visualization, B-Tree vs Hash index comparison, query optimizer GPS analogy
+- **Transactions & ACID**: Atomicity, Consistency, Isolation, Durability with concurrent transaction demo (success & crash scenarios)
+- **Oracle vs PostgreSQL**: SGA vs shared_buffers, process models, MVCC Undo/Redo vs dead tuples, commit flow comparison with interactive MVCC visualization
+- **Visualization Hub**: 7 interactive visualizations — Database Taxonomy, Query Lifecycle, B-Tree Index, Buffer Manager, ACID Transactions, MVCC Comparison, ER Diagram Builder
+
 - **Multi-Language Execution**: JavaScript, TypeScript (transpiled), and Python (Pyodide WASM) — all in-browser, no server
 - **AST Instrumentation**: Acorn/Astring pipeline injects `__snapshot()` calls around every statement; Python uses `sys.settrace` wrapper with base64-encoded source
 - **Timeline Player**: Step forward/backward through execution snapshots, inspect variables and call stack at each point
@@ -480,7 +495,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 **Issues**: Report bugs or request features via GitHub Issues
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 15 complete interactive modules with 96+ visualizations
+- 🎓 **Learning Modules**: 16 complete interactive modules with 103+ visualizations
 - 🎯 **Playground**: LeetCode-style coding environment with debugging and gamification
 
 ---
