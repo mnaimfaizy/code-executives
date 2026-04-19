@@ -4,6 +4,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 
 const Generics: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -59,15 +60,19 @@ const Generics: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Generic Functions & Classes
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {basicGenericsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={basicGenericsCode}
+              title="basic-generics.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Generic Constraints</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {genericConstraintsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={genericConstraintsCode}
+              title="generic-constraints.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -78,15 +83,19 @@ const Generics: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Conditional & Mapped Types</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {advancedGenericsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={advancedGenericsCode}
+              title="advanced-generics.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Generic Utilities</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {genericUtilitiesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={genericUtilitiesCode}
+              title="generic-utilities.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -99,9 +108,11 @@ const Generics: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Entity Patterns & Discriminated Unions
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {genericConstraintsAdvancedCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={genericConstraintsAdvancedCode}
+              title="advanced-constraints.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>

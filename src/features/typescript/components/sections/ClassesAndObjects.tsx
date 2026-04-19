@@ -3,6 +3,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 
 const ClassesAndObjects: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -31,8 +32,8 @@ const ClassesAndObjects: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">TypeScript Class Syntax</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`class Person {
+            <TypeScriptCodeBlock
+              code={`class Person {
   // Properties
   public name: string;
   private age: number;
@@ -58,7 +59,8 @@ const ClassesAndObjects: React.FC = () => {
     return this.email;
   }
 }`}
-            </pre>
+              title="person-class.ts"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Key Components</h3>
@@ -136,8 +138,8 @@ const ClassesAndObjects: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Creating Objects</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Create instances of the Person class
+            <TypeScriptCodeBlock
+              code={`// Create instances of the Person class
 const person1 = new Person("Alice", 30, "alice@example.com");
 const person2 = new Person("Bob", 25, "bob@example.com");
 
@@ -148,7 +150,8 @@ console.log(person2.name);    // "Bob"
 // Private and protected members are not accessible
 // console.log(person1.age);     // Error!
 // console.log(person1.email);   // Error!`}
-            </pre>
+              title="object-instantiation.ts"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Object Lifecycle</h3>
@@ -208,8 +211,8 @@ console.log(person2.name);    // "Bob"
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Static Properties & Methods
             </h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`class MathUtils {
+            <TypeScriptCodeBlock
+              code={`class MathUtils {
   // Static property
   static PI: number = 3.14159;
 
@@ -231,7 +234,8 @@ console.log(MathUtils.calculateArea(5));      // 78.53975
 // Instance methods require an object
 const utils = new MathUtils();
 console.log(utils.calculateCircumference(5)); // 31.4159`}
-            </pre>
+              title="static-members.ts"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">When to Use Static Members</h3>
@@ -267,8 +271,8 @@ console.log(utils.calculateCircumference(5)); // 31.4159`}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">BankAccount Class</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`class BankAccount {
+            <TypeScriptCodeBlock
+              code={`class BankAccount {
   // Properties
   public accountNumber: string;
   private balance: number;
@@ -307,12 +311,14 @@ console.log(utils.calculateCircumference(5)); // 31.4159`}
     return balance * this.interestRate;
   }
 }`}
-            </pre>
+              title="bank-account.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Usage Example</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Create account
+            <TypeScriptCodeBlock
+              code={`// Create account
 const account = new BankAccount("123456", "John Doe", 1000);
 
 // Use public methods
@@ -332,7 +338,8 @@ console.log(\`Interest: \${interest}\`); // "Interest: 65"
 // Private/protected members not accessible
 // console.log(account.balance);      // Error!
 // console.log(account.accountHolder); // Error!`}
-            </pre>
+              title="bank-account-usage.ts"
+            />
           </div>
         </div>
       </ThemeCard>

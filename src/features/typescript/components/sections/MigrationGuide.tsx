@@ -1,6 +1,7 @@
 import React from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
@@ -63,17 +64,22 @@ const MigrationGuide: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">TypeScript Configuration</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {tsconfigSetupCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={tsconfigSetupCode}
+              title="tsconfig.json"
+              language="javascript"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">
               Gradual Migration Strategy
             </h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {gradualMigrationCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={gradualMigrationCode}
+              title="gradual-migration.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -84,15 +90,19 @@ const MigrationGuide: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">CommonJS to ES Modules</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {commonJsToEsModulesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={commonJsToEsModulesCode}
+              title="commonjs-to-esm.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">PropTypes to TypeScript</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {propTypesToTypesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={propTypesToTypesCode}
+              title="proptypes-to-typescript.tsx"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -105,15 +115,19 @@ const MigrationGuide: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               From 'any' to Specific Types
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {anyToSpecificTypesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={anyToSpecificTypesCode}
+              title="any-to-specific-types.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Third-party Libraries</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {thirdPartyLibrariesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={thirdPartyLibrariesCode}
+              title="third-party-types.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -126,9 +140,12 @@ const MigrationGuide: React.FC = () => {
             <h3 className="text-lg font-semibold text-blue-600 mb-3">
               Build Scripts and Environments
             </h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {buildConfigurationCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={buildConfigurationCode}
+              title="build-config.json"
+              language="javascript"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>

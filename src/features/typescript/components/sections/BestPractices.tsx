@@ -1,6 +1,7 @@
 import React from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
@@ -63,24 +64,27 @@ const BestPractices: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Enable Strict Mode</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {strictModeCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={strictModeCode}
+              title="tsconfig.json"
+              language="javascript"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">
               Interface vs Type Aliases
             </h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {interfaceVsTypeCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={interfaceVsTypeCode}
+              title="interface-vs-type.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-blue-600 mb-3">Avoid 'any' Type</h3>
-          <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-            {avoidAnyCode}
-          </pre>
+          <TypeScriptCodeBlock code={avoidAnyCode} title="avoid-any.ts" maxHeight="400px" />
         </div>
       </ThemeCard>
 
@@ -90,15 +94,19 @@ const BestPractices: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Result Types</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {errorHandlingCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={errorHandlingCode}
+              title="error-handling.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Naming Conventions</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {namingConventionsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={namingConventionsCode}
+              title="naming-conventions.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -109,15 +117,19 @@ const BestPractices: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Module Structure</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {moduleOrganizationCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={moduleOrganizationCode}
+              title="module-organization.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Performance Tips</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {performanceTipsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={performanceTipsCode}
+              title="performance-tips.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>

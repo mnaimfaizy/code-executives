@@ -4,6 +4,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 
 const Inheritance: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -57,15 +58,19 @@ const Inheritance: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Extending Classes</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {basicInheritanceCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={basicInheritanceCode}
+              title="basic-inheritance.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Method Overriding</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {methodOverridingCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={methodOverridingCode}
+              title="method-overriding.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -76,15 +81,19 @@ const Inheritance: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Using super() Keyword</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {superKeywordCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={superKeywordCode}
+              title="super-keyword.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Protected Members</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {protectedMembersCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={protectedMembersCode}
+              title="protected-members.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -97,9 +106,11 @@ const Inheritance: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               When to Use Each Approach
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {inheritanceVsCompositionCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={inheritanceVsCompositionCode}
+              title="inheritance-vs-composition.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>

@@ -4,6 +4,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 
 const Abstraction: React.FC = () => {
   const navigate = useNavigate();
@@ -69,8 +70,8 @@ const Abstraction: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Abstract Class Syntax</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`abstract class Shape {
+            <TypeScriptCodeBlock
+              code={`abstract class Shape {
   // Abstract property (must be implemented by subclasses)
   abstract name: string;
 
@@ -113,7 +114,9 @@ class Circle extends Shape {
     console.log(\`Drawing a \${this.color} circle\`);
   }
 }`}
-            </pre>
+              title="abstract-class.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Abstract Class Rules</h3>
@@ -148,8 +151,8 @@ class Circle extends Shape {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Interface Definition</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`interface Drawable {
+            <TypeScriptCodeBlock
+              code={`interface Drawable {
   // Properties
   readonly id: string;
   color: string;
@@ -194,7 +197,9 @@ class GraphicObject implements Drawable, Movable {
     return { x: this.x, y: this.y };
   }
 }`}
-            </pre>
+              title="interfaces.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Interface Features</h3>
@@ -299,8 +304,8 @@ class GraphicObject implements Drawable, Movable {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Abstract Payment Processor
             </h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`abstract class PaymentProcessor {
+            <TypeScriptCodeBlock
+              code={`abstract class PaymentProcessor {
   protected amount: number;
   protected currency: string;
 
@@ -325,12 +330,13 @@ class GraphicObject implements Drawable, Movable {
     return \`\${this.currency} \${this.amount.toFixed(2)}\`;
   }
 }`}
-            </pre>
+              title="payment-processor.ts"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Payment Interface</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`interface Refundable {
+            <TypeScriptCodeBlock
+              code={`interface Refundable {
   processRefund(amount: number): Promise<boolean>;
 }
 
@@ -368,7 +374,9 @@ class CreditCardProcessor extends PaymentProcessor implements Refundable, Verifi
     return true;
   }
 }`}
-            </pre>
+              title="credit-card-processor.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -376,8 +384,8 @@ class CreditCardProcessor extends PaymentProcessor implements Refundable, Verifi
       {/* Usage Example */}
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Usage Example</h2>
-        <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-          {`// Client code only sees the abstraction
+        <TypeScriptCodeBlock
+          code={`// Client code only sees the abstraction
 const processor: PaymentProcessor & Refundable & Verifiable =
   new CreditCardProcessor(100, "1234567890123456");
 
@@ -398,7 +406,8 @@ if (processor.validatePayment()) {
 
 // Implementation details are completely hidden!
 // No access to cardNumber, internal validation logic, etc.`}
-        </pre>
+          title="usage-example.ts"
+        />
       </ThemeCard>
     </>
   );

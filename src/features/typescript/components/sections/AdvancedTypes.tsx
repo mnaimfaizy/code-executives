@@ -4,6 +4,8 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import UnionIntersection2D from '../visualizations/2d/UnionIntersection2D';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 
 const AdvancedTypes: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -54,25 +56,41 @@ const AdvancedTypes: React.FC = () => {
 
   const mainContent = (
     <>
-      {/* Union and Intersection Types */}
+      {/* Interactive Union & Intersection Visualization */}
       <ThemeCard>
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Union & Intersection Types</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-md">
+            <span className="text-white text-lg">⊕</span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Union &amp; Intersection — Interactive
+            </h2>
+            <p className="text-sm text-gray-500">Toggle between modes to see the difference</p>
+          </div>
+        </div>
+        <UnionIntersection2D />
+      </ThemeCard>
+
+      {/* Union and Intersection Types — code */}
+      <ThemeCard>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Union &amp; Intersection Code</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
-              Union Types & Discriminated Unions
+              Union Types &amp; Discriminated Unions
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {unionTypesCode}
-            </pre>
+            <TypeScriptCodeBlock code={unionTypesCode} title="union-types.ts" maxHeight="22rem" />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">
-              Intersection Types & Mixins
+              Intersection Types &amp; Mixins
             </h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {intersectionTypesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={intersectionTypesCode}
+              title="intersection-types.ts"
+              maxHeight="22rem"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -83,15 +101,15 @@ const AdvancedTypes: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Conditional Types</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {conditionalTypesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={conditionalTypesCode}
+              title="conditional-types.ts"
+              maxHeight="22rem"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Mapped Types</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {mappedTypesCode}
-            </pre>
+            <TypeScriptCodeBlock code={mappedTypesCode} title="mapped-types.ts" maxHeight="22rem" />
           </div>
         </div>
       </ThemeCard>
@@ -104,9 +122,11 @@ const AdvancedTypes: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               String Manipulation at Type Level
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {templateLiteralTypesCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={templateLiteralTypesCode}
+              title="template-literals.ts"
+              maxHeight="22rem"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -117,9 +137,11 @@ const AdvancedTypes: React.FC = () => {
         <div className="grid grid-cols-1 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">TypeScript Utility Types</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {advancedPatternsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={advancedPatternsCode}
+              title="utility-types.ts"
+              maxHeight="22rem"
+            />
           </div>
         </div>
       </ThemeCard>
