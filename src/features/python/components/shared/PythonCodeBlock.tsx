@@ -13,7 +13,7 @@ interface PythonCodeBlockProps {
 /** Simple keyword-based syntax coloring for Python code. */
 function tokenizeLine(line: string): React.ReactNode[] {
   const pattern =
-    /(#.*$)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|'''[\s\S]*?'''|"""[\s\S]*?"""|f'(?:[^'\\]|\\.)*'|f"(?:[^"\\]|\\.)*")|(\b(?:import|from|as|def|class|return|if|elif|else|for|while|do|try|except|finally|raise|with|assert|yield|lambda|pass|break|continue|async|await|global|nonlocal|del|in|not|and|or|is)\b)|(\b(?:int|float|str|bool|list|dict|tuple|set|frozenset|bytes|bytearray|None|type|object|range|complex|memoryview)\b)|(\b(?:True|False|None)\b)|(\b\d[\d_.]*(?:j)?\b)|(self|cls)|(@\w+)|([{}()\[\];,.:?!<>=+\-*/&|^~%@])/g;
+    /(#.*$)|('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|'''[\s\S]*?'''|"""[\s\S]*?"""|f'(?:[^'\\]|\\.)*'|f"(?:[^"\\]|\\.)*")|(\b(?:import|from|as|def|class|return|if|elif|else|for|while|do|try|except|finally|raise|with|assert|yield|lambda|pass|break|continue|async|await|global|nonlocal|del|in|not|and|or|is)\b)|(\b(?:int|float|str|bool|list|dict|tuple|set|frozenset|bytes|bytearray|None|type|object|range|complex|memoryview)\b)|(\b(?:True|False|None)\b)|(\b\d[\d_.]*(?:j)?\b)|(self|cls)|(@\w+)|([[\]{}();,.:?!<>=+\-*/&|^~%@])/g;
 
   const nodes: React.ReactNode[] = [];
   let lastIndex = 0;
