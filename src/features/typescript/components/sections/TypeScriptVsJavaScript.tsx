@@ -5,6 +5,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import TSvsJSComparison2D from '../visualizations/2d/TSvsJSComparison2D';
 
 const TypeScriptVsJavaScript: React.FC = () => {
   const navigate = useNavigate();
@@ -293,6 +294,14 @@ add(5, "10"); // Error: Argument of type 'string' ❌`}
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">TypeScript vs JavaScript Comparison</h3>
+          <TSvsJSComparison2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore TypeScript Features"
         description="Dive deeper into TypeScript's powerful type system and object-oriented capabilities"

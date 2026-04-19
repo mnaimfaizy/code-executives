@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 
 /**
  * Interactive TypeNarrowing2D visualization.
@@ -135,33 +135,49 @@ const TypeNarrowing2D: React.FC = () => {
   const [scenario, setScenario] = useState<keyof typeof SCENARIOS>('typeof');
   const [step, setStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const data = SCENARIOS[scenario];
   const current = data.steps[step];
+
+  // Clean up interval on unmount or when playing stops
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const play = useCallback(() => {
     if (isPlaying) return;
     setIsPlaying(true);
     setStep(0);
     let s = 0;
-    const iv = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       s++;
       if (s >= data.steps.length) {
-        clearInterval(iv);
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setIsPlaying(false);
       } else {
         setStep(s);
       }
     }, 1800);
-    return () => clearInterval(iv);
   }, [isPlaying, data.steps.length]);
 
   const reset = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setStep(0);
     setIsPlaying(false);
   }, []);
 
   const changeScenario = useCallback((key: keyof typeof SCENARIOS) => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     setScenario(key);
     setStep(0);
     setIsPlaying(false);

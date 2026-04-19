@@ -5,6 +5,7 @@ import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import InheritanceTree2D from '../visualizations/2d/InheritanceTree2D';
 
 const Inheritance: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -183,6 +184,24 @@ const Inheritance: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-5xl mx-auto mt-10 px-4">
+        <ThemeCard>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center text-lg">
+              🌳
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Interactive Inheritance Tree</h2>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Switch between example hierarchies, animate the inheritance flow step-by-step, and click
+            nodes to see own vs inherited members.
+          </p>
+          <InheritanceTree2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Polymorphism"
         description="Learn about method overriding and dynamic dispatch in TypeScript"

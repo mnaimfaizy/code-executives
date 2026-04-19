@@ -14,10 +14,6 @@ import type {
   ClassHierarchy2DHandle,
 } from '../visualizations/2d/ClassHierarchy2D';
 import type {
-  InheritanceNode,
-  InheritanceTree2DHandle,
-} from '../visualizations/2d/InheritanceTree2D';
-import type {
   PolymorphicMethod,
   PolymorphismFlow2DHandle,
 } from '../visualizations/2d/PolymorphismFlow2D';
@@ -29,7 +25,7 @@ import type {
 const TypeScriptVisualization: React.FC = () => {
   const navigate = useNavigate();
   const classHierarchyRef = useRef<ClassHierarchy2DHandle>(null);
-  const inheritanceTreeRef = useRef<InheritanceTree2DHandle>(null);
+
   const polymorphismFlowRef = useRef<PolymorphismFlow2DHandle>(null);
   const encapsulationBoxRef = useRef<EncapsulationBox2DHandle>(null);
 
@@ -78,19 +74,7 @@ const TypeScriptVisualization: React.FC = () => {
     },
   ];
 
-  const inheritanceTreeData: InheritanceNode = {
-    name: 'Vehicle',
-    level: 0,
-    properties: [
-      { name: 'make', type: 'string' },
-      { name: 'model', type: 'string' },
-      { name: 'year', type: 'number' },
-    ],
-    methods: [
-      { name: 'start', signature: '(): void', inherited: false },
-      { name: 'stop', signature: '(): void', inherited: false },
-    ],
-  };
+
 
   const polymorphismData: PolymorphicMethod[] = [
     {
@@ -230,32 +214,17 @@ const TypeScriptVisualization: React.FC = () => {
 
       {/* Inheritance Flow Visualization */}
       <ThemeCard>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center text-lg">
-              🌳
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Inheritance Flow</h2>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center text-lg">
+            🌳
           </div>
-          <button
-            onClick={() => inheritanceTreeRef.current?.animateInheritance()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
-          >
-            ▶ Animate Inheritance
-          </button>
+          <h2 className="text-2xl font-bold text-gray-900">Inheritance Flow</h2>
         </div>
         <p className="text-gray-600 text-sm mb-4">
-          Watch properties and methods flow down the hierarchy. Click members to highlight them.
+          Switch between example hierarchies, animate inheritance step-by-step, and click nodes to
+          see own vs inherited members.
         </p>
-        <div className="h-96 w-full">
-          <InheritanceTree2D
-            ref={inheritanceTreeRef}
-            rootClass={inheritanceTreeData}
-            width={800}
-            height={400}
-            animationSpeed={1200}
-          />
-        </div>
+        <InheritanceTree2D />
       </ThemeCard>
 
       {/* Polymorphism Flow Visualization */}

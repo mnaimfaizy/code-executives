@@ -5,6 +5,7 @@ import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeNarrowing2D from '../visualizations/2d/TypeNarrowing2D';
 
 const TypeGuards: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -192,6 +193,24 @@ const TypeGuards: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-5xl mx-auto mt-10 px-4">
+        <ThemeCard>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-lg">
+              🔍
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Interactive Type Narrowing</h2>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Step through type guard scenarios to see how TypeScript narrows types at each check.
+            Use play/pause controls or step manually through the flow.
+          </p>
+          <TypeNarrowing2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Best Practices"
         description="Learn TypeScript development best practices and common patterns"

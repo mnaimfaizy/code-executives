@@ -5,6 +5,7 @@ import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import GenericsVisualizer2D from '../visualizations/2d/GenericsVisualizer2D';
 
 const Generics: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -200,6 +201,24 @@ const Generics: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-5xl mx-auto mt-10 px-4">
+        <ThemeCard>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center text-lg">
+              🧩
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Interactive Generics Visualizer</h2>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            See how generic type parameters flow through functions and classes. Switch between
+            examples and step through the type resolution process.
+          </p>
+          <GenericsVisualizer2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Advanced Types"
         description="Learn about union types, intersection types, and more"

@@ -5,6 +5,7 @@ import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import DecoratorPipeline2D from '../visualizations/2d/DecoratorPipeline2D';
 
 const Decorators: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -267,6 +268,14 @@ const Decorators: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Decorator Pipeline Visualization</h3>
+          <DecoratorPipeline2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Advanced Types"
         description="Learn about complex type compositions and utility types in TypeScript"

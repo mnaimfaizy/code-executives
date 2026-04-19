@@ -5,6 +5,27 @@ import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import EncapsulationBox2D from '../visualizations/2d/EncapsulationBox2D';
+import type { EncapsulationClass } from '../visualizations/2d/EncapsulationBox2D';
+
+const encapsulationData: EncapsulationClass = {
+  name: 'BankAccount',
+  publicMembers: [
+    { name: 'accountNumber', type: 'property', visibility: 'public', value: 'string' },
+    { name: 'deposit', type: 'method', visibility: 'public', signature: '(amount: number): void' },
+    { name: 'withdraw', type: 'method', visibility: 'public', signature: '(amount: number): boolean' },
+    { name: 'getBalance', type: 'method', visibility: 'public', signature: '(): number' },
+  ],
+  privateMembers: [
+    { name: 'balance', type: 'property', visibility: 'private', value: 'number' },
+    { name: 'transactionHistory', type: 'property', visibility: 'private', value: 'Transaction[]' },
+    { name: 'validateAmount', type: 'method', visibility: 'private', signature: '(amount: number): boolean' },
+  ],
+  protectedMembers: [
+    { name: 'minimumBalance', type: 'property', visibility: 'protected', value: 'number' },
+    { name: 'calculateInterest', type: 'method', visibility: 'protected', signature: '(): number' },
+  ],
+};
 
 const Encapsulation: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -199,6 +220,31 @@ const Encapsulation: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-5xl mx-auto mt-10 px-4">
+        <ThemeCard>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-rose-100 flex items-center justify-center text-lg">
+              🔐
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Interactive Data Encapsulation</h2>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Toggle visibility levels to understand how encapsulation controls member access. Click
+            members to see their details.
+          </p>
+          <div className="h-96 w-full">
+            <EncapsulationBox2D
+              classData={encapsulationData}
+              width={800}
+              height={400}
+              showProtected={true}
+            />
+          </div>
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Generics"
         description="Learn about type-safe generic programming"

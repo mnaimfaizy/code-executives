@@ -5,6 +5,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import AbstractionLayers2D from '../visualizations/2d/AbstractionLayers2D';
 
 const Abstraction: React.FC = () => {
   const navigate = useNavigate();
@@ -449,6 +450,14 @@ if (processor.validatePayment()) {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Abstraction Layers Visualization</h3>
+          <AbstractionLayers2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Encapsulation"
         description="Learn how to protect object internals while exposing necessary functionality"

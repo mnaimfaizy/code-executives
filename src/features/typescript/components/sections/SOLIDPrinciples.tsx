@@ -6,6 +6,7 @@ import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import SOLIDVisualizer2D from '../visualizations/2d/SOLIDVisualizer2D';
 
 interface Principle {
   letter: string;
@@ -430,6 +431,14 @@ const SOLIDPrinciples: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Interactive SOLID Diagram</h3>
+          <SOLIDVisualizer2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Apply SOLID in Practice"
         description="See how these principles translate into real TypeScript patterns and best practices."
