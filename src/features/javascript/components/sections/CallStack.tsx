@@ -1,4 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  Layers,
+  ArrowDown,
+  ArrowUp,
+  AlertTriangle,
+  Lightbulb,
+  GitMerge,
+  LayoutList,
+  Cpu,
+} from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import CallStack2D, { type CallStack2DHandle } from '../visualizations/2d/CallStack2D';
 import {
@@ -357,67 +367,133 @@ const CallStack: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Call Stack & Execution Context</h2>
+      {/* Hero Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Layers className="w-5 h-5 text-indigo-600" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-900 leading-tight">
+            Call Stack & Execution Context
+          </h2>
+          <p className="text-xs text-gray-500">
+            LIFO execution orchestrator · scope management · stack frames
+          </p>
+        </div>
+      </div>
 
       {/* Engine Context Introduction */}
-      <div className="mb-4 rounded-lg bg-indigo-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-indigo-900">Role in JavaScript Engine</h3>
-        <p className="mb-2 text-xs text-indigo-800">
+      <div className="mb-4 rounded-xl bg-indigo-50 border border-indigo-100 p-4">
+        <h3 className="mb-2 text-sm font-semibold text-indigo-900 flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-indigo-600" />
+          Role in JavaScript Engine
+        </h3>
+        <p className="mb-3 text-xs text-indigo-800 leading-relaxed">
           The Call Stack is the engine's execution orchestrator, managing function calls through a
           precise LIFO (Last-In, First-Out) system. It creates, maintains, and destroys execution
           contexts while tracking the program's execution flow and managing scope chains.
         </p>
-        <p className="text-xs text-indigo-700">
-          <strong>Engine Integration:</strong> Parser → AST → Bytecode → Call Stack Execution →
-          Memory Heap → Garbage Collection
-        </p>
+        <div className="flex flex-wrap items-center gap-1 text-xs text-indigo-700 font-medium">
+          <strong className="text-indigo-800">Engine Integration:</strong>
+          {[
+            'Parser',
+            'AST',
+            'Bytecode',
+            'Call Stack Execution',
+            'Memory Heap',
+            'Garbage Collection',
+          ].map((step, i, arr) => (
+            <React.Fragment key={step}>
+              <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{step}</span>
+              {i < arr.length - 1 && <span className="text-indigo-400">→</span>}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
       {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">Call Stack Management</h3>
-        <p className="mb-2 text-sm text-gray-700">
+      <div className="mb-4 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+        <h3 className="mb-2 text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <LayoutList className="w-4 h-4 text-gray-600" />
+          Call Stack Management
+        </h3>
+        <p className="mb-3 text-sm text-gray-700 leading-relaxed">
           The Call Stack operates as a structured memory region where each function call creates a
           new stack frame. These frames contain execution contexts with variable environments, scope
-          chains, and 'this' bindings, enabling proper function isolation and execution flow
-          control.
+          chains, and <code className="bg-gray-100 px-1 rounded text-xs">this</code> bindings,
+          enabling proper function isolation and execution flow control.
         </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Stack Frame Components:</strong>
-            <ul className="ml-3 list-disc">
-              <li>Function parameters & arguments</li>
-              <li>Local variables & declarations</li>
-              <li>Return address & caller info</li>
-              <li>Execution context & scope chain</li>
-              <li>'this' binding & closure references</li>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-3">
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <GitMerge className="w-3.5 h-3.5 text-indigo-500" />
+              Stack Frame Components
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                'Function parameters & arguments',
+                'Local variables & declarations',
+                'Return address & caller info',
+                'Execution context & scope chain',
+                "'this' binding & closure references",
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-1.5">
+                  <span className="mt-0.5 w-3.5 h-3.5 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                  </span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
-          <div>
-            <strong>Stack Operations:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>Push:</strong> Function invocation
-              </li>
-              <li>
-                <strong>Pop:</strong> Function return/completion
-              </li>
-              <li>
-                <strong>Unwind:</strong> Exception propagation
-              </li>
-              <li>
-                <strong>Overflow:</strong> Stack size limit exceeded
-              </li>
-              <li>
-                <strong>Trace:</strong> Error stack generation
-              </li>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-purple-500" />
+              Stack Operations
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                {
+                  op: 'Push',
+                  desc: 'Function invocation',
+                  icon: <ArrowDown className="w-3 h-3 text-green-600" />,
+                },
+                {
+                  op: 'Pop',
+                  desc: 'Function return/completion',
+                  icon: <ArrowUp className="w-3 h-3 text-blue-600" />,
+                },
+                {
+                  op: 'Unwind',
+                  desc: 'Exception propagation',
+                  icon: <AlertTriangle className="w-3 h-3 text-yellow-600" />,
+                },
+                {
+                  op: 'Overflow',
+                  desc: 'Stack size limit exceeded',
+                  icon: <AlertTriangle className="w-3 h-3 text-red-600" />,
+                },
+                {
+                  op: 'Trace',
+                  desc: 'Error stack generation',
+                  icon: <Layers className="w-3 h-3 text-gray-500" />,
+                },
+              ].map(({ op, desc, icon }) => (
+                <li key={op} className="flex items-start gap-1.5">
+                  <span className="mt-0.5 flex-shrink-0">{icon}</span>
+                  <span>
+                    <strong>{op}:</strong> {desc}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
-        <div className="mt-2 p-2 bg-yellow-50 rounded border border-yellow-200">
-          <p className="text-xs text-yellow-800">
-            <strong>💡 Key Insight:</strong> The Call Stack's LIFO nature ensures that function
-            calls complete in reverse order of invocation, maintaining proper scope resolution and
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
+          <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <strong>Key Insight:</strong> The Call Stack's LIFO nature ensures that function calls
+            complete in reverse order of invocation, maintaining proper scope resolution and
             enabling features like recursion and nested function calls.
           </p>
         </div>

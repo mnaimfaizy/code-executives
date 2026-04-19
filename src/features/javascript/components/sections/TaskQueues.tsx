@@ -1,4 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  BookOpen,
+  Clock,
+  Code2,
+  RefreshCw,
+  Zap,
+  Activity,
+  GitMerge,
+} from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
@@ -114,6 +125,304 @@ process-queue microtask
 process-queue macrotask
 process-queue animation
 process-queue idle`;
+
+// ─── Color map ───────────────────────────────────────────────────────────────
+const colorCls: Record<string, { bg: string; border: string; text: string; num: string }> = {
+  red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', num: 'bg-red-600' },
+  green: {
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    text: 'text-green-800',
+    num: 'bg-green-600',
+  },
+  amber: {
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    text: 'text-amber-800',
+    num: 'bg-amber-500',
+  },
+  purple: {
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-800',
+    num: 'bg-purple-600',
+  },
+  slate: {
+    bg: 'bg-slate-50',
+    border: 'border-slate-200',
+    text: 'text-slate-800',
+    num: 'bg-slate-500',
+  },
+  blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', num: 'bg-blue-600' },
+  indigo: {
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    text: 'text-indigo-800',
+    num: 'bg-indigo-600',
+  },
+};
+
+// ─── Queue type cards data ────────────────────────────────────────────────────
+const queueCards = [
+  {
+    type: 'script',
+    label: 'Script / Synchronous',
+    color: 'red',
+    priority: 1,
+    icon: <Code2 className="w-5 h-5" />,
+    description:
+      'The initial execution of the script itself. All top-level synchronous code runs to completion before anything else. No queue — it runs immediately on the Call Stack.',
+    sources: ['Top-level module code', 'Inline <script> tags', 'eval() calls'],
+    rule: 'Runs first, cannot be deferred or interrupted.',
+  },
+  {
+    type: 'microtask',
+    label: 'Microtask Queue',
+    color: 'green',
+    priority: 2,
+    icon: <Zap className="w-5 h-5" />,
+    description:
+      'The highest-priority async queue. Drained completely after every synchronous task — including newly enqueued microtasks added during drainage.',
+    sources: [
+      'Promise.then / catch / finally',
+      'await continuations',
+      'queueMicrotask()',
+      'MutationObserver',
+    ],
+    rule: 'ALL microtasks drain before ANY macrotask runs.',
+  },
+  {
+    type: 'macrotask',
+    label: 'Macrotask Queue',
+    color: 'amber',
+    priority: 3,
+    icon: <Clock className="w-5 h-5" />,
+    description:
+      'Lower-priority queue processed one task at a time. After each macrotask, the microtask queue is fully drained again before the next macrotask begins.',
+    sources: [
+      'setTimeout / setInterval',
+      'setImmediate (Node.js)',
+      'DOM event callbacks',
+      'I/O callbacks',
+      'MessageChannel',
+    ],
+    rule: 'ONE macrotask per event loop tick, then drain microtasks again.',
+  },
+  {
+    type: 'animation',
+    label: 'Animation Frame Queue',
+    color: 'purple',
+    priority: 4,
+    icon: <RefreshCw className="w-5 h-5" />,
+    description:
+      'Browser-only queue that fires just before the browser repaints. Ideal for smooth visual updates — tied to the display refresh rate (~60 fps).',
+    sources: ['requestAnimationFrame()', 'IntersectionObserver callbacks'],
+    rule: 'Fires once per frame after microtasks, before the browser paints.',
+  },
+  {
+    type: 'idle',
+    label: 'Idle Callback Queue',
+    color: 'slate',
+    priority: 5,
+    icon: <Activity className="w-5 h-5" />,
+    description:
+      'Lowest priority. Callbacks run only when the browser has free time between frames. Can be deferred indefinitely if the main thread stays busy.',
+    sources: ['requestIdleCallback()'],
+    rule: 'Only runs when the browser is idle. Do non-critical background work here.',
+  },
+];
+
+// ─── Processing rules ─────────────────────────────────────────────────────────
+const processingRules = [
+  {
+    step: '1',
+    color: 'red',
+    label: 'Run Sync Code',
+    description: 'Execute all top-level synchronous code on the Call Stack to completion.',
+    icon: <Code2 className="w-5 h-5" />,
+  },
+  {
+    step: '2',
+    color: 'green',
+    label: 'Drain Microtasks',
+    description: 'Process EVERY microtask, including ones queued during this drain.',
+    icon: <Zap className="w-5 h-5" />,
+  },
+  {
+    step: '3',
+    color: 'amber',
+    label: 'One Macrotask',
+    description: 'Pick exactly ONE macrotask from the queue and execute it.',
+    icon: <Clock className="w-5 h-5" />,
+  },
+  {
+    step: '4',
+    color: 'purple',
+    label: 'Animation Frames',
+    description: '(Browser) Run requestAnimationFrame callbacks before repainting.',
+    icon: <RefreshCw className="w-5 h-5" />,
+  },
+  {
+    step: '→',
+    color: 'indigo',
+    label: 'Repeat',
+    description: 'Go back to step 2 — drain microtasks again before the next macrotask.',
+    icon: <GitMerge className="w-5 h-5" />,
+  },
+];
+
+// ─── Code scenarios ───────────────────────────────────────────────────────────
+const scenarios = [
+  {
+    id: 'basic-priority',
+    title: 'All Queue Types',
+    description: 'See all five queue types fire in priority order in a single tick.',
+    code: `console.log('1 sync start');
+
+// Macrotask
+setTimeout(() => console.log('5 macrotask: setTimeout'), 0);
+
+// Microtasks
+Promise.resolve().then(() => console.log('3 microtask: Promise.then'));
+queueMicrotask(() => console.log('4 microtask: queueMicrotask'));
+
+console.log('2 sync end');
+
+// Output order:
+// 1 sync start
+// 2 sync end
+// 3 microtask: Promise.then
+// 4 microtask: queueMicrotask
+// 5 macrotask: setTimeout`,
+    output: [
+      '1 sync start',
+      '2 sync end',
+      '3 microtask: Promise.then',
+      '4 microtask: queueMicrotask',
+      '5 macrotask: setTimeout',
+    ],
+    explanation:
+      'Synchronous code always runs first. All microtasks (Promises, queueMicrotask) drain completely before the macrotask (setTimeout) fires — even with a 0 ms delay.',
+  },
+  {
+    id: 'microtask-starvation',
+    title: 'Microtask Starvation',
+    description: 'Endless microtask chains prevent macrotasks from ever running.',
+    code: `let count = 0;
+
+function scheduleMicrotask() {
+  if (count < 5) {
+    count++;
+    Promise.resolve().then(() => {
+      console.log(\`microtask #\${count}\`);
+      scheduleMicrotask(); // schedules another!
+    });
+  } else {
+    console.log('microtasks done');
+  }
+}
+
+setTimeout(() => console.log('macrotask (never starved here)'), 0);
+scheduleMicrotask();
+
+// Output:
+// microtask #1 through #5 all run
+// microtask #5
+// microtasks done
+// macrotask (never starved here)`,
+    output: [
+      'microtask #1',
+      'microtask #2',
+      'microtask #3',
+      'microtask #4',
+      'microtask #5',
+      'microtasks done',
+      'macrotask (never starved here)',
+    ],
+    explanation:
+      'Each Promise.then() enqueues a new microtask during the drain pass. They ALL run before the setTimeout macrotask. In an infinite chain this would starve the macrotask queue entirely.',
+  },
+  {
+    id: 'raf',
+    title: 'requestAnimationFrame',
+    description: 'rAF fires after microtasks but before the next frame paint.',
+    code: `// rAF fires after all microtasks are drained,
+// just before the browser repaints.
+
+requestAnimationFrame(() => {
+  console.log('3 rAF callback (before paint)');
+});
+
+Promise.resolve().then(() => {
+  console.log('2 microtask: runs before rAF');
+});
+
+console.log('1 sync: runs first');
+
+// Output:
+// 1 sync: runs first
+// 2 microtask: runs before rAF
+// 3 rAF callback (before paint)`,
+    output: ['1 sync: runs first', '2 microtask: runs before rAF', '3 rAF callback (before paint)'],
+    explanation:
+      'requestAnimationFrame is not a macrotask — it fires in a separate "animation frame" slot after microtasks drain, tied to the display refresh rate (~60 fps).',
+  },
+  {
+    id: 'nested-macrotasks',
+    title: 'Microtasks Between Macrotasks',
+    description: 'Microtask queue is re-drained after EVERY macrotask.',
+    code: `setTimeout(() => {
+  console.log('macrotask 1');
+  Promise.resolve().then(() => console.log('  micro after macro 1'));
+}, 0);
+
+setTimeout(() => {
+  console.log('macrotask 2');
+  Promise.resolve().then(() => console.log('  micro after macro 2'));
+}, 0);
+
+// Output:
+// macrotask 1
+//   micro after macro 1  ← drained before macrotask 2
+// macrotask 2
+//   micro after macro 2`,
+    output: ['macrotask 1', '  micro after macro 1', 'macrotask 2', '  micro after macro 2'],
+    explanation:
+      'After macrotask 1 runs, the microtask queue is fully drained before macrotask 2 starts. This is why Promises scheduled inside setTimeout callbacks still run promptly.',
+  },
+];
+
+// ─── Gotchas ──────────────────────────────────────────────────────────────────
+const gotchas = [
+  {
+    title: 'Infinite microtask chain = frozen UI',
+    severity: 'high',
+    description:
+      'If a microtask always enqueues another microtask, the event loop can never escape the microtask drain phase — the browser appears completely frozen with no rendering or input processing.',
+    fix: 'Break long async chains with setTimeout(fn, 0) or requestIdleCallback() to yield control back to the browser between chunks of work.',
+  },
+  {
+    title: 'Assuming setTimeout(fn, 0) is "immediate"',
+    severity: 'medium',
+    description:
+      "Zero-delay timers are macrotasks. They always run after ALL pending microtasks AND after the browser has had the chance to render. They're also subject to a minimum ~4 ms browser clamp.",
+    fix: 'Use queueMicrotask(fn) or Promise.resolve().then(fn) for near-immediate async scheduling. Use setTimeout for genuine deferred/background work.',
+  },
+  {
+    title: 'DOM events fire as macrotasks',
+    severity: 'medium',
+    description:
+      'Click, keydown, and other DOM event callbacks are macrotasks. If you queue a Promise inside a click handler, the .then() callback runs before the next DOM event — but after the current handler completes.',
+    fix: 'This ordering is usually correct, but be mindful when mixing Promises and multiple event listeners on the same element.',
+  },
+  {
+    title: 'Node.js process.nextTick vs Promise',
+    severity: 'medium',
+    description:
+      'In Node.js, process.nextTick() callbacks run before Promise microtasks, at the end of the current operation — even before the regular microtask queue. This is a Node-specific priority above standard microtasks.',
+    fix: 'Prefer Promise.resolve().then() for portable code. Reserve process.nextTick() only when you specifically need it to run before Promise callbacks.',
+  },
+];
 
 // Task Queues Visualization
 const TaskQueues2D: React.FC<{
@@ -296,6 +605,7 @@ const TaskQueues: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentQueue, setCurrentQueue] = useState<TaskType | undefined>();
   const [processingTask, setProcessingTask] = useState<Task | undefined>();
+  const [activeScenario, setActiveScenario] = useState(0);
   const compiledRef = useRef<Compiled | null>(null);
   const taskIdCounter = useRef(1);
 
@@ -575,69 +885,319 @@ const TaskQueues: React.FC = () => {
   );
 
   return (
-    <section className="mb-4">
-      <h2 className="text-base font-semibold">Task Queues & Priority System</h2>
-
-      {/* Runtime Context Introduction */}
-      <div className="mb-4 rounded-lg bg-amber-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-amber-900">Role in JavaScript Runtime</h3>
-        <p className="mb-2 text-xs text-amber-800">
-          Task Queues are the scheduling mechanism that manages when different types of asynchronous
-          operations execute. The Runtime maintains multiple queues with different priorities, and
-          the Event Loop processes them according to strict priority rules to ensure predictable
-          execution order.
-        </p>
-        <p className="text-xs text-amber-700">
-          <strong>Priority System:</strong> Script Tasks → Microtasks → Macrotasks → Animation
-          Frames → Idle Tasks
-        </p>
-      </div>
-
-      {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">Queue Priority & Processing Rules</h3>
-        <p className="mb-2 text-sm text-gray-700">
-          The Event Loop follows strict priority rules when processing task queues. This ensures
-          that critical operations like Promise resolutions happen before less critical operations
-          like timer callbacks.
-        </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Queue Types:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>Script Tasks:</strong> Initial script execution
-              </li>
-              <li>
-                <strong>Microtask Queue:</strong> Promise.then(), queueMicrotask()
-              </li>
-              <li>
-                <strong>Macrotask Queue:</strong> setTimeout(), DOM events
-              </li>
-              <li>
-                <strong>Animation Queue:</strong> requestAnimationFrame()
-              </li>
-            </ul>
-          </div>
-          <div>
-            <strong>Processing Rules:</strong>
-            <ul className="ml-3 list-disc">
-              <li>Execute all synchronous script first</li>
-              <li>Process ALL microtasks before next macrotask</li>
-              <li>Process ONE macrotask per loop iteration</li>
-              <li>Handle animation frames before rendering</li>
-            </ul>
+    <section className="mb-8">
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div className="bg-linear-to-br from-amber-50 via-orange-50 to-yellow-50 rounded-2xl p-8 mb-8 border border-amber-200 shadow-lg">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Task Queues &amp; Priority System
+          </h1>
+          <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+            JavaScript's concurrency model relies on multiple task queues with strict priority
+            rules. Understanding these queues — and the order the Event Loop processes them — is
+            essential for writing predictable, high-performance async code.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              {
+                label: 'Script (Sync)',
+                cls: 'bg-red-100 text-red-800',
+                icon: <Code2 className="w-4 h-4" />,
+              },
+              {
+                label: 'Microtask Queue',
+                cls: 'bg-green-100 text-green-800',
+                icon: <Zap className="w-4 h-4" />,
+              },
+              {
+                label: 'Macrotask Queue',
+                cls: 'bg-amber-100 text-amber-800',
+                icon: <Clock className="w-4 h-4" />,
+              },
+              {
+                label: 'Animation Frames',
+                cls: 'bg-purple-100 text-purple-800',
+                icon: <RefreshCw className="w-4 h-4" />,
+              },
+              {
+                label: 'Idle Callbacks',
+                cls: 'bg-slate-100 text-slate-800',
+                icon: <Activity className="w-4 h-4" />,
+              },
+            ].map(({ label, cls, icon }) => (
+              <span
+                key={label}
+                className={`inline-flex items-center gap-2 ${cls} px-4 py-2 rounded-full text-sm font-semibold`}
+              >
+                {icon} {label}
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="mt-2">
+      {/* ── How task queues work ───────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">How Task Queues Work</h2>
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">The Scheduling Mechanism</h3>
+            <p className="text-gray-700 mb-4 leading-relaxed">
+              When JavaScript code triggers an asynchronous operation — a timer, a network request,
+              a Promise resolution — the resulting callback doesn't execute immediately. Instead
+              it's placed in a <strong>queue</strong> based on its type.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              The Event Loop continuously checks these queues and moves callbacks onto the Call
+              Stack when it's empty. The order in which queues are checked is determined by a strict{' '}
+              <strong>priority hierarchy</strong> that JavaScript engines implement consistently
+              across browsers and runtimes.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Priority Hierarchy</h3>
+            <div className="bg-linear-to-r from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
+              <div className="space-y-2">
+                {[
+                  {
+                    n: '1',
+                    label: 'Script (Sync)',
+                    sub: 'Runs immediately — no queue',
+                    color: 'red',
+                  },
+                  {
+                    n: '2',
+                    label: 'Microtasks',
+                    sub: 'ALL drain before any macrotask',
+                    color: 'green',
+                  },
+                  { n: '3', label: 'Macrotasks', sub: 'ONE per loop tick', color: 'amber' },
+                  {
+                    n: '4',
+                    label: 'Animation Frames',
+                    sub: 'Before browser paint',
+                    color: 'purple',
+                  },
+                  {
+                    n: '5',
+                    label: 'Idle Callbacks',
+                    sub: 'Only when browser is free',
+                    color: 'slate',
+                  },
+                ].map(({ n, label, sub, color }) => {
+                  const c = colorCls[color];
+                  return (
+                    <div
+                      key={label}
+                      className={`flex items-center gap-3 ${c.bg} ${c.border} border rounded-lg p-2.5`}
+                    >
+                      <span
+                        className={`w-6 h-6 ${c.num} text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0`}
+                      >
+                        {n}
+                      </span>
+                      <div>
+                        <span className={`font-semibold ${c.text} text-sm`}>{label}</span>
+                        <span className="text-gray-500 text-xs ml-2">— {sub}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Processing rules timeline */}
+        <div className="bg-linear-to-r from-amber-50 to-orange-50 rounded-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-5">The Processing Rules</h3>
+          <div className="flex flex-wrap gap-3">
+            {processingRules.map(({ step, label, color, description, icon }) => {
+              const c = colorCls[color];
+              return (
+                <div
+                  key={step}
+                  className={`flex-1 min-w-36 ${c.bg} ${c.border} border rounded-xl p-4`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className={`w-7 h-7 ${c.num} text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0`}
+                    >
+                      {step}
+                    </span>
+                    <span className={`font-semibold ${c.text} text-sm`}>{label}</span>
+                  </div>
+                  <div className={`${c.text} mb-1`}>{icon}</div>
+                  <p className="text-xs text-gray-600">{description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Queue types deep-dive ──────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Queue Types in Detail</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {queueCards.map((q) => {
+            const c = colorCls[q.color];
+            return (
+              <div
+                key={q.type}
+                className={`${c.bg} ${c.border} border rounded-xl p-5 hover:shadow-md transition-shadow`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <span
+                    className={`w-9 h-9 ${c.num} text-white rounded-lg flex items-center justify-center shrink-0`}
+                  >
+                    {q.icon}
+                  </span>
+                  <div>
+                    <h3 className={`font-semibold ${c.text} text-base`}>{q.label}</h3>
+                    <span
+                      className={`text-xs font-bold ${c.num.replace('bg-', 'text-')} px-1.5 py-0.5 rounded ${c.bg}`}
+                    >
+                      Priority {q.priority}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-700 mb-3">{q.description}</p>
+                <div className="bg-white rounded-lg p-3 border border-gray-200 mb-2">
+                  <div className={`text-xs font-semibold ${c.text} mb-1.5`}>Sources:</div>
+                  <ul className="space-y-0.5">
+                    {q.sources.map((s) => (
+                      <li key={s} className="flex items-start gap-1.5 text-xs text-gray-600">
+                        <ArrowRight className="w-3 h-3 mt-0.5 shrink-0 text-gray-400" />
+                        <code className="font-mono">{s}</code>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <p className={`text-xs font-medium ${c.text} italic`}>{q.rule}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Code scenarios ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <Code2 className="inline w-7 h-7 mr-2 text-amber-600" />
+          Execution Order Scenarios
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Choose a scenario to see the exact console output order and understand which queue each
+          callback belongs to.
+        </p>
+        <div className="flex flex-wrap gap-2 mb-6">
+          {scenarios.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveScenario(i)}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                activeScenario === i
+                  ? 'bg-amber-500 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              {s.title}
+            </button>
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <BookOpen className="w-4 h-4 text-amber-600" />
+              <span className="font-semibold text-gray-800 text-sm">
+                {scenarios[activeScenario].title}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">{scenarios[activeScenario].description}</p>
+            <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
+              {scenarios[activeScenario].code}
+            </pre>
+          </div>
+          <div>
+            <div className="font-semibold text-gray-800 text-sm mb-3">
+              Console Output (in order)
+            </div>
+            <div className="space-y-2 mb-4">
+              {scenarios[activeScenario].output.map((line, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2"
+                >
+                  <span className="w-5 h-5 bg-amber-500 text-white rounded-full text-xs flex items-center justify-center font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  <code className="text-sm text-gray-800 font-mono">{line}</code>
+                </div>
+              ))}
+            </div>
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+              <strong>Why this order?</strong> {scenarios[activeScenario].explanation}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Interactive 2D Visualization ───────────────────────────────────── */}
+      <div className="mb-8">
         <TwoDLayout
           title="2D Visualization: Task Queues"
           editor={editor}
           output={outputPanel}
           canvas={canvas2D}
         />
+      </div>
+
+      {/* ── Common Gotchas ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <AlertTriangle className="inline w-7 h-7 mr-2 text-amber-500" />
+          Common Gotchas
+        </h2>
+        <p className="text-gray-600 mb-6">
+          These are the task-queue pitfalls that cause subtle bugs and unexpected execution
+          ordering.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {gotchas.map((g) => (
+            <div
+              key={g.title}
+              className={`border rounded-xl p-5 ${
+                g.severity === 'high' ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'
+              }`}
+            >
+              <div className="flex items-start gap-3 mb-2">
+                <AlertTriangle
+                  className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    g.severity === 'high' ? 'text-red-500' : 'text-amber-500'
+                  }`}
+                />
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">{g.title}</h3>
+                  <span
+                    className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                      g.severity === 'high'
+                        ? 'bg-red-200 text-red-800'
+                        : 'bg-amber-200 text-amber-800'
+                    }`}
+                  >
+                    {g.severity} severity
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 mb-3">{g.description}</p>
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <span className="text-xs font-semibold text-green-700">Fix: </span>
+                <span className="text-xs text-gray-700">{g.fix}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

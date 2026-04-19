@@ -1,4 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Cpu,
+  Globe,
+  RefreshCw,
+  Database,
+  Layers,
+  Play,
+  Square,
+  Server,
+  Trash2,
+  Settings,
+  Rocket,
+} from 'lucide-react';
 
 interface AnimationState {
   engineStep: number;
@@ -7,6 +21,7 @@ interface AnimationState {
 }
 
 const EngineRuntimeComparison: React.FC = () => {
+  const navigate = useNavigate();
   const [animationState, setAnimationState] = useState<AnimationState>({
     engineStep: 0,
     runtimeStep: 0,
@@ -14,9 +29,7 @@ const EngineRuntimeComparison: React.FC = () => {
   });
 
   const navigateToSection = (sectionName: string) => {
-    const baseUrl = '/javascript?section=';
-    const encodedSection = encodeURIComponent(sectionName);
-    window.location.href = baseUrl + encodedSection;
+    navigate(`/javascript?section=${encodeURIComponent(sectionName)}`);
   };
 
   const startAnimation = () => {
@@ -445,33 +458,41 @@ const EngineRuntimeComparison: React.FC = () => {
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50 rounded-2xl p-8 mb-8 border border-blue-200 shadow-lg">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <div className="flex justify-center gap-3 mb-5">
+            <div className="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 ring-4 ring-blue-100">
+              <Cpu className="w-7 h-7 text-white" />
+            </div>
+            <div className="w-14 h-14 bg-purple-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-200 ring-4 ring-purple-100">
+              <Globe className="w-7 h-7 text-white" />
+            </div>
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-3">
             Engine vs Runtime: The Critical Distinction
           </h1>
-          <p className="text-xl text-gray-600 leading-relaxed mb-6">
+          <p className="text-xl text-gray-600 leading-relaxed mb-8 max-w-2xl mx-auto">
             Understanding the difference between the JavaScript engine and runtime environment is
             crucial for mastering how JavaScript really works under the hood.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg p-4 border border-blue-200 shadow-sm">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">V8</span>
+            <div className="bg-white rounded-xl p-5 border border-blue-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-sm shadow-blue-200">
+                  <span className="text-white font-black text-sm">V8</span>
                 </div>
+                <h3 className="font-bold text-blue-800 text-lg">JavaScript Engine</h3>
               </div>
-              <h3 className="font-bold text-blue-800 mb-2">JavaScript Engine</h3>
-              <p className="text-sm text-blue-600">
+              <p className="text-sm text-blue-600 leading-relaxed">
                 Parses, compiles, and executes ECMAScript code with Call Stack and Memory Heap
               </p>
             </div>
-            <div className="bg-white rounded-lg p-4 border border-purple-200 shadow-sm">
-              <div className="flex items-center justify-center mb-3">
-                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">RT</span>
+            <div className="bg-white rounded-xl p-5 border border-purple-200 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow-sm shadow-purple-200">
+                  <Globe className="w-5 h-5 text-white" />
                 </div>
+                <h3 className="font-bold text-purple-800 text-lg">JavaScript Runtime</h3>
               </div>
-              <h3 className="font-bold text-purple-800 mb-2">JavaScript Runtime</h3>
-              <p className="text-sm text-purple-600">
+              <p className="text-sm text-purple-600 leading-relaxed">
                 Engine + Environment APIs + Event Loop providing complete execution environment
               </p>
             </div>
@@ -483,9 +504,9 @@ const EngineRuntimeComparison: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Engine Theory */}
         <div className="bg-white rounded-xl p-6 border border-blue-200 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
-              <span className="text-white font-bold text-sm">⚙️</span>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <div className="w-9 h-9 bg-blue-500 rounded-xl flex items-center justify-center shadow-sm shadow-blue-200 flex-shrink-0">
+              <Cpu className="w-5 h-5 text-white" />
             </div>
             The JavaScript Engine
           </h2>
@@ -565,9 +586,9 @@ const EngineRuntimeComparison: React.FC = () => {
 
         {/* Runtime Theory */}
         <div className="bg-white rounded-xl p-6 border border-purple-200 shadow-sm">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center">
-            <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
-              <span className="text-white font-bold text-sm">🌐</span>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+            <div className="w-9 h-9 bg-purple-500 rounded-xl flex items-center justify-center shadow-sm shadow-purple-200 flex-shrink-0">
+              <Globe className="w-5 h-5 text-white" />
             </div>
             The JavaScript Runtime
           </h2>
@@ -603,8 +624,8 @@ const EngineRuntimeComparison: React.FC = () => {
               <h3 className="font-semibold text-gray-900 mb-3">Runtime Examples</h3>
               <div className="grid grid-cols-1 gap-3">
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-blue-600 text-lg">🌐</span>
+                  <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Globe className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Browser Runtime</h4>
@@ -612,8 +633,8 @@ const EngineRuntimeComparison: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span className="text-green-600 text-lg">🚀</span>
+                  <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Server className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-gray-900">Node.js Runtime</h4>
@@ -639,17 +660,17 @@ const EngineRuntimeComparison: React.FC = () => {
             <button
               onClick={startAnimation}
               disabled={animationState.isPlaying}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium transition-colors"
             >
-              <span>▶️</span>
-              <span>Play Animation</span>
+              <Play className="w-4 h-4" />
+              Play Animation
             </button>
             <button
               onClick={stopAnimation}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center space-x-2"
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 flex items-center gap-2 text-sm font-medium transition-colors"
             >
-              <span>⏹️</span>
-              <span>Stop</span>
+              <Square className="w-4 h-4" />
+              Stop
             </button>
           </div>
         </div>
@@ -726,11 +747,11 @@ const EngineRuntimeComparison: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => navigateToSection('Call Stack')}
-            className="p-4 rounded-lg border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors group text-left"
+            className="p-4 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors group text-left"
           >
-            <div className="flex items-center mb-2">
-              <div className="w-8 h-8 bg-blue-200 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-blue-700 text-sm">📚</span>
+            <div className="flex items-center mb-2 gap-2">
+              <div className="w-9 h-9 bg-blue-200 rounded-xl flex items-center justify-center">
+                <Layers className="w-4 h-4 text-blue-700" />
               </div>
               <h3 className="font-semibold text-blue-800 group-hover:text-blue-900">Call Stack</h3>
             </div>
@@ -739,11 +760,11 @@ const EngineRuntimeComparison: React.FC = () => {
 
           <button
             onClick={() => navigateToSection('Memory Heap')}
-            className="p-4 rounded-lg border border-green-200 bg-green-50 hover:bg-green-100 transition-colors group text-left"
+            className="p-4 rounded-xl border border-green-200 bg-green-50 hover:bg-green-100 transition-colors group text-left"
           >
-            <div className="flex items-center mb-2">
-              <div className="w-8 h-8 bg-green-200 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-green-700 text-sm">🧠</span>
+            <div className="flex items-center mb-2 gap-2">
+              <div className="w-9 h-9 bg-green-200 rounded-xl flex items-center justify-center">
+                <Database className="w-4 h-4 text-green-700" />
               </div>
               <h3 className="font-semibold text-green-800 group-hover:text-green-900">
                 Memory Heap
@@ -754,11 +775,11 @@ const EngineRuntimeComparison: React.FC = () => {
 
           <button
             onClick={() => navigateToSection('Event Loop')}
-            className="p-4 rounded-lg border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors group text-left"
+            className="p-4 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 transition-colors group text-left"
           >
-            <div className="flex items-center mb-2">
-              <div className="w-8 h-8 bg-purple-200 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-purple-700 text-sm">🔄</span>
+            <div className="flex items-center mb-2 gap-2">
+              <div className="w-9 h-9 bg-purple-200 rounded-xl flex items-center justify-center">
+                <RefreshCw className="w-4 h-4 text-purple-700" />
               </div>
               <h3 className="font-semibold text-purple-800 group-hover:text-purple-900">
                 Event Loop
@@ -769,11 +790,11 @@ const EngineRuntimeComparison: React.FC = () => {
 
           <button
             onClick={() => navigateToSection('Memory Management')}
-            className="p-4 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 transition-colors group text-left"
+            className="p-4 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 transition-colors group text-left"
           >
-            <div className="flex items-center mb-2">
-              <div className="w-8 h-8 bg-red-200 rounded-lg flex items-center justify-center mr-2">
-                <span className="text-red-700 text-sm">🗑️</span>
+            <div className="flex items-center mb-2 gap-2">
+              <div className="w-9 h-9 bg-red-200 rounded-xl flex items-center justify-center">
+                <Trash2 className="w-4 h-4 text-red-700" />
               </div>
               <h3 className="font-semibold text-red-800 group-hover:text-red-900">Memory Mgmt</h3>
             </div>
@@ -793,21 +814,34 @@ const EngineRuntimeComparison: React.FC = () => {
             that make real applications possible.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            <div className="text-center">
-              <div className="text-3xl mb-2">⚙️</div>
-              <div className="font-semibold">Engine Mastery</div>
-              <div className="text-sm text-blue-200">JIT compilation, Call Stack, Memory Heap</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl mb-2">🌐</div>
-              <div className="font-semibold">Runtime Understanding</div>
-              <div className="text-sm text-blue-200">Event Loop, APIs, async coordination</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl mb-2">🚀</div>
-              <div className="font-semibold">Performance Optimization</div>
-              <div className="text-sm text-blue-200">Efficient code patterns and execution</div>
-            </div>
+            {[
+              {
+                icon: <Settings className="w-7 h-7 text-blue-200" />,
+                title: 'Engine Mastery',
+                desc: 'JIT compilation, Call Stack, Memory Heap',
+              },
+              {
+                icon: <Globe className="w-7 h-7 text-purple-200" />,
+                title: 'Runtime Understanding',
+                desc: 'Event Loop, APIs, async coordination',
+              },
+              {
+                icon: <Rocket className="w-7 h-7 text-blue-200" />,
+                title: 'Performance Optimization',
+                desc: 'Efficient code patterns and execution',
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="bg-white/10 rounded-xl p-5 flex flex-col items-center gap-3"
+              >
+                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
+                  {item.icon}
+                </div>
+                <div className="font-semibold">{item.title}</div>
+                <div className="text-sm text-blue-200 text-center">{item.desc}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

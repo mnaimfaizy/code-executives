@@ -1,4 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Activity,
+  Globe,
+  Layers,
+  Radio,
+  Server,
+  Zap,
+  ArrowRight,
+  GitBranch,
+  Clock,
+  RefreshCw,
+  Shield,
+  Package,
+  CheckCircle2,
+  XCircle,
+} from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
@@ -226,7 +243,7 @@ const Runtime2D: React.FC<{
   );
 };
 
-const JavaScriptRuntime: React.FC = () => {
+const RuntimeVisualizationSection: React.FC = () => {
   const [inputMode, setInputMode] = useState<'js' | 'dsl'>('js');
   const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([{ text: 'Runtime ready.', kind: 'info' }]);
@@ -471,68 +488,6 @@ const JavaScriptRuntime: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">JavaScript Runtime Environment</h2>
-
-      {/* Runtime Context Introduction */}
-      <div className="mb-4 rounded-lg bg-indigo-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-indigo-900">Runtime vs Engine</h3>
-        <p className="mb-2 text-xs text-indigo-800">
-          The JavaScript Runtime is the complete execution environment that includes the Engine plus
-          additional APIs, event systems, and I/O capabilities. Different runtimes (Browser,
-          Node.js, Deno, Bun) provide different sets of APIs and capabilities while sharing the same
-          core JavaScript Engine.
-        </p>
-        <p className="text-xs text-indigo-700">
-          <strong>Runtime = Engine + Web APIs + Event Loop + Task Queues + I/O Systems</strong>
-        </p>
-      </div>
-
-      {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">Runtime Architecture</h3>
-        <p className="mb-2 text-sm text-gray-700">
-          JavaScript runtimes provide the execution environment for JavaScript code. They integrate
-          the JavaScript engine with platform-specific APIs, event systems, and I/O operations to
-          create complete application platforms.
-        </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Runtime Components:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>JavaScript Engine:</strong> Core execution (V8, SpiderMonkey)
-              </li>
-              <li>
-                <strong>Web APIs:</strong> Platform-specific functionality
-              </li>
-              <li>
-                <strong>Event Loop:</strong> Asynchronous operation coordination
-              </li>
-              <li>
-                <strong>Task Queues:</strong> Callback and promise scheduling
-              </li>
-            </ul>
-          </div>
-          <div>
-            <strong>Runtime Types:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>Browser:</strong> DOM, Fetch, Timers, WebGL
-              </li>
-              <li>
-                <strong>Node.js:</strong> File System, HTTP, Process APIs
-              </li>
-              <li>
-                <strong>Deno:</strong> Web Standards, Security, TypeScript
-              </li>
-              <li>
-                <strong>Bun:</strong> Fast bundling, Native performance
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
       <div className="mt-2">
         <TwoDLayout
           title="2D Visualization: JavaScript Runtime"
@@ -540,6 +495,407 @@ const JavaScriptRuntime: React.FC = () => {
           output={outputPanel}
           canvas={canvas2D}
         />
+      </div>
+    </section>
+  );
+};
+
+// ─── Sub-section navigation cards ───────────────────────────────────────────
+const runtimeSubSections = [
+  {
+    id: 'Event Loop & Coordination',
+    title: 'Event Loop & Coordination',
+    description:
+      'How JavaScript orchestrates async operations — microtask queue, macrotask queue, and the tick cycle.',
+    icon: <RefreshCw className="w-5 h-5" />,
+    color: 'yellow',
+    tags: ['Microtasks', 'Macrotasks', 'Concurrency'],
+  },
+  {
+    id: 'Web APIs & Platform',
+    title: 'Web APIs & Platform',
+    description:
+      'Browser and server-side platform APIs that extend the engine — DOM, Fetch, File System, Timers, and more.',
+    icon: <Globe className="w-5 h-5" />,
+    color: 'blue',
+    tags: ['DOM', 'Fetch', 'Timers', 'fs'],
+  },
+  {
+    id: 'Task Queues & Priority',
+    title: 'Task Queues & Priority',
+    description:
+      'Deep dive into Promise microtasks, setTimeout macrotasks, and queueMicrotask scheduling order.',
+    icon: <Layers className="w-5 h-5" />,
+    color: 'purple',
+    tags: ['Priority', 'Scheduling', 'Promises'],
+  },
+  {
+    id: 'V8 Runtime Features',
+    title: 'V8 Runtime Features',
+    description:
+      'V8-specific runtime optimisations: hidden classes, inline caches, shape transitions, and deoptimisation.',
+    icon: <Zap className="w-5 h-5" />,
+    color: 'green',
+    tags: ['Hidden Classes', 'IC', 'Deopt'],
+  },
+];
+
+const colorMap: Record<
+  string,
+  { bg: string; border: string; icon: string; tag: string; btn: string }
+> = {
+  yellow: {
+    bg: 'bg-yellow-50',
+    border: 'border-yellow-200',
+    icon: 'bg-yellow-100 text-yellow-600',
+    tag: 'bg-yellow-100 text-yellow-700',
+    btn: 'bg-yellow-500 hover:bg-yellow-600',
+  },
+  blue: {
+    bg: 'bg-blue-50',
+    border: 'border-blue-200',
+    icon: 'bg-blue-100 text-blue-600',
+    tag: 'bg-blue-100 text-blue-700',
+    btn: 'bg-blue-500 hover:bg-blue-600',
+  },
+  purple: {
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    icon: 'bg-purple-100 text-purple-600',
+    tag: 'bg-purple-100 text-purple-700',
+    btn: 'bg-purple-500 hover:bg-purple-600',
+  },
+  green: {
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    icon: 'bg-green-100 text-green-600',
+    tag: 'bg-green-100 text-green-700',
+    btn: 'bg-green-500 hover:bg-green-600',
+  },
+};
+
+// ─── Runtime comparison data ─────────────────────────────────────────────────
+const runtimeRows = [
+  {
+    feature: 'JavaScript Engine',
+    browser: 'V8 / SpiderMonkey',
+    node: 'V8',
+    deno: 'V8',
+    bun: 'JavaScriptCore',
+  },
+  { feature: 'TypeScript built-in', browser: false, node: false, deno: true, bun: true },
+  { feature: 'DOM / Web APIs', browser: true, node: false, deno: 'Partial', bun: 'Partial' },
+  { feature: 'Fetch API', browser: true, node: 'v18+', deno: true, bun: true },
+  { feature: 'File System API', browser: false, node: true, deno: true, bun: true },
+  { feature: 'HTTP Server built-in', browser: false, node: true, deno: true, bun: true },
+  {
+    feature: 'Package Manager',
+    browser: 'N/A',
+    node: 'npm/pnpm/yarn',
+    deno: 'jsr/npm',
+    bun: 'bun (built-in)',
+  },
+  { feature: 'Secure-by-default', browser: 'Same-origin', node: false, deno: true, bun: false },
+  { feature: 'Startup speed', browser: '—', node: 'Fast', deno: 'Fast', bun: 'Fastest' },
+];
+
+function CellValue({ value }: { value: string | boolean }) {
+  if (value === true) return <CheckCircle2 className="w-4 h-4 text-green-500 mx-auto" />;
+  if (value === false) return <XCircle className="w-4 h-4 text-red-400 mx-auto" />;
+  return <span className="text-xs text-gray-700">{value as string}</span>;
+}
+
+// ─── Main exported page ───────────────────────────────────────────────────────
+const JavaScriptRuntime: React.FC = () => {
+  const navigate = useNavigate();
+
+  const navigateTo = (sectionId: string) =>
+    navigate(`/javascript?section=${encodeURIComponent(sectionId)}`);
+
+  return (
+    <section className="mb-8">
+      {/* ── Hero ── */}
+      <div className="bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 rounded-2xl p-8 mb-8 border border-indigo-200 shadow-lg">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">JavaScript Runtime Environment</h1>
+          <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+            Beyond the engine lies the runtime — the complete execution environment that powers
+            every JavaScript application. Discover how Browser, Node.js, Deno, and Bun each wrap the
+            same core engine with radically different platform capabilities.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              {
+                label: 'Event Loop',
+                icon: <RefreshCw className="w-4 h-4" />,
+                cls: 'bg-yellow-100 text-yellow-800',
+              },
+              {
+                label: 'Web APIs',
+                icon: <Globe className="w-4 h-4" />,
+                cls: 'bg-blue-100 text-blue-800',
+              },
+              {
+                label: 'Task Queues',
+                icon: <Layers className="w-4 h-4" />,
+                cls: 'bg-purple-100 text-purple-800',
+              },
+              {
+                label: 'V8 Optimisations',
+                icon: <Zap className="w-4 h-4" />,
+                cls: 'bg-green-100 text-green-800',
+              },
+              {
+                label: 'Node.js / Deno / Bun',
+                icon: <Server className="w-4 h-4" />,
+                cls: 'bg-orange-100 text-orange-800',
+              },
+            ].map(({ label, icon, cls }) => (
+              <span
+                key={label}
+                className={`inline-flex items-center gap-2 ${cls} px-4 py-2 rounded-full text-sm font-semibold`}
+              >
+                {icon} {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Runtime vs Engine ── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Runtime vs Engine</h2>
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              What is a JavaScript Runtime?
+            </h3>
+            <p className="text-gray-700 mb-4 leading-relaxed">
+              The JavaScript <strong>Runtime</strong> is everything the engine (V8, SpiderMonkey,
+              JavaScriptCore) needs to actually run real-world code: a host environment that injects
+              platform-specific APIs, wires up an event loop, and manages I/O callbacks.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Think of the engine as the car's combustion unit — it converts fuel (code) into
+              movement (execution). The runtime is the whole car: steering wheel (APIs), dashboard
+              (event system), gearbox (task queues), and wheels (I/O drivers).
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">The Simple Formula</h3>
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-200 text-center">
+              <p className="text-lg font-mono font-semibold text-indigo-900 mb-4">
+                Runtime = Engine + Host APIs + Event Loop + Task Queues + I/O
+              </p>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                {[
+                  { label: 'Engine', sub: 'Parse · Compile · Execute', color: 'blue' },
+                  { label: 'Host APIs', sub: 'DOM · Fetch · fs · timers', color: 'purple' },
+                  { label: 'Event Loop', sub: 'Tick · Drain · Repeat', color: 'yellow' },
+                  { label: 'Task Queues', sub: 'Micro · Macro · Priority', color: 'green' },
+                ].map(({ label, sub, color }) => (
+                  <div
+                    key={label}
+                    className={`bg-${color}-50 border border-${color}-200 rounded-lg p-3`}
+                  >
+                    <div className={`font-bold text-${color}-800 text-sm`}>{label}</div>
+                    <div className={`text-${color}-600 text-xs mt-1`}>{sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Core architecture principles */}
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Architecture Principles</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            {[
+              {
+                icon: <Activity className="w-4 h-4" />,
+                title: 'Non-Blocking I/O',
+                body: 'All I/O is asynchronous. The runtime hands off work to the OS and resumes execution via callbacks, enabling high concurrency on a single thread.',
+              },
+              {
+                icon: <Radio className="w-4 h-4" />,
+                title: 'Event-Driven Model',
+                body: 'The event loop processes one callback at a time from the task queue, guaranteeing that JavaScript code is never interrupted mid-execution.',
+              },
+              {
+                icon: <GitBranch className="w-4 h-4" />,
+                title: 'Platform Abstraction',
+                body: 'Each runtime abstracts the underlying OS (file system, networking, processes) through a unified API surface, hiding platform differences.',
+              },
+              {
+                icon: <Clock className="w-4 h-4" />,
+                title: 'Micro/Macro Scheduling',
+                body: 'Promise callbacks are microtasks (run before the next tick), while setTimeout/setInterval are macrotasks (run once per tick per item).',
+              },
+            ].map(({ icon, title, body }) => (
+              <div key={title}>
+                <h4 className="font-semibold text-indigo-800 mb-2 flex items-center gap-2">
+                  {icon} {title}
+                </h4>
+                <p className="text-sm text-gray-700">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Interactive 2D Visualization ── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Interactive Runtime Simulation</h2>
+        <p className="text-gray-600 mb-6">
+          Write JavaScript or use the Runtime DSL to simulate how different runtime environments
+          initialise, activate platform components, and work through their task queues.
+        </p>
+        <RuntimeVisualizationSection />
+      </div>
+
+      {/* ── Sub-section Navigation ── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Explore Runtime Sub-topics</h2>
+        <p className="text-gray-600 mb-6">
+          Each sub-section dives deeper into one aspect of the JavaScript Runtime with its own
+          interactive visualisation and code runner.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {runtimeSubSections.map((sec) => {
+            const c = colorMap[sec.color];
+            return (
+              <div
+                key={sec.id}
+                className={`${c.bg} ${c.border} border rounded-xl p-6 hover:shadow-md transition-shadow`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                      <span
+                        className={`w-8 h-8 ${c.icon} rounded-lg flex items-center justify-center flex-shrink-0`}
+                      >
+                        {sec.icon}
+                      </span>
+                      {sec.title}
+                    </h3>
+                    <p className="text-sm text-gray-700 mb-3">{sec.description}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {sec.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={`${c.tag} text-xs px-2 py-0.5 rounded-full font-medium`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigateTo(sec.id)}
+                    className={`ml-4 ${c.btn} text-white px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-1`}
+                  >
+                    Explore <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Runtime Comparison Table ── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">Runtime Comparison</h2>
+        <p className="text-gray-600 mb-6">
+          All four major JavaScript runtimes share the V8 or JSC engine but differ significantly in
+          their API surface, security model, and ecosystem.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="text-left p-4 font-semibold text-gray-700">Feature</th>
+                {[
+                  {
+                    label: 'Browser',
+                    color: 'text-blue-700',
+                    bg: 'bg-blue-50',
+                    icon: <Globe className="w-4 h-4 inline mr-1" />,
+                  },
+                  {
+                    label: 'Node.js',
+                    color: 'text-green-700',
+                    bg: 'bg-green-50',
+                    icon: <Server className="w-4 h-4 inline mr-1" />,
+                  },
+                  {
+                    label: 'Deno',
+                    color: 'text-purple-700',
+                    bg: 'bg-purple-50',
+                    icon: <Shield className="w-4 h-4 inline mr-1" />,
+                  },
+                  {
+                    label: 'Bun',
+                    color: 'text-orange-700',
+                    bg: 'bg-orange-50',
+                    icon: <Package className="w-4 h-4 inline mr-1" />,
+                  },
+                ].map(({ label, color, bg, icon }) => (
+                  <th key={label} className={`p-4 text-center font-semibold ${color} ${bg}`}>
+                    {icon}
+                    {label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {runtimeRows.map((row, i) => (
+                <tr key={row.feature} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <td className="p-4 font-medium text-gray-800">{row.feature}</td>
+                  <td className="p-4 text-center">
+                    <CellValue value={row.browser} />
+                  </td>
+                  <td className="p-4 text-center">
+                    <CellValue value={row.node} />
+                  </td>
+                  <td className="p-4 text-center">
+                    <CellValue value={row.deno} />
+                  </td>
+                  <td className="p-4 text-center">
+                    <CellValue value={row.bun} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Key Takeaways ── */}
+      <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-8 border border-indigo-200">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Key Takeaways</h2>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {
+              title: 'Same Engine, Different World',
+              body: 'V8 executes the same ECMAScript inside Chrome and Node.js, but the surrounding runtime APIs are completely different — there is no DOM in Node.js, and no fs module in the browser.',
+            },
+            {
+              title: 'Async Without Threads',
+              body: 'JavaScript achieves high I/O throughput without multi-threading by delegating blocking work to the OS and resuming through the event loop — one callback at a time.',
+            },
+            {
+              title: 'Microtasks First',
+              body: 'Promise callbacks always run before the next macrotask, regardless of when they are scheduled. Mastering this ordering is essential for predictable async code.',
+            },
+          ].map(({ title, body }) => (
+            <div key={title} className="bg-white rounded-lg p-5 shadow-sm border border-indigo-100">
+              <h3 className="font-semibold text-indigo-900 mb-2">{title}</h3>
+              <p className="text-sm text-gray-700 leading-relaxed">{body}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

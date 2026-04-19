@@ -1,4 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  Search,
+  Cpu,
+  ScanText,
+  GitBranch,
+  LayoutList,
+  ArrowRight,
+  Lightbulb,
+  Tag,
+} from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
@@ -421,49 +431,119 @@ const ParserAST: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Parser & Abstract Syntax Tree</h2>
+      {/* Hero Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Search className="w-5 h-5 text-purple-600" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-900 leading-tight">
+            Parser & Abstract Syntax Tree
+          </h2>
+          <p className="text-xs text-gray-500">
+            lexical analysis · tokenization · AST construction
+          </p>
+        </div>
+      </div>
 
       {/* Engine Context Introduction */}
-      <div className="mb-4 rounded-lg bg-purple-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-purple-900">Role in JavaScript Engine</h3>
-        <p className="mb-2 text-xs text-purple-800">
+      <div className="mb-4 rounded-xl bg-purple-50 border border-purple-100 p-4">
+        <h3 className="mb-2 text-sm font-semibold text-purple-900 flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-purple-600" />
+          Role in JavaScript Engine
+        </h3>
+        <p className="mb-3 text-xs text-purple-800 leading-relaxed">
           The Parser is the first major component in the JavaScript engine pipeline. It transforms
           source code into tokens (lexical analysis) and then builds an Abstract Syntax Tree
           (syntactic analysis).
         </p>
-        <p className="text-xs text-purple-700">
-          <strong>Engine Pipeline:</strong> Source Code → Tokenization → Parsing → AST → Bytecode
-          Generation
-        </p>
+        <div className="flex flex-wrap items-center gap-1 text-xs font-medium">
+          <strong className="text-purple-800">Engine Pipeline:</strong>
+          {['Source Code', 'Tokenization', 'Parsing', 'AST', 'Bytecode Generation'].map(
+            (step, i, arr) => (
+              <React.Fragment key={step}>
+                <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">
+                  {step}
+                </span>
+                {i < arr.length - 1 && <span className="text-purple-400">→</span>}
+              </React.Fragment>
+            )
+          )}
+        </div>
       </div>
 
       {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">Parsing Process</h3>
-        <p className="mb-2 text-sm text-gray-700">
+      <div className="mb-4 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+        <h3 className="mb-2 text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <LayoutList className="w-4 h-4 text-gray-600" />
+          Parsing Process
+        </h3>
+        <p className="mb-3 text-sm text-gray-700 leading-relaxed">
           Parsing involves two main phases: lexical analysis (tokenization) and syntactic analysis
           (AST construction). The parser validates syntax and creates a structured representation
           for the compiler.
         </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Lexical Analysis:</strong>
-            <ul className="ml-3 list-disc">
-              <li>Break code into tokens</li>
-              <li>Identify keywords, operators</li>
-              <li>Handle literals & identifiers</li>
-              <li>Skip whitespace & comments</li>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-3">
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-purple-500" />
+              Lexical Analysis
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                'Break code into tokens',
+                'Identify keywords, operators',
+                'Handle literals & identifiers',
+                'Skip whitespace & comments',
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-1.5">
+                  <span className="mt-0.5 w-3.5 h-3.5 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                  </span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
-          <div>
-            <strong>Syntactic Analysis:</strong>
-            <ul className="ml-3 list-disc">
-              <li>Build Abstract Syntax Tree</li>
-              <li>Validate grammar rules</li>
-              <li>Handle precedence & associativity</li>
-              <li>Detect syntax errors</li>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <GitBranch className="w-3.5 h-3.5 text-indigo-500" />
+              Syntactic Analysis
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                {
+                  text: 'Build Abstract Syntax Tree',
+                  icon: <ScanText className="w-3 h-3 text-indigo-500" />,
+                },
+                {
+                  text: 'Validate grammar rules',
+                  icon: <ArrowRight className="w-3 h-3 text-indigo-500" />,
+                },
+                {
+                  text: 'Handle precedence & associativity',
+                  icon: <ArrowRight className="w-3 h-3 text-indigo-500" />,
+                },
+                {
+                  text: 'Detect syntax errors',
+                  icon: <ArrowRight className="w-3 h-3 text-indigo-500" />,
+                },
+              ].map(({ text, icon }) => (
+                <li key={text} className="flex items-start gap-1.5">
+                  <span className="mt-0.5 flex-shrink-0">{icon}</span>
+                  {text}
+                </li>
+              ))}
             </ul>
           </div>
+        </div>
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
+          <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <strong>Key Insight:</strong> The AST is a language-agnostic tree representation of your
+            code's structure — it strips away whitespace and comments, keeping only the semantically
+            meaningful parts that V8 needs to generate bytecode.
+          </p>
         </div>
       </div>
 

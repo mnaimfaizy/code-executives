@@ -1,4 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  Rocket,
+  Cpu,
+  TrendingUp,
+  LayoutList,
+  ArrowRight,
+  Lightbulb,
+  BarChart2,
+} from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
@@ -366,57 +375,125 @@ const JITCompilation: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Just-In-Time (JIT) Compilation</h2>
+      {/* Hero Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Rocket className="w-5 h-5 text-orange-600" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-900 leading-tight">
+            Just-In-Time (JIT) Compilation
+          </h2>
+          <p className="text-xs text-gray-500">
+            tiered compilation · hot-path optimization · adaptive deoptimization
+          </p>
+        </div>
+      </div>
 
       {/* Engine Context Introduction */}
-      <div className="mb-4 rounded-lg bg-orange-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-orange-900">Role in JavaScript Engine</h3>
-        <p className="mb-2 text-xs text-orange-800">
+      <div className="mb-4 rounded-xl bg-orange-50 border border-orange-100 p-4">
+        <h3 className="mb-2 text-sm font-semibold text-orange-900 flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-orange-600" />
+          Role in JavaScript Engine
+        </h3>
+        <p className="mb-3 text-xs text-orange-800 leading-relaxed">
           JIT Compilation bridges the gap between interpretation and ahead-of-time compilation. The
           engine starts with interpretation for fast startup, then progressively compiles hot code
           paths for optimal performance.
         </p>
-        <p className="text-xs text-orange-700">
-          <strong>Engine Integration:</strong> AST → Bytecode → Interpreter → Baseline JIT →
-          Optimizing JIT → Native Code
-        </p>
+        <div className="flex flex-wrap items-center gap-1 text-xs font-medium">
+          <strong className="text-orange-800">Engine Integration:</strong>
+          {['AST', 'Bytecode', 'Interpreter', 'Baseline JIT', 'Optimizing JIT', 'Native Code'].map(
+            (step, i, arr) => (
+              <React.Fragment key={step}>
+                <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                  {step}
+                </span>
+                {i < arr.length - 1 && <span className="text-orange-400">→</span>}
+              </React.Fragment>
+            )
+          )}
+        </div>
       </div>
 
       {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">JIT Compilation Strategy</h3>
-        <p className="mb-2 text-sm text-gray-700">
+      <div className="mb-4 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+        <h3 className="mb-2 text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <LayoutList className="w-4 h-4 text-gray-600" />
+          JIT Compilation Strategy
+        </h3>
+        <p className="mb-3 text-sm text-gray-700 leading-relaxed">
           Modern JavaScript engines use tiered compilation: starting with fast interpretation and
           progressively optimizing frequently executed code. This balances startup time with peak
           performance.
         </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Compilation Tiers:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>Interpreter:</strong> Fast startup, slower execution
-              </li>
-              <li>
-                <strong>Baseline JIT:</strong> Quick compilation, moderate optimization
-              </li>
-              <li>
-                <strong>Optimizing JIT:</strong> Slow compilation, aggressive optimization
-              </li>
-              <li>
-                <strong>Deoptimization:</strong> Fallback when assumptions fail
-              </li>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-3">
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <BarChart2 className="w-3.5 h-3.5 text-orange-500" />
+              Compilation Tiers
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                {
+                  tier: 'Interpreter',
+                  desc: 'Fast startup, slower execution',
+                  color: 'text-blue-500',
+                },
+                {
+                  tier: 'Baseline JIT',
+                  desc: 'Quick compilation, moderate optimization',
+                  color: 'text-yellow-500',
+                },
+                {
+                  tier: 'Optimizing JIT',
+                  desc: 'Aggressive optimization, peak speed',
+                  color: 'text-orange-500',
+                },
+                {
+                  tier: 'Deoptimization',
+                  desc: 'Fallback when assumptions fail',
+                  color: 'text-red-500',
+                },
+              ].map(({ tier, desc, color }) => (
+                <li key={tier} className="flex items-start gap-1.5">
+                  <ArrowRight className={`w-3 h-3 mt-0.5 flex-shrink-0 ${color}`} />
+                  <span>
+                    <strong>{tier}:</strong> {desc}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
-          <div>
-            <strong>Optimization Triggers:</strong>
-            <ul className="ml-3 list-disc">
-              <li>High execution frequency</li>
-              <li>Hot loop detection</li>
-              <li>Type stability analysis</li>
-              <li>Inline caching effectiveness</li>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+              Optimization Triggers
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                'High execution frequency',
+                'Hot loop detection',
+                'Type stability analysis',
+                'Inline caching effectiveness',
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-1.5">
+                  <span className="mt-0.5 w-3.5 h-3.5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  </span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
+        </div>
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
+          <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <strong>Key Insight:</strong> Keep your objects' shapes consistent and avoid changing
+            variable types — this lets TurboFan make stable type assumptions and skip
+            re-compilation, keeping your code on the fast path.
+          </p>
         </div>
       </div>
 
