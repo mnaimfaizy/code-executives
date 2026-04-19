@@ -220,13 +220,7 @@ const AbstractionLayers2D: React.FC = () => {
                   strokeWidth={1}
                 />
                 {/* Layer title */}
-                <text
-                  x={20}
-                  y={y + 16}
-                  fill={layer.color}
-                  fontSize="11"
-                  fontWeight="700"
-                >
+                <text x={20} y={y + 16} fill={layer.color} fontSize="11" fontWeight="700">
                   {layer.name}
                 </text>
 
@@ -242,11 +236,7 @@ const AbstractionLayers2D: React.FC = () => {
                   return (
                     <g
                       key={item.label}
-                      onClick={() =>
-                        setExpandedItem(
-                          isExpanded ? null : `${layerIdx}-${itemIdx}`
-                        )
-                      }
+                      onClick={() => setExpandedItem(isExpanded ? null : `${layerIdx}-${itemIdx}`)}
                     >
                       <rect
                         x={itemX}
@@ -269,7 +259,8 @@ const AbstractionLayers2D: React.FC = () => {
                         fontWeight="700"
                         fontFamily="ui-monospace, monospace"
                       >
-                        {isInterface ? '\u00AB' : ''}{isAbstract ? 'abstract ' : ''}
+                        {isInterface ? '\u00AB' : ''}
+                        {isAbstract ? 'abstract ' : ''}
                         {item.label}
                         {isInterface ? '\u00BB' : ''}
                       </text>
@@ -340,14 +331,19 @@ const AbstractionLayers2D: React.FC = () => {
           Interface
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-4 h-3 border border-purple-400 bg-purple-50 inline-block" style={{ borderStyle: 'dashed' }} />{' '}
+          <span
+            className="w-4 h-3 border border-purple-400 bg-purple-50 inline-block"
+            style={{ borderStyle: 'dashed' }}
+          />{' '}
           Abstract class
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-4 h-3 rounded border border-emerald-400 bg-emerald-50 inline-block" />{' '}
           Concrete class
         </span>
-        <span className="ml-auto text-gray-400 italic">Hover layers \u00b7 Click boxes to expand</span>
+        <span className="ml-auto text-gray-400 italic">
+          Hover layers \u00b7 Click boxes to expand
+        </span>
       </div>
     </div>
   );

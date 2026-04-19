@@ -277,7 +277,14 @@ const DecoratorPipeline2D: React.FC = () => {
           {/* Execution order arrow on the right */}
           {animStep >= 0 && (
             <g>
-              <text x={640} y={50} textAnchor="middle" fill="#9ca3af" fontSize="10" fontWeight="600">
+              <text
+                x={640}
+                y={50}
+                textAnchor="middle"
+                fill="#9ca3af"
+                fontSize="10"
+                fontWeight="600"
+              >
                 Execution Order
               </text>
               {example.layers.map((layer, i) => {
@@ -330,10 +337,7 @@ const DecoratorPipeline2D: React.FC = () => {
             backgroundColor: `${example.layers[animStep].color}08`,
           }}
         >
-          <span
-            className="font-bold"
-            style={{ color: example.layers[animStep].color }}
-          >
+          <span className="font-bold" style={{ color: example.layers[animStep].color }}>
             {example.layers[animStep].name}
           </span>
           <span className="text-gray-500"> — {example.layers[animStep].description}</span>
@@ -370,11 +374,7 @@ const DecoratorPipeline2D: React.FC = () => {
               className="w-2.5 h-2.5 rounded-full transition-all"
               style={{
                 backgroundColor:
-                  animStep === -1
-                    ? `${layer.color}60`
-                    : i <= animStep
-                      ? layer.color
-                      : '#d1d5db',
+                  animStep === -1 ? `${layer.color}60` : i <= animStep ? layer.color : '#d1d5db',
                 transform: i === animStep ? 'scale(1.3)' : 'scale(1)',
               }}
               title={layer.name}

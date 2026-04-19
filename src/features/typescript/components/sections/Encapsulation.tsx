@@ -13,13 +13,23 @@ const encapsulationData: EncapsulationClass = {
   publicMembers: [
     { name: 'accountNumber', type: 'property', visibility: 'public', value: 'string' },
     { name: 'deposit', type: 'method', visibility: 'public', signature: '(amount: number): void' },
-    { name: 'withdraw', type: 'method', visibility: 'public', signature: '(amount: number): boolean' },
+    {
+      name: 'withdraw',
+      type: 'method',
+      visibility: 'public',
+      signature: '(amount: number): boolean',
+    },
     { name: 'getBalance', type: 'method', visibility: 'public', signature: '(): number' },
   ],
   privateMembers: [
     { name: 'balance', type: 'property', visibility: 'private', value: 'number' },
     { name: 'transactionHistory', type: 'property', visibility: 'private', value: 'Transaction[]' },
-    { name: 'validateAmount', type: 'method', visibility: 'private', signature: '(amount: number): boolean' },
+    {
+      name: 'validateAmount',
+      type: 'method',
+      visibility: 'private',
+      signature: '(amount: number): boolean',
+    },
   ],
   protectedMembers: [
     { name: 'minimumBalance', type: 'property', visibility: 'protected', value: 'number' },

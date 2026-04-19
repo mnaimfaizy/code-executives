@@ -297,7 +297,9 @@ add(5, "10"); // Error: Argument of type 'string' ❌`}
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <ThemeCard>
-          <h3 className="text-xl font-bold text-gray-900 mb-4">TypeScript vs JavaScript Comparison</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            TypeScript vs JavaScript Comparison
+          </h3>
           <TSvsJSComparison2D />
         </ThemeCard>
       </div>

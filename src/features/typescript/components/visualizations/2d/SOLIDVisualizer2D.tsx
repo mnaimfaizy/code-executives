@@ -52,7 +52,14 @@ const SCENARIOS: Scenario[] = [
     good: {
       nodes: [
         { id: 'user', label: 'UserService', x: 200, y: 80, color: '#bbf7d0', type: 'class' },
-        { id: 'notif', label: 'NotificationService', x: 500, y: 80, color: '#bbf7d0', type: 'class' },
+        {
+          id: 'notif',
+          label: 'NotificationService',
+          x: 500,
+          y: 80,
+          color: '#bbf7d0',
+          type: 'class',
+        },
         { id: 'db', label: 'UserRepo', x: 200, y: 220, color: '#d1fae5', type: 'class' },
         { id: 'email', label: 'EmailSender', x: 500, y: 220, color: '#d1fae5', type: 'class' },
       ],
@@ -83,7 +90,14 @@ const SCENARIOS: Scenario[] = [
     },
     good: {
       nodes: [
-        { id: 'iface', label: 'Shape (interface)', x: 350, y: 60, color: '#bfdbfe', type: 'interface' },
+        {
+          id: 'iface',
+          label: 'Shape (interface)',
+          x: 350,
+          y: 60,
+          color: '#bfdbfe',
+          type: 'interface',
+        },
         { id: 'calc', label: 'AreaCalculator', x: 350, y: 170, color: '#bbf7d0', type: 'class' },
         { id: 'circle', label: 'Circle', x: 150, y: 280, color: '#d1fae5', type: 'class' },
         { id: 'rect', label: 'Rectangle', x: 350, y: 280, color: '#d1fae5', type: 'class' },
@@ -112,7 +126,7 @@ const SCENARIOS: Scenario[] = [
         { from: 'eagle', to: 'bird', label: 'extends', style: 'solid', color: '#22c55e' },
         { from: 'penguin', to: 'bird', label: 'extends', style: 'solid', color: '#ef4444' },
       ],
-      caption: 'Penguin can\'t fly — breaks Bird.fly() contract',
+      caption: "Penguin can't fly — breaks Bird.fly() contract",
     },
     good: {
       nodes: [
@@ -143,9 +157,15 @@ const SCENARIOS: Scenario[] = [
       ],
       edges: [
         { from: 'human', to: 'fat', label: 'implements all', style: 'solid', color: '#22c55e' },
-        { from: 'robot', to: 'fat', label: 'forced to impl eat()', style: 'solid', color: '#ef4444' },
+        {
+          from: 'robot',
+          to: 'fat',
+          label: 'forced to impl eat()',
+          style: 'solid',
+          color: '#ef4444',
+        },
       ],
-      caption: 'Robot forced to implement eat() it can\'t use',
+      caption: "Robot forced to implement eat() it can't use",
     },
     good: {
       nodes: [
@@ -204,88 +224,82 @@ const SOLIDVisualizer2D: React.FC = () => {
   const scenario = SCENARIOS[activeIdx];
   const diagram = showGood ? scenario.good : scenario.bad;
 
-  const renderNode = useCallback(
-    (node: DependencyNode) => {
-      const isInterface = node.type === 'interface';
-      const radius = isInterface ? 0 : 8;
-      return (
-        <g key={node.id}>
-          <rect
-            x={node.x - 65}
-            y={node.y - 18}
-            width={130}
-            height={36}
-            rx={radius}
-            fill={node.color}
-            stroke={isInterface ? '#3b82f6' : '#6b7280'}
-            strokeWidth={1.5}
-            strokeDasharray={isInterface ? '6 3' : 'none'}
-          />
+  const renderNode = useCallback((node: DependencyNode) => {
+    const isInterface = node.type === 'interface';
+    const radius = isInterface ? 0 : 8;
+    return (
+      <g key={node.id}>
+        <rect
+          x={node.x - 65}
+          y={node.y - 18}
+          width={130}
+          height={36}
+          rx={radius}
+          fill={node.color}
+          stroke={isInterface ? '#3b82f6' : '#6b7280'}
+          strokeWidth={1.5}
+          strokeDasharray={isInterface ? '6 3' : 'none'}
+        />
+        <text
+          x={node.x}
+          y={node.y + 1}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          fontSize="12"
+          fontWeight="600"
+          fontFamily="ui-monospace, monospace"
+          fill="#1f2937"
+        >
+          {node.label}
+        </text>
+      </g>
+    );
+  }, []);
+
+  const renderEdge = useCallback((edge: DependencyEdge, nodes: DependencyNode[]) => {
+    const from = nodes.find((n) => n.id === edge.from);
+    const to = nodes.find((n) => n.id === edge.to);
+    if (!from || !to) return null;
+
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const ux = dx / len;
+    const uy = dy / len;
+
+    const x1 = from.x + ux * 22;
+    const y1 = from.y + uy * 22;
+    const x2 = to.x - ux * 22;
+    const y2 = to.y - uy * 22;
+
+    return (
+      <g key={`${edge.from}-${edge.to}`}>
+        <line
+          x1={x1}
+          y1={y1}
+          x2={x2}
+          y2={y2}
+          stroke={edge.color}
+          strokeWidth={2}
+          strokeDasharray={edge.style === 'dashed' ? '6 4' : 'none'}
+          markerEnd={`url(#arrow-${edge.color.replace('#', '')})`}
+        />
+        {edge.label && (
           <text
-            x={node.x}
-            y={node.y + 1}
+            x={(x1 + x2) / 2 + (uy > 0 ? 8 : -8)}
+            y={(y1 + y2) / 2 - 6}
             textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="12"
-            fontWeight="600"
-            fontFamily="ui-monospace, monospace"
-            fill="#1f2937"
+            fontSize="10"
+            fill={edge.color}
+            fontWeight="500"
+            fontStyle="italic"
           >
-            {node.label}
+            {edge.label}
           </text>
-        </g>
-      );
-    },
-    []
-  );
-
-  const renderEdge = useCallback(
-    (edge: DependencyEdge, nodes: DependencyNode[]) => {
-      const from = nodes.find((n) => n.id === edge.from);
-      const to = nodes.find((n) => n.id === edge.to);
-      if (!from || !to) return null;
-
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-      const len = Math.sqrt(dx * dx + dy * dy);
-      const ux = dx / len;
-      const uy = dy / len;
-
-      const x1 = from.x + ux * 22;
-      const y1 = from.y + uy * 22;
-      const x2 = to.x - ux * 22;
-      const y2 = to.y - uy * 22;
-
-      return (
-        <g key={`${edge.from}-${edge.to}`}>
-          <line
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            stroke={edge.color}
-            strokeWidth={2}
-            strokeDasharray={edge.style === 'dashed' ? '6 4' : 'none'}
-            markerEnd={`url(#arrow-${edge.color.replace('#', '')})`}
-          />
-          {edge.label && (
-            <text
-              x={(x1 + x2) / 2 + (uy > 0 ? 8 : -8)}
-              y={(y1 + y2) / 2 - 6}
-              textAnchor="middle"
-              fontSize="10"
-              fill={edge.color}
-              fontWeight="500"
-              fontStyle="italic"
-            >
-              {edge.label}
-            </text>
-          )}
-        </g>
-      );
-    },
-    []
-  );
+        )}
+      </g>
+    );
+  }, []);
 
   const uniqueColors = [...new Set(diagram.edges.map((e) => e.color))];
 
@@ -364,8 +378,7 @@ const SOLIDVisualizer2D: React.FC = () => {
       {/* Legend */}
       <div className="flex items-center gap-5 text-xs text-gray-500">
         <span className="flex items-center gap-1.5">
-          <span className="w-4 h-3 rounded border border-gray-400 bg-gray-100 inline-block" />{' '}
-          Class
+          <span className="w-4 h-3 rounded border border-gray-400 bg-gray-100 inline-block" /> Class
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-4 h-3 border border-blue-400 border-dashed bg-blue-50 inline-block" />{' '}
