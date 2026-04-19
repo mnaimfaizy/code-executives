@@ -5,36 +5,6 @@ import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 import ClassHierarchy2D from '../visualizations/2d/ClassHierarchy2D';
-import type { ClassDefinition } from '../visualizations/2d/ClassHierarchy2D';
-
-const classHierarchyData: ClassDefinition[] = [
-  {
-    name: 'Animal',
-    members: [
-      { name: 'name', type: 'property', visibility: 'protected' },
-      { name: 'age', type: 'property', visibility: 'protected' },
-      { name: 'speak', type: 'method', visibility: 'public', returnType: 'void' },
-      { name: 'move', type: 'method', visibility: 'public', returnType: 'void' },
-    ],
-  },
-  {
-    name: 'Dog',
-    extends: 'Animal',
-    members: [
-      { name: 'breed', type: 'property', visibility: 'public' },
-      { name: 'bark', type: 'method', visibility: 'public', returnType: 'void' },
-      { name: 'fetch', type: 'method', visibility: 'public', returnType: 'void' },
-    ],
-  },
-  {
-    name: 'Cat',
-    extends: 'Animal',
-    members: [
-      { name: 'whiskerLength', type: 'property', visibility: 'private' },
-      { name: 'purr', type: 'method', visibility: 'public', returnType: 'void' },
-    ],
-  },
-];
 
 const ClassesAndObjects: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -416,29 +386,8 @@ console.log(\`Interest: \${interest}\`); // "Interest: 65"
       />
 
       {/* Interactive Visualization */}
-      <div className="max-w-5xl mx-auto mt-10 px-4">
-        <ThemeCard>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center text-lg">
-              🏗️
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Interactive Class Hierarchy</h2>
-          </div>
-          <p className="text-gray-600 text-sm mb-4">
-            Click on class boxes to expand/collapse members. Colors:{' '}
-            <span className="text-blue-600 font-semibold">public</span> ·{' '}
-            <span className="text-red-500 font-semibold">private</span> ·{' '}
-            <span className="text-amber-500 font-semibold">protected</span>
-          </p>
-          <div className="h-96 w-full">
-            <ClassHierarchy2D
-              classes={classHierarchyData}
-              width={800}
-              height={400}
-              showVisibility={true}
-            />
-          </div>
-        </ThemeCard>
+      <div className="max-w-6xl mx-auto mt-10 px-4">
+        <ClassHierarchy2D />
       </div>
 
       <CTASection

@@ -244,17 +244,29 @@ const PolymorphismFlow2D: React.FC = () => {
 
       {/* SVG diagram */}
       <div className="relative bg-gradient-to-br from-indigo-500 via-purple-500 to-purple-600 rounded-2xl overflow-hidden shadow-lg">
-        <svg
-          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-          className="w-full"
-          style={{ minHeight: '22rem' }}
-        >
+        <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" style={{ minHeight: '22rem' }}>
           {/* Arrow marker */}
           <defs>
-            <marker id="poly-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <marker
+              id="poly-arrow"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto"
+            >
               <path d="M 0 0 L 10 5 L 0 10 Z" fill="white" fillOpacity="0.7" />
             </marker>
-            <marker id="poly-arrow-active" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <marker
+              id="poly-arrow-active"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto"
+            >
               <path d="M 0 0 L 10 5 L 0 10 Z" fill="#fbbf24" />
             </marker>
           </defs>
@@ -265,20 +277,55 @@ const PolymorphismFlow2D: React.FC = () => {
           </text>
 
           {/* Legend — top right */}
-          <rect x={SVG_W - 170} y="10" width="160" height="50" rx="8" fill="white" fillOpacity="0.9" />
+          <rect
+            x={SVG_W - 170}
+            y="10"
+            width="160"
+            height="50"
+            rx="8"
+            fill="white"
+            fillOpacity="0.9"
+          />
           <circle cx={SVG_W - 152} cy="28" r="5" fill="#10b981" />
-          <text x={SVG_W - 142} y="32" fontSize="10" fill="#374151" fontWeight="500">New Implementation</text>
+          <text x={SVG_W - 142} y="32" fontSize="10" fill="#374151" fontWeight="500">
+            New Implementation
+          </text>
           <circle cx={SVG_W - 152} cy="46" r="5" fill="#f59e0b" />
-          <text x={SVG_W - 142} y="50" fontSize="10" fill="#374151" fontWeight="500">Method Override</text>
+          <text x={SVG_W - 142} y="50" fontSize="10" fill="#374151" fontWeight="500">
+            Method Override
+          </text>
 
           {/* Base class node */}
-          <rect x={baseX} y={BASE_Y} width={BASE_W} height={BASE_H} rx="12" fill="white" stroke="white" strokeWidth="2" />
+          <rect
+            x={baseX}
+            y={BASE_Y}
+            width={BASE_W}
+            height={BASE_H}
+            rx="12"
+            fill="white"
+            stroke="white"
+            strokeWidth="2"
+          />
           <rect x={baseX} y={BASE_Y} width={BASE_W} height={32} rx="12" fill="#6366f1" />
           <rect x={baseX} y={BASE_Y + 20} width={BASE_W} height={12} fill="#6366f1" />
-          <text x={baseX + BASE_W / 2} y={BASE_Y + 20} textAnchor="middle" fill="white" fontSize="13" fontWeight="700">
+          <text
+            x={baseX + BASE_W / 2}
+            y={BASE_Y + 20}
+            textAnchor="middle"
+            fill="white"
+            fontSize="13"
+            fontWeight="700"
+          >
             {example.baseClass}
           </text>
-          <text x={baseX + BASE_W / 2} y={BASE_Y + 52} textAnchor="middle" fill="#6b7280" fontSize="12" fontFamily="ui-monospace, monospace">
+          <text
+            x={baseX + BASE_W / 2}
+            y={BASE_Y + 52}
+            textAnchor="middle"
+            fill="#6b7280"
+            fontSize="12"
+            fontFamily="ui-monospace, monospace"
+          >
             {example.baseMethod}
           </text>
 
@@ -343,7 +390,12 @@ const PolymorphismFlow2D: React.FC = () => {
                     strokeWidth="2.5"
                     opacity="0.7"
                   >
-                    <animate attributeName="opacity" values="0.7;0.3;0.7" dur="1.5s" repeatCount="indefinite" />
+                    <animate
+                      attributeName="opacity"
+                      values="0.7;0.3;0.7"
+                      dur="1.5s"
+                      repeatCount="indefinite"
+                    />
                   </rect>
                 )}
 
@@ -447,13 +499,31 @@ const PolymorphismFlow2D: React.FC = () => {
                 stroke={example.implementations[selectedImpl].color}
                 strokeWidth="2"
               />
-              <text x={50} y={SVG_H - 74} fill={example.implementations[selectedImpl].color} fontSize="13" fontWeight="700">
+              <text
+                x={50}
+                y={SVG_H - 74}
+                fill={example.implementations[selectedImpl].color}
+                fontSize="13"
+                fontWeight="700"
+              >
                 {example.implementations[selectedImpl].className}.{example.baseMethod}
               </text>
-              <text x={50} y={SVG_H - 54} fill="#374151" fontSize="11" fontFamily="ui-monospace, monospace">
+              <text
+                x={50}
+                y={SVG_H - 54}
+                fill="#374151"
+                fontSize="11"
+                fontFamily="ui-monospace, monospace"
+              >
                 {example.implementations[selectedImpl].signature}
               </text>
-              <text x={50} y={SVG_H - 36} fill="#6b7280" fontSize="11" fontFamily="ui-monospace, monospace">
+              <text
+                x={50}
+                y={SVG_H - 36}
+                fill="#6b7280"
+                fontSize="11"
+                fontFamily="ui-monospace, monospace"
+              >
                 {example.implementations[selectedImpl].body}
               </text>
             </g>
@@ -496,8 +566,7 @@ const PolymorphismFlow2D: React.FC = () => {
               key={impl.className}
               className="w-2.5 h-2.5 rounded-full transition-all"
               style={{
-                backgroundColor:
-                  animStep >= i ? impl.color : '#d1d5db',
+                backgroundColor: animStep >= i ? impl.color : '#d1d5db',
                 transform: animStep === i ? 'scale(1.3)' : 'scale(1)',
               }}
               title={impl.className}

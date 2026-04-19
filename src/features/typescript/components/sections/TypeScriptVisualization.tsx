@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
@@ -9,59 +9,14 @@ import ClassHierarchy2D from '../visualizations/2d/ClassHierarchy2D';
 import InheritanceTree2D from '../visualizations/2d/InheritanceTree2D';
 import PolymorphismFlow2D from '../visualizations/2d/PolymorphismFlow2D';
 import EncapsulationBox2D from '../visualizations/2d/EncapsulationBox2D';
-import type {
-  ClassDefinition,
-  ClassHierarchy2DHandle,
-} from '../visualizations/2d/ClassHierarchy2D';
 
 const TypeScriptVisualization: React.FC = () => {
   const navigate = useNavigate();
-  const classHierarchyRef = useRef<ClassHierarchy2DHandle>(null);
 
   const navigateToSection = (sectionName: string) => {
     const encodedSection = encodeURIComponent(sectionName);
     navigate(`/typescript?section=${encodedSection}`);
   };
-
-  // Sample data for visualizations
-  const classHierarchyData: ClassDefinition[] = [
-    {
-      name: 'Animal',
-      members: [
-        { name: 'name', type: 'property', visibility: 'protected' },
-        { name: 'age', type: 'property', visibility: 'protected' },
-        { name: 'speak', type: 'method', visibility: 'public', returnType: 'void' },
-        { name: 'move', type: 'method', visibility: 'public', returnType: 'void' },
-      ],
-    },
-    {
-      name: 'Mammal',
-      extends: 'Animal',
-      members: [
-        { name: 'furColor', type: 'property', visibility: 'public' },
-        { name: 'giveBirth', type: 'method', visibility: 'public', returnType: 'void' },
-        { name: 'nurse', type: 'method', visibility: 'protected', returnType: 'void' },
-      ],
-    },
-    {
-      name: 'Dog',
-      extends: 'Mammal',
-      members: [
-        { name: 'breed', type: 'property', visibility: 'public' },
-        { name: 'bark', type: 'method', visibility: 'public', returnType: 'void' },
-        { name: 'fetch', type: 'method', visibility: 'public', returnType: 'void' },
-      ],
-    },
-    {
-      name: 'Cat',
-      extends: 'Mammal',
-      members: [
-        { name: 'whiskerLength', type: 'property', visibility: 'private' },
-        { name: 'purr', type: 'method', visibility: 'public', returnType: 'void' },
-        { name: 'scratch', type: 'method', visibility: 'public', returnType: 'void' },
-      ],
-    },
-  ];
 
   // Hero content
   const heroContent = (
@@ -89,43 +44,8 @@ const TypeScriptVisualization: React.FC = () => {
     <>
       {/* Class Hierarchy Visualization */}
       <ThemeCard>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center text-lg">
-              🏗️
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Class Hierarchy &amp; Inheritance</h2>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => classHierarchyRef.current?.expandClass('Dog')}
-              className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
-            >
-              Expand Dog
-            </button>
-            <button
-              onClick={() => classHierarchyRef.current?.reset()}
-              className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors"
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-        <p className="text-gray-600 text-sm mb-4">
-          Click on class boxes to expand/collapse members. Colors:{' '}
-          <span className="text-blue-600 font-semibold">public</span> ·{' '}
-          <span className="text-red-500 font-semibold">private</span> ·{' '}
-          <span className="text-amber-500 font-semibold">protected</span>
-        </p>
-        <div className="h-96 w-full">
-          <ClassHierarchy2D
-            ref={classHierarchyRef}
-            classes={classHierarchyData}
-            width={800}
-            height={400}
-            showVisibility={true}
-          />
-        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Class Hierarchy &amp; Inheritance</h3>
+        <ClassHierarchy2D />
       </ThemeCard>
 
       {/* Inheritance Flow Visualization */}

@@ -341,9 +341,7 @@ const AbstractionLayers2D: React.FC = () => {
           <span className="w-4 h-3 rounded border border-emerald-400 bg-emerald-50 inline-block" />{' '}
           Concrete class
         </span>
-        <span className="ml-auto text-gray-400 italic">
-          Hover layers · Click boxes to expand
-        </span>
+        <span className="ml-auto text-gray-400 italic">Hover layers · Click boxes to expand</span>
       </div>
     </div>
   );
