@@ -18,7 +18,7 @@ export interface EncapsulationClass {
   protectedMembers: ClassMember[];
 }
 
-export interface EncapsulationBox2DProps {}
+export type EncapsulationBox2DProps = Record<string, never>;
 export interface EncapsulationBox2DHandle {
   toggleVisibility(v: 'public' | 'private' | 'protected'): void;
   highlightMember(name: string): void;
@@ -106,10 +106,34 @@ const EXAMPLES: Example[] = [
 /* ------------------------------------------------------------------ */
 type Vis = 'public' | 'protected' | 'private';
 
-const VIS_META: Record<Vis, { color: string; bg: string; border: string; activeBg: string; icon: string; label: string }> = {
-  public:    { color: 'text-emerald-700', bg: 'bg-emerald-50',  border: 'border-emerald-200', activeBg: 'bg-emerald-600', icon: '🌐', label: 'Public' },
-  protected: { color: 'text-amber-700',   bg: 'bg-amber-50',    border: 'border-amber-200',   activeBg: 'bg-amber-500',   icon: '🛡️', label: 'Protected' },
-  private:   { color: 'text-red-700',     bg: 'bg-red-50',      border: 'border-red-200',     activeBg: 'bg-red-600',     icon: '🔒', label: 'Private' },
+const VIS_META: Record<
+  Vis,
+  { color: string; bg: string; border: string; activeBg: string; icon: string; label: string }
+> = {
+  public: {
+    color: 'text-emerald-700',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    activeBg: 'bg-emerald-600',
+    icon: '🌐',
+    label: 'Public',
+  },
+  protected: {
+    color: 'text-amber-700',
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    activeBg: 'bg-amber-500',
+    icon: '🛡️',
+    label: 'Protected',
+  },
+  private: {
+    color: 'text-red-700',
+    bg: 'bg-red-50',
+    border: 'border-red-200',
+    activeBg: 'bg-red-600',
+    icon: '🔒',
+    label: 'Private',
+  },
 };
 
 /* ------------------------------------------------------------------ */
@@ -117,7 +141,11 @@ const VIS_META: Record<Vis, { color: string; bg: string; border: string; activeB
 /* ------------------------------------------------------------------ */
 const EncapsulationBox2D: React.FC = () => {
   const [exIdx, setExIdx] = useState(0);
-  const [visible, setVisible] = useState<Record<Vis, boolean>>({ public: true, protected: true, private: false });
+  const [visible, setVisible] = useState<Record<Vis, boolean>>({
+    public: true,
+    protected: true,
+    private: false,
+  });
   const [selectedMember, setSelectedMember] = useState<{ vis: Vis; member: Member } | null>(null);
 
   const ex = EXAMPLES[exIdx];
@@ -134,16 +162,16 @@ const EncapsulationBox2D: React.FC = () => {
   }, []);
 
   const sections: { vis: Vis; title: string; members: Member[] }[] = [
-    { vis: 'public',    title: 'Public Interface',       members: ex.publicMembers },
-    { vis: 'protected', title: 'Protected Members',      members: ex.protectedMembers },
-    { vis: 'private',   title: 'Private Implementation', members: ex.privateMembers },
+    { vis: 'public', title: 'Public Interface', members: ex.publicMembers },
+    { vis: 'protected', title: 'Protected Members', members: ex.protectedMembers },
+    { vis: 'private', title: 'Private Implementation', members: ex.privateMembers },
   ];
 
   /* concentric ring radii */
   const rings: { vis: Vis; r: number }[] = [
-    { vis: 'public',    r: 90 },
+    { vis: 'public', r: 90 },
     { vis: 'protected', r: 64 },
-    { vis: 'private',   r: 38 },
+    { vis: 'private', r: 38 },
   ];
 
   return (
@@ -222,13 +250,9 @@ const EncapsulationBox2D: React.FC = () => {
                       return (
                         <li key={m.name}>
                           <button
-                            onClick={() =>
-                              setSelectedMember(isSel ? null : { vis, member: m })
-                            }
+                            onClick={() => setSelectedMember(isSel ? null : { vis, member: m })}
                             className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                              isSel
-                                ? 'bg-white shadow ring-2 ring-indigo-300'
-                                : 'hover:bg-white/70'
+                              isSel ? 'bg-white shadow ring-2 ring-indigo-300' : 'hover:bg-white/70'
                             }`}
                           >
                             <span
@@ -238,9 +262,7 @@ const EncapsulationBox2D: React.FC = () => {
                             >
                               {m.kind === 'method' ? 'M' : 'P'}
                             </span>
-                            <span className="font-mono font-semibold text-gray-800">
-                              {m.name}
-                            </span>
+                            <span className="font-mono font-semibold text-gray-800">{m.name}</span>
                             <span className="text-gray-400 text-xs truncate">
                               {m.kind === 'property' ? `: ${m.typeOrSig}` : m.typeOrSig}
                             </span>
@@ -263,15 +285,8 @@ const EncapsulationBox2D: React.FC = () => {
               const meta = VIS_META[v];
               const isOn = visible[v];
               const strokeColor =
-                v === 'public'
-                  ? '#10B981'
-                  : v === 'protected'
-                    ? '#F59E0B'
-                    : '#EF4444';
-              const fillColor =
-                v === 'private' && isOn
-                  ? 'rgba(239,68,68,0.12)'
-                  : 'transparent';
+                v === 'public' ? '#10B981' : v === 'protected' ? '#F59E0B' : '#EF4444';
+              const fillColor = v === 'private' && isOn ? 'rgba(239,68,68,0.12)' : 'transparent';
               return (
                 <g key={v}>
                   <circle
@@ -310,20 +325,24 @@ const EncapsulationBox2D: React.FC = () => {
           {selectedMember ? (
             <div className="mt-4 w-full max-w-xs bg-white border border-indigo-200 rounded-xl shadow-md p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
-                  selectedMember.vis === 'public'
-                    ? 'bg-emerald-600'
-                    : selectedMember.vis === 'protected'
-                      ? 'bg-amber-500'
-                      : 'bg-red-600'
-                }`}>
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-bold text-white ${
+                    selectedMember.vis === 'public'
+                      ? 'bg-emerald-600'
+                      : selectedMember.vis === 'protected'
+                        ? 'bg-amber-500'
+                        : 'bg-red-600'
+                  }`}
+                >
                   {VIS_META[selectedMember.vis].label}
                 </span>
-                <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                  selectedMember.member.kind === 'method'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-violet-100 text-violet-700'
-                }`}>
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-bold ${
+                    selectedMember.member.kind === 'method'
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-violet-100 text-violet-700'
+                  }`}
+                >
                   {selectedMember.member.kind}
                 </span>
               </div>
@@ -336,15 +355,16 @@ const EncapsulationBox2D: React.FC = () => {
                   : selectedMember.member.typeOrSig}
               </p>
               <p className="text-gray-400 text-xs mt-2">
-                {selectedMember.vis === 'public' && 'Accessible from anywhere — this is the class\'s external API.'}
-                {selectedMember.vis === 'protected' && 'Accessible within the class and its subclasses only.'}
-                {selectedMember.vis === 'private' && 'Accessible only within this class — implementation detail.'}
+                {selectedMember.vis === 'public' &&
+                  "Accessible from anywhere — this is the class's external API."}
+                {selectedMember.vis === 'protected' &&
+                  'Accessible within the class and its subclasses only.'}
+                {selectedMember.vis === 'private' &&
+                  'Accessible only within this class — implementation detail.'}
               </p>
             </div>
           ) : (
-            <p className="mt-4 text-gray-400 text-xs text-center">
-              Click a member to see details
-            </p>
+            <p className="mt-4 text-gray-400 text-xs text-center">Click a member to see details</p>
           )}
         </div>
       </div>

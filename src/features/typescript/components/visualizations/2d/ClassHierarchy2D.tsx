@@ -18,7 +18,7 @@ export interface ClassDefinition {
   isAbstract?: boolean;
 }
 
-export interface ClassHierarchy2DProps {}
+export type ClassHierarchy2DProps = Record<string, never>;
 export interface ClassHierarchy2DHandle {
   expandClass(className: string): void;
   collapseClass(className: string): void;
@@ -212,9 +212,9 @@ const EXAMPLES: Example[] = [
 /* ------------------------------------------------------------------ */
 type Vis = 'public' | 'protected' | 'private';
 const VIS: Record<Vis, { dot: string; label: string }> = {
-  public:    { dot: 'bg-blue-500',   label: 'public' },
-  protected: { dot: 'bg-amber-500',  label: 'protected' },
-  private:   { dot: 'bg-red-500',    label: 'private' },
+  public: { dot: 'bg-blue-500', label: 'public' },
+  protected: { dot: 'bg-amber-500', label: 'protected' },
+  private: { dot: 'bg-red-500', label: 'private' },
 };
 
 /* ------------------------------------------------------------------ */
@@ -230,7 +230,11 @@ const ClassHierarchy2D: React.FC = () => {
   const toggleExpand = useCallback((name: string) => {
     setExpanded((prev) => {
       const s = new Set(prev);
-      s.has(name) ? s.delete(name) : s.add(name);
+      if (s.has(name)) {
+        s.delete(name);
+      } else {
+        s.add(name);
+      }
       return s;
     });
     setSelected(null);
@@ -238,7 +242,10 @@ const ClassHierarchy2D: React.FC = () => {
 
   const expandAll = useCallback(() => {
     const names: string[] = [];
-    const walk = (n: ClassNode) => { names.push(n.name); n.children?.forEach(walk); };
+    const walk = (n: ClassNode) => {
+      names.push(n.name);
+      n.children?.forEach(walk);
+    };
     walk(ex.root);
     setExpanded(new Set(names));
   }, [ex]);
@@ -258,20 +265,24 @@ const ClassHierarchy2D: React.FC = () => {
   const renderNode = (node: ClassNode, depth: number): React.ReactNode => {
     const isOpen = expanded.has(node.name);
     const hasChildren = node.children && node.children.length > 0;
-    const borderColor = depth === 0 ? 'border-indigo-300' : depth === 1 ? 'border-blue-200' : 'border-gray-200';
+    const borderColor =
+      depth === 0 ? 'border-indigo-300' : depth === 1 ? 'border-blue-200' : 'border-gray-200';
     const headerBg = depth === 0 ? 'bg-indigo-600' : depth === 1 ? 'bg-blue-500' : 'bg-gray-700';
 
     return (
       <div key={node.name} className="flex flex-col items-center">
         {/* Class card */}
-        <div className={`rounded-xl border-2 ${borderColor} bg-white shadow-sm overflow-hidden w-48 sm:w-56 transition-all`}>
+        <div
+          className={`rounded-xl border-2 ${borderColor} bg-white shadow-sm overflow-hidden w-48 sm:w-56 transition-all`}
+        >
           {/* Header */}
           <button
             onClick={() => toggleExpand(node.name)}
             className={`w-full flex items-center justify-between px-3 py-2 ${headerBg} text-white text-sm font-bold focus:outline-none`}
           >
             <span className="truncate">
-              {node.isAbstract ? '«abstract» ' : ''}{node.name}
+              {node.isAbstract ? '«abstract» ' : ''}
+              {node.name}
             </span>
             <span className="ml-1 text-xs opacity-70">{isOpen ? '▼' : '▶'}</span>
           </button>
@@ -290,9 +301,11 @@ const ClassHierarchy2D: React.FC = () => {
                       }`}
                     >
                       <span className={`w-2 h-2 rounded-full shrink-0 ${VIS[m.vis].dot}`} />
-                      <span className="font-mono font-semibold text-gray-800 truncate">{m.name}</span>
+                      <span className="font-mono font-semibold text-gray-800 truncate">
+                        {m.name}
+                      </span>
                       <span className="text-gray-400 truncate ml-auto">
-                        {m.kind === 'property' ? `: ${m.sig ?? ''}` : m.sig ?? ''}
+                        {m.kind === 'property' ? `: ${m.sig ?? ''}` : (m.sig ?? '')}
                       </span>
                     </button>
                   </li>
@@ -333,7 +346,9 @@ const ClassHierarchy2D: React.FC = () => {
                   <div key={child.name} className="flex flex-col items-center">
                     {/* Vertical stub from horizontal bar to child */}
                     <div className="w-px h-5 bg-indigo-300" />
-                    <span className="text-[10px] text-indigo-400 font-semibold -mt-1 mb-1">extends</span>
+                    <span className="text-[10px] text-indigo-400 font-semibold -mt-1 mb-1">
+                      extends
+                    </span>
                     {renderNode(child, depth + 1)}
                   </div>
                 ))}
@@ -390,17 +405,21 @@ const ClassHierarchy2D: React.FC = () => {
         </button>
         {/* Legend */}
         <div className="ml-auto flex gap-3 text-xs text-gray-500">
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> public</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> protected</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> private</span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-blue-500" /> public
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-500" /> protected
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-red-500" /> private
+          </span>
         </div>
       </div>
 
       {/* Tree */}
       <div className="px-5 py-5 overflow-x-auto">
-        <div className="flex justify-center min-w-fit">
-          {renderNode(ex.root, 0)}
-        </div>
+        <div className="flex justify-center min-w-fit">{renderNode(ex.root, 0)}</div>
       </div>
 
       {/* Selected member detail */}
@@ -409,25 +428,37 @@ const ClassHierarchy2D: React.FC = () => {
           <div className="flex items-center gap-2 mb-1">
             <span className="font-bold text-indigo-700 text-sm">{selected.cls}</span>
             <span className="text-gray-400 text-xs">→</span>
-            <span className="font-mono font-bold text-gray-900 text-sm">{selected.member.name}</span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold text-white ${VIS[selected.member.vis].dot}`}>
+            <span className="font-mono font-bold text-gray-900 text-sm">
+              {selected.member.name}
+            </span>
+            <span
+              className={`px-2 py-0.5 rounded text-[10px] font-bold text-white ${VIS[selected.member.vis].dot}`}
+            >
               {VIS[selected.member.vis].label}
             </span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-              selected.member.kind === 'method' ? 'bg-blue-100 text-blue-700' : 'bg-violet-100 text-violet-700'
-            }`}>
+            <span
+              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                selected.member.kind === 'method'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-violet-100 text-violet-700'
+              }`}
+            >
               {selected.member.kind}
             </span>
           </div>
           {selected.member.sig && (
             <p className="text-gray-600 text-xs font-mono">
-              {selected.member.kind === 'property' ? `Type: ${selected.member.sig}` : selected.member.sig}
+              {selected.member.kind === 'property'
+                ? `Type: ${selected.member.sig}`
+                : selected.member.sig}
             </p>
           )}
           <p className="text-gray-400 text-xs mt-1">
             {selected.member.vis === 'public' && 'Accessible from anywhere outside the class.'}
-            {selected.member.vis === 'protected' && 'Only accessible within the class and its subclasses.'}
-            {selected.member.vis === 'private' && 'Only accessible within this class — hidden from the outside.'}
+            {selected.member.vis === 'protected' &&
+              'Only accessible within the class and its subclasses.'}
+            {selected.member.vis === 'private' &&
+              'Only accessible within this class — hidden from the outside.'}
           </p>
         </div>
       )}
