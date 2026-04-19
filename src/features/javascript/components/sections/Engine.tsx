@@ -1,7 +1,23 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Cpu,
+  Zap,
+  Rocket,
+  Database,
+  Search,
+  Layers,
+  RefreshCw,
+  Trash2,
+  TrendingUp,
+  CheckCircle2,
+  XCircle,
+  Building2,
+} from 'lucide-react';
 import Engine2D from '../visualizations/2d/Engine2D';
 
 const Engine: React.FC = () => {
+  const navigate = useNavigate();
   const [activeDemo, setActiveDemo] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -10,38 +26,36 @@ const Engine: React.FC = () => {
       id: 0,
       title: 'V8 Engine Architecture',
       description: "Complete overview of V8's component architecture and pipeline",
-      icon: '🏗️',
+      icon: <Building2 className="w-4 h-4" />,
     },
     {
       id: 1,
       title: 'Parsing & AST Generation',
       description: 'Source code to Abstract Syntax Tree transformation',
-      icon: '🔍',
+      icon: <Search className="w-4 h-4" />,
     },
     {
       id: 2,
       title: 'Ignition Interpreter',
       description: 'AST to bytecode conversion and immediate execution',
-      icon: '⚡',
+      icon: <Zap className="w-4 h-4" />,
     },
     {
       id: 3,
       title: 'TurboFan Optimization',
       description: 'JIT compilation and machine code optimization',
-      icon: '🚀',
+      icon: <Rocket className="w-4 h-4" />,
     },
     {
       id: 4,
       title: 'Memory Architecture',
       description: 'Call Stack, Memory Heap, and object allocation',
-      icon: '🧠',
+      icon: <Database className="w-4 h-4" />,
     },
   ];
 
   const navigateToSubSection = (sectionName: string) => {
-    const baseUrl = '/javascript?section=';
-    const encodedSection = encodeURIComponent(sectionName);
-    window.location.href = baseUrl + encodedSection;
+    navigate(`/javascript?section=${encodeURIComponent(sectionName)}`);
   };
 
   return (
@@ -58,17 +72,17 @@ const Engine: React.FC = () => {
             machine instructions through advanced compilation techniques.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🔬 JIT Compilation
+            <span className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-semibold">
+              <Cpu className="w-4 h-4" /> JIT Compilation
             </span>
-            <span className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
-              ⚡ Ignition Interpreter
+            <span className="inline-flex items-center gap-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold">
+              <Zap className="w-4 h-4" /> Ignition Interpreter
             </span>
-            <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🚀 TurboFan Optimizer
+            <span className="inline-flex items-center gap-2 bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-semibold">
+              <Rocket className="w-4 h-4" /> TurboFan Optimizer
             </span>
-            <span className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
-              🧠 Memory Management
+            <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-semibold">
+              <Database className="w-4 h-4" /> Memory Management
             </span>
           </div>
         </div>
@@ -115,28 +129,36 @@ const Engine: React.FC = () => {
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Core Architecture Principles</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold text-blue-800 mb-2">🎯 Single-Threaded Execution</h4>
+              <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <Layers className="w-4 h-4" /> Single-Threaded Execution
+              </h4>
               <p className="text-sm text-gray-700">
                 The engine executes JavaScript on a single main thread using a Call Stack, ensuring
                 predictable execution order and avoiding race conditions.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-800 mb-2">⚡ Just-in-Time Compilation</h4>
+              <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <Zap className="w-4 h-4" /> Just-in-Time Compilation
+              </h4>
               <p className="text-sm text-gray-700">
                 V8 combines fast startup through interpretation with high performance through
                 optimizing compilation of frequently executed code.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-800 mb-2">🧠 Automatic Memory Management</h4>
+              <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <Database className="w-4 h-4" /> Automatic Memory Management
+              </h4>
               <p className="text-sm text-gray-700">
                 Sophisticated garbage collection automatically reclaims memory from unused objects,
                 preventing memory leaks without developer intervention.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-800 mb-2">🔄 Adaptive Optimization</h4>
+              <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <RefreshCw className="w-4 h-4" /> Adaptive Optimization
+              </h4>
               <p className="text-sm text-gray-700">
                 The engine continuously profiles code execution and optimizes hot paths while
                 maintaining the ability to deoptimize when assumptions change.
@@ -158,7 +180,7 @@ const Engine: React.FC = () => {
             >
               {engineComponents.map((component) => (
                 <option key={component.id} value={component.id}>
-                  {component.icon} {component.title}
+                  {component.title}
                 </option>
               ))}
             </select>
@@ -167,8 +189,11 @@ const Engine: React.FC = () => {
 
         <div className="mb-6">
           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              {engineComponents[activeDemo].icon} {engineComponents[activeDemo].title}
+            <h3 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+              <span className="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                {engineComponents[activeDemo].icon}
+              </span>
+              {engineComponents[activeDemo].title}
             </h3>
             <p className="text-gray-700">{engineComponents[activeDemo].description}</p>
           </div>
@@ -196,8 +221,11 @@ const Engine: React.FC = () => {
           <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  🔍 Parser & AST Generation
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Search className="w-4 h-4 text-blue-600" />
+                  </span>
+                  Parser & AST Generation
                 </h3>
                 <p className="text-gray-700 mb-4">
                   The first step in execution involves parsing source code into tokens and
@@ -235,8 +263,11 @@ const Engine: React.FC = () => {
           <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  ⚡ Ignition Interpreter
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-4 h-4 text-green-600" />
+                  </span>
+                  Ignition Interpreter
                 </h3>
                 <p className="text-gray-700 mb-4">
                   V8's interpreter quickly converts AST into bytecode for immediate execution. This
@@ -274,8 +305,11 @@ const Engine: React.FC = () => {
           <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  🚀 TurboFan Optimizer
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Rocket className="w-4 h-4 text-purple-600" />
+                  </span>
+                  TurboFan Optimizer
                 </h3>
                 <p className="text-gray-700 mb-4">
                   The optimizing compiler that transforms frequently executed bytecode into highly
@@ -313,8 +347,11 @@ const Engine: React.FC = () => {
           <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center">
-                  🧠 Memory Architecture
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Database className="w-4 h-4 text-orange-600" />
+                  </span>
+                  Memory Architecture
                 </h3>
                 <p className="text-gray-700 mb-4">
                   V8's sophisticated memory management system includes the Call Stack for execution
@@ -356,7 +393,9 @@ const Engine: React.FC = () => {
 
         <div className="grid md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-green-700 mb-3">🎯 Hot Code Optimization</h3>
+            <h3 className="text-lg font-semibold text-green-700 mb-3 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" /> Hot Code Optimization
+            </h3>
             <p className="text-sm text-gray-700">
               V8 identifies frequently executed code ("hot spots") and aggressively optimizes them
               with TurboFan, achieving up to 100x performance improvements for critical paths.
@@ -364,7 +403,9 @@ const Engine: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-blue-700 mb-3">🔄 Adaptive Deoptimization</h3>
+            <h3 className="text-lg font-semibold text-blue-700 mb-3 flex items-center gap-2">
+              <RefreshCw className="w-5 h-5" /> Adaptive Deoptimization
+            </h3>
             <p className="text-sm text-gray-700">
               When optimized code's assumptions become invalid, V8 can quickly deoptimize back to
               bytecode, maintaining correctness while preserving optimization opportunities.
@@ -372,7 +413,9 @@ const Engine: React.FC = () => {
           </div>
 
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-purple-700 mb-3">⚡ Inline Caching</h3>
+            <h3 className="text-lg font-semibold text-purple-700 mb-3 flex items-center gap-2">
+              <Zap className="w-5 h-5" /> Inline Caching
+            </h3>
             <p className="text-sm text-gray-700">
               Property access optimization through caching of object shapes and property locations,
               dramatically reducing lookup time for object property access.
@@ -384,7 +427,9 @@ const Engine: React.FC = () => {
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Optimization Best Practices</h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-semibold text-green-700 mb-2">✅ Engine-Friendly Patterns</h4>
+              <h4 className="font-semibold text-green-700 mb-2 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" /> Engine-Friendly Patterns
+              </h4>
               <ul className="text-sm text-gray-700 space-y-1">
                 <li>• Use consistent object shapes (hidden classes)</li>
                 <li>• Avoid changing variable types</li>
@@ -393,7 +438,9 @@ const Engine: React.FC = () => {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-red-700 mb-2">❌ Performance Killers</h4>
+              <h4 className="font-semibold text-red-700 mb-2 flex items-center gap-2">
+                <XCircle className="w-4 h-4" /> Performance Killers
+              </h4>
               <ul className="text-sm text-gray-700 space-y-1">
                 <li>• Changing object structure after creation</li>
                 <li>• Using arguments object in functions</li>
@@ -416,36 +463,44 @@ const Engine: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           <button
             onClick={() => navigateToSubSection('Call Stack & Execution')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors"
+            className="bg-white hover:bg-blue-50 border border-gray-200 hover:border-blue-200 rounded-xl p-5 text-left transition-colors group"
           >
-            <div className="text-2xl mb-2">📦</div>
+            <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+              <Layers className="w-5 h-5 text-blue-600" />
+            </div>
             <h3 className="font-semibold text-gray-800">Call Stack & Execution</h3>
             <p className="text-sm text-gray-600 mt-1">Function execution and scope management</p>
           </button>
 
           <button
             onClick={() => navigateToSubSection('Memory Heap & Objects')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors"
+            className="bg-white hover:bg-green-50 border border-gray-200 hover:border-green-200 rounded-xl p-5 text-left transition-colors group"
           >
-            <div className="text-2xl mb-2">🧠</div>
+            <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+              <Database className="w-5 h-5 text-green-600" />
+            </div>
             <h3 className="font-semibold text-gray-800">Memory Heap & Objects</h3>
             <p className="text-sm text-gray-600 mt-1">Object allocation and memory management</p>
           </button>
 
           <button
             onClick={() => navigateToSubSection('Parser & AST Generation')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors"
+            className="bg-white hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-xl p-5 text-left transition-colors group"
           >
-            <div className="text-2xl mb-2">🔍</div>
+            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
+              <Search className="w-5 h-5 text-indigo-600" />
+            </div>
             <h3 className="font-semibold text-gray-800">Parser & AST Generation</h3>
             <p className="text-sm text-gray-600 mt-1">Source code parsing and tree construction</p>
           </button>
 
           <button
             onClick={() => navigateToSubSection('JIT Compilation Pipeline')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors"
+            className="bg-white hover:bg-yellow-50 border border-gray-200 hover:border-yellow-200 rounded-xl p-5 text-left transition-colors group"
           >
-            <div className="text-2xl mb-2">⚡</div>
+            <div className="w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-yellow-200 transition-colors">
+              <Zap className="w-5 h-5 text-yellow-600" />
+            </div>
             <h3 className="font-semibold text-gray-800">JIT Compilation Pipeline</h3>
             <p className="text-sm text-gray-600 mt-1">
               Ignition interpreter and TurboFan optimizer
@@ -454,9 +509,11 @@ const Engine: React.FC = () => {
 
           <button
             onClick={() => navigateToSubSection('Garbage Collection')}
-            className="bg-white hover:bg-gray-50 border border-gray-200 rounded-lg p-4 text-left transition-colors"
+            className="bg-white hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-xl p-5 text-left transition-colors group"
           >
-            <div className="text-2xl mb-2">🗑️</div>
+            <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-red-200 transition-colors">
+              <Trash2 className="w-5 h-5 text-red-600" />
+            </div>
             <h3 className="font-semibold text-gray-800">Garbage Collection</h3>
             <p className="text-sm text-gray-600 mt-1">Automatic memory cleanup and optimization</p>
           </button>

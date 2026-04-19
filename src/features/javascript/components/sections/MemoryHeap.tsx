@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Database, Cpu, Package, RefreshCw, LayoutList, ArrowRight, Lightbulb } from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
-import MemoryHeap2D, {
-  type MemoryHeap2DHandle,
-} from '../visualizations/2d/MemoryHeap2D';
+import MemoryHeap2D, { type MemoryHeap2DHandle } from '../visualizations/2d/MemoryHeap2D';
 import {
   instrumentCode,
   colorForLabel,
@@ -314,57 +313,107 @@ const MemoryHeap: React.FC = () => {
 
   return (
     <section className="mb-4">
-      <h2 className="text-base font-semibold">Memory Heap & Dynamic Allocation</h2>
+      {/* Hero Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <Database className="w-5 h-5 text-green-600" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-gray-900 leading-tight">
+            Memory Heap & Dynamic Allocation
+          </h2>
+          <p className="text-xs text-gray-500">
+            dynamic object pool · unstructured allocation · GC-managed
+          </p>
+        </div>
+      </div>
 
       {/* Engine Context Introduction */}
-      <div className="mb-4 rounded-lg bg-green-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-green-900">Role in JavaScript Engine</h3>
-        <p className="mb-2 text-xs text-green-800">
+      <div className="mb-4 rounded-xl bg-green-50 border border-green-100 p-4">
+        <h3 className="mb-2 text-sm font-semibold text-green-900 flex items-center gap-2">
+          <Cpu className="w-4 h-4 text-green-600" />
+          Role in JavaScript Engine
+        </h3>
+        <p className="mb-3 text-xs text-green-800 leading-relaxed">
           The Memory Heap is the engine's dynamic memory region where objects, strings, functions,
           and closures are allocated. It works closely with the Garbage Collector to manage memory
           lifecycle and prevent memory leaks.
         </p>
-        <p className="text-xs text-green-700">
-          <strong>Engine Integration:</strong> Call Stack references → Heap Objects → Garbage
-          Collection → Memory Reclaim
-        </p>
+        <div className="flex flex-wrap items-center gap-1 text-xs font-medium">
+          <strong className="text-green-800">Engine Integration:</strong>
+          {['Call Stack references', 'Heap Objects', 'Garbage Collection', 'Memory Reclaim'].map(
+            (step, i, arr) => (
+              <React.Fragment key={step}>
+                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{step}</span>
+                {i < arr.length - 1 && <span className="text-green-400">→</span>}
+              </React.Fragment>
+            )
+          )}
+        </div>
       </div>
 
       {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">Heap Memory Management</h3>
-        <p className="mb-2 text-sm text-gray-700">
-          Unlike the structured Call Stack, the Heap is an unstructured memory pool for dynamic
-          allocation. Objects are allocated on-demand and freed by garbage collection when no longer
-          reachable.
+      <div className="mb-4 bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+        <h3 className="mb-2 text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <LayoutList className="w-4 h-4 text-gray-600" />
+          Heap Memory Management
+        </h3>
+        <p className="mb-3 text-sm text-gray-700 leading-relaxed">
+          Unlike the structured Call Stack, the Heap is an <em>unstructured</em> memory pool for
+          dynamic allocation. Objects are allocated on-demand and freed by garbage collection when
+          no longer reachable.
         </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Allocation Types:</strong>
-            <ul className="ml-3 list-disc">
-              <li>Objects & Arrays</li>
-              <li>Function closures</li>
-              <li>String literals</li>
-              <li>Dynamic data structures</li>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-3">
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <Package className="w-3.5 h-3.5 text-green-500" />
+              Allocation Types
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                'Objects & Arrays',
+                'Function closures',
+                'String literals',
+                'Dynamic data structures',
+              ].map((item) => (
+                <li key={item} className="flex items-start gap-1.5">
+                  <span className="mt-0.5 w-3.5 h-3.5 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  </span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
-          <div>
-            <strong>Memory Lifecycle:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>Allocation:</strong> Reserve memory space
-              </li>
-              <li>
-                <strong>Usage:</strong> Access & modify data
-              </li>
-              <li>
-                <strong>Reachability:</strong> GC root analysis
-              </li>
-              <li>
-                <strong>Collection:</strong> Automatic cleanup
-              </li>
+          <div className="bg-gray-50 rounded-lg p-3">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <RefreshCw className="w-3.5 h-3.5 text-blue-500" />
+              Memory Lifecycle
+            </p>
+            <ul className="text-xs text-gray-700 space-y-1.5">
+              {[
+                { phase: 'Allocation', desc: 'Reserve memory space', color: 'text-green-600' },
+                { phase: 'Usage', desc: 'Access & modify data', color: 'text-blue-600' },
+                { phase: 'Reachability', desc: 'GC root analysis', color: 'text-amber-600' },
+                { phase: 'Collection', desc: 'Automatic cleanup', color: 'text-red-500' },
+              ].map(({ phase, desc, color }) => (
+                <li key={phase} className="flex items-start gap-1.5">
+                  <ArrowRight className={`w-3 h-3 mt-0.5 flex-shrink-0 ${color}`} />
+                  <span>
+                    <strong>{phase}:</strong> {desc}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
+        </div>
+        <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 flex items-start gap-2">
+          <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            <strong>Key Insight:</strong> References on the Call Stack point into the Heap — when
+            all stack references to an object are gone, the Garbage Collector can safely reclaim
+            that memory, preventing leaks without manual intervention.
+          </p>
         </div>
       </div>
 

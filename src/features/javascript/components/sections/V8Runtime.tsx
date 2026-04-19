@@ -1,4 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  AlertTriangle,
+  BookOpen,
+  Code2,
+  Cpu,
+  Layers,
+  TrendingUp,
+  TrendingDown,
+  Trash2,
+  Zap,
+  BarChart2,
+  RefreshCw,
+} from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
 import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
@@ -124,6 +137,362 @@ gc minor 5.2 1.5
 gc major 25.8 12.3
 
 heap-snapshot 45.6 128.0 0.15`;
+
+// ─── Color map ────────────────────────────────────────────────────────────────
+const colorCls: Record<string, { bg: string; border: string; text: string; num: string }> = {
+  purple: {
+    bg: 'bg-purple-50',
+    border: 'border-purple-200',
+    text: 'text-purple-800',
+    num: 'bg-purple-600',
+  },
+  green: {
+    bg: 'bg-green-50',
+    border: 'border-green-200',
+    text: 'text-green-800',
+    num: 'bg-green-600',
+  },
+  amber: {
+    bg: 'bg-amber-50',
+    border: 'border-amber-200',
+    text: 'text-amber-800',
+    num: 'bg-amber-500',
+  },
+  red: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', num: 'bg-red-600' },
+  blue: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', num: 'bg-blue-600' },
+  cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-800', num: 'bg-cyan-600' },
+  indigo: {
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    text: 'text-indigo-800',
+    num: 'bg-indigo-600',
+  },
+};
+
+// ─── Compilation pipeline steps ───────────────────────────────────────────────
+const pipelineSteps = [
+  {
+    step: '1',
+    color: 'purple',
+    label: 'Parse & AST',
+    icon: <Code2 className="w-5 h-5" />,
+    description:
+      'The source code is tokenized and parsed into an Abstract Syntax Tree (AST). The parser validates syntax and builds a structured tree representation.',
+    detail: 'Lazy parsing: V8 only fully parses functions when they are first called.',
+  },
+  {
+    step: '2',
+    color: 'green',
+    label: 'Ignition',
+    icon: <Zap className="w-5 h-5" />,
+    description:
+      'The AST is compiled to bytecode by the Ignition interpreter. Bytecode is compact and platform-independent. Functions start executing here with type-feedback collection.',
+    detail: 'Ignition collects "type feedback" to help TurboFan make optimization assumptions.',
+  },
+  {
+    step: '3',
+    color: 'amber',
+    label: 'Maglev',
+    icon: <TrendingUp className="w-5 h-5" />,
+    description:
+      'Mid-tier optimizing compiler (added in V8 v11). Compiles hot functions faster than TurboFan with lower overhead, filling the gap between Ignition and TurboFan.',
+    detail:
+      'Maglev generates native code much faster than TurboFan at moderate optimization level.',
+  },
+  {
+    step: '4',
+    color: 'red',
+    label: 'TurboFan',
+    icon: <Cpu className="w-5 h-5" />,
+    description:
+      "V8's high-tier optimizing JIT compiler. Uses type feedback from Ignition to generate highly optimized machine code. Applies speculative optimizations for maximum throughput.",
+    detail: 'TurboFan performs escape analysis, inlining, loop peeling, and register allocation.',
+  },
+  {
+    step: '↩',
+    color: 'blue',
+    label: 'Deoptimize',
+    icon: <TrendingDown className="w-5 h-5" />,
+    description:
+      'When a speculative optimization assumption fails (e.g., type change), V8 "deoptimizes" back to Ignition bytecode. The function re-warms and may be re-optimized later.',
+    detail: 'Frequent deoptimizations are a major performance red flag to watch for in profilers.',
+  },
+];
+
+// ─── Optimization techniques cards ────────────────────────────────────────────
+const optimizationTechniques = [
+  {
+    name: 'Hidden Classes',
+    color: 'purple',
+    icon: <Layers className="w-5 h-5" />,
+    description:
+      'V8 creates internal "hidden classes" (shapes) for objects with the same property layout. Objects sharing a hidden class share optimized property-access code.',
+    code: `// V8 creates the SAME hidden class for both:
+const a = { x: 1, y: 2 };
+const b = { x: 3, y: 4 };
+
+// DIFFERENT hidden class — always add in same order:
+const c = { x: 1, y: 2 };
+const d = { y: 2, x: 1 }; // different shape!`,
+    tip: 'Always initialize object properties in the same order, and avoid adding properties after construction.',
+  },
+  {
+    name: 'Inline Caching (IC)',
+    color: 'green',
+    icon: <Zap className="w-5 h-5" />,
+    description:
+      "V8 caches the result of property lookups at call sites. A 'monomorphic' IC (one shape seen) is fastest; 'polymorphic' (2-4 shapes) is slower; 'megamorphic' (5+ shapes) is slowest.",
+    code: `function getX(obj) {
+  return obj.x; // IC records the hidden class
+}
+
+// Monomorphic (fast): always same shape
+getX({ x: 1, y: 2 });
+getX({ x: 2, y: 3 });
+
+// Megamorphic (slow): too many shapes
+getX({ x: 1 });
+getX({ x: 1, y: 2, z: 3 });`,
+    tip: 'Keep functions monomorphic — call them with objects of the same shape.',
+  },
+  {
+    name: 'Escape Analysis',
+    color: 'amber',
+    icon: <BarChart2 className="w-5 h-5" />,
+    description:
+      "If TurboFan can prove an object doesn't 'escape' the function (isn't stored externally), it allocates it on the stack instead of the heap — avoiding GC pressure entirely.",
+    code: `function sum(arr) {
+  // If 'result' doesn't escape, V8 may
+  // stack-allocate it (no GC pressure)
+  const result = { value: 0 };
+  for (const n of arr) result.value += n;
+  return result.value; // only primitive escapes
+}`,
+    tip: 'Short-lived objects that stay local to a function are prime candidates for stack allocation.',
+  },
+  {
+    name: 'Orinoco GC',
+    color: 'cyan',
+    icon: <Trash2 className="w-5 h-5" />,
+    description:
+      "V8's Orinoco garbage collector uses generational collection (Young/Old generations), parallel and concurrent marking, and incremental sweeping to minimize main-thread pauses.",
+    code: `// Young generation (Scavenger, fast)
+// Objects promoted after surviving 2 GC cycles
+
+// Old generation (Major GC, slower)
+// Long-lived objects — minimize allocations here
+
+// Avoid allocating in tight hot loops:
+// SLOW: creates GC pressure
+for (let i = 0; i < 1e6; i++) {
+  process({ x: i, y: i * 2 }); // new obj each time
+}`,
+    tip: 'Avoid allocating objects inside hot loops. Reuse objects or use typed arrays for numerical data.',
+  },
+  {
+    name: 'Function Inlining',
+    color: 'indigo',
+    icon: <RefreshCw className="w-5 h-5" />,
+    description:
+      "TurboFan replaces a function call with the function's body at the call site when the function is small and frequently called. This eliminates call overhead and enables further optimization.",
+    code: `// V8 may inline small helpers:
+function square(x) { return x * x; }
+
+function sumSquares(arr) {
+  let sum = 0;
+  for (const n of arr) {
+    // 'square(n)' may be inlined to 'n * n'
+    sum += square(n);
+  }
+  return sum;
+}`,
+    tip: 'Keep hot helper functions small and side-effect-free to maximize inlining opportunities.',
+  },
+  {
+    name: 'Type Speculation',
+    color: 'red',
+    icon: <TrendingUp className="w-5 h-5" />,
+    description:
+      'TurboFan assumes types stay consistent based on Ignition feedback. It generates fast paths for the expected types and adds deoptimization guards for unexpected types.',
+    code: `function add(a, b) {
+  return a + b; // V8 assumes numbers here
+}
+
+// Fast: TurboFan generates integer add
+add(1, 2);
+add(3, 4);
+
+// Deoptimizes! Type assumption broke.
+add("hello", "world"); // now string concat`,
+    tip: 'Avoid calling functions with mixed types. TypeScript helps enforce consistent types.',
+  },
+];
+
+// ─── Code scenarios ────────────────────────────────────────────────────────────
+const scenarios = [
+  {
+    id: 'hidden-class',
+    title: 'Hidden Classes',
+    description: 'Property insertion order affects the hidden class V8 creates.',
+    code: `// GOOD: same insertion order = same hidden class
+function makePoint(x, y) {
+  return { x, y }; // always x first, then y
+}
+const p1 = makePoint(1, 2);
+const p2 = makePoint(3, 4);
+// p1 and p2 share a hidden class → fast IC
+
+// BAD: different order = different hidden class
+const a = {};
+a.x = 1; a.y = 2; // shape A
+
+const b = {};
+b.y = 2; b.x = 1; // shape B ← different!
+
+// BAD: adding properties after construction
+const c = { x: 1 };
+c.y = 2; // creates a new hidden class transition`,
+    output: [
+      '// p1 and p2: same hidden class (fast)',
+      '// a and b: different hidden classes (slower IC)',
+      '// c: hidden class transition on y addition',
+    ],
+    note: 'Always define all object properties upfront in the constructor/factory function, in the same order, to maximize hidden class sharing.',
+  },
+  {
+    id: 'type-consistency',
+    title: 'Type Consistency',
+    description: 'Mixed types cause deoptimization from TurboFan back to Ignition.',
+    code: `function multiply(a, b) {
+  return a * b;
+}
+
+// Warm up with consistent types (integers)
+for (let i = 0; i < 10000; i++) {
+  multiply(i, i + 1);
+}
+// V8 now has TurboFan-optimized code for int*int
+
+// Deoptimization trigger:
+multiply(1.5, 2.5);   // float — minor deopt
+multiply("3", 4);     // type confusion — major deopt
+multiply(null, 0);    // coercion — deopt
+
+// After deopt, function re-warms in Ignition`,
+    output: [
+      '// 10000 × int*int → TurboFan optimized',
+      '// multiply(1.5, 2.5) → minor deopt (floats)',
+      '// multiply("3", 4) → major deopt (coercion)',
+      '// Function re-warms in Ignition bytecode',
+    ],
+    note: 'Use TypeScript or JSDoc to enforce consistent types. Profile with --trace-deopt to find deoptimization hotspots in Node.js.',
+  },
+  {
+    id: 'gc-pressure',
+    title: 'GC Pressure',
+    description: 'Excessive allocations in hot loops trigger frequent garbage collection.',
+    code: `// BAD: allocates a new object on every iteration
+function processItemsSlow(items) {
+  return items.map(item => ({
+    id: item.id,
+    value: item.value * 2,
+    label: \`item-\${item.id}\`
+  }));
+}
+
+// BETTER: reuse a pre-allocated buffer
+const buffer = new Float64Array(1000);
+function processItemsFast(items) {
+  for (let i = 0; i < items.length; i++) {
+    buffer[i] = items[i].value * 2;
+  }
+  return buffer.subarray(0, items.length);
+}
+
+// BETTER for transformation: preallocate result
+function processWithPrealloc(items) {
+  const result = new Array(items.length);
+  for (let i = 0; i < items.length; i++) {
+    result[i] = items[i].value * 2; // no new {}
+  }
+  return result;
+}`,
+    output: [
+      '// Slow: N new objects → N GC allocations per call',
+      '// Fast: typed array, zero GC pressure',
+      '// Medium: preallocated array, minimal pressure',
+    ],
+    note: 'Use typed arrays (Float64Array, Int32Array) for numerical hot paths. Avoid short-lived object allocation inside loops called millions of times.',
+  },
+  {
+    id: 'deopt-trace',
+    title: 'Detecting Deoptimizations',
+    description: 'How to identify deoptimization in Node.js with built-in flags.',
+    code: `// Run with: node --trace-deopt --trace-opt app.js
+
+function hotPath(x) {
+  return x * x + Math.sqrt(x);
+}
+
+// Warm up (Ignition → TurboFan)
+for (let i = 0; i < 50000; i++) hotPath(i);
+// [opt] hotPath
+
+// Force deopt by passing wrong type
+hotPath("not-a-number");
+// [deopt] hotPath reason: not a heap number
+
+// Re-warm (Ignition again)
+for (let i = 0; i < 50000; i++) hotPath(i);
+// [opt] hotPath (re-optimized)
+
+// Useful Node.js profiling flags:
+// --prof             → generate V8 profiling log
+// --trace-opt        → log optimizations
+// --trace-deopt      → log deoptimizations
+// --allow-natives-syntax → %OptimizeFunctionOnNextCall()`,
+    output: [
+      '[ignition] hotPath compiled to bytecode',
+      '[turbofan] hotPath optimized after 50k calls',
+      '[deopt]    hotPath: not a heap number',
+      '[ignition] hotPath back to bytecode',
+      '[turbofan] hotPath re-optimized',
+    ],
+    note: "Run Node.js with --trace-deopt to see every deoptimization in real time. The 'reason' field tells you exactly what assumption failed.",
+  },
+];
+
+// ─── Gotchas ───────────────────────────────────────────────────────────────────
+const gotchas = [
+  {
+    title: 'Polymorphic / Megamorphic call sites',
+    severity: 'high',
+    description:
+      'When a function is called with objects of 5+ different hidden classes, its inline cache goes megamorphic — V8 stops caching and falls back to generic property lookup every time.',
+    fix: 'Avoid passing objects with different shapes to the same function. Use a single canonical shape or class. TypeScript interfaces help enforce this.',
+  },
+  {
+    title: 'Adding properties after construction',
+    severity: 'high',
+    description:
+      "Every time you add a property to an object after it's been created, V8 creates a new hidden class transition. Object literals with all properties upfront share a single hidden class.",
+    fix: 'Define ALL properties in the constructor or object literal. If you must add later, do it in a consistent order across all code paths.',
+  },
+  {
+    title: 'delete operator breaks hidden classes',
+    severity: 'medium',
+    description:
+      "Using delete obj.prop forces V8 to convert the object to 'dictionary mode' — a slower hash-table representation that foregoes hidden class optimizations entirely.",
+    fix: 'Instead of delete, set the property to null or undefined. Use Map for dynamic key-value collections.',
+  },
+  {
+    title: 'Allocating in hot loops',
+    severity: 'high',
+    description:
+      'Creating new objects or arrays inside tight loops that run millions of times puts enormous pressure on the garbage collector. Even minor GC pauses accumulate into significant latency.',
+    fix: 'Pre-allocate outside the loop. Use typed arrays for numeric data. Consider object pooling for complex objects that are frequently created and discarded.',
+  },
+];
 
 // V8 Runtime Visualization
 const V8Runtime2D: React.FC<{
@@ -385,6 +754,7 @@ const V8Runtime: React.FC = () => {
   const [source, setSource] = useState<string>(DEFAULT_JS);
   const [output, setOutput] = useState<OutputLine[]>([{ text: 'V8 Runtime ready.', kind: 'info' }]);
   const [speed, setSpeed] = useState<Speed>('slow');
+  const [activeScenario, setActiveScenario] = useState(0);
   const [stats, setStats] = useState<V8Stats>({
     parsed_functions: 0,
     ignition_functions: 0,
@@ -732,68 +1102,286 @@ const V8Runtime: React.FC = () => {
   );
 
   return (
-    <section className="mb-4">
-      <h2 className="text-base font-semibold">V8 JavaScript Runtime</h2>
-
-      {/* Runtime Context Introduction */}
-      <div className="mb-4 rounded-lg bg-blue-50 p-3">
-        <h3 className="mb-2 text-sm font-semibold text-blue-900">V8 Runtime Architecture</h3>
-        <p className="mb-2 text-xs text-blue-800">
-          V8 is Google's high-performance JavaScript runtime that powers Chrome and Node.js. It
-          features a multi-tier compilation system, advanced garbage collection, and sophisticated
-          optimization techniques that make JavaScript execution fast and efficient.
-        </p>
-        <p className="text-xs text-blue-700">
-          <strong>Key Features:</strong> Just-In-Time compilation, Hidden Classes, Inline Caching,
-          Orinoco GC
-        </p>
-      </div>
-
-      {/* Theory Section */}
-      <div className="mb-3">
-        <h3 className="mb-2 text-sm font-semibold">V8 Compilation Pipeline & Optimizations</h3>
-        <p className="mb-2 text-sm text-gray-700">
-          V8 uses a multi-tier compilation strategy that balances fast startup with optimal runtime
-          performance. Code flows through different compilation tiers based on usage patterns and
-          profiling data.
-        </p>
-        <div className="mb-2 grid grid-cols-1 gap-2 text-xs text-gray-600 md:grid-cols-2">
-          <div>
-            <strong>Compilation Tiers:</strong>
-            <ul className="ml-3 list-disc">
-              <li>
-                <strong>Ignition:</strong> Bytecode interpreter for fast startup
-              </li>
-              <li>
-                <strong>Maglev:</strong> Mid-tier optimizing compiler
-              </li>
-              <li>
-                <strong>TurboFan:</strong> High-tier optimizing compiler
-              </li>
-              <li>
-                <strong>Deoptimization:</strong> Fallback when assumptions fail
-              </li>
-            </ul>
-          </div>
-          <div>
-            <strong>Optimization Techniques:</strong>
-            <ul className="ml-3 list-disc">
-              <li>Type speculation and feedback</li>
-              <li>Hidden classes for object layout</li>
-              <li>Inline caching for property access</li>
-              <li>Escape analysis and allocation optimization</li>
-            </ul>
+    <section className="mb-8">
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div className="bg-linear-to-br from-red-50 via-orange-50 to-amber-50 rounded-2xl p-8 mb-8 border border-red-200 shadow-lg">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">V8 JavaScript Runtime</h1>
+          <p className="text-xl text-gray-700 mb-6 leading-relaxed">
+            V8 is Google's high-performance JavaScript and WebAssembly engine powering Chrome and
+            Node.js. It features a multi-tier JIT compilation pipeline, sophisticated optimization
+            techniques, and an advanced generational garbage collector — all working together to
+            make JavaScript as fast as possible.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              {
+                label: 'Ignition Bytecode',
+                cls: 'bg-purple-100 text-purple-800',
+                icon: <Code2 className="w-4 h-4" />,
+              },
+              {
+                label: 'Maglev JIT',
+                cls: 'bg-green-100 text-green-800',
+                icon: <Zap className="w-4 h-4" />,
+              },
+              {
+                label: 'TurboFan JIT',
+                cls: 'bg-amber-100 text-amber-800',
+                icon: <Cpu className="w-4 h-4" />,
+              },
+              {
+                label: 'Hidden Classes',
+                cls: 'bg-indigo-100 text-indigo-800',
+                icon: <Layers className="w-4 h-4" />,
+              },
+              {
+                label: 'Orinoco GC',
+                cls: 'bg-cyan-100 text-cyan-800',
+                icon: <Trash2 className="w-4 h-4" />,
+              },
+            ].map(({ label, cls, icon }) => (
+              <span
+                key={label}
+                className={`inline-flex items-center gap-2 ${cls} px-4 py-2 rounded-full text-sm font-semibold`}
+              >
+                {icon} {label}
+              </span>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="mt-2">
+      {/* ── Compilation Pipeline ───────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">The Compilation Pipeline</h2>
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">How V8 Executes Code</h3>
+            <p className="text-gray-700 mb-4 leading-relaxed">
+              V8 uses an adaptive multi-tier compilation strategy. Rather than compiling all code
+              upfront, it starts fast with bytecode interpretation and progressively optimizes only
+              the code that is actually "hot" (frequently executed).
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              This approach gives the best of both worlds: near-instant startup (Ignition) and
+              near-native execution speed for hot paths (TurboFan). The optimizer relies heavily on
+              runtime type feedback — speculating on types to generate faster machine code.
+            </p>
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Why JIT Beats Interpretation
+            </h3>
+            <div className="bg-linear-to-r from-red-50 to-amber-50 rounded-xl p-5 border border-red-200">
+              <div className="space-y-3 text-sm text-gray-700">
+                <div className="flex gap-2">
+                  <BarChart2 className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                  <span>
+                    <strong>Interpreter:</strong> Decode and execute each bytecode instruction every
+                    time. Simple but slow for hot code.
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <Zap className="w-4 h-4 text-green-600 mt-0.5 shrink-0" />
+                  <span>
+                    <strong>JIT Compiler:</strong> Compiles hot bytecode to native machine code
+                    once. Subsequent calls run at CPU speed.
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <TrendingUp className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                  <span>
+                    <strong>Speculative JIT:</strong> Makes type assumptions to generate even faster
+                    code, with a fallback deoptimization path.
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <RefreshCw className="w-4 h-4 text-purple-600 mt-0.5 shrink-0" />
+                  <span>
+                    <strong>Adaptive:</strong> Only JIT-compile hot functions. Cold code stays as
+                    bytecode to save compile time and memory.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Pipeline steps */}
+        <div className="bg-linear-to-r from-red-50 to-amber-50 rounded-lg p-6">
+          <h3 className="text-xl font-semibold text-gray-800 mb-5">Pipeline Stages</h3>
+          <div className="flex flex-wrap gap-3">
+            {pipelineSteps.map(({ step, color, label, icon, description, detail }) => {
+              const c = colorCls[color];
+              return (
+                <div
+                  key={label}
+                  className={`flex-1 min-w-40 ${c.bg} ${c.border} border rounded-xl p-4`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className={`w-7 h-7 ${c.num} text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0`}
+                    >
+                      {step}
+                    </span>
+                    <span className={`font-semibold ${c.text} text-sm`}>{label}</span>
+                  </div>
+                  <div className={`${c.text} mb-2`}>{icon}</div>
+                  <p className="text-xs text-gray-700 mb-2">{description}</p>
+                  <p className={`text-xs font-medium ${c.text} italic`}>{detail}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Optimization Techniques ────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Optimization Techniques</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {optimizationTechniques.map((t) => {
+            const c = colorCls[t.color];
+            return (
+              <div
+                key={t.name}
+                className={`${c.bg} ${c.border} border rounded-xl p-5 hover:shadow-md transition-shadow`}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <span
+                    className={`w-9 h-9 ${c.num} text-white rounded-lg flex items-center justify-center shrink-0`}
+                  >
+                    {t.icon}
+                  </span>
+                  <h3 className={`font-semibold ${c.text} text-base`}>{t.name}</h3>
+                </div>
+                <p className="text-sm text-gray-700 mb-3">{t.description}</p>
+                <pre className="bg-gray-900 text-green-400 rounded-lg p-3 text-xs overflow-x-auto font-mono leading-relaxed mb-2">
+                  {t.code}
+                </pre>
+                <p className={`text-xs font-medium ${c.text} italic`}>{t.tip}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Code scenarios ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <Code2 className="inline w-7 h-7 mr-2 text-red-600" />
+          V8 Optimization Scenarios
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Explore real examples of how V8 optimization and deoptimization works, and what to do
+          about it.
+        </p>
+        <div className="flex flex-wrap gap-2 mb-6">
+          {scenarios.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveScenario(i)}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                activeScenario === i
+                  ? 'bg-red-500 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              {s.title}
+            </button>
+          ))}
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <BookOpen className="w-4 h-4 text-red-600" />
+              <span className="font-semibold text-gray-800 text-sm">
+                {scenarios[activeScenario].title}
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">{scenarios[activeScenario].description}</p>
+            <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
+              {scenarios[activeScenario].code}
+            </pre>
+          </div>
+          <div>
+            <div className="font-semibold text-gray-800 text-sm mb-3">V8 Behavior</div>
+            <div className="space-y-2 mb-4">
+              {scenarios[activeScenario].output.map((line, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2"
+                >
+                  <span className="w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center font-bold shrink-0">
+                    {i + 1}
+                  </span>
+                  <code className="text-sm text-gray-800 font-mono">{line}</code>
+                </div>
+              ))}
+            </div>
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-800">
+              <strong>Key insight:</strong> {scenarios[activeScenario].note}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Interactive 2D Visualization ───────────────────────────────────── */}
+      <div className="mb-8">
         <TwoDLayout
           title="2D Visualization: V8 Runtime"
           editor={editor}
           output={outputPanel}
           canvas={canvas2D}
         />
+      </div>
+
+      {/* ── Common Gotchas ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <AlertTriangle className="inline w-7 h-7 mr-2 text-amber-500" />
+          Common V8 Performance Pitfalls
+        </h2>
+        <p className="text-gray-600 mb-6">
+          These patterns trigger deoptimizations or GC pressure and can silently kill hot-path
+          performance.
+        </p>
+        <div className="grid md:grid-cols-2 gap-6">
+          {gotchas.map((g) => (
+            <div
+              key={g.title}
+              className={`border rounded-xl p-5 ${
+                g.severity === 'high' ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'
+              }`}
+            >
+              <div className="flex items-start gap-3 mb-2">
+                <AlertTriangle
+                  className={`w-5 h-5 shrink-0 mt-0.5 ${
+                    g.severity === 'high' ? 'text-red-500' : 'text-amber-500'
+                  }`}
+                />
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-sm">{g.title}</h3>
+                  <span
+                    className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                      g.severity === 'high'
+                        ? 'bg-red-200 text-red-800'
+                        : 'bg-amber-200 text-amber-800'
+                    }`}
+                  >
+                    {g.severity} severity
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 mb-3">{g.description}</p>
+              <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <span className="text-xs font-semibold text-green-700">Fix: </span>
+                <span className="text-xs text-gray-700">{g.fix}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
