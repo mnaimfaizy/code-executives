@@ -131,7 +131,9 @@ tracemalloc.stop()`,
 const MemoryManagement: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('refcount');
   const [refCount, setRefCount] = useState<number>(3);
-  const [objects, setObjects] = useState<Array<{ id: number; refs: number; color: string; label: string }>>([
+  const [objects, setObjects] = useState<
+    Array<{ id: number; refs: number; color: string; label: string }>
+  >([
     { id: 1, refs: 2, color: 'bg-blue-500', label: 'list obj' },
     { id: 2, refs: 1, color: 'bg-green-500', label: 'dict obj' },
     { id: 3, refs: 0, color: 'bg-amber-500', label: 'str obj' },
@@ -192,12 +194,15 @@ const MemoryManagement: React.FC = () => {
       {/* Memory Model Visualization */}
       <ThemeCard>
         <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm">🧠</span>
+          <span className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white text-sm">
+            🧠
+          </span>
           Interactive Memory Model
         </h2>
         <p className="text-gray-600 mb-4 text-sm">
-          Step through Python&apos;s memory management: from object creation and reference counting, through circular reference detection,
-          to generational garbage collection and the pymalloc allocator.
+          Step through Python&apos;s memory management: from object creation and reference counting,
+          through circular reference detection, to generational garbage collection and the pymalloc
+          allocator.
         </p>
         <MemoryModel2D />
       </ThemeCard>
@@ -228,15 +233,25 @@ const MemoryManagement: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-100">
           {/* Object display */}
           <div className="flex items-center gap-6 mb-5">
-            <div className={`w-20 h-20 rounded-xl flex flex-col items-center justify-center text-white font-bold transition-all duration-300 shadow-lg ${refCount > 0 ? 'bg-gradient-to-br from-blue-500 to-indigo-600 scale-100' : 'bg-gradient-to-br from-red-500 to-red-700 scale-90 opacity-60'}`}>
+            <div
+              className={`w-20 h-20 rounded-xl flex flex-col items-center justify-center text-white font-bold transition-all duration-300 shadow-lg ${refCount > 0 ? 'bg-gradient-to-br from-blue-500 to-indigo-600 scale-100' : 'bg-gradient-to-br from-red-500 to-red-700 scale-90 opacity-60'}`}
+            >
               <span className="text-2xl">📦</span>
               <span className="text-xs mt-0.5">Object</span>
             </div>
             <div>
               <div className="text-sm text-gray-600 mb-1">Reference Count</div>
-              <div className={`text-4xl font-bold transition-colors ${refCount > 0 ? 'text-blue-700' : 'text-red-600'}`}>{refCount}</div>
+              <div
+                className={`text-4xl font-bold transition-colors ${refCount > 0 ? 'text-blue-700' : 'text-red-600'}`}
+              >
+                {refCount}
+              </div>
               <div className="text-xs text-gray-500 mt-1">
-                {refCount > 2 ? 'Multiple references — shared object' : refCount > 0 ? 'Active — object in use' : 'Zero — deallocated immediately!'}
+                {refCount > 2
+                  ? 'Multiple references — shared object'
+                  : refCount > 0
+                    ? 'Active — object in use'
+                    : 'Zero — deallocated immediately!'}
               </div>
             </div>
           </div>
@@ -244,10 +259,19 @@ const MemoryManagement: React.FC = () => {
           {/* Reference arrows */}
           <div className="flex flex-wrap gap-2 mb-3">
             {Array.from({ length: refCount }, (_, i) => (
-              <div key={i} className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm">
+              <div
+                key={i}
+                className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm"
+              >
                 <div className="w-2.5 h-2.5 bg-blue-500 rounded-full"></div>
                 <span className="text-sm text-gray-700 font-medium">
-                  {i === 0 ? 'variable_a' : i === 1 ? 'variable_b' : i === 2 ? 'list_item' : `ref_${i + 1}`}
+                  {i === 0
+                    ? 'variable_a'
+                    : i === 1
+                      ? 'variable_b'
+                      : i === 2
+                        ? 'list_item'
+                        : `ref_${i + 1}`}
                 </span>
                 <span className="text-blue-400">→</span>
               </div>
@@ -296,8 +320,17 @@ const MemoryManagement: React.FC = () => {
               key={phase}
               className={`flex-1 h-2 rounded-full transition-all duration-500 ${
                 phase === gcPhase
-                  ? phase === 'marking' ? 'bg-yellow-400' : phase === 'sweeping' ? 'bg-orange-400' : phase === 'collecting' ? 'bg-red-400' : 'bg-gray-200'
-                  : (['idle', 'marking', 'sweeping', 'collecting'] as const).indexOf(phase) < (['idle', 'marking', 'sweeping', 'collecting'] as const).indexOf(gcPhase) ? 'bg-green-300' : 'bg-gray-200'
+                  ? phase === 'marking'
+                    ? 'bg-yellow-400'
+                    : phase === 'sweeping'
+                      ? 'bg-orange-400'
+                      : phase === 'collecting'
+                        ? 'bg-red-400'
+                        : 'bg-gray-200'
+                  : (['idle', 'marking', 'sweeping', 'collecting'] as const).indexOf(phase) <
+                      (['idle', 'marking', 'sweeping', 'collecting'] as const).indexOf(gcPhase)
+                    ? 'bg-green-300'
+                    : 'bg-gray-200'
               }`}
             />
           ))}
@@ -314,11 +347,15 @@ const MemoryManagement: React.FC = () => {
                     : obj.refs === 0 && gcPhase === 'sweeping'
                       ? 'border-red-400 bg-red-50 scale-95'
                       : gcPhase === 'marking'
-                        ? obj.refs > 0 ? 'border-green-400 bg-green-50' : 'border-yellow-400 bg-yellow-50'
+                        ? obj.refs > 0
+                          ? 'border-green-400 bg-green-50'
+                          : 'border-yellow-400 bg-yellow-50'
                         : 'border-gray-200 bg-white'
                 }`}
               >
-                <div className={`w-10 h-10 rounded-lg mx-auto mb-2 ${obj.color} flex items-center justify-center text-white text-xs font-bold`}>
+                <div
+                  className={`w-10 h-10 rounded-lg mx-auto mb-2 ${obj.color} flex items-center justify-center text-white text-xs font-bold`}
+                >
                   {obj.refs === 0 && gcPhase !== 'idle' ? '✕' : obj.refs}
                 </div>
                 <div className="text-xs font-medium text-gray-800">{obj.label}</div>
@@ -327,14 +364,20 @@ const MemoryManagement: React.FC = () => {
             ))}
           </div>
 
-          <div className={`text-center text-sm font-medium p-2 rounded-lg ${
-            gcPhase === 'idle' ? 'text-gray-600 bg-gray-50' :
-            gcPhase === 'marking' ? 'text-yellow-800 bg-yellow-100' :
-            gcPhase === 'sweeping' ? 'text-orange-800 bg-orange-100' :
-            'text-red-800 bg-red-100'
-          }`}>
+          <div
+            className={`text-center text-sm font-medium p-2 rounded-lg ${
+              gcPhase === 'idle'
+                ? 'text-gray-600 bg-gray-50'
+                : gcPhase === 'marking'
+                  ? 'text-yellow-800 bg-yellow-100'
+                  : gcPhase === 'sweeping'
+                    ? 'text-orange-800 bg-orange-100'
+                    : 'text-red-800 bg-red-100'
+            }`}
+          >
             {gcPhase === 'idle' && '💤 GC idle — objects with refs=0 will be collected'}
-            {gcPhase === 'marking' && '🔍 Phase 1: Marking reachable objects (green) and unreachable (yellow)...'}
+            {gcPhase === 'marking' &&
+              '🔍 Phase 1: Marking reachable objects (green) and unreachable (yellow)...'}
             {gcPhase === 'sweeping' && '🧹 Phase 2: Sweeping — identifying objects to free...'}
             {gcPhase === 'collecting' && '♻️ Phase 3: Collecting — freeing unreachable objects!'}
           </div>
@@ -380,19 +423,34 @@ const MemoryManagement: React.FC = () => {
           <div className="space-y-3 text-sm text-gray-700">
             <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
               <h4 className="font-semibold text-blue-900 mb-1">How It Works</h4>
-              <p>Every PyObject has a <code className="bg-blue-100 px-1 rounded">ob_refcnt</code> field. Incremented on assignment, decremented on <code className="bg-blue-100 px-1 rounded">del</code> or scope exit.</p>
+              <p>
+                Every PyObject has a <code className="bg-blue-100 px-1 rounded">ob_refcnt</code>{' '}
+                field. Incremented on assignment, decremented on{' '}
+                <code className="bg-blue-100 px-1 rounded">del</code> or scope exit.
+              </p>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
               <h4 className="font-semibold text-blue-900 mb-1">Immediate Cleanup</h4>
-              <p>When <code className="bg-blue-100 px-1 rounded">ob_refcnt</code> reaches 0, <code className="bg-blue-100 px-1 rounded">tp_dealloc</code> is called immediately — no waiting for GC.</p>
+              <p>
+                When <code className="bg-blue-100 px-1 rounded">ob_refcnt</code> reaches 0,{' '}
+                <code className="bg-blue-100 px-1 rounded">tp_dealloc</code> is called immediately —
+                no waiting for GC.
+              </p>
             </div>
             <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
               <h4 className="font-semibold text-blue-900 mb-1">Thread Safety</h4>
-              <p>The GIL protects refcount updates. This is why the GIL exists — to keep reference counting thread-safe.</p>
+              <p>
+                The GIL protects refcount updates. This is why the GIL exists — to keep reference
+                counting thread-safe.
+              </p>
             </div>
             <div className="bg-amber-50 p-3 rounded-lg border-l-4 border-amber-400">
               <h4 className="font-semibold text-amber-900 mb-1">⚠️ Limitation</h4>
-              <p>Cannot detect circular references: <code className="bg-amber-100 px-1 rounded">a.ref = b; b.ref = a</code> — both stay at refcount=1 forever.</p>
+              <p>
+                Cannot detect circular references:{' '}
+                <code className="bg-amber-100 px-1 rounded">a.ref = b; b.ref = a</code> — both stay
+                at refcount=1 forever.
+              </p>
             </div>
           </div>
         </ThemeCard>
@@ -405,19 +463,31 @@ const MemoryManagement: React.FC = () => {
           <div className="space-y-3 text-sm text-gray-700">
             <div className="bg-purple-50 p-3 rounded-lg border-l-4 border-purple-400">
               <h4 className="font-semibold text-purple-900 mb-1">3 Generations</h4>
-              <p>Gen 0 (young, frequent), Gen 1 (middle), Gen 2 (old, rare). New objects start in Gen 0.</p>
+              <p>
+                Gen 0 (young, frequent), Gen 1 (middle), Gen 2 (old, rare). New objects start in Gen
+                0.
+              </p>
             </div>
             <div className="bg-purple-50 p-3 rounded-lg border-l-4 border-purple-400">
               <h4 className="font-semibold text-purple-900 mb-1">Thresholds: (700, 10, 10)</h4>
-              <p>Gen 0 runs after 700 alloc−dealloc. Gen 1 after 10 Gen-0 runs. Gen 2 after 10 Gen-1 runs.</p>
+              <p>
+                Gen 0 runs after 700 alloc−dealloc. Gen 1 after 10 Gen-0 runs. Gen 2 after 10 Gen-1
+                runs.
+              </p>
             </div>
             <div className="bg-purple-50 p-3 rounded-lg border-l-4 border-purple-400">
               <h4 className="font-semibold text-purple-900 mb-1">Mark & Sweep</h4>
-              <p>Traces from root set, identifies unreachable cycles, decrements internal refcounts to detect garbage.</p>
+              <p>
+                Traces from root set, identifies unreachable cycles, decrements internal refcounts
+                to detect garbage.
+              </p>
             </div>
             <div className="bg-green-50 p-3 rounded-lg border-l-4 border-green-400">
               <h4 className="font-semibold text-green-900 mb-1">✅ Promotion</h4>
-              <p>Objects surviving a collection cycle promote to the next generation — long-lived objects are checked less often.</p>
+              <p>
+                Objects surviving a collection cycle promote to the next generation — long-lived
+                objects are checked less often.
+              </p>
             </div>
           </div>
         </ThemeCard>
@@ -434,19 +504,25 @@ const MemoryManagement: React.FC = () => {
             <div className="text-3xl mb-2">🏟️</div>
             <h4 className="font-bold text-blue-900 mb-1">Arena</h4>
             <p className="text-sm text-blue-800 font-medium">256 KB</p>
-            <p className="text-xs text-blue-700 mt-1">Allocated from OS via mmap/VirtualAlloc. Contains multiple pools.</p>
+            <p className="text-xs text-blue-700 mt-1">
+              Allocated from OS via mmap/VirtualAlloc. Contains multiple pools.
+            </p>
           </div>
           <div className="p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl border border-purple-200 text-center">
             <div className="text-3xl mb-2">🏊</div>
             <h4 className="font-bold text-purple-900 mb-1">Pool</h4>
             <p className="text-sm text-purple-800 font-medium">4 KB (one page)</p>
-            <p className="text-xs text-purple-700 mt-1">Each pool serves one block size class. Pools are reused efficiently.</p>
+            <p className="text-xs text-purple-700 mt-1">
+              Each pool serves one block size class. Pools are reused efficiently.
+            </p>
           </div>
           <div className="p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl border border-green-200 text-center">
             <div className="text-3xl mb-2">🧱</div>
             <h4 className="font-bold text-green-900 mb-1">Block</h4>
             <p className="text-sm text-green-800 font-medium">8–512 bytes</p>
-            <p className="text-xs text-green-700 mt-1">Fixed-size chunks. 64 size classes (8, 16, 24, ..., 512). Objects &gt;512 use malloc.</p>
+            <p className="text-xs text-green-700 mt-1">
+              Fixed-size chunks. 64 size classes (8, 16, 24, ..., 512). Objects &gt;512 use malloc.
+            </p>
           </div>
         </div>
 
@@ -455,19 +531,27 @@ const MemoryManagement: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
             <div className="flex items-start gap-2">
               <span className="text-green-500 mt-0.5">✓</span>
-              <p><strong>No system calls</strong> for small objects — uses pre-allocated pools</p>
+              <p>
+                <strong>No system calls</strong> for small objects — uses pre-allocated pools
+              </p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-500 mt-0.5">✓</span>
-              <p><strong>Size class matching</strong> — minimal internal fragmentation</p>
+              <p>
+                <strong>Size class matching</strong> — minimal internal fragmentation
+              </p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-500 mt-0.5">✓</span>
-              <p><strong>Free list per pool</strong> — O(1) alloc and dealloc</p>
+              <p>
+                <strong>Free list per pool</strong> — O(1) alloc and dealloc
+              </p>
             </div>
             <div className="flex items-start gap-2">
               <span className="text-green-500 mt-0.5">✓</span>
-              <p><strong>Cache-friendly</strong> — pools fit in CPU cache lines</p>
+              <p>
+                <strong>Cache-friendly</strong> — pools fit in CPU cache lines
+              </p>
             </div>
           </div>
         </div>
@@ -486,10 +570,12 @@ const MemoryManagement: React.FC = () => {
                 <span>🔴</span> Memory Leaks
               </h4>
               <p className="text-sm text-red-800 mb-2">
-                Circular references, global caches that grow unbounded, or forgotten event listeners.
+                Circular references, global caches that grow unbounded, or forgotten event
+                listeners.
               </p>
               <div className="text-xs bg-red-100 p-2 rounded-lg">
-                <strong>Fix:</strong> Use <code>weakref</code>, implement <code>__del__</code>, use context managers, profile with <code>tracemalloc</code>
+                <strong>Fix:</strong> Use <code>weakref</code>, implement <code>__del__</code>, use
+                context managers, profile with <code>tracemalloc</code>
               </div>
             </div>
 
@@ -501,7 +587,8 @@ const MemoryManagement: React.FC = () => {
                 Full Gen-2 collections can cause latency spikes in real-time applications.
               </p>
               <div className="text-xs bg-amber-100 p-2 rounded-lg">
-                <strong>Fix:</strong> Tune thresholds with <code>gc.set_threshold()</code>, disable GC in hot paths, use <code>gc.freeze()</code> in 3.7+
+                <strong>Fix:</strong> Tune thresholds with <code>gc.set_threshold()</code>, disable
+                GC in hot paths, use <code>gc.freeze()</code> in 3.7+
               </div>
             </div>
 
@@ -510,10 +597,12 @@ const MemoryManagement: React.FC = () => {
                 <span>🟠</span> Memory Fragmentation
               </h4>
               <p className="text-sm text-orange-800 mb-2">
-                Arenas can&apos;t be freed until all pools are empty. RSS stays high even after freeing objects.
+                Arenas can&apos;t be freed until all pools are empty. RSS stays high even after
+                freeing objects.
               </p>
               <div className="text-xs bg-orange-100 p-2 rounded-lg">
-                <strong>Fix:</strong> Reuse objects, use <code>__slots__</code> on classes, prefer arrays/numpy over lists of objects
+                <strong>Fix:</strong> Reuse objects, use <code>__slots__</code> on classes, prefer
+                arrays/numpy over lists of objects
               </div>
             </div>
 
@@ -525,7 +614,8 @@ const MemoryManagement: React.FC = () => {
                 Objects &gt;512 bytes bypass pymalloc and use system malloc, which is slower.
               </p>
               <div className="text-xs bg-blue-100 p-2 rounded-lg">
-                <strong>Fix:</strong> Use <code>numpy</code> arrays for large numeric data, memory-map files with <code>mmap</code>, use generators instead of lists
+                <strong>Fix:</strong> Use <code>numpy</code> arrays for large numeric data,
+                memory-map files with <code>mmap</code>, use generators instead of lists
               </div>
             </div>
           </div>
@@ -537,28 +627,37 @@ const MemoryManagement: React.FC = () => {
                 <span className="text-green-600 font-bold mt-0.5">1.</span>
                 <div>
                   <h5 className="font-medium text-green-900">Use Context Managers</h5>
-                  <p className="text-green-800 text-xs">Ensure cleanup with <code>with</code> statements for files, connections, locks</p>
+                  <p className="text-green-800 text-xs">
+                    Ensure cleanup with <code>with</code> statements for files, connections, locks
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-green-600 font-bold mt-0.5">2.</span>
                 <div>
                   <h5 className="font-medium text-green-900">Use __slots__ on Classes</h5>
-                  <p className="text-green-800 text-xs">Reduces per-instance memory by ~40% — no __dict__ overhead</p>
+                  <p className="text-green-800 text-xs">
+                    Reduces per-instance memory by ~40% — no __dict__ overhead
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-green-600 font-bold mt-0.5">3.</span>
                 <div>
                   <h5 className="font-medium text-green-900">Prefer Generators</h5>
-                  <p className="text-green-800 text-xs">Use <code>yield</code> for large sequences — O(1) memory vs O(n)</p>
+                  <p className="text-green-800 text-xs">
+                    Use <code>yield</code> for large sequences — O(1) memory vs O(n)
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <span className="text-green-600 font-bold mt-0.5">4.</span>
                 <div>
                   <h5 className="font-medium text-green-900">Profile Regularly</h5>
-                  <p className="text-green-800 text-xs">Use <code>tracemalloc</code>, <code>memory_profiler</code>, <code>objgraph</code> to find leaks</p>
+                  <p className="text-green-800 text-xs">
+                    Use <code>tracemalloc</code>, <code>memory_profiler</code>,{' '}
+                    <code>objgraph</code> to find leaks
+                  </p>
                 </div>
               </div>
             </div>
@@ -579,7 +678,9 @@ const MemoryManagement: React.FC = () => {
           </div>
           <div className="bg-purple-50 p-2.5 rounded-lg">
             <h4 className="font-medium text-purple-900 mb-0.5">Cyclic GC</h4>
-            <p className="text-xs">Handles circular refs. 3 generations with configurable thresholds.</p>
+            <p className="text-xs">
+              Handles circular refs. 3 generations with configurable thresholds.
+            </p>
           </div>
           <div className="bg-cyan-50 p-2.5 rounded-lg">
             <h4 className="font-medium text-cyan-900 mb-0.5">pymalloc</h4>
