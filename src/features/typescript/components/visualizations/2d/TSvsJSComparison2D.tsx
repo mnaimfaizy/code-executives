@@ -354,7 +354,7 @@ const TSvsJSComparison2D: React.FC = () => {
             <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
               JS
             </span>
-            <span className="text-gray-400">\u2192</span>
+            <span className="text-gray-400">→</span>
             <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
               TS
             </span>
@@ -382,8 +382,8 @@ const TSvsJSComparison2D: React.FC = () => {
             ))}
           </div>
           <div className="mt-4 flex gap-4 text-xs text-gray-500">
-            <span>\u2728 = TypeScript-only</span>
-            <span>\u2705 = Available in both</span>
+            <span>✨ = TypeScript-only</span>
+            <span>✅ = Available in both</span>
           </div>
         </div>
       )}

@@ -272,7 +272,7 @@ const AbstractionLayers2D: React.FC = () => {
                           fill="#9ca3af"
                           fontSize="9"
                         >
-                          {item.members.length} members \u2014 click to expand
+                          {item.members.length} members — click to expand
                         </text>
                       )}
                       {isExpanded &&
@@ -342,7 +342,7 @@ const AbstractionLayers2D: React.FC = () => {
           Concrete class
         </span>
         <span className="ml-auto text-gray-400 italic">
-          Hover layers \u00b7 Click boxes to expand
+          Hover layers · Click boxes to expand
         </span>
       </div>
     </div>

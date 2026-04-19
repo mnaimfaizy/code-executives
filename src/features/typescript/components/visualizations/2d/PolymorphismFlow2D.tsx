@@ -475,14 +475,14 @@ const PolymorphismFlow2D: React.FC = () => {
           disabled={isPlaying || animStep <= -1}
           className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-40 transition-colors"
         >
-          \u2190 Prev
+          ← Prev
         </button>
         <button
           onClick={nextStep}
           disabled={isPlaying || animStep >= totalSteps - 1}
           className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-40 transition-colors"
         >
-          Next \u2192
+          Next →
         </button>
         <button
           onClick={reset}
