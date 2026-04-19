@@ -1,9 +1,11 @@
 import React from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeNarrowing2D from '../visualizations/2d/TypeNarrowing2D';
 
 const TypeGuards: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -60,15 +62,19 @@ const TypeGuards: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Basic typeof Guards</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {typeofGuardCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={typeofGuardCode}
+              title="typeof-guards.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">instanceof Guards</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {instanceofGuardCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={instanceofGuardCode}
+              title="instanceof-guards.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -79,15 +85,19 @@ const TypeGuards: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">in Operator Guards</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {inOperatorGuardCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={inOperatorGuardCode}
+              title="in-operator-guards.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Discriminated Unions</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {discriminatedUnionsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={discriminatedUnionsCode}
+              title="discriminated-unions.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -100,15 +110,19 @@ const TypeGuards: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Custom API Response Guards
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {customGuardCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={customGuardCode}
+              title="custom-api-guards.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Assertion Functions</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {assertionFunctionsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={assertionFunctionsCode}
+              title="assertion-functions.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -179,6 +193,24 @@ const TypeGuards: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-5xl mx-auto mt-10 px-4">
+        <ThemeCard>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-lg">
+              🔍
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Interactive Type Narrowing</h2>
+          </div>
+          <p className="text-gray-600 text-sm mb-4">
+            Step through type guard scenarios to see how TypeScript narrows types at each check. Use
+            play/pause controls or step manually through the flow.
+          </p>
+          <TypeNarrowing2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Best Practices"
         description="Learn TypeScript development best practices and common patterns"

@@ -48,14 +48,24 @@ const sectionComponents: Record<string, React.ComponentType> = {
   Quiz,
 };
 
+// Build a reverse lookup from URL-friendly slug → display name
+const slugToDisplayName: Record<string, string> = {};
+for (const key of Object.keys(sectionComponents)) {
+  slugToDisplayName[key.toLowerCase().replace(/[&\s]+/g, '-')] = key;
+}
+
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
 const TypeScriptPage: React.FC = () => {
   const query = useQuery();
-  const section = query.get('section') || 'Introduction';
-  const Component = sectionComponents[section] || Introduction;
+  const rawSection = query.get('section') || 'Introduction';
+  // Support both display names ("Type System") and URL slugs ("type-system")
+  const resolvedName = sectionComponents[rawSection]
+    ? rawSection
+    : slugToDisplayName[rawSection.toLowerCase().replace(/[&\s]+/g, '-')] || 'Introduction';
+  const Component = sectionComponents[resolvedName] || Introduction;
   return (
     <div className="p-4 sm:p-6">
       <Component />

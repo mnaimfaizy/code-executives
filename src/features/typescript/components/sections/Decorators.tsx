@@ -4,6 +4,8 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import DecoratorPipeline2D from '../visualizations/2d/DecoratorPipeline2D';
 
 const Decorators: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -60,9 +62,11 @@ const Decorators: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Basic Class Decorator</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {classDecoratorCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={classDecoratorCode}
+              title="class-decorator.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">
@@ -98,9 +102,11 @@ const Decorators: React.FC = () => {
             <h3 className="text-lg font-semibold text-blue-600 mb-3">
               Logging & Timing Decorators
             </h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {methodDecoratorCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={methodDecoratorCode}
+              title="method-decorator.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">
@@ -136,9 +142,11 @@ const Decorators: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Validation & Default Values
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {propertyDecoratorCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={propertyDecoratorCode}
+              title="property-decorator.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -151,9 +159,11 @@ const Decorators: React.FC = () => {
             <h3 className="text-lg font-semibold text-purple-600 mb-3">
               Dependency Injection & Validation
             </h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {parameterDecoratorCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={parameterDecoratorCode}
+              title="parameter-decorator.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -164,9 +174,11 @@ const Decorators: React.FC = () => {
         <div className="grid grid-cols-1 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Advanced Patterns</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {decoratorFactoryCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={decoratorFactoryCode}
+              title="decorator-factory.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -177,9 +189,11 @@ const Decorators: React.FC = () => {
         <div className="grid grid-cols-1 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Framework Integration</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {experimentalDecoratorsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={experimentalDecoratorsCode}
+              title="experimental-decorators.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -254,6 +268,14 @@ const Decorators: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Decorator Pipeline Visualization</h3>
+          <DecoratorPipeline2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Advanced Types"
         description="Learn about complex type compositions and utility types in TypeScript"

@@ -4,6 +4,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 
 const AdvancedTypeScript: React.FC = () => {
   const navigate = useNavigate();
@@ -68,8 +69,8 @@ const AdvancedTypeScript: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Generic Functions</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Generic function
+            <TypeScriptCodeBlock
+              code={`// Generic function
 function identity<T>(arg: T): T {
   return arg;
 }
@@ -88,12 +89,13 @@ const person = { name: "Alice", age: 30 };
 const name = getProperty(person, "name");     // string
 const age = getProperty(person, "age");      // number
 // const invalid = getProperty(person, "invalid"); // Error!`}
-            </pre>
+              title="generic-functions.ts"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Generic Classes</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`class Stack<T> {
+            <TypeScriptCodeBlock
+              code={`class Stack<T> {
   private items: T[] = [];
 
   push(item: T): void {
@@ -123,7 +125,8 @@ const stringStack = new Stack<string>();
 stringStack.push("hello");
 stringStack.push("world");
 console.log(stringStack.pop()); // "world"`}
-            </pre>
+              title="generic-classes.ts"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -134,8 +137,8 @@ console.log(stringStack.pop()); // "world"`}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Union & Intersection Types</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Union types (OR)
+            <TypeScriptCodeBlock
+              code={`// Union types (OR)
 type StringOrNumber = string | number;
 type Status = "success" | "error" | "loading";
 
@@ -170,12 +173,14 @@ function getArea(shape: Shape): number {
       return shape.sideLength ** 2;
   }
 }`}
-            </pre>
+              title="union-intersection.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Utility Types</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`interface Todo {
+            <TypeScriptCodeBlock
+              code={`interface Todo {
   id: number;
   title: string;
   completed: boolean;
@@ -210,7 +215,9 @@ const dict: StringDictionary = {
 // Extract/Exclude - work with union types
 type FunctionProps = Extract<string | number | (() => void), Function>;
 type NonFunctionProps = Exclude<string | number | (() => void), Function>;`}
-            </pre>
+              title="utility-types.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -221,8 +228,8 @@ type NonFunctionProps = Exclude<string | number | (() => void), Function>;`}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Custom Type Guards</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Type guard function
+            <TypeScriptCodeBlock
+              code={`// Type guard function
 function isString(value: unknown): value is string {
   return typeof value === "string";
 }
@@ -266,12 +273,14 @@ function getPetAction(pet: Bird | Fish): string {
     return pet.swim(); // TypeScript knows this is a Fish
   }
 }`}
-            </pre>
+              title="custom-type-guards.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Built-in Type Guards</h3>
-            <pre className="bg-gray-900 text-gray-300 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// typeof type guards
+            <TypeScriptCodeBlock
+              code={`// typeof type guards
 function padLeft(value: string, padding: string | number): string {
   if (typeof padding === "number") {
     // padding is narrowed to number
@@ -319,7 +328,9 @@ function operate(vehicle: Car | Boat): void {
     vehicle.sail();
   }
 }`}
-            </pre>
+              title="built-in-type-guards.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -330,8 +341,8 @@ function operate(vehicle: Car | Boat): void {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Class Decorators</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Class decorator
+            <TypeScriptCodeBlock
+              code={`// Class decorator
 function Logger(constructor: Function) {
   console.log(\`Class \${constructor.name} is being created\`);
 }
@@ -378,12 +389,14 @@ class UserService {
 // Usage
 const service = new UserService("Alice", "alice@example.com");
 service.save(); // Logs method calls`}
-            </pre>
+              title="class-decorators.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">Decorator Factory</h3>
-            <pre className="bg-gray-900 text-gray-300 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Decorator factory - returns a decorator
+            <TypeScriptCodeBlock
+              code={`// Decorator factory - returns a decorator
 function MinLength(minLength: number) {
   return function (target: any, propertyName: string) {
     let value: string;
@@ -431,7 +444,9 @@ class Product {
 const product = new Product("Valid Name");
 // const invalid = new Product("X"); // Error: name must be at least 3 characters
 product.updateName("New Name"); // Logs parameter`}
-            </pre>
+              title="decorator-factory.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -444,8 +459,8 @@ product.updateName("New Name"); // Logs parameter`}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Generic Data Store</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Generic interface with constraints
+            <TypeScriptCodeBlock
+              code={`// Generic interface with constraints
 interface Identifiable {
   id: string;
 }
@@ -503,12 +518,14 @@ productRepo.save({ id: "1", name: "Laptop", price: 999.99 });
 
 const user = userRepo.findById("1"); // User | undefined
 const product = productRepo.findById("1"); // Product | undefined`}
-            </pre>
+              title="generic-data-store.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Advanced Type Guards</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// Advanced type guard with discriminated unions
+            <TypeScriptCodeBlock
+              code={`// Advanced type guard with discriminated unions
 type ApiResponse<T> =
   | { status: 'success'; data: T }
   | { status: 'error'; error: string };
@@ -556,7 +573,9 @@ class ApiService {
     return { id: '123', ...userData };
   }
 }`}
-            </pre>
+              title="advanced-type-guards.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>

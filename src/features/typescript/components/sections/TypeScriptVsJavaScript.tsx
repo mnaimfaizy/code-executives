@@ -4,6 +4,8 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import TSvsJSComparison2D from '../visualizations/2d/TSvsJSComparison2D';
 
 const TypeScriptVsJavaScript: React.FC = () => {
   const navigate = useNavigate();
@@ -174,8 +176,8 @@ const TypeScriptVsJavaScript: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-yellow-600 mb-3">JavaScript</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// JavaScript - Dynamic typing
+            <TypeScriptCodeBlock
+              code={`// JavaScript - Dynamic typing
 function add(a, b) {
   return a + b; // What if a or b is a string?
 }
@@ -183,12 +185,14 @@ function add(a, b) {
 add(5, 10); // 15
 add("5", 10); // "510" - Type coercion
 add(5, "10"); // "510" - Silent conversion`}
-            </pre>
+              title="dynamic-typing.js"
+              language="javascript"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">TypeScript</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {`// TypeScript - Static typing
+            <TypeScriptCodeBlock
+              code={`// TypeScript - Static typing
 function add(a: number, b: number): number {
   return a + b; // Type-safe operation
 }
@@ -196,7 +200,8 @@ function add(a: number, b: number): number {
 add(5, 10); // 15 ✅
 add("5", 10); // Error: Argument of type 'string' ❌
 add(5, "10"); // Error: Argument of type 'string' ❌`}
-            </pre>
+              title="static-typing.ts"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -289,6 +294,16 @@ add(5, "10"); // Error: Argument of type 'string' ❌`}
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            TypeScript vs JavaScript Comparison
+          </h3>
+          <TSvsJSComparison2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore TypeScript Features"
         description="Dive deeper into TypeScript's powerful type system and object-oriented capabilities"

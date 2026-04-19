@@ -4,6 +4,8 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import PolymorphismFlow2D from '../visualizations/2d/PolymorphismFlow2D';
 
 const Polymorphism: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -60,15 +62,19 @@ const Polymorphism: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">Method Overriding</h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {methodOverridingCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={methodOverridingCode}
+              title="method-overriding.ts"
+              maxHeight="350px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Parametric Polymorphism</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {parametricPolymorphismCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={parametricPolymorphismCode}
+              title="parametric-polymorphism.ts"
+              maxHeight="350px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -79,15 +85,19 @@ const Polymorphism: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Subtype Polymorphism</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {subtypePolymorphismCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={subtypePolymorphismCode}
+              title="subtype-polymorphism.ts"
+              maxHeight="350px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Ad-hoc Polymorphism</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {adHocPolymorphismCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={adHocPolymorphismCode}
+              title="ad-hoc-polymorphism.ts"
+              maxHeight="350px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -100,17 +110,21 @@ const Polymorphism: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Abstract Classes & Polymorphism
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {runtimePolymorphismCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={runtimePolymorphismCode}
+              title="runtime-polymorphism.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">
               Duck Typing with Interfaces
             </h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {duckTypingPolymorphismCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={duckTypingPolymorphismCode}
+              title="duck-typing.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -194,6 +208,17 @@ const Polymorphism: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <ThemeCard>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            Polymorphism &amp; Method Overriding
+          </h3>
+          <PolymorphismFlow2D />
+        </ThemeCard>
+      </div>
+
       <CTASection
         title="Explore Encapsulation"
         description="Learn about data hiding and access control mechanisms"

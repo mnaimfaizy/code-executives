@@ -4,6 +4,8 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
+import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
+import EncapsulationBox2D from '../visualizations/2d/EncapsulationBox2D';
 
 const Encapsulation: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -59,15 +61,19 @@ const Encapsulation: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Public, Private, Protected
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {accessModifiersCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={accessModifiersCode}
+              title="access-modifiers.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-purple-600 mb-3">Getters and Setters</h3>
-            <pre className="bg-gray-900 text-purple-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {getterSetterCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={getterSetterCode}
+              title="getters-setters.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -78,15 +84,19 @@ const Encapsulation: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
             <h3 className="text-lg font-semibold text-blue-600 mb-3">Module Pattern & Factories</h3>
-            <pre className="bg-gray-900 text-blue-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {encapsulationPatternsCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={encapsulationPatternsCode}
+              title="encapsulation-patterns.ts"
+              maxHeight="400px"
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-green-600 mb-3">Data Validation</h3>
-            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {dataValidationCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={dataValidationCode}
+              title="data-validation.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -99,9 +109,11 @@ const Encapsulation: React.FC = () => {
             <h3 className="text-lg font-semibold text-indigo-600 mb-3">
               Immutable Objects & Configuration
             </h3>
-            <pre className="bg-gray-900 text-indigo-400 p-4 rounded-lg text-sm overflow-x-auto">
-              {immutableEncapsulationCode}
-            </pre>
+            <TypeScriptCodeBlock
+              code={immutableEncapsulationCode}
+              title="immutable-encapsulation.ts"
+              maxHeight="400px"
+            />
           </div>
         </div>
       </ThemeCard>
@@ -188,6 +200,12 @@ const Encapsulation: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+
+      {/* Interactive Visualization */}
+      <div className="max-w-6xl mx-auto mt-10 px-4">
+        <EncapsulationBox2D />
+      </div>
+
       <CTASection
         title="Explore Generics"
         description="Learn about type-safe generic programming"

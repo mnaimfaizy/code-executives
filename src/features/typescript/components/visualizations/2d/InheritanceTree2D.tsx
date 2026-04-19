@@ -1,552 +1,569 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 
-export interface InheritanceNode {
+/**
+ * InheritanceTree2D — Interactive inheritance hierarchy visualization.
+ * Shows parent → child class relationships with properties & methods
+ * flowing down the tree. Animated step-by-step inheritance flow.
+ */
+
+interface TreeNode {
   name: string;
-  properties: Array<{ name: string; type: string; inherited?: boolean }>;
-  methods: Array<{ name: string; signature: string; inherited?: boolean; overridden?: boolean }>;
-  level: number;
-  parent?: string;
+  properties: string[];
+  methods: string[];
+  children?: TreeNode[];
 }
 
-export interface InheritanceTree2DProps {
-  rootClass: InheritanceNode;
-  width?: number;
-  height?: number;
-  animationSpeed?: number;
+const EXAMPLES: Record<string, { title: string; tree: TreeNode }> = {
+  vehicle: {
+    title: 'Vehicle Hierarchy',
+    tree: {
+      name: 'Vehicle',
+      properties: ['make: string', 'model: string', 'year: number'],
+      methods: ['start(): void', 'stop(): void'],
+      children: [
+        {
+          name: 'Car',
+          properties: ['doors: number'],
+          methods: ['drive(): void'],
+          children: [
+            {
+              name: 'ElectricCar',
+              properties: ['batteryLevel: number'],
+              methods: ['charge(): void'],
+            },
+          ],
+        },
+        {
+          name: 'Truck',
+          properties: ['payload: number'],
+          methods: ['loadCargo(): void'],
+        },
+      ],
+    },
+  },
+  animal: {
+    title: 'Animal Kingdom',
+    tree: {
+      name: 'Animal',
+      properties: ['name: string', 'age: number'],
+      methods: ['eat(): void', 'sleep(): void'],
+      children: [
+        {
+          name: 'Dog',
+          properties: ['breed: string'],
+          methods: ['bark(): void', 'fetch(): void'],
+        },
+        {
+          name: 'Cat',
+          properties: ['color: string'],
+          methods: ['meow(): void', 'scratch(): void'],
+        },
+        {
+          name: 'Bird',
+          properties: ['wingspan: number'],
+          methods: ['fly(): void', 'sing(): void'],
+        },
+      ],
+    },
+  },
+  shape: {
+    title: 'Shape Classes',
+    tree: {
+      name: 'Shape',
+      properties: ['color: string'],
+      methods: ['getArea(): number', 'draw(): void'],
+      children: [
+        {
+          name: 'Circle',
+          properties: ['radius: number'],
+          methods: ['getArea(): number'],
+        },
+        {
+          name: 'Rectangle',
+          properties: ['width: number', 'height: number'],
+          methods: ['getArea(): number'],
+          children: [
+            {
+              name: 'Square',
+              properties: [],
+              methods: ['getArea(): number'],
+            },
+          ],
+        },
+      ],
+    },
+  },
+};
+
+interface FlatNode {
+  name: string;
+  ownProps: string[];
+  ownMethods: string[];
+  inheritedProps: string[];
+  inheritedMethods: string[];
+  depth: number;
+  parent: string | null;
+  x: number;
+  y: number;
+  childCount: number;
 }
 
-export interface InheritanceTree2DHandle {
-  animateInheritance(): void;
-  highlightProperty(className: string, propertyName: string): void;
-  highlightMethod(className: string, methodName: string): void;
-  reset(): void;
+function flattenTree(
+  node: TreeNode,
+  depth: number,
+  parent: string | null,
+  parentProps: string[],
+  parentMethods: string[]
+): FlatNode[] {
+  const result: FlatNode[] = [];
+  const flat: FlatNode = {
+    name: node.name,
+    ownProps: node.properties,
+    ownMethods: node.methods,
+    inheritedProps: parentProps,
+    inheritedMethods: parentMethods,
+    depth,
+    parent,
+    x: 0,
+    y: 0,
+    childCount: node.children?.length ?? 0,
+  };
+  result.push(flat);
+
+  if (node.children) {
+    const allProps = [...parentProps, ...node.properties];
+    const allMethods = [...parentMethods, ...node.methods];
+    for (const child of node.children) {
+      result.push(...flattenTree(child, depth + 1, node.name, allProps, allMethods));
+    }
+  }
+  return result;
 }
 
-const InheritanceTree2D = React.forwardRef<InheritanceTree2DHandle, InheritanceTree2DProps>(
-  ({ rootClass, width = 800, height = 600, animationSpeed = 1000 }, ref) => {
-    const [animationStep, setAnimationStep] = useState(0);
-    const [highlightedElement, setHighlightedElement] = useState<{
-      type: 'property' | 'method';
-      className: string;
-      name: string;
-    } | null>(null);
-    const [animating, setAnimating] = useState(false);
+function layoutNodes(nodes: FlatNode[], svgWidth: number): FlatNode[] {
+  const levels: Map<number, FlatNode[]> = new Map();
+  for (const n of nodes) {
+    if (!levels.has(n.depth)) levels.set(n.depth, []);
+    levels.get(n.depth)!.push(n);
+  }
 
-    // Build the complete inheritance tree
-    const inheritanceTree = useMemo(() => {
-      const buildTree = (node: InheritanceNode, level = 0): InheritanceNode[] => {
-        const result = [{ ...node, level }];
+  for (const [depth, group] of levels.entries()) {
+    const spacing = svgWidth / (group.length + 1);
+    group.forEach((n, i) => {
+      n.x = (i + 1) * spacing;
+      n.y = 40 + depth * 180;
+    });
+  }
+  return nodes;
+}
 
-        // Add inherited properties and methods to child classes
-        if (level > 0) {
-          // Mark inherited properties
-          node.properties = node.properties.map((prop) => ({
-            ...prop,
-            inherited: !prop.inherited,
-          }));
+const NODE_COLORS = [
+  { bg: '#eef2ff', border: '#6366f1', header: '#4f46e5', text: '#312e81' },
+  { bg: '#f0fdf4', border: '#22c55e', header: '#16a34a', text: '#14532d' },
+  { bg: '#fefce8', border: '#eab308', header: '#ca8a04', text: '#713f12' },
+  { bg: '#fdf2f8', border: '#ec4899', header: '#db2777', text: '#831843' },
+];
 
-          // Mark inherited methods (not overridden)
-          node.methods = node.methods.map((method) => ({
-            ...method,
-            inherited: !method.inherited && !method.overridden,
-          }));
-        }
+const InheritanceTree2D: React.FC = () => {
+  const [example, setExample] = useState<keyof typeof EXAMPLES>('vehicle');
+  const [animStep, setAnimStep] = useState(-1);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-        return result;
-      };
+  const tree = EXAMPLES[example].tree;
+  const flatNodes = layoutNodes(flattenTree(tree, 0, null, [], []), 700);
 
-      return buildTree(rootClass);
-    }, [rootClass]);
-
-    // Calculate positions for tree layout
-    const positions = useMemo(() => {
-      const pos = new Map<string, { x: number; y: number }>();
-      const levelNodes = new Map<number, InheritanceNode[]>();
-
-      // Group nodes by level
-      inheritanceTree.forEach((node) => {
-        if (!levelNodes.has(node.level)) {
-          levelNodes.set(node.level, []);
-        }
-        levelNodes.get(node.level)!.push(node);
-      });
-
-      // Position nodes
-      levelNodes.forEach((nodes, level) => {
-        const levelY = 100 + level * 200;
-        const spacing = width / (nodes.length + 1);
-
-        nodes.forEach((node, index) => {
-          const x = (index + 1) * spacing;
-          pos.set(node.name, { x, y: levelY });
-        });
-      });
-
-      return pos;
-    }, [inheritanceTree, width]);
-
-    const animateInheritance = useCallback(() => {
-      if (animating) return;
-
-      setAnimating(true);
-      setAnimationStep(0);
-
-      const steps = inheritanceTree.length * 2; // Properties + methods for each class
-      let currentStep = 0;
-
-      const animate = () => {
-        setAnimationStep(currentStep);
-        currentStep++;
-
-        if (currentStep <= steps) {
-          setTimeout(animate, animationSpeed / steps);
-        } else {
-          setAnimating(false);
-        }
-      };
-
-      animate();
-    }, [inheritanceTree, animationSpeed, animating]);
-
-    const highlightElement = useCallback(
-      (type: 'property' | 'method', className: string, name: string) => {
-        setHighlightedElement({ type, className, name });
-        setTimeout(() => setHighlightedElement(null), 2000);
-      },
-      []
-    );
-
-    React.useImperativeHandle(ref, () => ({
-      animateInheritance,
-      highlightProperty: (className: string, propertyName: string) =>
-        highlightElement('property', className, propertyName),
-      highlightMethod: (className: string, methodName: string) =>
-        highlightElement('method', className, methodName),
-      reset: () => {
-        setAnimationStep(0);
-        setHighlightedElement(null);
-        setAnimating(false);
-      },
-    }));
-
-    const renderInheritanceArrow = (fromNode: InheritanceNode, toNode: InheritanceNode) => {
-      const fromPos = positions.get(fromNode.name);
-      const toPos = positions.get(toNode.name);
-      if (!fromPos || !toPos) return null;
-
-      const isAnimating = animationStep > inheritanceTree.indexOf(fromNode) * 2;
-
-      return (
-        <g key={`arrow-${fromNode.name}-${toNode.name}`}>
-          {/* Arrow shadow */}
-          <line
-            x1={fromPos.x}
-            y1={fromPos.y + 60}
-            x2={toPos.x}
-            y2={toPos.y - 20}
-            stroke="rgba(0,0,0,0.1)"
-            strokeWidth="3"
-            markerEnd="url(#inheritance-arrowhead-shadow)"
-          />
-
-          {/* Main arrow */}
-          <line
-            x1={fromPos.x}
-            y1={fromPos.y + 60}
-            x2={toPos.x}
-            y2={toPos.y - 20}
-            stroke={isAnimating ? '#10B981' : '#6366F1'}
-            strokeWidth="2"
-            markerEnd="url(#inheritance-arrowhead)"
-            style={{
-              strokeDasharray: isAnimating ? 'none' : '5,5',
-              animation: isAnimating ? 'none' : 'dash 2s infinite',
-            }}
-          />
-
-          {/* Inheritance label */}
-          <text
-            x={(fromPos.x + toPos.x) / 2}
-            y={(fromPos.y + toPos.y) / 2}
-            textAnchor="middle"
-            fill={isAnimating ? '#10B981' : '#6366F1'}
-            fontSize="12"
-            fontWeight="bold"
-            opacity={isAnimating ? 1 : 0.7}
-          >
-            extends
-          </text>
-        </g>
-      );
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
+  }, []);
 
-    const renderClassNode = (node: InheritanceNode) => {
-      const position = positions.get(node.name);
-      if (!position) return null;
+  const play = useCallback(() => {
+    if (isPlaying) return;
+    setIsPlaying(true);
+    setAnimStep(0);
+    setSelectedNode(null);
+    let s = 0;
+    intervalRef.current = setInterval(() => {
+      s++;
+      if (s >= flatNodes.length) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = null;
+        setIsPlaying(false);
+      } else {
+        setAnimStep(s);
+      }
+    }, 1400);
+  }, [isPlaying, flatNodes.length]);
 
-      const nodeIndex = inheritanceTree.indexOf(node);
-      const isAnimating = animationStep > nodeIndex * 2;
-      const isPropertiesAnimating = animationStep > nodeIndex * 2;
-      const isMethodsAnimating = animationStep > nodeIndex * 2 + 1;
+  const reset = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setAnimStep(-1);
+    setIsPlaying(false);
+    setSelectedNode(null);
+  }, []);
 
-      const nodeWidth = 220;
-      const nodeHeight = 120 + Math.max(node.properties.length, node.methods.length) * 20;
+  const changeExample = useCallback((key: keyof typeof EXAMPLES) => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    setExample(key);
+    setAnimStep(-1);
+    setIsPlaying(false);
+    setSelectedNode(null);
+  }, []);
 
-      return (
-        <g key={node.name} transform={`translate(${position.x - nodeWidth / 2}, ${position.y})`}>
-          {/* Node shadow */}
-          <rect x="4" y="4" width={nodeWidth} height={nodeHeight} rx="12" fill="rgba(0,0,0,0.1)" />
+  const isNodeVisible = (idx: number): boolean => animStep === -1 || idx <= animStep;
+  const isNodeActive = (idx: number): boolean => animStep === idx;
 
-          {/* Main node */}
-          <rect
-            x="0"
-            y="0"
-            width={nodeWidth}
-            height={nodeHeight}
-            rx="12"
-            fill="white"
-            stroke={isAnimating ? '#10B981' : '#E5E7EB'}
-            strokeWidth={isAnimating ? '3' : '2'}
-            style={{
-              filter: isAnimating ? 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.3))' : 'none',
-            }}
-          />
+  const sel = selectedNode ? flatNodes.find((n) => n.name === selectedNode) : null;
 
-          {/* Class header */}
-          <rect x="0" y="0" width={nodeWidth} height="40" rx="12" fill="#6366F1" />
-          <text
-            x={nodeWidth / 2}
-            y="25"
-            textAnchor="middle"
-            fill="white"
-            fontSize="16"
-            fontWeight="bold"
-          >
-            {node.name}
-          </text>
+  const maxDepth = Math.max(...flatNodes.map((n) => n.depth));
+  const svgHeight = 40 + (maxDepth + 1) * 180 + 40;
 
-          {/* Properties section */}
-          <text x="15" y="55" fill="#374151" fontSize="12" fontWeight="bold">
-            Properties:
-          </text>
-          {node.properties.map((prop, index) => {
-            const y = 75 + index * 18;
-            const isHighlighted =
-              highlightedElement?.type === 'property' &&
-              highlightedElement.className === node.name &&
-              highlightedElement.name === prop.name;
-
-            return (
-              <g key={prop.name}>
-                <circle
-                  cx="25"
-                  cy={y - 3}
-                  r="3"
-                  fill={prop.inherited ? '#F59E0B' : '#3B82F6'}
-                  opacity={isPropertiesAnimating ? 1 : 0.3}
-                  style={{
-                    transition: 'opacity 0.5s ease-in-out',
-                  }}
-                />
-                <text
-                  x="35"
-                  y={y}
-                  fill="#374151"
-                  fontSize="11"
-                  style={{
-                    cursor: 'pointer',
-                    opacity: isPropertiesAnimating ? 1 : 0.3,
-                    transition: 'opacity 0.5s ease-in-out',
-                  }}
-                  onClick={() => highlightElement('property', node.name, prop.name)}
-                >
-                  {prop.name}: {prop.type}
-                  {prop.inherited && (
-                    <tspan fill="#F59E0B" fontSize="9">
-                      {' '}
-                      (inherited)
-                    </tspan>
-                  )}
-                </text>
-                {isHighlighted && (
-                  <rect
-                    x="30"
-                    y={y - 12}
-                    width={nodeWidth - 60}
-                    height="16"
-                    rx="4"
-                    fill="#FEF3C7"
-                    stroke="#F59E0B"
-                    strokeWidth="1"
-                  />
-                )}
-              </g>
-            );
-          })}
-
-          {/* Methods section */}
-          <text
-            x="15"
-            y={85 + node.properties.length * 18}
-            fill="#374151"
-            fontSize="12"
-            fontWeight="bold"
-          >
-            Methods:
-          </text>
-          {node.methods.map((method, index) => {
-            const y = 105 + node.properties.length * 18 + index * 18;
-            const isHighlighted =
-              highlightedElement?.type === 'method' &&
-              highlightedElement.className === node.name &&
-              highlightedElement.name === method.name;
-
-            return (
-              <g key={method.name}>
-                <rect
-                  x="20"
-                  y={y - 8}
-                  width="8"
-                  height="8"
-                  rx="2"
-                  fill={method.overridden ? '#EF4444' : method.inherited ? '#F59E0B' : '#10B981'}
-                  opacity={isMethodsAnimating ? 1 : 0.3}
-                  style={{
-                    transition: 'opacity 0.5s ease-in-out',
-                  }}
-                />
-                <text
-                  x="35"
-                  y={y}
-                  fill="#374151"
-                  fontSize="11"
-                  style={{
-                    cursor: 'pointer',
-                    opacity: isMethodsAnimating ? 1 : 0.3,
-                    transition: 'opacity 0.5s ease-in-out',
-                  }}
-                  onClick={() => highlightElement('method', node.name, method.name)}
-                >
-                  {method.name}
-                  {method.overridden && (
-                    <tspan fill="#EF4444" fontSize="9">
-                      {' '}
-                      (overridden)
-                    </tspan>
-                  )}
-                  {method.inherited && !method.overridden && (
-                    <tspan fill="#F59E0B" fontSize="9">
-                      {' '}
-                      (inherited)
-                    </tspan>
-                  )}
-                </text>
-                {isHighlighted && (
-                  <rect
-                    x="30"
-                    y={y - 12}
-                    width={nodeWidth - 60}
-                    height="16"
-                    rx="4"
-                    fill="#FEF3C7"
-                    stroke="#F59E0B"
-                    strokeWidth="1"
-                  />
-                )}
-              </g>
-            );
-          })}
-        </g>
-      );
-    };
-
-    // Build inheritance relationships
-    const inheritanceRelationships = useMemo(() => {
-      const relationships: Array<{ from: InheritanceNode; to: InheritanceNode }> = [];
-
-      inheritanceTree.forEach((node) => {
-        if (node.level > 0) {
-          // Find parent (this is simplified - in real implementation you'd track parent relationships)
-          const parentLevel = node.level - 1;
-          const parentCandidates = inheritanceTree.filter((n) => n.level === parentLevel);
-          if (parentCandidates.length > 0) {
-            relationships.push({ from: parentCandidates[0], to: node });
-          }
-        }
-      });
-
-      return relationships;
-    }, [inheritanceTree]);
-
-    return (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          borderRadius: '0.75rem',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-        }}
-      >
-        {/* Title */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '16px',
-            left: '16px',
-            color: 'white',
-            fontSize: '18px',
-            fontWeight: 'bold',
-            zIndex: 10,
-          }}
-        >
-          🌳 Inheritance Flow
-        </div>
-
-        {/* Legend */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '16px',
-            right: '16px',
-            background: 'rgba(255,255,255,0.9)',
-            borderRadius: '8px',
-            padding: '8px',
-            fontSize: '11px',
-            zIndex: 10,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-            <div
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: '#3B82F6',
-              }}
-            ></div>
-            <span>Own Property</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-            <div
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: '#F59E0B',
-              }}
-            ></div>
-            <span>Inherited</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-            <div
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '2px',
-                backgroundColor: '#10B981',
-              }}
-            ></div>
-            <span>Own Method</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '2px',
-                backgroundColor: '#EF4444',
-              }}
-            ></div>
-            <span>Overridden</span>
-          </div>
-        </div>
-
-        {/* Control buttons */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '16px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: '8px',
-            zIndex: 10,
-          }}
-        >
+  return (
+    <div className="space-y-5">
+      {/* Example picker */}
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(EXAMPLES).map(([key, { title }]) => (
           <button
-            onClick={animateInheritance}
-            disabled={animating}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: animating ? '#9CA3AF' : '#6366F1',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              cursor: animating ? 'not-allowed' : 'pointer',
-            }}
+            key={key}
+            onClick={() => changeExample(key as keyof typeof EXAMPLES)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              example === key
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
           >
-            {animating ? '🔄 Animating...' : '▶️ Animate Inheritance'}
+            {title}
           </button>
-        </div>
+        ))}
+      </div>
 
-        <svg
-          width="100%"
-          height="100%"
-          viewBox={`0 0 ${width} ${height}`}
-          preserveAspectRatio="xMidYMid meet"
-        >
+      {/* SVG Visualization */}
+      <div className="relative bg-gradient-to-br from-gray-50 to-indigo-50/30 rounded-2xl border border-indigo-100 overflow-hidden">
+        <svg viewBox={`0 0 700 ${svgHeight}`} className="w-full" style={{ minHeight: '20rem' }}>
           <defs>
-            {/* Arrow markers */}
             <marker
-              id="inheritance-arrowhead"
-              markerWidth="10"
-              markerHeight="7"
-              refX="9"
-              refY="3.5"
-              orient="auto"
+              id="inh-arrow"
+              viewBox="0 0 10 10"
+              refX="5"
+              refY="5"
+              markerWidth="8"
+              markerHeight="8"
+              orient="auto-start-reverse"
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#6366F1" />
+              <path d="M 0 0 L 10 5 L 0 10 Z" fill="#6366f1" />
             </marker>
-            <marker
-              id="inheritance-arrowhead-shadow"
-              markerWidth="10"
-              markerHeight="7"
-              refX="9"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="rgba(0,0,0,0.1)" />
-            </marker>
-
-            {/* Animation keyframes */}
-            <style>
-              {`
-                @keyframes dash {
-                  to {
-                    stroke-dashoffset: -10;
-                  }
-                }
-              `}
-            </style>
           </defs>
 
-          {/* Render inheritance arrows */}
-          {inheritanceRelationships.map((rel) => renderInheritanceArrow(rel.from, rel.to))}
+          {/* Connection arrows */}
+          {flatNodes.map((node, idx) => {
+            if (!node.parent) return null;
+            const parentNode = flatNodes.find((n) => n.name === node.parent);
+            if (!parentNode) return null;
+            if (!isNodeVisible(idx)) return null;
 
-          {/* Render class nodes */}
-          {inheritanceTree.map(renderClassNode)}
+            const active = isNodeActive(idx);
+            return (
+              <g key={`arrow-${node.name}`}>
+                <line
+                  x1={parentNode.x}
+                  y1={parentNode.y + 30}
+                  x2={node.x}
+                  y2={node.y - 10}
+                  stroke={active ? '#10b981' : '#6366f1'}
+                  strokeWidth={active ? 3 : 2}
+                  strokeDasharray={active ? '8 4' : 'none'}
+                  markerEnd="url(#inh-arrow)"
+                  opacity={active ? 1 : 0.6}
+                >
+                  {active && (
+                    <animate
+                      attributeName="stroke-dashoffset"
+                      values="24;0"
+                      dur="1s"
+                      repeatCount="indefinite"
+                    />
+                  )}
+                </line>
+                <text
+                  x={(parentNode.x + node.x) / 2 + 8}
+                  y={(parentNode.y + 30 + node.y - 10) / 2}
+                  fill={active ? '#10b981' : '#818cf8'}
+                  fontSize="11"
+                  fontWeight="600"
+                  fontStyle="italic"
+                >
+                  extends
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Class nodes */}
+          {flatNodes.map((node, idx) => {
+            if (!isNodeVisible(idx)) return null;
+            const active = isNodeActive(idx);
+            const colors = NODE_COLORS[node.depth % NODE_COLORS.length];
+            const isSelected = selectedNode === node.name;
+
+            const boxWidth = 160;
+            const inheritedCount = node.inheritedProps.length + node.inheritedMethods.length;
+            const memberCount = node.ownProps.length + node.ownMethods.length;
+            const boxHeight =
+              34 +
+              (isSelected
+                ? (memberCount + inheritedCount) * 16 +
+                  (inheritedCount > 0 ? 20 : 0) +
+                  10
+                : 0);
+
+            return (
+              <g
+                key={node.name}
+                transform={`translate(${node.x - boxWidth / 2}, ${node.y - 14})`}
+                onClick={() => setSelectedNode(isSelected ? null : node.name)}
+                style={{ cursor: 'pointer' }}
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width={boxWidth}
+                  height={boxHeight}
+                  rx="10"
+                  fill="rgba(0,0,0,0.06)"
+                />
+                <rect
+                  width={boxWidth}
+                  height={boxHeight}
+                  rx="10"
+                  fill={colors.bg}
+                  stroke={isSelected ? colors.header : active ? '#10b981' : colors.border}
+                  strokeWidth={isSelected || active ? 2.5 : 1.5}
+                />
+                <rect width={boxWidth} height="30" rx="10" fill={colors.header} />
+                <rect y="20" width={boxWidth} height="10" fill={colors.header} />
+                <text
+                  x={boxWidth / 2}
+                  y="20"
+                  textAnchor="middle"
+                  fill="white"
+                  fontSize="13"
+                  fontWeight="700"
+                  fontFamily="ui-monospace, monospace"
+                >
+                  {node.name}
+                </text>
+
+                {isSelected && (
+                  <g>
+                    {node.inheritedProps.length + node.inheritedMethods.length > 0 && (
+                      <>
+                        <text x="10" y="50" fill="#6b7280" fontSize="10" fontWeight="600">
+                          ↓ Inherited
+                        </text>
+                        {node.inheritedProps.map((p, i) => (
+                          <text
+                            key={`ip-${i}`}
+                            x="14"
+                            y={64 + i * 16}
+                            fill="#9ca3af"
+                            fontSize="10"
+                            fontFamily="ui-monospace, monospace"
+                          >
+                            📋 {p}
+                          </text>
+                        ))}
+                        {node.inheritedMethods.map((m, i) => (
+                          <text
+                            key={`im-${i}`}
+                            x="14"
+                            y={64 + (node.inheritedProps.length + i) * 16}
+                            fill="#9ca3af"
+                            fontSize="10"
+                            fontFamily="ui-monospace, monospace"
+                          >
+                            ⚡ {m}
+                          </text>
+                        ))}
+                      </>
+                    )}
+                    {(node.ownProps.length > 0 || node.ownMethods.length > 0) && (
+                      <>
+                        <text
+                          x="10"
+                          y={50 + (inheritedCount > 0 ? inheritedCount * 16 + 20 : 0)}
+                          fill={colors.text}
+                          fontSize="10"
+                          fontWeight="600"
+                        >
+                          ★ Own
+                        </text>
+                        {node.ownProps.map((p, i) => (
+                          <text
+                            key={`op-${i}`}
+                            x="14"
+                            y={
+                              64 +
+                              (inheritedCount > 0 ? inheritedCount * 16 + 20 : 0) +
+                              i * 16
+                            }
+                            fill={colors.text}
+                            fontSize="10"
+                            fontFamily="ui-monospace, monospace"
+                          >
+                            📋 {p}
+                          </text>
+                        ))}
+                        {node.ownMethods.map((m, i) => (
+                          <text
+                            key={`om-${i}`}
+                            x="14"
+                            y={
+                              64 +
+                              (inheritedCount > 0 ? inheritedCount * 16 + 20 : 0) +
+                              (node.ownProps.length + i) * 16
+                            }
+                            fill={colors.text}
+                            fontSize="10"
+                            fontFamily="ui-monospace, monospace"
+                          >
+                            ⚡ {m}
+                          </text>
+                        ))}
+                      </>
+                    )}
+                  </g>
+                )}
+
+                {!isSelected && (
+                  <text
+                    x={boxWidth / 2}
+                    y={boxHeight - 6}
+                    textAnchor="middle"
+                    fill={colors.text}
+                    fontSize="10"
+                    opacity="0.7"
+                  >
+                    {memberCount} own · {inheritedCount} inherited — click to expand
+                  </text>
+                )}
+
+                {active && (
+                  <rect
+                    x="-4"
+                    y="-4"
+                    width={boxWidth + 8}
+                    height={boxHeight + 8}
+                    rx="12"
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="2"
+                    opacity="0.5"
+                  >
+                    <animate
+                      attributeName="opacity"
+                      values="0.5;0.15;0.5"
+                      dur="1.5s"
+                      repeatCount="indefinite"
+                    />
+                  </rect>
+                )}
+              </g>
+            );
+          })}
         </svg>
       </div>
-    );
-  }
-);
 
-export default InheritanceTree2D;
+      {/* Selected node detail panel */}
+      {sel && (
+        <div className="bg-white rounded-xl border border-indigo-100 p-5 shadow-sm">
+          <h4 className="font-bold text-gray-900 mb-2">
+            class {sel.name}
+            {sel.parent && (
+              <span className="text-indigo-500 font-normal"> extends {sel.parent}</span>
+            )}
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <h5 className="font-semibold text-gray-700 mb-1">Own Members</h5>
+              {sel.ownProps.map((p) => (
+                <div key={p} className="text-emerald-700 font-mono text-xs">
+                  📋 {p}
+                </div>
+              ))}
+              {sel.ownMethods.map((m) => (
+                <div key={m} className="text-blue-700 font-mono text-xs">
+                  ⚡ {m}
+                </div>
+              ))}
+            </div>
+            {sel.inheritedProps.length + sel.inheritedMethods.length > 0 && (
+              <div>
+                <h5 className="font-semibold text-gray-500 mb-1">Inherited Members</h5>
+                {sel.inheritedProps.map((p) => (
+                  <div key={p} className="text-gray-400 font-mono text-xs">
+                    📋 {p}
+                  </div>
+                ))}
+                {sel.inheritedMethods.map((m) => (
+                  <div key={m} className="text-gray-400 font-mono text-xs">
+                    ⚡ {m}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Controls */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={play}
+          disabled={isPlaying}
+          className="px-5 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 shadow-sm transition-colors"
+        >
+          {isPlaying ? '▶ Animating...' : '▶ Animate Inheritance'}
+        </button>
+        <button
+          onClick={() => setAnimStep((s) => Math.min(s + 1, flatNodes.length - 1))}
+          disabled={isPlaying}
+          className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-40 transition-colors"
+        >
+          Next →
+        </button>
+        <button
+          onClick={reset}
+          className="px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
+        >
+          Reset
+        </button>
+        <div className="ml-auto flex gap-1.5">
+          {flatNodes.map((n, i) => (
+            <div
+              key={n.name}
+              className={`w-2.5 h-2.5 rounded-full transition-all ${
+                animStep === -1
+                  ? 'bg-indigo-300'
+                  : i <= animStep
+                    ? 'bg-indigo-600'
+                    : 'bg-gray-300'
+              } ${i === animStep ? 'scale-125' : ''}`}
+              title={n.name}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default React.memo(InheritanceTree2D);
