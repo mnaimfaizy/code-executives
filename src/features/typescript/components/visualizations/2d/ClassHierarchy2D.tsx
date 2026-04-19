@@ -18,7 +18,7 @@ export interface ClassDefinition {
   isAbstract?: boolean;
 }
 
-export interface ClassHierarchy2DProps {}
+export type ClassHierarchy2DProps = Record<string, never>;
 export interface ClassHierarchy2DHandle {
   expandClass(className: string): void;
   collapseClass(className: string): void;
@@ -230,7 +230,7 @@ const ClassHierarchy2D: React.FC = () => {
   const toggleExpand = useCallback((name: string) => {
     setExpanded((prev) => {
       const s = new Set(prev);
-      s.has(name) ? s.delete(name) : s.add(name);
+      if (s.has(name)) { s.delete(name); } else { s.add(name); }
       return s;
     });
     setSelected(null);

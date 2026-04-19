@@ -18,7 +18,7 @@ export interface EncapsulationClass {
   protectedMembers: ClassMember[];
 }
 
-export interface EncapsulationBox2DProps {}
+export type EncapsulationBox2DProps = Record<string, never>;
 export interface EncapsulationBox2DHandle {
   toggleVisibility(v: 'public' | 'private' | 'protected'): void;
   highlightMember(name: string): void;
