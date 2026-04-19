@@ -14,10 +14,6 @@ import type {
   ClassHierarchy2DHandle,
 } from '../visualizations/2d/ClassHierarchy2D';
 import type {
-  PolymorphicMethod,
-  PolymorphismFlow2DHandle,
-} from '../visualizations/2d/PolymorphismFlow2D';
-import type {
   EncapsulationClass,
   EncapsulationBox2DHandle,
 } from '../visualizations/2d/EncapsulationBox2D';
@@ -26,7 +22,6 @@ const TypeScriptVisualization: React.FC = () => {
   const navigate = useNavigate();
   const classHierarchyRef = useRef<ClassHierarchy2DHandle>(null);
 
-  const polymorphismFlowRef = useRef<PolymorphismFlow2DHandle>(null);
   const encapsulationBoxRef = useRef<EncapsulationBox2DHandle>(null);
 
   const navigateToSection = (sectionName: string) => {
@@ -70,35 +65,6 @@ const TypeScriptVisualization: React.FC = () => {
         { name: 'whiskerLength', type: 'property', visibility: 'private' },
         { name: 'purr', type: 'method', visibility: 'public', returnType: 'void' },
         { name: 'scratch', type: 'method', visibility: 'public', returnType: 'void' },
-      ],
-    },
-  ];
-
-
-
-  const polymorphismData: PolymorphicMethod[] = [
-    {
-      name: 'calculateArea',
-      baseClass: 'Shape',
-      implementations: [
-        {
-          className: 'Circle',
-          signature: '(radius: number): number',
-          body: 'return Math.PI * radius * radius;',
-          isOverride: true,
-        },
-        {
-          className: 'Rectangle',
-          signature: '(width: number, height: number): number',
-          body: 'return width * height;',
-          isOverride: true,
-        },
-        {
-          className: 'Triangle',
-          signature: '(base: number, height: number): number',
-          body: 'return (base * height) / 2;',
-          isOverride: true,
-        },
       ],
     },
   ];
@@ -229,35 +195,8 @@ const TypeScriptVisualization: React.FC = () => {
 
       {/* Polymorphism Flow Visualization */}
       <ThemeCard>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-lg">
-              🔄
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Polymorphism &amp; Method Overriding
-            </h2>
-          </div>
-          <button
-            onClick={() => polymorphismFlowRef.current?.animatePolymorphism()}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm"
-          >
-            ▶ Animate Polymorphism
-          </button>
-        </div>
-        <p className="text-gray-600 text-sm mb-4">
-          See how different classes implement the same method signature differently. Click
-          implementation nodes to view actual code.
-        </p>
-        <div className="h-96 w-full">
-          <PolymorphismFlow2D
-            ref={polymorphismFlowRef}
-            methods={polymorphismData}
-            width={800}
-            height={400}
-            animationSpeed={1500}
-          />
-        </div>
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Polymorphism &amp; Method Overriding</h3>
+        <PolymorphismFlow2D />
       </ThemeCard>
 
       {/* Encapsulation Visualization */}

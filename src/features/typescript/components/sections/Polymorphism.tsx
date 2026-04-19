@@ -6,34 +6,6 @@ import CTASection from '../../../../components/shared/CTASection';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import TypeScriptCodeBlock from '../shared/TypeScriptCodeBlock';
 import PolymorphismFlow2D from '../visualizations/2d/PolymorphismFlow2D';
-import type { PolymorphicMethod } from '../visualizations/2d/PolymorphismFlow2D';
-
-const polymorphismData: PolymorphicMethod[] = [
-  {
-    name: 'calculateArea',
-    baseClass: 'Shape',
-    implementations: [
-      {
-        className: 'Circle',
-        signature: '(radius: number): number',
-        body: 'return Math.PI * radius * radius;',
-        isOverride: true,
-      },
-      {
-        className: 'Rectangle',
-        signature: '(width: number, height: number): number',
-        body: 'return width * height;',
-        isOverride: true,
-      },
-      {
-        className: 'Triangle',
-        signature: '(base: number, height: number): number',
-        body: 'return (base * height) / 2;',
-        isOverride: true,
-      },
-    ],
-  },
-];
 
 const Polymorphism: React.FC = () => {
   const navigateToSection = (section: string) => {
@@ -238,26 +210,10 @@ const Polymorphism: React.FC = () => {
       />
 
       {/* Interactive Visualization */}
-      <div className="max-w-5xl mx-auto mt-10 px-4">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <ThemeCard>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 rounded-lg bg-purple-100 flex items-center justify-center text-lg">
-              🔄
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Polymorphism &amp; Method Overriding</h2>
-          </div>
-          <p className="text-gray-600 text-sm mb-4">
-            See how different classes implement the same method signature differently. Click
-            implementation nodes to view actual code.
-          </p>
-          <div className="h-96 w-full">
-            <PolymorphismFlow2D
-              methods={polymorphismData}
-              width={800}
-              height={400}
-              animationSpeed={1500}
-            />
-          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Polymorphism &amp; Method Overriding</h3>
+          <PolymorphismFlow2D />
         </ThemeCard>
       </div>
 

@@ -204,8 +204,8 @@ const TypeGuards: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900">Interactive Type Narrowing</h2>
           </div>
           <p className="text-gray-600 text-sm mb-4">
-            Step through type guard scenarios to see how TypeScript narrows types at each check.
-            Use play/pause controls or step manually through the flow.
+            Step through type guard scenarios to see how TypeScript narrows types at each check. Use
+            play/pause controls or step manually through the flow.
           </p>
           <TypeNarrowing2D />
         </ThemeCard>

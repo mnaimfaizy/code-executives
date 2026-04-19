@@ -426,8 +426,8 @@ console.log(\`Interest: \${interest}\`); // "Interest: 65"
           </div>
           <p className="text-gray-600 text-sm mb-4">
             Click on class boxes to expand/collapse members. Colors:{' '}
-            <span className="text-blue-600 font-semibold">public</span>{' '}·{' '}
-            <span className="text-red-500 font-semibold">private</span>{' '}·{' '}
+            <span className="text-blue-600 font-semibold">public</span> ·{' '}
+            <span className="text-red-500 font-semibold">private</span> ·{' '}
             <span className="text-amber-500 font-semibold">protected</span>
           </p>
           <div className="h-96 w-full">

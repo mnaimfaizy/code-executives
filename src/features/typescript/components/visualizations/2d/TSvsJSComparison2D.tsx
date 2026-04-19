@@ -339,9 +339,7 @@ const TSvsJSComparison2D: React.FC = () => {
                 key={i}
                 onClick={() => setActiveCategory(i)}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${
-                  i === activeCategory
-                    ? 'bg-indigo-600 scale-125'
-                    : 'bg-gray-300 hover:bg-gray-400'
+                  i === activeCategory ? 'bg-indigo-600 scale-125' : 'bg-gray-300 hover:bg-gray-400'
                 }`}
                 aria-label={`Category ${i + 1}`}
               />
