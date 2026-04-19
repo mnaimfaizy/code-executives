@@ -7,8 +7,11 @@ import ExecutionModel from './components/sections/ExecutionModel';
 import MemoryManagement from './components/sections/MemoryManagement';
 import GlobalInterpreterLock from './components/sections/GlobalInterpreterLock';
 import AdvancedConcepts from './components/sections/AdvancedConcepts';
-// Import additional sections as they are created
-// import Mastery from './components/sections/Mastery';
+import CoreDataStructures from './components/sections/CoreDataStructures';
+import OOP from './components/sections/OOP';
+import ErrorHandling from './components/sections/ErrorHandling';
+import Comprehensions from './components/sections/Comprehensions';
+import PythonForML from './components/sections/PythonForML';
 
 const Quiz = () => <ModuleQuizSection moduleId="python" />;
 
@@ -19,9 +22,12 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Memory Management': MemoryManagement,
   'Global Interpreter Lock': GlobalInterpreterLock,
   'Advanced Concepts': AdvancedConcepts,
+  'Core Data Structures': CoreDataStructures,
+  OOP,
+  'Error Handling': ErrorHandling,
+  Comprehensions,
+  'Python for ML': PythonForML,
   Quiz,
-  // Add more sections as they are implemented
-  // Mastery: Mastery,
 };
 
 function useQuery() {

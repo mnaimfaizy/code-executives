@@ -342,6 +342,11 @@ const baseModuleNavigationSections: Record<string, SidebarItem[]> = {
     { label: 'Memory Management', path: '/python?section=Memory%20Management' },
     { label: 'Global Interpreter Lock', path: '/python?section=Global%20Interpreter%20Lock' },
     { label: 'Advanced Concepts', path: '/python?section=Advanced%20Concepts' },
+    { label: 'Core Data Structures', path: '/python?section=Core%20Data%20Structures' },
+    { label: 'OOP', path: '/python?section=OOP' },
+    { label: 'Error Handling', path: '/python?section=Error%20Handling' },
+    { label: 'Comprehensions', path: '/python?section=Comprehensions' },
+    { label: 'Python for ML', path: '/python?section=Python%20for%20ML' },
   ],
   '/systemdesign': [
     { label: 'Introduction', path: '/systemdesign?section=Introduction' },
