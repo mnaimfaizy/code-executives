@@ -365,8 +365,6 @@ const GlobalInterpreterLock: React.FC = () => {
                 </span>
               </li>
             </ul>
-              </li>
-            </ul>
           </div>
         </div>
       </ThemeCard>
