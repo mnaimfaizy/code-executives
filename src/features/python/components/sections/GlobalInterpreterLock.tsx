@@ -305,6 +305,9 @@ const GlobalInterpreterLock: React.FC = () => {
   // ---------------------------------------------------------------------------
   // Main content
   // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Main content
+  // ---------------------------------------------------------------------------
   const mainContent = (
     <>
       {/* 1 — Interactive Visualization */}
@@ -343,6 +346,9 @@ const GlobalInterpreterLock: React.FC = () => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">•</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-0.5">•</span>
                 <span>
                   <strong>C extension safety:</strong> Thousands of C libraries assume
                   single-threaded access to Python objects. The GIL guarantees that.
@@ -350,10 +356,15 @@ const GlobalInterpreterLock: React.FC = () => {
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-blue-500 mt-0.5">•</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-blue-500 mt-0.5">•</span>
                 <span>
                   <strong>Simplicity:</strong> Single-threaded programs are never slowed by
                   fine-grained per-object locks.
                 </span>
+              </li>
+            </ul>
               </li>
             </ul>
           </div>

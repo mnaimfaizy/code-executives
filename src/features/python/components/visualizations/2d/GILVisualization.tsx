@@ -596,6 +596,9 @@ const GILVisualization: React.FC<GILVisualizationProps> = ({
               fill={gilColor}
               filter="url(#gil-shadow)"
               opacity={step.gilStatus === 'switching' ? pulse : 0.95}
+              fill={gilColor}
+              filter="url(#gil-shadow)"
+              opacity={step.gilStatus === 'switching' ? pulse : 0.95}
             />
             <text x="80" y="32" textAnchor="middle" fontSize="11" fill="white" fontWeight="bold">
               GIL {gilLabel}
