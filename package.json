@@ -19,7 +19,7 @@
   "dependencies": {
     "@dr.pogodin/react-helmet": "3.1.1",
     "@monaco-editor/react": "4.7.0",
-    "@tailwindcss/vite": "4.2.2",
+    "@tailwindcss/vite": "4.2.3",
     "@xyflow/react": "12.10.2",
     "acorn": "8.16.0",
     "astring": "1.9.0",
@@ -28,7 +28,7 @@
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "react-router-dom": "7.14.1",
-    "tailwindcss": "4.2.2",
+    "tailwindcss": "4.2.3",
     "web-vitals": "5.2.0"
   },
   "devDependencies": {
