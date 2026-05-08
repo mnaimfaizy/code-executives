@@ -25,9 +25,9 @@
     "astring": "1.9.0",
     "lucide-react": "0.544.0",
     "monaco-editor": "0.55.1",
-    "react": "19.2.5",
-    "react-dom": "19.2.5",
-    "react-router-dom": "7.14.2",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-router-dom": "7.15.0",
     "tailwindcss": "4.2.4",
     "web-vitals": "5.2.0"
   },
