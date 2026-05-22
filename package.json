@@ -17,7 +17,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
-    "@dr.pogodin/react-helmet": "3.1.1",
+    "@dr.pogodin/react-helmet": "3.2.2",
     "@monaco-editor/react": "4.7.0",
     "@tailwindcss/vite": "4.3.0",
     "@xyflow/react": "12.10.2",
