@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Castle, Building2, Layers, Radio, Hexagon, CheckCircle, XCircle, Zap } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface ArchitecturePatterns2DProps {
   className?: string;
@@ -9,7 +10,7 @@ type PatternKey = 'monolithic' | 'layered' | 'microservices' | 'event-driven' | 
 
 interface PatternDef {
   name: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   borderColor: string;

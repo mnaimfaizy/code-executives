@@ -14,6 +14,7 @@ import {
   Clock,
   Activity,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface CircuitBreaker2DProps {
   className?: string;
@@ -35,7 +36,7 @@ const STATE_META: Record<
     bgColor: string;
     borderColor: string;
     ringColor: string;
-    icon: React.ElementType;
+    icon: LucideIcon;
     desc: string;
   }
 > = {
