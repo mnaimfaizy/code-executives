@@ -14,7 +14,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "agents:sync": "node scripts/sync-agents.mjs",
+    "agents:check": "node scripts/sync-agents.mjs --check",
+    "check:3d-chunk": "node .agents/skills/verify-viz/scripts/check-lazy-chunk.mjs"
   },
   "dependencies": {
     "@dr.pogodin/react-helmet": "3.2.2",
