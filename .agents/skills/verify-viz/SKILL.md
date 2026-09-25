@@ -11,6 +11,7 @@ Renderers tag their DOM so the checks can find it:
 
 - The viewer container: `data-viz-viewer`.
 - Every label: `data-viz-label` (3D `<Html>` cards; in 2D the `<g>` wrapping an entity or frame and its text).
+- A label the renderer hides because it left the frame: `data-viz-offframe` as well. The script lists these per beat as `offframe: …`. Each listed label must belong to an entity the spec lets that beat's shot drop; any other is a clipped label, so the item fails.
 
 ## 2D checklist
 

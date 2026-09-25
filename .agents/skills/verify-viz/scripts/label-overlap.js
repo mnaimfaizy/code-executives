@@ -47,7 +47,12 @@
         problems.push(`clipped: ${a.name}`);
       for (const b of labels.slice(i + 1)) if (area(r, b.r) > 4) problems.push(`${a.name} × ${b.name}`);
     });
-    lines.push(`${beat}: ${problems.join(' | ') || 'ok'} (${labels.length} labels)`);
+    // Labels a renderer deliberately hides at the frame edge are listed, never silently skipped.
+    const offframe = [...viewer.querySelectorAll('[data-viz-label][data-viz-offframe]')].map((el) =>
+      el.textContent.trim().slice(0, 18)
+    );
+    const hidden = offframe.length ? ` | offframe: ${offframe.join(', ')}` : '';
+    lines.push(`${beat}: ${problems.join(' | ') || 'ok'} (${labels.length} labels)${hidden}`);
     const next = button('Next step');
     if (!next || next.disabled) break;
     next.click();

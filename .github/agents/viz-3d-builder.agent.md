@@ -30,6 +30,7 @@ Read `docs/3D-Visualization-Standard.md` in full before writing code: it is the 
 
 - three.js stays out of the entry bundle: import it only from the lazy renderer, and leave `manualChunks` without a rule for it.
 - Each shot keeps every label in frame. Tune the layout before shrinking text.
+- Hiding labels that leave the frame (while orbiting, or for entities a shot may drop) is allowed only with `data-viz-offframe` on each hidden label, so verify-viz reports them. A label hidden without it passes the check invisibly, which counts as a failed check.
 - Dependencies are the architect's call; work with what `package.json` has and report a need.
 
 ## Done

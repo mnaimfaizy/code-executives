@@ -4,7 +4,7 @@ import { ErrorBoundary } from '../../../../shared/components/feedback';
 import { useReducedMotion } from '../../../../shared/hooks';
 import StackHeap2D from '../visualizations/2d/StackHeap2D';
 import { STORY_CODE, STORY_STEPS } from '../../utils/stackHeapStory';
-import { canUseWebGL } from '../../utils/webgl';
+import { canUseWebGL } from '../../../../shared/utils/webgl';
 
 // three.js + R3F only download when the learner switches to 3D.
 const StackHeap3D = lazy(() => import('../visualizations/3d/StackHeap3D'));
