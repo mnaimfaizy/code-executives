@@ -81,14 +81,6 @@ export default defineConfig({
             return undefined;
           }
 
-          if (id.includes('/src/components/models3d/python/')) {
-            return 'python-3d';
-          }
-
-          if (id.includes('/src/components/models3d/')) {
-            return 'models-3d';
-          }
-
           return undefined;
         },
       },
@@ -103,6 +95,5 @@ export default defineConfig({
   // Optimize dependencies
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-    exclude: ['three'], // Three.js has its own optimization
   },
 });

@@ -2,11 +2,11 @@
 
 ## 🎯 Project Overview
 
-**Code Executives** is an interactive programming education platform that transforms complex technical concepts into engaging visual learning experiences. The application uses React, TypeScript, and modern web technologies to create immersive educational content through 2D/3D visualizations.
+**Code Executives** is an interactive programming education platform that transforms complex technical concepts into engaging visual learning experiences. The application uses React, TypeScript, and modern web technologies to create immersive educational content through interactive 2D SVG visualizations.
 
 ### **Quick Reference**
 
-- **Technology Stack**: React 19 + TypeScript + Vite + Tailwind CSS 4.x + Three.js
+- **Technology Stack**: React 19 + TypeScript + Vite + Tailwind CSS 4.x
 - **Project Type**: Educational platform with 10 interactive learning modules
 - **Architecture**: Feature-based organization with shared infrastructure
 - **Testing**: Vitest + React Testing Library (76 tests across shared components)
@@ -52,7 +52,7 @@ See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current rep
 - **Frontend**: React 19 + TypeScript + Vite
 - **Styling**: Tailwind CSS 4.x with utility-first approach
 - **Routing**: React Router v7 for SPA navigation
-- **Visualizations**: SVG for 2D models, Three.js for 3D scenes
+- **Visualizations**: SVG for 2D models
 - **Icons**: Lucide React for consistent iconography
 - **Testing**: Vitest + React Testing Library
 - **Code Editing**: Monaco Editor (for playground)
@@ -90,9 +90,8 @@ src/
 │   └── [feature]/
 │       ├── components/
 │       │   ├── sections/        # Educational content sections
-│       │   └── visualizations/  # 2D/3D interactive models
-│       │       ├── 2d/          # SVG-based visualizations
-│       │       └── 3d/          # Three.js models (optional)
+│       │   └── visualizations/  # Interactive visualizations
+│       │       └── 2d/          # SVG-based visualizations
 │       ├── hooks/               # Feature-specific hooks
 │       └── index.tsx            # Feature entry point (Page component)
 ├── shared/                # Shared utilities across all features
@@ -115,10 +114,6 @@ src/
 ├── hooks/                 # Legacy global hooks
 ├── types/                 # TypeScript type definitions
 ├── utils/                 # Pure utility functions (theme.ts)
-├── three/                 # Three.js engine and models
-│   ├── core/              # Engine, types, animation scheduler
-│   ├── models/            # 3D model implementations
-│   └── react/             # React bridge (ThreeCanvas)
 ├── assets/                # Static assets (images, fonts)
 └── test/                  # Test utilities and setup
 ```
@@ -287,9 +282,8 @@ When adding a new learning module, follow these steps:
 src/features/[module]/
 ├── components/
 │   ├── sections/         # Educational content components
-│   └── visualizations/   # Interactive 2D/3D visualizations
-│       ├── 2d/           # SVG-based components
-│       └── 3d/           # Three.js models (optional)
+│   └── visualizations/   # Interactive visualizations
+│       └── 2d/           # SVG-based components
 ├── hooks/                # Feature-specific custom hooks (optional)
 └── index.tsx             # Main page component (entry point)
 ```
@@ -443,48 +437,6 @@ const EducationalSection: React.FC<SectionProps> = ({ isActive, onNavigate }) =>
 };
 ```
 
-### **3D Visualization Components (src/three/models/)**
-
-For 3D visualizations using Three.js:
-
-1. Create model in `src/three/models/[Module]/[ModelName].ts` implementing `IModel` interface
-2. Model must implement: `init(scene)`, `update(dt)`, `dispose()`
-3. Use `ThreeCanvas` from `src/three/react/ThreeCanvas.tsx` to render in React
-4. Expose imperative methods for UI interaction
-
-```typescript
-// src/three/models/MyModule/MyModel3D.ts
-import { IModel } from '../../core/types';
-import * as THREE from 'three';
-
-export class MyModel3D implements IModel {
-  private mesh: THREE.Mesh | null = null;
-
-  init(scene: THREE.Scene): void {
-    // Initialize 3D objects
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshStandardMaterial({ color: 0x0066ff });
-    this.mesh = new THREE.Mesh(geometry, material);
-    scene.add(this.mesh);
-  }
-
-  update(deltaTime: number): void {
-    // Update animation
-    if (this.mesh) {
-      this.mesh.rotation.y += deltaTime;
-    }
-  }
-
-  dispose(): void {
-    // Cleanup
-    if (this.mesh) {
-      this.mesh.geometry.dispose();
-      (this.mesh.material as THREE.Material).dispose();
-    }
-  }
-}
-```
-
 ## 🎮 Interactive Features Standards
 
 ### **Demo Controls Pattern**
@@ -624,7 +576,6 @@ The application includes these complete learning modules:
 8. **Python Programming** (`src/features/python/`)
    - Zen of Python and execution model
    - Memory management and GIL
-   - 3D visualizations of Python VM
 
 9. **System Design** (`src/features/systemdesign/`)
    - System architecture patterns
@@ -653,7 +604,6 @@ The application includes these complete learning modules:
 - **RxJS**: Use marble diagrams extensively for data streams
 - **Data Structures**: Show step-by-step algorithm execution
 - **Big-O**: Use visual metaphors (teleporter, librarian, conveyor belt)
-- **Python**: 3D models for VM internals and memory profiler
 - **Playground**: React Flow lenses for data structures; space-themed animated starfield canvas; dark-scoped theme
 
 ## 🚨 Code Quality Standards
@@ -1078,7 +1028,6 @@ const cardStyles = ['bg-white', 'border border-gray-200', 'rounded-xl shadow-sm'
 - [React Documentation](https://react.dev/) - React 19 features and hooks
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/) - Type system reference
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs) - Utility classes and configuration
-- [Three.js Documentation](https://threejs.org/docs/) - 3D visualization library
 - [Vite Documentation](https://vitejs.dev/) - Build tool and dev server
 - [Vitest Documentation](https://vitest.dev/) - Testing framework
 - [React Router Documentation](https://reactrouter.com/) - Routing library
