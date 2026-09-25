@@ -9,6 +9,25 @@
   if (!viewer) return 'FAIL: no [data-viz-viewer] on the page';
   if (!button('Restart') || !button('Next step')) return 'FAIL: story controls not found';
 
+  // A hidden or background tab throttles requestAnimationFrame, so animations and camera moves
+  // never settle and every result would be meaningless.
+  // Count frames for one second on a timer: a fully hidden page may never fire a frame at all.
+  const fps = await new Promise((resolve) => {
+    let frames = 0;
+    let counting = true;
+    const tick = () => {
+      if (!counting) return;
+      frames++;
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    setTimeout(() => {
+      counting = false;
+      resolve(frames);
+    }, 1000);
+  });
+  if (fps < 20) return `FAIL: page renders at ${fps} fps (hidden or background tab). Make it visible and rerun.`;
+
   const area = (a, b) =>
     Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
     Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
@@ -21,14 +40,14 @@
     const labels = [...viewer.querySelectorAll('[data-viz-label]')]
       .filter((el) => getComputedStyle(el).opacity !== '0' && el.getClientRects().length)
       .map((el) => ({ name: el.textContent.trim().slice(0, 18), r: el.getBoundingClientRect() }));
-    const problems = [];
+    const problems = labels.length ? [] : ['FAIL: no visible [data-viz-label]'];
     labels.forEach((a, i) => {
       const r = a.r;
       if (r.left < frame.left - 1 || r.right > frame.right + 1 || r.top < frame.top - 1 || r.bottom > frame.bottom + 1)
         problems.push(`clipped: ${a.name}`);
       for (const b of labels.slice(i + 1)) if (area(r, b.r) > 4) problems.push(`${a.name} × ${b.name}`);
     });
-    lines.push(`${beat}: ${problems.join(' | ') || 'ok'}`);
+    lines.push(`${beat}: ${problems.join(' | ') || 'ok'} (${labels.length} labels)`);
     const next = button('Next step');
     if (!next || next.disabled) break;
     next.click();

@@ -34,3 +34,5 @@ Renderers tag their DOM so the checks can find it:
 ## Running the browser script
 
 Use whatever browser tool your harness provides (a preview pane, Playwright MCP, Chrome). Start the dev server (`npm run dev`), open the section URL (`/<module>?section=<Label>`, URL-encoded), select the view, then evaluate the contents of `scripts/label-overlap.js` in the page. It restarts the story, steps through every beat, waits for the camera to settle, and returns one line per beat: `ok`, or the overlapping/clipped labels.
+
+The page must be **visible**: a hidden pane or background tab throttles animation frames (seen at 2 fps), the camera never settles, and results are garbage. The script measures the frame rate first and returns `FAIL` below 20 fps; bring the browser to the front and rerun. A `FAIL: no visible [data-viz-label]` means the renderer is missing its markers or hasn't rendered yet.
