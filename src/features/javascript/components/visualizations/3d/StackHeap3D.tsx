@@ -55,8 +55,8 @@ const PALETTE = {
 // ---- Layout (world units) ----------------------------------------------------------
 
 const STACK_X = -4.6;
-const FRAME_SIZE: V3 = [3, 0.95, 2.4];
-const FRAME_GAP = 0.3;
+const FRAME_SIZE: V3 = [3, 1.1, 2.4];
+const FRAME_GAP = 0.45;
 const frameY = (i: number) => FRAME_SIZE[1] / 2 + i * (FRAME_SIZE[1] + FRAME_GAP) + 0.02;
 
 const CELL_X0 = 0.9;
@@ -67,6 +67,9 @@ const OBJ_SIZE: Record<HeapObject['kind'], V3> = {
   object: [2.4, 0.7, 1.6],
   array: [2.4, 0.4, 1.1],
 };
+// Back-row object labels float above this height; heap-to-heap arcs peak below it.
+const OBJECT_LABEL_LIFT = 0.9;
+const HEAP_ARC_LIFT = 0.45;
 const cellPos = (o: HeapObject): V3 => [
   CELL_X0 + o.cell.col * CELL_DX,
   0,
@@ -108,8 +111,8 @@ const union = (a: V3, b: V3, pick: typeof Math.min): V3 => [
 ];
 
 // Frame labels sit on the slab fronts; object labels sit above the blocks and overhang them.
-const WITH_STACK = { left: 40, right: 60, top: 70, bottom: 30 };
-const HEAP_ONLY = { left: 60, right: 60, top: 70, bottom: 30 };
+const WITH_STACK = { left: 40, right: 60, top: 70, bottom: 80 };
+const HEAP_ONLY = { left: 60, right: 60, top: 70, bottom: 80 };
 
 const SHOTS: Record<ShotId, Shot> = {
   overview: {
@@ -300,6 +303,9 @@ const HeapBlock: React.FC<{
   const size = OBJ_SIZE[object.kind];
   const pos = cellPos(object);
   const collected = object.state === 'collected' || exiting;
+  // Back-row labels float above their block; front-row labels hang in front of it, so the
+  // gap between rows (where heap-to-heap arcs run) stays clear.
+  const labelInFront = object.cell.row > 0;
   const baseColor = useMemo(
     () =>
       new THREE.Color(
@@ -347,9 +353,19 @@ const HeapBlock: React.FC<{
             </mesh>
           ))}
       </group>
-      <Html position={[0, collected ? 0.3 : size[1] + 0.25, 0]} zIndexRange={[10, 0]}>
+      <Html
+        position={
+          labelInFront
+            ? [0, 0, size[2] / 2 + 0.15]
+            : [0, collected ? 0.3 : size[1] + OBJECT_LABEL_LIFT, 0]
+        }
+        zIndexRange={[10, 0]}
+      >
         <div
-          style={{ ...labelStyle, transform: 'translate(-50%, -100%)' }}
+          style={{
+            ...labelStyle,
+            transform: labelInFront ? 'translate(-50%, 6px)' : 'translate(-50%, -100%)',
+          }}
           className={`rounded-md border bg-white/95 px-2 py-1 text-[11px] leading-4 shadow-sm transition-opacity duration-500 ${
             focused
               ? 'border-amber-400'
@@ -390,7 +406,6 @@ const HeapBlock: React.FC<{
 function refEndpoints(ref: Reference, step: StoryStep): { start: V3; end: V3; mid: V3 } | null {
   const target = step.objects.find((o) => o.id === ref.to);
   if (!target) return null;
-  const [tx, , tz] = cellPos(target);
   const th = OBJ_SIZE[target.kind][1];
 
   if (ref.fromKind === 'frame') {
@@ -400,7 +415,9 @@ function refEndpoints(ref: Reference, step: StoryStep): { start: V3; end: V3; mi
     const slotIdx = frame.slots.findIndex((s) => slotKey(frame.id, s.name) === ref.from);
     const z = -FRAME_SIZE[2] / 4 + (slotIdx * FRAME_SIZE[2]) / 2;
     const start: V3 = [STACK_X + FRAME_SIZE[0] / 2, frameY(index), z];
-    const end: V3 = [tx - 0.5, th + 0.02, tz];
+    // Land on the face turned toward the stack, so the arc never reaches up into the
+    // object's label.
+    const end = faceToward(target, start, th);
     const mid: V3 = [
       (start[0] + end[0]) / 2,
       Math.max(start[1], end[1]) + 2.2,
@@ -411,12 +428,29 @@ function refEndpoints(ref: Reference, step: StoryStep): { start: V3; end: V3; mi
 
   const source = step.objects.find((o) => o.id === ref.fromOwner);
   if (!source) return null;
-  const [sx, , sz] = cellPos(source);
   const sh = OBJ_SIZE[source.kind][1];
-  const start: V3 = [sx + 0.6, sh + 0.02, sz];
-  const end: V3 = [tx - 0.3, th + 0.02, tz];
-  const mid: V3 = [(start[0] + end[0]) / 2, Math.max(sh, th) + 1.4, (start[2] + end[2]) / 2];
+  // Heap → heap: a low bridge between the facing top edges, below the object labels.
+  const start = faceToward(source, cellPos(target), sh);
+  const end = faceToward(target, cellPos(source), th);
+  const mid: V3 = [
+    (start[0] + end[0]) / 2,
+    Math.max(sh, th) + HEAP_ARC_LIFT,
+    (start[2] + end[2]) / 2,
+  ];
   return { start, end, mid };
+}
+
+/** Point on an object's footprint edge facing `toward`, at height `y`. */
+function faceToward(object: HeapObject, toward: V3, y: number): V3 {
+  const [cx, , cz] = cellPos(object);
+  const [w, , d] = OBJ_SIZE[object.kind];
+  const dx = toward[0] - cx;
+  const dz = toward[2] - cz;
+  const s = Math.min(
+    dx === 0 ? Infinity : w / 2 / Math.abs(dx),
+    dz === 0 ? Infinity : d / 2 / Math.abs(dz)
+  );
+  return [cx + dx * s, y + 0.02, cz + dz * s];
 }
 
 const UP = new THREE.Vector3(0, 1, 0);
