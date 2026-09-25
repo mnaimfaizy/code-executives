@@ -9,6 +9,7 @@ import {
   Settings,
 } from 'lucide-react';
 import Branching2D from '../visualizations/2d/Branching2D';
+import BranchPointersStory from './BranchPointersStory';
 
 const BranchingMerging: React.FC = () => {
   const [activeStrategy, setActiveStrategy] = useState<string>('merge');
@@ -210,6 +211,11 @@ const BranchingMerging: React.FC = () => {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Story: what a branch really is */}
+      <div className="mb-12">
+        <BranchPointersStory />
       </div>
 
       {/* Interactive Branching Visualization */}

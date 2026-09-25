@@ -2,18 +2,18 @@ import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
 import { Box, ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Scan, Square } from 'lucide-react';
 import { ErrorBoundary } from '../../../../shared/components/feedback';
 import { useReducedMotion } from '../../../../shared/hooks';
-import StackHeap2D from '../visualizations/2d/StackHeap2D';
-import { STORY_CODE, STORY_STEPS } from '../../utils/stackHeapStory';
+import BranchPointers2D from '../visualizations/2d/BranchPointers2D';
+import { STORY_CODE, STORY_STEPS } from '../../utils/branchPointersStory';
 import { canUseWebGL } from '../../../../shared/utils/webgl';
 
 // three.js + R3F only download when the learner switches to 3D.
-const StackHeap3D = lazy(() => import('../visualizations/3d/StackHeap3D'));
+const BranchPointers3D = lazy(() => import('../visualizations/3d/BranchPointers3D'));
 
 type View = '2d' | '3d';
 type Speed = 'slow' | 'normal' | 'fast';
 
 const SPEED_MS: Record<Speed, number> = { slow: 6000, normal: 4000, fast: 2500 };
-const VIEW_KEY = 'code-executives.stack-heap-story.view';
+const VIEW_KEY = 'code-executives.branch-pointers-story.view';
 const CODE_LINES = STORY_CODE.split('\n');
 
 const readStoredView = (): View | null => {
@@ -25,7 +25,7 @@ const readStoredView = (): View | null => {
   }
 };
 
-const StackHeapStory: React.FC = () => {
+const BranchPointersStory: React.FC = () => {
   const reducedMotion = useReducedMotion();
   const [webgl] = useState(canUseWebGL);
   const [chosenView, setChosenView] = useState<View | null>(readStoredView);
@@ -72,24 +72,25 @@ const StackHeapStory: React.FC = () => {
     }
   };
 
-  const view2D = <StackHeap2D step={step} />;
+  const view2D = <BranchPointers2D step={step} />;
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-slate-50 to-slate-200 p-4 shadow-xl sm:p-6"
+      className="relative w-full overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 p-4 shadow-xl sm:p-6"
       onKeyDown={onKeyDown}
       tabIndex={0}
-      aria-label="Stack and heap story. Use the left and right arrow keys to step."
+      aria-label="Branch pointers story. Use the left and right arrow keys to step."
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-500" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-orange-500 via-red-500 to-pink-500" />
 
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h3 className="bg-gradient-to-tr from-indigo-500 to-violet-500 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
-            Stack ↔ Heap: who keeps an object alive?
+          <h3 className="bg-gradient-to-tr from-orange-500 to-red-500 bg-clip-text text-2xl font-bold tracking-tight text-transparent">
+            What is a branch, really?
           </h3>
           <p className="mt-1 text-xs text-slate-600">
-            A 10-step story. Frames come and go; objects live as long as a root can reach them.
+            A {STORY_STEPS.length}-step story. Commits never move; branches and HEAD are small files
+            that point at them.
           </p>
         </div>
 
@@ -113,7 +114,7 @@ const StackHeapStory: React.FC = () => {
                 onClick={() => chooseView(v)}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
                   view === v
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-orange-600 text-white'
                     : 'text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40'
                 }`}
               >
@@ -125,9 +126,9 @@ const StackHeapStory: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 lg:flex-row">
+      <div className="flex min-w-0 flex-col gap-3 xl:flex-row">
         {/* Code + narration */}
-        <div className="flex min-w-0 flex-col gap-3 lg:w-[38%]">
+        <div className="flex min-w-0 flex-col gap-3 xl:w-[38%]">
           <div className="overflow-x-auto rounded-xl border border-slate-700 bg-slate-900 py-3 shadow">
             <pre className="text-[12.5px] leading-6" aria-label="Story code">
               {CODE_LINES.map((text, i) => {
@@ -160,7 +161,7 @@ const StackHeapStory: React.FC = () => {
             className="flex-1 rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
             aria-live="polite"
           >
-            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-600">
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-orange-600">
               Step {index + 1} / {STORY_STEPS.length}
             </div>
             <h4 className="mb-2 text-base font-bold text-slate-900">{step.title}</h4>
@@ -169,7 +170,7 @@ const StackHeapStory: React.FC = () => {
         </div>
 
         {/* Viewer */}
-        <div className="flex min-w-0 flex-col gap-2 lg:w-[62%]">
+        <div className="flex min-w-0 flex-col gap-2 xl:w-[62%]">
           <div
             data-viz-viewer
             className="relative h-[420px] overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg sm:h-[500px]"
@@ -195,7 +196,7 @@ const StackHeapStory: React.FC = () => {
                     </div>
                   }
                 >
-                  <StackHeap3D
+                  <BranchPointers3D
                     step={step}
                     resetViewToken={resetViewToken}
                     instant={reducedMotion}
@@ -248,7 +249,7 @@ const StackHeapStory: React.FC = () => {
                   title={s.title}
                   onClick={() => setIndex(i)}
                   className={`h-2 w-2 rounded-full transition-colors sm:w-4 ${
-                    i === index ? 'bg-indigo-600' : i < index ? 'bg-indigo-300' : 'bg-slate-300'
+                    i === index ? 'bg-orange-600' : i < index ? 'bg-orange-300' : 'bg-slate-300'
                   }`}
                 />
               ))}
@@ -292,11 +293,11 @@ const ControlButton: React.FC<{
     onClick={onClick}
     disabled={disabled}
     className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
-      primary ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'text-slate-700 hover:bg-slate-100'
+      primary ? 'bg-orange-600 text-white hover:bg-orange-700' : 'text-slate-700 hover:bg-slate-100'
     }`}
   >
     {children}
   </button>
 );
 
-export default StackHeapStory;
+export default BranchPointersStory;

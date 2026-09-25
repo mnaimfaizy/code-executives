@@ -31,7 +31,7 @@ Rules that make the model render cleanly:
 
 - **Full snapshot per step.** Every step lists every entity present at that beat; stepping backwards is just rendering an earlier step.
 - **Stable identity.** An entity keeps its `id` across steps; views animate enter/exit by id.
-- **Stable placement.** Each entity carries a layout cell (e.g. `cell: { col, row }`) that both views use, so an entity never jumps between steps. Keep it on a small grid (≤ 3×2 per region).
+- **Stable placement.** Each entity carries a layout cell (e.g. `cell: { col, row }`) that both views use, so an entity never jumps between steps. Keep it on a small grid (≤ 4×3 per region); larger grids crowd labels in both views.
 - **State as data.** Lifecycle changes are an explicit `state` field (`live`, `marked`, `collected`…), never implied by absence, so both views can animate them.
 
 ## Shot vocabulary

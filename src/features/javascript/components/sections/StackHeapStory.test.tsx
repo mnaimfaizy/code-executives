@@ -5,7 +5,7 @@ import type { StackHeap3DProps } from '../visualizations/3d/StackHeap3D';
 
 const webgl = vi.hoisted(() => ({ available: true }));
 
-vi.mock('../../utils/webgl', () => ({ canUseWebGL: () => webgl.available }));
+vi.mock('../../../../shared/utils/webgl', () => ({ canUseWebGL: () => webgl.available }));
 vi.mock('../visualizations/3d/StackHeap3D', () => ({
   default: ({ step }: StackHeap3DProps) => <div data-testid="scene-3d">{step.id}</div>,
 }));
