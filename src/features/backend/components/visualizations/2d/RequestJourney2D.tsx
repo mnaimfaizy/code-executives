@@ -12,6 +12,7 @@ import {
   Zap,
   Clock,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface RequestJourney2DProps {
   className?: string;
@@ -21,7 +22,7 @@ interface JourneyStep {
   id: number;
   label: string;
   shortLabel: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   latency: string;

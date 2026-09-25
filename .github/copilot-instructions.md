@@ -52,7 +52,7 @@ See `docs/SECURITY/Dependency-Supply-Chain-Security-Plan.md` for the current rep
 - **Frontend**: React 19 + TypeScript + Vite
 - **Styling**: Tailwind CSS 4.x with utility-first approach
 - **Routing**: React Router v7 for SPA navigation
-- **Visualizations**: SVG for 2D models
+- **Visualizations**: SVG for 2D models; optional 3D views (react-three-fiber) must follow `docs/3D-Visualization-Standard.md`
 - **Icons**: Lucide React for consistent iconography
 - **Testing**: Vitest + React Testing Library
 - **Code Editing**: Monaco Editor (for playground)

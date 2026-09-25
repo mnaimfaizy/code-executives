@@ -10,6 +10,7 @@ import {
   Layers,
   Zap,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface APIEvolution2DProps {
   className?: string;
@@ -20,7 +21,7 @@ type APIGen = 'rpc' | 'soap' | 'rest' | 'graphql' | 'grpc';
 interface APIInfo {
   name: string;
   year: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   borderColor: string;
