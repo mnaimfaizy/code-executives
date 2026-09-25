@@ -170,7 +170,10 @@ const StackHeapStory: React.FC = () => {
 
         {/* Viewer */}
         <div className="flex min-w-0 flex-col gap-2 lg:w-[62%]">
-          <div className="relative h-[420px] overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg sm:h-[500px]">
+          <div
+            data-viz-viewer
+            className="relative h-[420px] overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg sm:h-[500px]"
+          >
             {view === '3d' ? (
               <ErrorBoundary
                 fallback={

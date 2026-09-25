@@ -259,6 +259,7 @@ const FrameSlab: React.FC<{
       )}
       <Html position={[0, 0, FRAME_SIZE[2] / 2 + 0.02]} zIndexRange={[10, 0]}>
         <div
+          data-viz-label
           style={{
             ...labelStyle,
             transform: 'translate(-50%, -50%)',
@@ -362,6 +363,7 @@ const HeapBlock: React.FC<{
         zIndexRange={[10, 0]}
       >
         <div
+          data-viz-label
           style={{
             ...labelStyle,
             transform: labelInFront ? 'translate(-50%, 6px)' : 'translate(-50%, -100%)',

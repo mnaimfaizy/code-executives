@@ -210,7 +210,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
         const top = i === step.frames.length - 1;
         const focused = isFocused(step, f.id);
         return (
-          <g key={f.id} className="sh-enter">
+          <g key={f.id} className="sh-enter" data-viz-label>
             <rect
               className="sh-shape"
               x={b.x}
@@ -291,6 +291,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
         const collected = o.state === 'collected';
         return (
           <g
+            data-viz-label
             key={o.id}
             className="sh-enter"
             opacity={collected ? 0.18 : 1}
