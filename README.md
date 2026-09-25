@@ -325,7 +325,7 @@ Complete algorithmic complexity analysis module with 10+ interactive tools and e
 - **Core Concepts**: Understanding time and space complexity with intuitive visualizations
 - **Common Complexities**: Interactive exploration of O(1), O(log n), O(n), O(n log n), O(n²), O(2^n), O(n!) complexities
 - **Algorithm Analysis**: Step-by-step complexity analysis with code visualization and performance profiling
-- **Real-World Applications**: 3D complexity landscape showing algorithms in complexity space with industry case studies
+- **Real-World Applications**: Complexity landscape showing algorithms in complexity space with industry case studies
 - **Advanced Topics**: Amortized analysis, complexity hierarchies, and optimization techniques
 - **Practice Challenges**: Interactive coding challenges with Big-O analysis and performance comparisons
 - **Gamification Hub**: Achievement system with progress tracking and learning milestones
