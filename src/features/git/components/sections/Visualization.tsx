@@ -7,6 +7,19 @@ import Workflow2D from '../visualizations/2d/Workflow2D';
 import Branching2D from '../visualizations/2d/Branching2D';
 import Collaboration2D from '../visualizations/2d/Collaboration2D';
 import History2D from '../visualizations/2d/History2D';
+import ScenarioGallery, {
+  type ScenarioEntry,
+} from '../../../../shared/components/viz/ScenarioGallery';
+import ShipAFeatureScenario from './ShipAFeatureScenario';
+import { SCENARIO, SCENARIO_PATHS } from '../../utils/shipAFeatureScenario';
+
+const GIT_SCENARIOS: ScenarioEntry[] = [
+  {
+    ...SCENARIO,
+    choicePoints: SCENARIO_PATHS.filter((p) => p.beats[p.beats.length - 1].choice).length,
+    component: ShipAFeatureScenario,
+  },
+];
 
 const Visualization: React.FC = () => {
   const [selectedVisualization, setSelectedVisualization] = useState('architecture');
@@ -89,6 +102,8 @@ const Visualization: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
+      <ScenarioGallery scenarios={GIT_SCENARIOS} />
+
       <div className="text-center mb-8">
         <h2 className="text-4xl font-bold text-gray-900 mb-4">Git Visualization Playground</h2>
         <p className="text-xl text-gray-600 max-w-4xl mx-auto">
