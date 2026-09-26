@@ -1,5 +1,6 @@
 import React from 'react';
 import { Helmet } from '@dr.pogodin/react-helmet';
+import { absoluteUrl } from '../../../core/config/site';
 
 /**
  * SEO Component Props
@@ -17,14 +18,14 @@ export interface SEOProps {
   /** Keywords for search engines (optional, limited SEO value but included for completeness) */
   keywords?: string[];
 
-  /** Open Graph image URL for social media previews */
+  /** Open Graph image: a site path (e.g. `/og-javascript.png`) or an absolute URL */
   image?: string;
 
   /** Open Graph type (website for general pages, article for blog posts) */
   type?: 'website' | 'article';
 
-  /** Canonical URL to prevent duplicate content issues */
-  canonicalUrl?: string;
+  /** Canonical path on the site (e.g. `/javascript`); resolved against SITE_URL */
+  canonicalPath?: string;
 
   /** Robots meta tag directives (default: 'index, follow') */
   robots?: string;
@@ -59,8 +60,8 @@ export interface SEOProps {
  *   title="JavaScript Execution Flow"
  *   description="Learn how JavaScript engines execute code with interactive visualizations"
  *   keywords={['javascript', 'execution', 'event loop']}
- *   image="https://code-executives.com/og-javascript.png"
- *   canonicalUrl="https://code-executives.com/javascript"
+ *   image="/og-javascript.png"
+ *   canonicalPath="/javascript"
  * />
  * ```
  */
@@ -68,9 +69,9 @@ export const SEO: React.FC<SEOProps> = ({
   title,
   description,
   keywords = [],
-  image = 'https://code-executives.com/og-default.png',
+  image = '/og-default.png',
   type = 'website',
-  canonicalUrl,
+  canonicalPath,
   robots = 'index, follow',
   author,
   publishedDate,
@@ -79,18 +80,18 @@ export const SEO: React.FC<SEOProps> = ({
 }) => {
   // Site configuration
   const siteName = 'Code Executives';
-  const siteUrl = 'https://code-executives.com';
   const twitterHandle = '@codeexecutives';
 
   // Full title with site name
   const fullTitle = `${title} | ${siteName}`;
 
+  const canonicalUrl = canonicalPath !== undefined ? absoluteUrl(canonicalPath) : undefined;
+
   // Current URL (use canonical if provided, otherwise construct from window.location)
   const currentUrl =
-    canonicalUrl || (typeof window !== 'undefined' ? window.location.href : siteUrl);
+    canonicalUrl ?? (typeof window !== 'undefined' ? window.location.href : absoluteUrl('/'));
 
-  // Full image URL (ensure absolute URL)
-  const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
+  const fullImageUrl = absoluteUrl(image);
 
   return (
     <Helmet>

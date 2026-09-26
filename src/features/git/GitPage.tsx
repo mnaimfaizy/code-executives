@@ -52,7 +52,7 @@ const GitPage: React.FC = () => {
           'distributed version control',
           'git commands',
         ]}
-        canonicalUrl="https://code-executives.com/git"
+        canonicalPath="/git"
       />
       <div className="p-4 sm:p-6">
         <Component />
