@@ -1,8 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import ShipAFeatureScenario from './ShipAFeatureScenario';
+import type { ShipAFeature3DProps } from '../visualizations/3d/ShipAFeature3D';
 import { routeFor } from '../../utils/shipAFeatureScenario';
+
+const webgl = vi.hoisted(() => ({ available: true }));
+const motion = vi.hoisted(() => ({ reduced: false }));
+
+vi.mock('../../../../shared/utils/webgl', () => ({ canUseWebGL: () => webgl.available }));
+vi.mock('../../../../shared/hooks', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../shared/hooks')>()),
+  useReducedMotion: () => motion.reduced,
+}));
+vi.mock('../visualizations/3d/ShipAFeature3D', () => ({
+  default: ({ beat, instant, camera }: ShipAFeature3DProps) => (
+    <div data-testid="scene-3d" data-instant={String(Boolean(instant))} data-preset={camera.preset}>
+      {beat.id}
+    </div>
+  ),
+}));
+
+import ShipAFeatureScenario from './ShipAFeatureScenario';
+
+const VIEW_KEY = 'code-executives.ship-a-feature-scenario.view';
 
 type User = ReturnType<typeof userEvent.setup>;
 
@@ -25,6 +45,12 @@ async function toEnd(user: User) {
 }
 
 describe('ShipAFeatureScenario', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    webgl.available = true;
+    motion.reduced = false;
+  });
+
   it('starts on beat 1 in 2D and stops at the choice point with Next disabled', async () => {
     const user = userEvent.setup();
     render(<ShipAFeatureScenario />);
@@ -135,21 +161,49 @@ describe('ShipAFeatureScenario', () => {
     expect(choice('merge')).toBeInTheDocument();
   });
 
-  it('keeps the beat across a view toggle; 3D is a disabled placeholder', async () => {
+  it('keeps the beat and the picks when switching to 3D and back', async () => {
     const user = userEvent.setup();
     render(<ShipAFeatureScenario />);
-    for (let i = 0; i < 4; i++) await next(user);
-    expect(screen.getByText('Beat 5')).toBeInTheDocument();
+    await toChoice(user);
+    await user.click(choice('rebase')!);
+    await next(user);
+    expect(screen.getByText(`Beat ${CHOICE_BEAT + 2}`)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: /3d/i }));
+    expect(await screen.findByTestId('scene-3d')).toHaveTextContent('rebase-push-rejected');
+    expect(screen.getByText(`Beat ${CHOICE_BEAT + 2}`)).toBeInTheDocument();
+    expect(strip()).toHaveLength(routeFor(['rebase']).length);
+    expect(screen.getByRole('button', { name: 'Reset view' })).toBeInTheDocument();
+
+    await next(user);
+    expect(screen.getByTestId('scene-3d')).toHaveTextContent('rebase-force-with-lease');
+
+    await user.click(screen.getByRole('radio', { name: /2d/i }));
+    expect(screen.queryByTestId('scene-3d')).not.toBeInTheDocument();
+    expect(screen.getByText(`Beat ${CHOICE_BEAT + 3}`)).toBeInTheDocument();
+    expect(strip()).toHaveLength(routeFor(['rebase']).length);
+    expect(scene('Force push with a lease')).toBeInTheDocument();
+  });
+
+  it('falls back to 2D when WebGL is unavailable', () => {
+    webgl.available = false;
+    window.localStorage.setItem(VIEW_KEY, '3d');
+    render(<ShipAFeatureScenario />);
 
     const threeD = screen.getByRole('radio', { name: /3d/i });
     expect(threeD).toBeDisabled();
-    expect(threeD).toHaveAttribute('title', expect.stringMatching(/coming soon/i));
-    await user.click(threeD);
-    await user.click(screen.getByRole('radio', { name: /2d/i }));
-
-    expect(screen.getByText('Beat 5')).toBeInTheDocument();
+    expect(threeD).toHaveAttribute('title', expect.stringMatching(/WebGL/));
     expect(screen.getByRole('radio', { name: /2d/i })).toHaveAttribute('aria-checked', 'true');
-    expect(scene('Git says you are up to date')).toBeInTheDocument();
+    expect(screen.queryByTestId('scene-3d')).not.toBeInTheDocument();
+    expect(scene('Branch off main')).toBeInTheDocument();
+  });
+
+  it('asks the 3D view for instant cuts when reduced motion is on', async () => {
+    motion.reduced = true;
+    window.localStorage.setItem(VIEW_KEY, '3d');
+    render(<ShipAFeatureScenario />);
+
+    expect(await screen.findByTestId('scene-3d')).toHaveAttribute('data-instant', 'true');
   });
 
   it('steps with the arrow keys and stops at the choice point', async () => {

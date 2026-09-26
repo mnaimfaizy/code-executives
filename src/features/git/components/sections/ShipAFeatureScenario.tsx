@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   ChevronLeft,
@@ -11,7 +11,8 @@ import {
   Square,
   Undo2,
 } from 'lucide-react';
-import { useStoryViewer } from '../../../../shared/hooks';
+import { ErrorBoundary } from '../../../../shared/components/feedback';
+import { useReducedMotion, useStoryViewer } from '../../../../shared/hooks';
 import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
 import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
 import ShipAFeature2D from '../visualizations/2d/ShipAFeature2D';
@@ -22,13 +23,25 @@ import {
   type CastId,
   type ScenarioBeat,
 } from '../../utils/shipAFeatureScenario';
+import { canUseWebGL } from '../../../../shared/utils/webgl';
+
+// three.js + R3F only download when the learner switches to 3D.
+const ShipAFeature3D = lazy(() => import('../visualizations/3d/ShipAFeature3D'));
 
 type View = '2d' | '3d';
 type Speed = 'slow' | 'normal' | 'fast';
 
 const SPEED_MS: Record<Speed, number> = { slow: 7000, normal: 5000, fast: 3000 };
-/** Flip to true when the 3D renderer lands; until then the 3D option is a disabled placeholder. */
-const HAS_3D = false;
+const VIEW_KEY = 'code-executives.ship-a-feature-scenario.view';
+
+const readStoredView = (): View | null => {
+  try {
+    const v = window.localStorage.getItem(VIEW_KEY);
+    return v === '2d' || v === '3d' ? v : null;
+  } catch {
+    return null;
+  }
+};
 
 const CAST_STYLE: Record<CastId, { on: string; off: string }> = {
   you: {
@@ -56,7 +69,9 @@ const choicesBefore = (route: ScenarioBeat[], index: number) =>
   route.slice(0, index).filter((b) => b.choice).length;
 
 const ShipAFeatureScenario: React.FC = () => {
-  const [view, setView] = useState<View>('2d');
+  const reducedMotion = useReducedMotion();
+  const [webgl] = useState(canUseWebGL);
+  const [chosenView, setChosenView] = useState<View | null>(readStoredView);
   const [picks, setPicks] = useState<string[]>([]);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -64,11 +79,21 @@ const ShipAFeatureScenario: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
   const transcriptRef = useRef<HTMLOListElement>(null);
 
+  const view: View = webgl && chosenView === '3d' ? '3d' : '2d';
   const route = useMemo(() => routeFor(picks), [picks]);
   const beat = route[index];
   const last = route.length - 1;
   const atChoice = index === last && !!beat.choice;
   const atEnding = index === last && !beat.choice;
+
+  const chooseView = (v: View) => {
+    setChosenView(v);
+    try {
+      window.localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // Storage unavailable (private mode): the choice just isn't remembered.
+    }
+  };
 
   /** Jump along the route; landing on or before a choice beat clears the picks from there on. */
   const goTo = useCallback(
@@ -128,6 +153,7 @@ const ShipAFeatureScenario: React.FC = () => {
   const viewer = useStoryViewer({ rootRef, is3D: view === '3d', step: go });
   const fullscreen = viewer.fullscreen.isFullscreen;
   const transcript = getTranscript(route, index);
+  const view2D = <ShipAFeature2D beat={beat} />;
 
   return (
     <div
@@ -158,7 +184,7 @@ const ShipAFeatureScenario: React.FC = () => {
           className="flex rounded-lg border border-slate-300 bg-white p-0.5 shadow-sm"
         >
           {(['2d', '3d'] as const).map((v) => {
-            const disabled = v === '3d' && !HAS_3D;
+            const disabled = v === '3d' && !webgl;
             return (
               <button
                 key={v}
@@ -166,8 +192,10 @@ const ShipAFeatureScenario: React.FC = () => {
                 role="radio"
                 aria-checked={view === v}
                 disabled={disabled}
-                title={disabled ? '3D view coming soon' : undefined}
-                onClick={() => setView(v)}
+                title={
+                  disabled ? '3D needs WebGL, which is unavailable in this browser' : undefined
+                }
+                onClick={() => chooseView(v)}
                 className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
                   view === v
                     ? 'bg-orange-600 text-white'
@@ -315,7 +343,33 @@ const ShipAFeatureScenario: React.FC = () => {
               fullscreen ? 'h-[75vh]' : 'mx-auto aspect-[660/496] w-full max-w-[880px]'
             }`}
           >
-            <ShipAFeature2D beat={beat} />
+            {view === '3d' ? (
+              <ErrorBoundary
+                fallback={
+                  <div className="relative h-full">
+                    {view2D}
+                    <div className="absolute left-3 top-3 rounded bg-rose-50 px-2 py-1 text-xs text-rose-700">
+                      3D failed to start — showing 2D.
+                    </div>
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={
+                    <div className="relative h-full">
+                      {view2D}
+                      <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm font-medium text-slate-600 backdrop-blur-[1px]">
+                        Loading 3D…
+                      </div>
+                    </div>
+                  }
+                >
+                  <ShipAFeature3D beat={beat} camera={viewer.camera} instant={reducedMotion} />
+                </Suspense>
+              </ErrorBoundary>
+            ) : (
+              view2D
+            )}
             {view === '3d' && <Viewer3DHint />}
             {view === '3d' && <WheelZoomHint visible={viewer.wheelHint} />}
             <Viewer3DToolbar
