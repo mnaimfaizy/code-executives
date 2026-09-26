@@ -23,6 +23,7 @@ After editing anything in `.agents/`, run `npm run agents:sync` and commit the g
 ### Visualizations
 - New visualizations are **stories**: one step model (`src/features/<module>/utils/<storyId>Story.ts`, pure data, tested) rendered by a 2D view and, optionally, a 3D view. Both views render the same step; 2D is the default.
 - Literal, not metaphor: draw the concept itself (frames, objects, requests), never everyday stand-ins.
+- A **scenario** is a story that follows a whole workplace workflow, with a cast, a timeline and up to 2 choice points whose paths never rejoin ([ADR 0003](docs/adr/0003-scenarios-with-choice-points.md)). Scenarios live in the module's Visualization page, deep-linked with `?scenario=<id>`. Terms are defined in [CONTEXT.md](CONTEXT.md).
 - 3D follows [docs/3D-Visualization-Standard.md](docs/3D-Visualization-Standard.md). three.js is imported only from a `React.lazy` renderer and never reaches the entry bundle; `manualChunks` has no rule for it.
 - Motion respects `useReducedMotion` (`src/shared/hooks`).
 
@@ -47,7 +48,7 @@ The session you talk to is the **architect**: it analyzes, plans, decides, and d
 
 | Specialist | Owns |
 |---|---|
-| `viz-story-writer` | Story spec (`docs/stories/<module>/<id>.md`), then the step model and its tests |
+| `viz-story-writer` | Story or scenario spec (`docs/stories/<module>/<id>.md`), then the step model and its tests |
 | `viz-2d-builder` | SVG renderer and the story section shell with the 2D/3D toggle |
 | `viz-3d-builder` | The lazy R3F renderer, wired into the toggle |
 | `module-quiz-generator` | `quiz-banks/<module>.quiz.json` |
