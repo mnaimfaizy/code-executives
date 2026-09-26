@@ -54,7 +54,7 @@ A scenario module `src/features/<module>/utils/<scenarioId>Scenario.ts` exports:
 - `SCENARIO_PATHS: ScenarioPath[]`: `{ id, from?: { beat, option }, beats: ScenarioBeat[] }`. The first path is `main` and has no `from`.
 - `ScenarioBeat` = the base fields above, with `line` dropped, plus:
   - `actor`: a cast id; `time`: a display string (`'Tue 10:14'`), non-decreasing along every route.
-  - `command?` and `output?`: what the actor ran and what it printed. Together they build the **transcript**.
+  - `command?` and `output?`: what the actor ran and what it printed. Together they build the **transcript**. A beat with no command (a click in a web UI) has `action` instead, e.g. `Merged pull request #7 on GitHub`.
   - `choice?`: `{ question, options: { id, label, path }[] }`, only on the **last** beat of a path.
   - `outcome?`: one or two sentences, required on every ending (a last beat without `choice`).
 - `routeFor(picks: string[]): ScenarioBeat[]`: the beats a learner sees for their picks, in order. Views and the section use it; a view still renders one beat.
