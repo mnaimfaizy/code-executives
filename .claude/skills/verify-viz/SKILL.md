@@ -14,6 +14,7 @@ Renderers tag their DOM so the checks can find it:
 - The viewer container: `data-viz-viewer`.
 - Every label: `data-viz-label` (3D `<Html>` cards; in 2D the `<g>` wrapping an entity or frame and its text).
 - A label the renderer hides because it left the frame: `data-viz-offframe` as well. The script lists these per beat as `offframe: …`. Each listed label must belong to an entity the spec lets that beat's shot drop; any other is a clipped label, so the item fails.
+- In a scenario, each option button at a choice point: `data-viz-choice="<option id>"`. The script walks every route by picking each option in turn, so Restart must clear every pick.
 
 ## 2D checklist
 
@@ -31,6 +32,10 @@ Renderers tag their DOM so the checks can find it:
 6. Browser: the console shows no errors while stepping and toggling.
 7. `npm run build`, then `node .agents/skills/verify-viz/scripts/check-lazy-chunk.mjs` → exit 0. It fails when three.js is reachable from `index.html`, and prints the 3D chunk's gzip size for your report.
 8. Reduced motion and no-WebGL fallbacks are covered by the section test.
+
+## Scenarios
+
+Both checklists apply, with two changes: the label-overlap script walks **every route** (its lines are prefixed with the picks, e.g. `[rebase] 7: ok`), so every beat of every path must be `ok`; and the section test covers picking each option, stepping back across a choice, and "Try the other path".
 
 ## Running the browser script
 
