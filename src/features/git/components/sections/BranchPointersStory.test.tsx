@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { BranchPointers3DProps } from '../visualizations/3d/BranchPointers3D';
 import { STORY_STEPS } from '../../utils/branchPointersStory';
@@ -13,8 +13,14 @@ vi.mock('../../../../shared/hooks', async (importOriginal) => ({
   useReducedMotion: () => motion.reduced,
 }));
 vi.mock('../visualizations/3d/BranchPointers3D', () => ({
-  default: ({ step, instant }: BranchPointers3DProps) => (
-    <div data-testid="scene-3d" data-instant={String(Boolean(instant))}>
+  default: ({ step, instant, camera }: BranchPointers3DProps) => (
+    <div
+      data-testid="scene-3d"
+      data-instant={String(Boolean(instant))}
+      data-preset={camera.preset}
+      data-hold={String(camera.hold)}
+      data-command={camera.command?.kind ?? ''}
+    >
       {step.id}
     </div>
   ),
@@ -98,6 +104,38 @@ describe('BranchPointersStory', () => {
     expect(
       screen.getByRole('img', { name: /HEAD points straight at a commit/ })
     ).toBeInTheDocument();
+  });
+
+  it('drives the 3D camera from the viewer toolbar and keys without losing the step', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<BranchPointersStory />);
+
+    await user.click(screen.getByRole('button', { name: 'Next step' }));
+    await user.click(screen.getByRole('radio', { name: /3d/i }));
+    const scene = await screen.findByTestId('scene-3d');
+    const stepText = screen.getByText(/^Step 2 \//);
+
+    // Reset view lives in the viewer's toolbar now, not in the step controls.
+    const viewerEl = container.querySelector<HTMLElement>('[data-viz-viewer]')!;
+    const reset = within(viewerEl).getByRole('button', { name: 'Reset view' });
+
+    await user.click(screen.getByRole('radio', { name: 'Front view' }));
+    expect(scene).toHaveAttribute('data-preset', 'front');
+
+    screen.getByLabelText(/Branch pointers story/).focus();
+    await user.keyboard('h');
+    expect(scene).toHaveAttribute('data-hold', 'true');
+    await user.keyboard('{Shift>}{ArrowRight}{/Shift}');
+    expect(scene).toHaveAttribute('data-command', 'orbit');
+    expect(stepText).toHaveTextContent(/^Step 2 \//);
+
+    await user.click(reset);
+    expect(scene).toHaveAttribute('data-preset', 'iso');
+    expect(scene).toHaveAttribute('data-hold', 'false');
+    expect(scene).toHaveAttribute('data-command', 'reset');
+
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByText(/^Step 3 \//)).toBeInTheDocument();
   });
 
   it('falls back to 2D when WebGL is unavailable', () => {

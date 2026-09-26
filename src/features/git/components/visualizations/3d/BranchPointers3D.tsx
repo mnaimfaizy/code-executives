@@ -1,8 +1,6 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
-  CameraControls,
-  CameraControlsImpl,
   Edges,
   Html,
   QuadraticBezierLine,
@@ -27,6 +25,9 @@ import {
   type ShotId,
   type StoryStep,
 } from '../../../utils/branchPointersStory';
+import type { CameraState } from '../../../../../shared/components/viz/viewerCamera';
+import { LabelFramer, StoryCamera } from '../../../../../shared/viz3d/camera';
+import { boundsOf, type Box3, type Shot, type V3 } from '../../../../../shared/viz3d/frameShot';
 
 /**
  * 3D renderer for the Branch Pointers story. Pure view: everything it draws comes from `step`.
@@ -40,13 +41,11 @@ import {
 
 export interface BranchPointers3DProps {
   step: StoryStep;
-  /** Bump to snap the camera back to the beat's preset shot. */
-  resetViewToken: number;
+  /** The learner's camera: view preset, Hold view, pan mode and one-shot commands. */
+  camera: CameraState;
   /** Reduced motion: no tweening, instant camera cuts. */
   instant?: boolean;
 }
-
-type V3 = [number, number, number];
 
 const PALETTE = {
   floor: '#f1f5f9',
@@ -115,17 +114,6 @@ const cardCenter = (id: CardId): V3 => [REF_X[id], SHELF_Y + CARD_H / 2, SHELF_Z
 
 // ---- Camera shots ---------------------------------------------------------------------
 
-interface Shot {
-  /** World-space boxes the shot must frame (their corners, not their union's). */
-  boxes: Box3[];
-  /** Screen-space room (px) reserved around the boxes for DOM labels. */
-  pad: { left: number; right: number; top: number; bottom: number };
-}
-
-/** Direction from target to camera; the same for every shot so cuts never disorient. */
-const ISO: V3 = [2.5, 10, 11];
-
-type Box3 = [V3, V3];
 const commitBox = (col: number, row: number): Box3 => [
   [COL_X[col] - COMMIT[0] / 2, 0, ROW_Z[row] - COMMIT[2] / 2],
   [COL_X[col] + COMMIT[0] / 2, COMMIT[1], ROW_Z[row] + COMMIT[2] / 2],
@@ -148,6 +136,9 @@ const GRAPH: Box3[] = [
 const REFS: Box3[] = [cardBox('HEAD'), cardBox('main'), cardBox('feature'), REFLOG_BOX];
 
 // The reflog's label is wider than its card, so shots that hold it keep extra room on the left.
+/** The scene plus a margin: panning keeps the camera target inside it. */
+const SCENE_BOUNDS: Box3 = boundsOf([...GRAPH, ...REFS, [FLOOR_MIN, FLOOR_MAX]], 3);
+
 const SHOTS: Record<ShotId, Shot> = {
   overview: { boxes: [...GRAPH, ...REFS], pad: { left: 80, right: 70, top: 30, bottom: 56 } },
   graph: { boxes: GRAPH, pad: { left: 40, right: 90, top: 50, bottom: 70 } },
@@ -164,43 +155,6 @@ const SHOTS: Record<ShotId, Shot> = {
     pad: { left: 80, right: 60, top: 40, bottom: 60 },
   },
 };
-
-/**
- * Orthographic framing: project every box corner onto the camera plane, pick the zoom
- * that fits them plus the label padding, and aim at the centre of the padded extent.
- */
-function frameShot(shot: Shot, width: number, height: number) {
-  const forward = new THREE.Vector3(...ISO).normalize().negate();
-  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-  const up = new THREE.Vector3().crossVectors(right, forward).normalize();
-
-  let [x0, x1, y0, y1] = [Infinity, -Infinity, Infinity, -Infinity];
-  for (const [min, max] of shot.boxes)
-    for (const x of [min[0], max[0]])
-      for (const y of [min[1], max[1]])
-        for (const z of [min[2], max[2]]) {
-          const p = new THREE.Vector3(x, y, z);
-          const sx = p.dot(right);
-          const sy = p.dot(up);
-          [x0, x1, y0, y1] = [
-            Math.min(x0, sx),
-            Math.max(x1, sx),
-            Math.min(y0, sy),
-            Math.max(y1, sy),
-          ];
-        }
-
-  const { left, right: padR, top, bottom } = shot.pad;
-  const zoom = Math.max(
-    8,
-    Math.min((width - left - padR) / (x1 - x0), (height - top - bottom) / (y1 - y0))
-  );
-  const cx = (x0 + x1) / 2 + (padR - left) / (2 * zoom);
-  const cy = (y0 + y1) / 2 + (top - bottom) / (2 * zoom);
-  const target = right.clone().multiplyScalar(cx).add(up.clone().multiplyScalar(cy));
-  const position = target.clone().add(new THREE.Vector3(...ISO));
-  return { target, position, zoom };
-}
 
 // ---- Helpers --------------------------------------------------------------------------
 
@@ -283,35 +237,6 @@ const Label: React.FC<{
     </div>
   </Html>
 );
-
-/**
- * Hides any label the viewer's edge would cut (a ref card below a close-up, or while
- * orbiting), so every label on screen is whole and readable.
- */
-const LabelFramer: React.FC = () => {
-  const gl = useThree((s) => s.gl);
-  const tick = useRef(0);
-  useFrame(() => {
-    if (tick.current++ % 3) return;
-    // Html labels portal into the Canvas wrapper, a level above the <canvas>'s own parent.
-    const host = gl.domElement.parentElement?.parentElement;
-    if (!host) return;
-    const f = gl.domElement.getBoundingClientRect();
-    host.querySelectorAll<HTMLElement>('[data-viz-label], [data-viz-framed]').forEach((el) => {
-      const r = el.getBoundingClientRect();
-      const inside =
-        r.left >= f.left + 2 &&
-        r.right <= f.right - 2 &&
-        r.top >= f.top + 2 &&
-        r.bottom <= f.bottom - 2;
-      const want = inside ? '' : '0';
-      // Tag what the framer hides so verify-viz reports it instead of skipping it silently.
-      el.toggleAttribute('data-viz-offframe', !inside);
-      if (el.style.opacity !== want) el.style.opacity = want;
-    });
-  });
-  return null;
-};
 
 // ---- Commit graph ----------------------------------------------------------------------
 
@@ -803,53 +728,6 @@ const Arrow: React.FC<{ spec: ArrowSpec; instant: boolean }> = ({ spec, instant 
   );
 };
 
-// ---- Camera ---------------------------------------------------------------------------
-
-const ShotDirector: React.FC<{ shot: ShotId; resetViewToken: number; instant: boolean }> = ({
-  shot,
-  resetViewToken,
-  instant,
-}) => {
-  const controls = useRef<CameraControlsImpl>(null);
-  const size = useThree((s) => s.size);
-
-  useLayoutEffect(() => {
-    const c = controls.current;
-    if (!c) return;
-    const s = SHOTS[shot];
-    // Compact labels overhang less: the reflog needs less room on the left.
-    const pad = size.width < COMPACT_BELOW ? { ...s.pad, left: Math.min(s.pad.left, 44) } : s.pad;
-    const { target, position, zoom } = frameShot({ ...s, pad }, size.width, size.height);
-    const smooth = !instant;
-    void c.setLookAt(position.x, position.y, position.z, target.x, target.y, target.z, smooth);
-    void c.zoomTo(zoom, smooth);
-  }, [shot, resetViewToken, instant, size.width, size.height]);
-
-  return (
-    <CameraControls
-      ref={controls}
-      makeDefault
-      smoothTime={0.6}
-      minPolarAngle={0.3}
-      maxPolarAngle={Math.PI / 2.4}
-      minAzimuthAngle={-Math.PI / 4}
-      maxAzimuthAngle={Math.PI / 2.5}
-      mouseButtons={{
-        left: CameraControlsImpl.ACTION.ROTATE,
-        middle: CameraControlsImpl.ACTION.NONE,
-        right: CameraControlsImpl.ACTION.NONE,
-        // Keep the page scrollable: the wheel never zooms the scene.
-        wheel: CameraControlsImpl.ACTION.NONE,
-      }}
-      touches={{
-        one: CameraControlsImpl.ACTION.TOUCH_ROTATE,
-        two: CameraControlsImpl.ACTION.NONE,
-        three: CameraControlsImpl.ACTION.NONE,
-      }}
-    />
-  );
-};
-
 // ---- Scene ----------------------------------------------------------------------------
 
 const commitKey = (c: Commit) => c.id;
@@ -870,7 +748,7 @@ const RegionLabel: React.FC<{ position: V3; children: React.ReactNode }> = ({
   </Html>
 );
 
-const Scene: React.FC<BranchPointers3DProps> = ({ step, resetViewToken, instant = false }) => {
+const Scene: React.FC<BranchPointers3DProps> = ({ step, camera, instant = false }) => {
   const commits = usePresence(step.commits, commitKey, 700);
   const cardRefs = useMemo(
     () => step.refs.filter((r): r is HeadRef | BranchRef => r.kind !== 'reflog'),
@@ -880,6 +758,11 @@ const Scene: React.FC<BranchPointers3DProps> = ({ step, resetViewToken, instant 
   const reflog = getRef(step, 'head-reflog');
   // Narrow viewers get terser ref labels (no path prefixes, no reflog verbs) to keep them apart.
   const compact = useThree((s) => s.size.width) < COMPACT_BELOW;
+  // Compact labels overhang less: the reflog needs less room on the left.
+  const shot = useMemo(() => {
+    const s = SHOTS[step.shot];
+    return compact ? { ...s, pad: { ...s.pad, left: Math.min(s.pad.left, 44) } } : s;
+  }, [step.shot, compact]);
   const arrows = buildArrows(step);
 
   const floorCenter: V3 = [
@@ -957,7 +840,7 @@ const Scene: React.FC<BranchPointers3DProps> = ({ step, resetViewToken, instant 
       ))}
 
       <LabelFramer />
-      <ShotDirector shot={step.shot} resetViewToken={resetViewToken} instant={instant} />
+      <StoryCamera shot={shot} bounds={SCENE_BOUNDS} camera={camera} instant={instant} />
     </>
   );
 };

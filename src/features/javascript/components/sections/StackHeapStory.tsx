@@ -1,7 +1,19 @@
-import React, { Suspense, lazy, useCallback, useEffect, useState } from 'react';
-import { Box, ChevronLeft, ChevronRight, Pause, Play, RotateCcw, Scan, Square } from 'lucide-react';
+import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Box,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2,
+  Minimize2,
+  Pause,
+  Play,
+  RotateCcw,
+  Square,
+} from 'lucide-react';
 import { ErrorBoundary } from '../../../../shared/components/feedback';
-import { useReducedMotion } from '../../../../shared/hooks';
+import { useReducedMotion, useStoryViewer } from '../../../../shared/hooks';
+import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
+import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
 import StackHeap2D from '../visualizations/2d/StackHeap2D';
 import { STORY_CODE, STORY_STEPS } from '../../utils/stackHeapStory';
 import { canUseWebGL } from '../../../../shared/utils/webgl';
@@ -32,7 +44,7 @@ const StackHeapStory: React.FC = () => {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>('normal');
-  const [resetViewToken, setResetViewToken] = useState(0);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   const view: View = webgl && chosenView === '3d' ? '3d' : '2d';
   const step = STORY_STEPS[index];
@@ -62,22 +74,18 @@ const StackHeapStory: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [playing, index, last, speed, go]);
 
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      go(1);
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      go(-1);
-    }
-  };
+  const viewer = useStoryViewer({ rootRef, is3D: view === '3d', step: go });
+  const fullscreen = viewer.fullscreen.isFullscreen;
 
   const view2D = <StackHeap2D step={step} />;
 
   return (
     <div
-      className="relative w-full overflow-hidden rounded-2xl border bg-gradient-to-br from-slate-50 to-slate-200 p-4 shadow-xl sm:p-6"
-      onKeyDown={onKeyDown}
+      ref={rootRef}
+      className={`relative w-full border bg-gradient-to-br from-slate-50 to-slate-200 p-4 shadow-xl sm:p-6 ${
+        fullscreen ? 'h-full overflow-y-auto bg-white' : 'overflow-hidden rounded-2xl'
+      }`}
+      onKeyDown={viewer.onKeyDown}
       tabIndex={0}
       aria-label="Stack and heap story. Use the left and right arrow keys to step."
     >
@@ -172,7 +180,10 @@ const StackHeapStory: React.FC = () => {
         <div className="flex min-w-0 flex-col gap-2 lg:w-[62%]">
           <div
             data-viz-viewer
-            className="relative h-[420px] overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg sm:h-[500px]"
+            onWheel={viewer.onViewerWheel}
+            className={`relative overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg ${
+              fullscreen ? 'h-[75vh]' : 'h-[420px] sm:h-[500px]'
+            }`}
           >
             {view === '3d' ? (
               <ErrorBoundary
@@ -195,21 +206,26 @@ const StackHeapStory: React.FC = () => {
                     </div>
                   }
                 >
-                  <StackHeap3D
-                    step={step}
-                    resetViewToken={resetViewToken}
-                    instant={reducedMotion}
-                  />
+                  <StackHeap3D step={step} camera={viewer.camera} instant={reducedMotion} />
                 </Suspense>
               </ErrorBoundary>
             ) : (
               view2D
             )}
-            {view === '3d' && (
-              <div className="pointer-events-none absolute bottom-2 left-3 text-[11px] text-slate-400">
-                Drag to orbit
-              </div>
-            )}
+            {view === '3d' && <Viewer3DHint />}
+            {view === '3d' && <WheelZoomHint visible={viewer.wheelHint} />}
+            <Viewer3DToolbar
+              is3D={view === '3d'}
+              preset={viewer.camera.preset}
+              hold={viewer.camera.hold}
+              pan={viewer.camera.pan}
+              command={viewer.command}
+              setPreset={viewer.setPreset}
+              toggleHold={viewer.toggleHold}
+              togglePan={viewer.togglePan}
+              reset={viewer.reset}
+              fullscreen={viewer.fullscreen}
+            />
           </div>
 
           <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
@@ -266,9 +282,16 @@ const StackHeapStory: React.FC = () => {
                 <option value="fast">Fast</option>
               </select>
             </label>
-            {view === '3d' && (
-              <ControlButton label="Reset view" onClick={() => setResetViewToken((t) => t + 1)}>
-                <Scan className="h-4 w-4" />
+            {view === '2d' && viewer.fullscreen.supported && (
+              <ControlButton
+                label={viewer.fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
+                onClick={viewer.fullscreen.toggle}
+              >
+                {viewer.fullscreen.isFullscreen ? (
+                  <Minimize2 className="h-4 w-4" />
+                ) : (
+                  <Maximize2 className="h-4 w-4" />
+                )}
               </ControlButton>
             )}
           </div>

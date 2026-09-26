@@ -22,8 +22,8 @@ Read `docs/3D-Visualization-Standard.md` in full before writing code: it is the 
    - Labels are drei `<Html>` DOM cards with `zIndexRange={[10, 0]}` and `pointerEvents: none`, ≥ 11px. Place them where they never cover links: on region fronts, above back-row entities, in front of front-row entities.
    - Links are arcs that land on the face turned toward their source. Links inside one region stay low, beneath its labels.
    - Enter/exit animate by entity id (presence pattern); lifecycle `state` animates colour and scale. With `instant`, every change and camera move is a cut.
-   - Orbit is left-drag only, clamped; the mouse wheel never zooms (page scroll stays intact).
-2. **Wire the toggle** in `sections/<Name>Story.tsx`: load the renderer with `React.lazy`; `Suspense` shows the 2D view under a "Loading 3D…" overlay; an `ErrorBoundary` falls back to 2D; the 3D option is disabled without WebGL (`canUseWebGL`); reduced motion passes `instant`; add **Reset view**.
+   - Camera and controls come from the shared kit, never your own: `<StoryCamera>` and `<LabelFramer>` from `src/shared/viz3d/` (import it only from the lazy renderer), and the section's `Viewer3DToolbar` and `useStoryViewer`. Give `StoryCamera` your shots and the scene bounds; don't hand-roll `CameraControls`, wheel handling or zoom limits.
+2. **Wire the toggle** in `sections/<Name>Story.tsx`: load the renderer with `React.lazy`; `Suspense` shows the 2D view under a "Loading 3D…" overlay; an `ErrorBoundary` falls back to 2D; the 3D option is disabled without WebGL (`canUseWebGL`); reduced motion passes `instant`; the shared toolbar (Reset view, Hold view, presets, zoom, pan, full screen) sits in the viewer's top-right corner.
 3. **Tests**: extend the section test so the toggle keeps the step with a mocked 3D module, and the WebGL-off case falls back to 2D.
 
 ## Rules

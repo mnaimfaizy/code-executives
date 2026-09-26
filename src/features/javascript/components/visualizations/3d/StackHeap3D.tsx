@@ -1,8 +1,6 @@
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
 import {
-  CameraControls,
-  CameraControlsImpl,
   Html,
   QuadraticBezierLine,
   RoundedBox,
@@ -20,6 +18,9 @@ import {
   type StackFrame,
   type StoryStep,
 } from '../../../utils/stackHeapStory';
+import type { CameraState } from '../../../../../shared/components/viz/viewerCamera';
+import { LabelFramer, StoryCamera } from '../../../../../shared/viz3d/camera';
+import { boundsOf, type Box3, type Shot, type V3 } from '../../../../../shared/viz3d/frameShot';
 
 /**
  * 3D renderer for the Stack & Heap story. Pure view: everything it draws comes from `step`.
@@ -29,13 +30,11 @@ import {
 
 export interface StackHeap3DProps {
   step: StoryStep;
-  /** Bump to snap the camera back to the beat's preset shot. */
-  resetViewToken: number;
+  /** The learner's camera: view preset, Hold view, pan mode and one-shot commands. */
+  camera: CameraState;
   /** Reduced motion: no tweening, instant camera cuts. */
   instant?: boolean;
 }
-
-type V3 = [number, number, number];
 
 const PALETTE = {
   ground: '#e2e8f0',
@@ -81,33 +80,20 @@ const HEAP_SIZE: V3 = [CELL_DX + 4.4, 0.1, CELL_DZ + 3.8];
 
 // ---- Camera shots ---------------------------------------------------------------------
 
-interface Shot {
-  /** World-space region the shot must frame. */
-  min: V3;
-  max: V3;
-  /** Direction from target to camera; kept isometric-ish across shots for continuity. */
-  dir: V3;
-  /** Screen-space room (px) reserved around the region for DOM labels. */
-  pad: { left: number; right: number; top: number; bottom: number };
-}
-
+/** Direction from target to camera for the isometric preset; this story's own angle. */
 const ISO: V3 = [6, 7, 11];
 
-const STACK_MIN: V3 = [STACK_X - FRAME_SIZE[0] / 2, 0, -FRAME_SIZE[2] / 2];
-const STACK_MAX: V3 = [
-  STACK_X + FRAME_SIZE[0] / 2,
-  frameY(2) + FRAME_SIZE[1] / 2,
-  FRAME_SIZE[2] / 2,
+const STACK: Box3 = [
+  [STACK_X - FRAME_SIZE[0] / 2, 0, -FRAME_SIZE[2] / 2],
+  [STACK_X + FRAME_SIZE[0] / 2, frameY(2) + FRAME_SIZE[1] / 2, FRAME_SIZE[2] / 2],
 ];
-const OBJECTS_MIN: V3 = [CELL_X0 - 1.3, 0, CELL_Z0 - 0.9];
-const OBJECTS_MAX: V3 = [CELL_X0 + CELL_DX + 1.3, 1, CELL_Z0 + CELL_DZ + 0.9];
-const FLOOR_MIN: V3 = [HEAP_CENTER[0] - HEAP_SIZE[0] / 2, 0, HEAP_CENTER[2] - HEAP_SIZE[2] / 2];
-const FLOOR_MAX: V3 = [HEAP_CENTER[0] + HEAP_SIZE[0] / 2, 1, HEAP_CENTER[2] + HEAP_SIZE[2] / 2];
-
-const union = (a: V3, b: V3, pick: typeof Math.min): V3 => [
-  pick(a[0], b[0]),
-  pick(a[1], b[1]),
-  pick(a[2], b[2]),
+const OBJECTS: Box3 = [
+  [CELL_X0 - 1.3, 0, CELL_Z0 - 0.9],
+  [CELL_X0 + CELL_DX + 1.3, 1, CELL_Z0 + CELL_DZ + 0.9],
+];
+const FLOOR: Box3 = [
+  [HEAP_CENTER[0] - HEAP_SIZE[0] / 2, 0, HEAP_CENTER[2] - HEAP_SIZE[2] / 2],
+  [HEAP_CENTER[0] + HEAP_SIZE[0] / 2, 1, HEAP_CENTER[2] + HEAP_SIZE[2] / 2],
 ];
 
 // Frame labels sit on the slab fronts; object labels sit above the blocks and overhang them.
@@ -115,63 +101,16 @@ const WITH_STACK = { left: 40, right: 60, top: 70, bottom: 80 };
 const HEAP_ONLY = { left: 60, right: 60, top: 70, bottom: 80 };
 
 const SHOTS: Record<ShotId, Shot> = {
-  overview: {
-    min: union(STACK_MIN, FLOOR_MIN, Math.min),
-    max: union(STACK_MAX, FLOOR_MAX, Math.max),
-    dir: ISO,
-    pad: WITH_STACK,
-  },
-  stack: { min: STACK_MIN, max: STACK_MAX, dir: ISO, pad: WITH_STACK },
-  bridge: {
-    min: union(STACK_MIN, OBJECTS_MIN, Math.min),
-    max: union(STACK_MAX, OBJECTS_MAX, Math.max),
-    dir: ISO,
-    pad: WITH_STACK,
-  },
-  heap: { min: OBJECTS_MIN, max: OBJECTS_MAX, dir: ISO, pad: HEAP_ONLY },
-  gc: {
-    min: union(STACK_MIN, FLOOR_MIN, Math.min),
-    max: union(STACK_MAX, FLOOR_MAX, Math.max),
-    dir: [5, 9, 11],
-    pad: WITH_STACK,
-  },
+  overview: { boxes: [STACK, FLOOR], pad: WITH_STACK },
+  stack: { boxes: [STACK], pad: WITH_STACK },
+  bridge: { boxes: [STACK, OBJECTS], pad: WITH_STACK },
+  heap: { boxes: [OBJECTS], pad: HEAP_ONLY },
+  gc: { boxes: [STACK, FLOOR], pad: WITH_STACK, isoDir: [5, 9, 11] },
 };
 
-/**
- * Orthographic framing: project the region's corners onto the camera plane, pick the
- * zoom that fits them plus the label padding, and offset the target so the padded
- * content is centred.
- */
-function frameShot(shot: Shot, width: number, height: number) {
-  const center = new THREE.Vector3(...shot.min)
-    .add(new THREE.Vector3(...shot.max))
-    .multiplyScalar(0.5);
-  const forward = new THREE.Vector3(...shot.dir).normalize().negate();
-  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
-  const up = new THREE.Vector3().crossVectors(right, forward).normalize();
-
-  let halfW = 0;
-  let halfH = 0;
-  for (const x of [shot.min[0], shot.max[0]])
-    for (const y of [shot.min[1], shot.max[1]])
-      for (const z of [shot.min[2], shot.max[2]]) {
-        const d = new THREE.Vector3(x, y, z).sub(center);
-        halfW = Math.max(halfW, Math.abs(d.dot(right)));
-        halfH = Math.max(halfH, Math.abs(d.dot(up)));
-      }
-
-  const { left, right: padR, top, bottom } = shot.pad;
-  const zoom = Math.max(
-    8,
-    Math.min((width - left - padR) / (2 * halfW), (height - top - bottom) / (2 * halfH))
-  );
-  const target = center
-    .clone()
-    .add(right.clone().multiplyScalar((padR - left) / (2 * zoom)))
-    .add(up.clone().multiplyScalar((top - bottom) / (2 * zoom)));
-  const position = target.clone().add(new THREE.Vector3(...shot.dir));
-  return { target, position, zoom };
-}
+/** The scene plus a margin: panning keeps the camera target inside it. */
+const SCENE_BOUNDS: Box3 = boundsOf([STACK, FLOOR], 3);
+const DIRECTIONS = { iso: ISO };
 
 // ---- Helpers --------------------------------------------------------------------------
 
@@ -258,31 +197,35 @@ const FrameSlab: React.FC<{
         </mesh>
       )}
       <Html position={[0, 0, FRAME_SIZE[2] / 2 + 0.02]} zIndexRange={[10, 0]}>
+        {/* The wrapper fades exits; the inner label's opacity belongs to LabelFramer. */}
         <div
-          data-viz-label
           style={{
             ...labelStyle,
             transform: 'translate(-50%, -50%)',
             opacity: exiting ? 0 : 1,
             transition: instant ? undefined : 'opacity 250ms',
           }}
-          className={`rounded-md border bg-white/95 px-2 py-0.5 text-[11px] leading-[14px] shadow-sm ${
-            highlight ? 'border-amber-400' : 'border-indigo-200'
-          }`}
         >
-          <div className="flex items-center gap-2 font-bold text-indigo-900">
-            {entry.frame.name}
-            {root && <span className="text-[9px] font-bold text-amber-600">ROOT</span>}
-          </div>
-          <div className="flex gap-2.5">
-            {entry.frame.slots.map((s) => {
-              const f = isFocused(step, slotKey(entry.frame.id, s.name));
-              return (
-                <span key={s.name} className={f ? 'font-bold text-amber-700' : 'text-slate-600'}>
-                  {s.name}: {s.refId ? '●→' : s.value}
-                </span>
-              );
-            })}
+          <div
+            data-viz-label
+            className={`rounded-md border bg-white/95 px-2 py-0.5 text-[11px] leading-[14px] shadow-sm ${
+              highlight ? 'border-amber-400' : 'border-indigo-200'
+            }`}
+          >
+            <div className="flex items-center gap-2 font-bold text-indigo-900">
+              {entry.frame.name}
+              {root && <span className="text-[9px] font-bold text-amber-600">ROOT</span>}
+            </div>
+            <div className="flex gap-2.5">
+              {entry.frame.slots.map((s) => {
+                const f = isFocused(step, slotKey(entry.frame.id, s.name));
+                return (
+                  <span key={s.name} className={f ? 'font-bold text-amber-700' : 'text-slate-600'}>
+                    {s.name}: {s.refId ? '●→' : s.value}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
       </Html>
@@ -529,56 +472,12 @@ const RootPulse: React.FC = () => {
   );
 };
 
-// ---- Camera ---------------------------------------------------------------------------
-
-const ShotDirector: React.FC<{ shot: ShotId; resetViewToken: number; instant: boolean }> = ({
-  shot,
-  resetViewToken,
-  instant,
-}) => {
-  const controls = useRef<CameraControlsImpl>(null);
-  const size = useThree((s) => s.size);
-
-  useLayoutEffect(() => {
-    const c = controls.current;
-    if (!c) return;
-    const { target, position, zoom } = frameShot(SHOTS[shot], size.width, size.height);
-    const smooth = !instant;
-    void c.setLookAt(position.x, position.y, position.z, target.x, target.y, target.z, smooth);
-    void c.zoomTo(zoom, smooth);
-  }, [shot, resetViewToken, instant, size.width, size.height]);
-
-  return (
-    <CameraControls
-      ref={controls}
-      makeDefault
-      smoothTime={0.6}
-      minPolarAngle={0.25}
-      maxPolarAngle={Math.PI / 2.3}
-      minAzimuthAngle={-Math.PI / 3}
-      maxAzimuthAngle={Math.PI / 2}
-      mouseButtons={{
-        left: CameraControlsImpl.ACTION.ROTATE,
-        middle: CameraControlsImpl.ACTION.NONE,
-        right: CameraControlsImpl.ACTION.NONE,
-        // Keep the page scrollable: the wheel never zooms the scene.
-        wheel: CameraControlsImpl.ACTION.NONE,
-      }}
-      touches={{
-        one: CameraControlsImpl.ACTION.TOUCH_ROTATE,
-        two: CameraControlsImpl.ACTION.NONE,
-        three: CameraControlsImpl.ACTION.NONE,
-      }}
-    />
-  );
-};
-
 // ---- Scene ----------------------------------------------------------------------------
 
 const frameKey = (e: FrameEntry) => e.frame.id;
 const objectKey = (o: HeapObject) => o.id;
 
-const Scene: React.FC<StackHeap3DProps> = ({ step, resetViewToken, instant = false }) => {
+const Scene: React.FC<StackHeap3DProps> = ({ step, camera, instant = false }) => {
   const frameEntries = useMemo(
     () => step.frames.map((frame, index) => ({ frame, index })),
     [step.frames]
@@ -610,6 +509,7 @@ const Scene: React.FC<StackHeap3DProps> = ({ step, resetViewToken, instant = fal
       />
       <Html position={[STACK_X, -0.1, FRAME_SIZE[2] / 2 + 0.5]} zIndexRange={[10, 0]}>
         <div
+          data-viz-framed
           style={{ ...labelStyle, transform: 'translate(-50%, 0)' }}
           className="text-[11px] font-bold tracking-[0.2em] text-slate-500"
         >
@@ -621,6 +521,7 @@ const Scene: React.FC<StackHeap3DProps> = ({ step, resetViewToken, instant = fal
         zIndexRange={[10, 0]}
       >
         <div
+          data-viz-framed
           style={{ ...labelStyle, transform: 'translate(-50%, 0)' }}
           className="text-[11px] font-bold tracking-[0.2em] text-slate-500"
         >
@@ -661,7 +562,14 @@ const Scene: React.FC<StackHeap3DProps> = ({ step, resetViewToken, instant = fal
 
       {marking && !instant && <RootPulse />}
 
-      <ShotDirector shot={step.shot} resetViewToken={resetViewToken} instant={instant} />
+      <LabelFramer />
+      <StoryCamera
+        shot={SHOTS[step.shot]}
+        bounds={SCENE_BOUNDS}
+        camera={camera}
+        instant={instant}
+        directions={DIRECTIONS}
+      />
     </>
   );
 };
