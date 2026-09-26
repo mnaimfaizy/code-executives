@@ -26,8 +26,8 @@ Renderers tag their DOM so the checks can find it:
 ## 3D checklist
 
 1–3. As in 2D.
-4. Browser, 3D selected: run [label-overlap.js](scripts/label-overlap.js) at a wide viewport (≥ 1280px) **and** a narrow one (≤ 800px) → every beat `ok` at both.
-5. Browser: every beat's preset shot keeps the story's key entities and their links visible (look at each beat; the script checks labels, not arcs).
+4. Browser, 3D selected: run [label-overlap.js](scripts/label-overlap.js) at a wide viewport (≥ 1280px) **and** a narrow one (≤ 800px), with the Isometric preset and Hold view off (the script presses Reset view first) → every beat `ok` at both.
+5. Browser: every beat's preset shot keeps the story's key entities and their links visible (look at each beat; the script checks labels, not arcs). Then zoom in, pan and try the Front and Top presets on a few beats: no label may show clipped (hidden with `data-viz-offframe` is fine).
 6. Browser: the console shows no errors while stepping and toggling.
 7. `npm run build`, then `node .agents/skills/verify-viz/scripts/check-lazy-chunk.mjs` → exit 0. It fails when three.js is reachable from `index.html`, and prints the 3D chunk's gzip size for your report.
 8. Reduced motion and no-WebGL fallbacks are covered by the section test.

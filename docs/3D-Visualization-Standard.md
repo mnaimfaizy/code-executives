@@ -19,7 +19,7 @@ This standard exists so that doesn't happen again.
 1. **3D must teach, not decorate.** Use 3D only where depth carries meaning: layers, regions, references crossing space. If the 2D view explains it just as well, don't build 3D.
 2. **Literal, not metaphor.** Draw the concept itself: frames, objects, references. No kitchens, libraries or robots.
 3. **3D is an option, and 2D is the default.** Both views render **one step model**. Switching views keeps the learner on the same step.
-4. **A guided camera.** Every step has a preset shot and the camera glides to it. Orbiting is optional, and a **Reset view** button returns to the preset. The scroll wheel never zooms the scene, so page scrolling keeps working.
+4. **A guided camera the learner can take over.** Every step has a preset shot and the camera glides to it. The learner can orbit, pan and zoom; the next step glides back to its shot unless **Hold view** is on, and **Reset view** returns to the preset. The plain scroll wheel never zooms the scene, so page scrolling keeps working. See [Viewer controls](#viewer-controls).
 5. **The learner sets the pace.** Provide step back/forward, play/pause and speed, and keep the defaults slow. Each step is a full snapshot, so stepping backwards costs nothing.
 6. **Labels are always readable.** Labels are DOM elements (drei `<Html>`) that always face the camera, sit on or beside their object, and are never smaller than 11px. Use `zIndexRange={[10, 0]}` so they never cover site chrome.
 
@@ -52,13 +52,33 @@ sections/<Story>.tsx           shell: code panel, narration, controls, 2D/3D tog
   - `prefers-reduced-motion`: instant camera cuts and no tweens or pulses.
   - A render error: an `ErrorBoundary` falls back to the 2D view.
   - While the chunk loads: the 2D view shows with a "Loading 3D…" overlay.
-- **Camera framing:** each shot defines a world-space box, a view direction and pixel padding for labels. The zoom is computed from the projected box (`frameShot`), so shots fit any viewer size.
+- **Camera framing:** each shot defines a world-space box, a view direction and pixel padding for labels. The zoom is computed from the projected box (`frameShot`), so shots fit any viewer size. The view direction comes from the learner's preset (isometric by default, front, or top).
 - **Type gotcha:** R3F adds its elements to the global JSX namespace, so `React.ElementType` without props resolves to `never` for `className`. Type icon components as `LucideIcon` or give `ElementType` explicit props.
+
+## Viewer controls
+
+Every 3D story uses the shared toolbar and camera (`src/shared/components/viz/Viewer3DToolbar.tsx`, `src/shared/viz3d/`), never its own. The toolbar sits in the viewer's top-right corner.
+
+| Control | Mouse / touch | Keyboard (story focused) |
+|---|---|---|
+| Step | Step buttons | ← → |
+| Orbit | Left-drag, one finger | Shift + arrows |
+| Pan | Right-drag, or Pan mode + left-drag; two fingers | |
+| Zoom | Buttons, Ctrl/⌘ + wheel, pinch; plain wheel only in full screen | `+` `-` |
+| View preset | Isometric, Front, Top | |
+| Hold view | Toggle | `H` |
+| Reset view | Button | `0` |
+| Full screen (2D too) | Button | `F` |
+
+- Zoom stays between 0.5× and 3× of the fitted shot, and panning stays inside the scene's bounds plus a margin.
+- A plain wheel over the viewer scrolls the page and shows a short "Use Ctrl + scroll to zoom" hint.
+- Full screen covers the whole story section, so the caption and controls stay visible.
+- Labels that leave the frame while the learner moves the camera are hidden and tagged `data-viz-offframe`. Label checks run on the preset shots from the isometric preset; views the learner chooses are not checked.
 
 ## Review checklist (pass/fail)
 
 1. From the 3D view alone, a learner can explain the story's key insight (for the prototype: *why Bob survives `bob = null`*).
-2. Every label is readable at every preset shot.
+2. Every label is readable at every preset shot (isometric preset). Zooming, panning and the other presets never show a clipped label.
 3. It runs smoothly on a normal laptop. 3D loads only on toggle, and 2D pages are the same size as before.
 4. Switching views mid-story keeps the step.
 5. With no WebGL or with reduced motion on, it falls back correctly.
