@@ -459,7 +459,8 @@ const ReflogCard: React.FC<{
       )}
       <Label
         position={[0, REFLOG_SIZE[1] / 2, CARD_D / 2 + 0.02]}
-        anchor="translate(-50%, -50%)"
+        // Narrow viewers bring the HEAD card's label close above; sit a little lower to clear it.
+        anchor={compact ? 'translate(-50%, -44%)' : 'translate(-50%, -50%)'}
         instant={instant}
         attrs={{ 'data-ref': reflog.id }}
         className={`border-2 px-2 py-1 text-[11px] leading-[15px] ${
