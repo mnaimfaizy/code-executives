@@ -222,6 +222,10 @@ const HeapBlock: React.FC<{
   // Back-row labels float above their block; front-row labels hang in front of it, so the
   // gap between rows (where heap-to-heap arcs run) stays clear.
   const labelInFront = object.cell.row > 0;
+  // The GC shot adds UNMARKED/RECLAIMED badges, widening every label until neighbours in a
+  // row meet over the gap between columns. With no stack arcs to cover on those beats, each
+  // column's label leans outward (left column left, right column right) to open that gap.
+  const labelX = step.shot === 'gc' ? (object.cell.col === 0 ? '-80%' : '-20%') : '-50%';
   const baseColor = useMemo(
     () =>
       new THREE.Color(
@@ -281,7 +285,7 @@ const HeapBlock: React.FC<{
           data-viz-label
           style={{
             ...labelStyle,
-            transform: labelInFront ? 'translate(-50%, 6px)' : 'translate(-50%, -100%)',
+            transform: labelInFront ? `translate(${labelX}, 6px)` : `translate(${labelX}, -100%)`,
           }}
           className={`rounded-md border bg-white/95 px-2 py-1 text-[11px] leading-4 shadow-sm transition-opacity duration-500 ${
             focused

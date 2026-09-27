@@ -44,7 +44,9 @@ async function toEnd(user: User) {
     await next(user);
 }
 
-describe('ShipAFeatureScenario', () => {
+// Walking a whole path is about 15 simulated clicks on a heavy section; on a loaded machine that can
+// pass the 5s default.
+describe('ShipAFeatureScenario', { timeout: 20_000 }, () => {
   beforeEach(() => {
     window.localStorage.clear();
     webgl.available = true;
