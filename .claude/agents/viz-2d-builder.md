@@ -24,6 +24,19 @@ Reference implementation: `StackHeap2D.tsx` and `sections/StackHeapStory.tsx` in
    - The 2D/3D toggle with 2D as the default. Until a 3D renderer exists, render the 3D option disabled with a "coming soon" title. The 3D builder wires it later.
 3. **Tests**: `<Name>Story.test.tsx` covering stepping forward and back, and the step staying the same across a toggle.
 
+### Scenarios
+
+For a scenario ([ADR 0003](../../docs/adr/0003-scenarios-with-choice-points.md)), the renderer is the same kind of component (props `{ beat }`, one region per cast member, positioned from cells). The shell is `sections/<Name>Scenario.tsx` and differs from a story shell:
+
+- **Gallery.** The module's Visualization page gets a Scenarios gallery above its existing content (`src/shared/components/viz/` if no shared gallery exists yet). A card shows the title, summary, cast, the concepts it touches (linked to their sections) and its number of choice points. Opening one sets `?scenario=<id>` next to `?section=Visualization`; an unknown id shows the gallery.
+- **Cast strip** above the viewer: every member's name tag, the acting one highlighted, and the beat's time.
+- **Transcript panel** in place of the code panel: the commands and output of every beat so far on the route, the current one highlighted.
+- **Choice point.** At a beat with `choice`, Next is disabled and the question shows with one button per option, each tagged `data-viz-choice="<option id>"`. Picking one continues on that path. Previous steps back across a choice and clears it. Restart returns to the first beat and clears every pick.
+- **Ending.** The outcome shows with a "Try the other path" button that returns to the choice beat.
+- The step strip shows the route so far; the progress is "Beat n" rather than "n / N", since the length depends on the picks.
+
+Tests also cover picking each option, stepping back across a choice, and "Try the other path".
+
 ## Rules
 
 - Light mode only; Tailwind classes written out literally (Tailwind v4 cannot see class names built at runtime).

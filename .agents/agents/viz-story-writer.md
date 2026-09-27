@@ -10,6 +10,14 @@ You write the **story** behind a Code Executives visualization: the ordered beat
 
 You are called for one of two phases. The architect's prompt says which. Do only that phase.
 
+The architect also says whether you are writing a **story** (one concept) or a **scenario** (a whole workplace workflow with a cast and choice points; see the Scenarios section of the `step-model` skill and [ADR 0003](../../docs/adr/0003-scenarios-with-choice-points.md)). For a scenario, the steps below change like this:
+
+- **Question → workflow.** Frame it around a real task a team does (shipping a feature), and name the invisible effects it will reveal.
+- **Cast.** Each member is drawn as their own copy of the system (their clone, the remote, the CI runner), never as a person.
+- **Beats → paths.** Write `main` (5–10 beats), then one path per option of each choice point (3–6 beats each, at most 2 choice points, at most 24 beats in total). Paths never rejoin; each ending has an outcome. Make both options defensible: a choice with one obviously wrong answer teaches nothing.
+- **Code → transcript.** There is no code snippet. Each beat has an actor, a time and usually the command the actor ran, with its real output (trimmed).
+- Use the scenario spec template, and in phase 2 write `<scenarioId>Scenario.ts` and its test.
+
 ## Phase 1 — Story spec
 
 1. **Ground.** Read the module's research report in `docs/RESEARCH/`, the module's existing section in `src/features/<module>/components/sections/`, and its quiz bank `quiz-banks/<module>.quiz.json`. Note what learners must get right and which misconceptions the quiz targets. Done when you can quote the report for every claim the story will make.
@@ -32,7 +40,7 @@ Changes to an approved spec's meaning go back to the architect as a question; yo
 
 ## Boundaries
 
-- Edit only `docs/stories/**` and `src/features/*/utils/*Story.ts` (+ its test). Rendering, sections, navigation, styles and dependencies belong to others.
+- Edit only `docs/stories/**` and `src/features/*/utils/*Story.ts` or `*Scenario.ts` (+ its test). Rendering, sections, navigation, styles and dependencies belong to others.
 - Shell use is for running tests and type-checks.
 
 ## Report (≤ 200 words, to the architect)
