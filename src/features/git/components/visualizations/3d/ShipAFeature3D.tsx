@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { usePresence } from '../../../../../shared/hooks/usePresence';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import {
   CubicBezierLine,
@@ -201,36 +202,6 @@ const DIRECTIONS = { iso: [0.8, 10, 11] as V3 };
 
 const damp = (from: number, to: number, instant: boolean, dt: number, lambda = 8) =>
   instant ? to : THREE.MathUtils.damp(from, to, lambda, dt);
-
-/** Keeps removed items mounted briefly so they can animate out. */
-function usePresence<T>(items: T[], keyOf: (t: T) => string, ms: number) {
-  const [leaving, setLeaving] = useState<Map<string, T>>(() => new Map());
-  const prev = useRef(items);
-
-  useEffect(() => {
-    const now = new Set(items.map(keyOf));
-    const removed = prev.current.filter((i) => !now.has(keyOf(i)));
-    prev.current = items;
-    if (!removed.length) return;
-    setLeaving((m) => new Map([...m, ...removed.map((r) => [keyOf(r), r] as const)]));
-    const t = setTimeout(() => {
-      setLeaving((m) => {
-        const next = new Map(m);
-        removed.forEach((r) => next.delete(keyOf(r)));
-        return next;
-      });
-    }, ms);
-    return () => clearTimeout(t);
-  }, [items, keyOf, ms]);
-
-  const present = new Set(items.map(keyOf));
-  return [
-    ...items.map((item) => ({ item, exiting: false })),
-    ...[...leaving.entries()]
-      .filter(([k]) => !present.has(k))
-      .map(([, item]) => ({ item, exiting: true })),
-  ];
-}
 
 const labelStyle: React.CSSProperties = {
   pointerEvents: 'none',
