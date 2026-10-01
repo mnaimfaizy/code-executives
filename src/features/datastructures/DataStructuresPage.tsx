@@ -129,7 +129,7 @@ const DataStructuresPage: React.FC = () => {
           'big o notation',
           'complexity analysis',
         ]}
-        canonicalUrl="https://code-executives.com/datastructures"
+        canonicalPath="/datastructures"
       />
       <div className="p-4 sm:p-6">
         <ErrorBoundary level="feature">

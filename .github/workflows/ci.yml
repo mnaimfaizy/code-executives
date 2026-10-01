@@ -160,6 +160,9 @@ jobs:
       - name: Run linter
         run: npm run lint
 
+      - name: Verify generated agent files match .agents/
+        run: npm run agents:check
+
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
@@ -260,6 +263,9 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Verify three.js stays out of the entry bundle
+        run: npm run check:3d-chunk
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
