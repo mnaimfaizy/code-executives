@@ -62,7 +62,7 @@ const DatabasePage: React.FC = () => {
           'Oracle',
           'query optimization',
         ]}
-        canonicalUrl="https://code-executives.com/database"
+        canonicalPath="/database"
       />
       <div className="p-4 sm:p-6">
         <ErrorBoundary level="feature">
