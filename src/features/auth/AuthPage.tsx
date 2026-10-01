@@ -59,7 +59,7 @@ const AuthPage: React.FC = () => {
           'bff pattern',
           'ai agent auth',
         ]}
-        canonicalUrl="https://code-executives.com/auth"
+        canonicalPath="/auth"
       />
       <div className="p-4 sm:p-6">
         <ErrorBoundary level="feature">

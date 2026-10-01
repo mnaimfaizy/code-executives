@@ -14,11 +14,16 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "agents:sync": "node scripts/sync-agents.mjs",
+    "agents:check": "node scripts/sync-agents.mjs --check",
+    "check:3d-chunk": "node .agents/skills/verify-viz/scripts/check-lazy-chunk.mjs"
   },
   "dependencies": {
     "@dr.pogodin/react-helmet": "3.2.2",
     "@monaco-editor/react": "4.7.0",
+    "@react-three/drei": "10.7.8",
+    "@react-three/fiber": "9.7.0",
     "@tailwindcss/vite": "4.3.0",
     "@xyflow/react": "12.10.2",
     "acorn": "8.16.0",
@@ -27,8 +32,9 @@
     "monaco-editor": "0.55.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
-    "react-router-dom": "7.15.1",
+    "react-router-dom": "7.18.4",
     "tailwindcss": "4.3.0",
+    "three": "0.186.0",
     "web-vitals": "5.2.0"
   },
   "devDependencies": {
@@ -39,11 +45,12 @@
     "@testing-library/user-event": "14.6.1",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
+    "@types/three": "0.186.0",
     "@typescript-eslint/eslint-plugin": "8.59.4",
     "@typescript-eslint/parser": "8.59.4",
     "@vitejs/plugin-react": "5.0.2",
-    "@vitest/coverage-v8": "4.1.7",
-    "@vitest/ui": "4.1.7",
+    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/ui": "4.1.11",
     "eslint": "9.39.4",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import": "2.32.0",
@@ -57,8 +64,8 @@
     "rollup-plugin-visualizer": "7.0.1",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.4",
-    "vite": "7.3.3",
-    "vitest": "4.1.7"
+    "vite": "7.3.6",
+    "vitest": "4.1.11"
   },
   "overrides": {
     "axios@0.30.4": "0.30.3",

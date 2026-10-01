@@ -72,7 +72,7 @@ const JavaScriptPage: React.FC = () => {
           'asynchronous javascript',
           'garbage collection',
         ]}
-        canonicalUrl="https://code-executives.com/javascript"
+        canonicalPath="/javascript"
       />
       <div className="p-4 sm:p-6">
         <ErrorBoundary level="feature">

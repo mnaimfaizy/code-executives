@@ -291,7 +291,6 @@ const baseModuleNavigationSections: Record<string, SidebarItem[]> = {
     { label: 'Interactive Playground', path: '/datastructures?section=playground' },
     { label: 'Real-World Applications', path: '/datastructures?section=Real-World%20Applications' },
     { label: 'Practice Problems', path: '/datastructures?section=Practice%20Problems' },
-    { label: '3D Visualizations', path: '/datastructures?section=3D%20Visualizations' },
   ],
   '/react': [
     { label: 'Introduction', path: '/react?section=Introduction' },

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Database, Cpu, Package, RefreshCw, LayoutList, ArrowRight, Lightbulb } from 'lucide-react';
 import TwoDLayout from '../../../../components/TwoDLayout';
+import StackHeapStory from './StackHeapStory';
 import MemoryHeap2D, { type MemoryHeap2DHandle } from '../visualizations/2d/MemoryHeap2D';
 import {
   instrumentCode,
@@ -415,6 +416,10 @@ const MemoryHeap: React.FC = () => {
             that memory, preventing leaks without manual intervention.
           </p>
         </div>
+      </div>
+
+      <div className="mb-4">
+        <StackHeapStory />
       </div>
 
       <div className="mt-2">

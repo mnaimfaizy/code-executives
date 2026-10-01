@@ -65,9 +65,6 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('three')) {
-              return 'vendor-three';
-            }
             if (id.includes('monaco-editor')) {
               return 'vendor-monaco';
             }
@@ -79,14 +76,6 @@ export default defineConfig({
             // The previous manual vendor splitting created circular chunk dependencies
             // that broke the production preview runtime.
             return undefined;
-          }
-
-          if (id.includes('/src/components/models3d/python/')) {
-            return 'python-3d';
-          }
-
-          if (id.includes('/src/components/models3d/')) {
-            return 'models-3d';
           }
 
           return undefined;
@@ -103,6 +92,5 @@ export default defineConfig({
   // Optimize dependencies
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', 'lucide-react'],
-    exclude: ['three'], // Three.js has its own optimization
   },
 });
