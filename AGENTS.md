@@ -30,6 +30,7 @@ After editing anything in `.agents/`, run `npm run agents:sync` and commit the g
 ### Code
 - Icon props are typed `LucideIcon`: R3F's global JSX types make a bare `React.ElementType` reject `className`.
 - Light mode only. Tailwind v4 can't see class names built at runtime (`bg-${color}-50`): write classes out literally or map them through a fixed object.
+- Browser support: use Baseline widely available web features directly; a newer feature needs a fallback. The `modern-web-guidance` skill (vendored, read its files, never run its npx CLI) has the patterns.
 - Tests sit next to the code as `*.test.ts(x)`.
 
 ### Modules, sections and navigation

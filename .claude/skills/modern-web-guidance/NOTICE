@@ -1,0 +1,17 @@
+Modern Web Guidance (vendored subset)
+
+Source:   https://github.com/GoogleChrome/modern-web-guidance
+Commit:   84ae7251ee919239d5ea85aef25897983f26601e (v0.0.191)
+Licence:  Apache License 2.0 (see LICENSE in this folder)
+Copyright: Google LLC and the modern-web-guidance contributors.
+
+Portions of the upstream guides derive from MDN Web Docs (Mozilla contributors)
+and the W3C, WHATWG and IETF specifications, per the upstream README.
+
+Changes made here:
+- Only the guides listed in SKILL.md were copied; the rest of the upstream repository,
+  the npx CLI, its search model and the plugin manifests are not included.
+- SKILL.md is written for this repository and replaces the upstream SKILL.md.
+- Guides whose first line is an HTML comment starting "Modified from" had their
+  `npx -y modern-web-guidance@latest retrieve "<id>"` cross-references replaced with
+  plain guide ids. All other guide files are unmodified copies.
