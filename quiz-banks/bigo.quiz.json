@@ -576,7 +576,7 @@
       "id": "bigo-q22",
       "type": "multi-select",
       "difficulty": "expert",
-      "scenario": "The interactive playground is showing several code patterns, and you need to identify the ones that are logarithmic in n.",
+      "scenario": "During a code review, a teammate lists several recurring code patterns from the service, and you need to identify the ones that are logarithmic in n.",
       "prompt": "Which patterns have logarithmic time complexity with respect to n?",
       "options": [
         "Repeatedly halve n until it becomes 1",
@@ -593,11 +593,11 @@
       "explanation": "Halving loops, binary search, and heap insertion all grow logarithmically with input size. A full scan is linear, and merge sort over an entire array is O(n log n).",
       "tags": [
         "logarithmic-time",
-        "interactive-playground",
+        "code-review",
         "patterns"
       ],
       "references": [
-        "Interactive Playground",
+        "Practice Challenges",
         "Common Complexities"
       ]
     },
@@ -605,7 +605,7 @@
       "id": "bigo-q23",
       "type": "ordering",
       "difficulty": "expert",
-      "scenario": "A retrospective is documenting why append-heavy behavior in a dynamic array still scales well in the interactive playground.",
+      "scenario": "A retrospective is documenting why append-heavy behavior in a dynamic array still scales well in a high-volume event buffer.",
       "prompt": "Order the reasoning steps that justify O(1) amortized append time.",
       "items": [
         "Conclude the average append cost is O(1) amortized",
@@ -629,7 +629,7 @@
       ],
       "references": [
         "Advanced Concepts",
-        "Interactive Playground"
+        "Practice Challenges"
       ]
     },
     {
@@ -735,7 +735,7 @@
       ],
       "references": [
         "Algorithm Analysis",
-        "Interactive Playground"
+        "Practice Challenges"
       ]
     },
     {

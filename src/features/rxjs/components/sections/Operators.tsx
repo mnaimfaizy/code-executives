@@ -96,10 +96,10 @@ result$.subscribe(console.log);
           </div>
         </div>
 
-        {/* Interactive Operators Playground */}
+        {/* Interactive Operators Visualization */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Interactive Operators Playground
+            Interactive Operators Visualization
           </h2>
           <Operators2D />
         </div>

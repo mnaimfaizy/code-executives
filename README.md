@@ -4,7 +4,7 @@
 
 **🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 15 complete learning modules with 96+ interactive visualizations, root-level scenario quiz banks for every module, shared timed quizzes with local progress tracking, and a LeetCode-style playground with advanced debugging and gamification.**
+**✨ Now featuring 15 complete learning modules with 96+ interactive visualizations, root-level scenario quiz banks for every module, shared timed quizzes with local progress tracking, and a Playground where learners run their own code and step through what it did.**
 
 > **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
 
@@ -25,7 +25,7 @@
 - **Auth & Security**: Modern authentication and authorization — OAuth 2.0, OIDC, PKCE, WebAuthn/Passkeys, Zero Trust, BFF Pattern, and AI agent authentication
 - **Backend Architecture**: Architecture patterns (Monolithic, Layered, Microservices, Event-Driven, Hexagonal), resilience patterns (Circuit Breaker, Sidecar, Saga), API design (REST, GraphQL, gRPC), CAP theorem, ACID vs BASE, real-time communication, observability, and the complete request lifecycle
 - **Shared Timed Module Quizzes**: Every learning module ends with a 5-question, 10-minute scenario quiz backed by a root-level JSON bank and localStorage result history
-- **LeetCode-Style Playground**: Interactive coding environment with debugging, visualizations, and gamification
+- **Playground**: One standalone page (`/playground`) with a code editor, a step-by-step trace of the run, and a console
 
 ### 🎮 **Interactive Visualizations**
 
@@ -36,17 +36,15 @@
 - **Step-by-Step Guidance**: Progressive learning with animated tutorials
 - **Debug Visualizations**: Live data structure state during code execution
 
-### 🎯 **Coding Playground**
+### 🎯 **Playground**
 
-- **Multi-Language Support**: JavaScript, TypeScript, and Python execution with Monaco editor
-- **AST-Based Instrumentation**: Acorn/Astring pipeline injects tracing into JS/TS; `sys.settrace` wrapper for Python via Pyodide (WASM)
-- **Timeline Player**: Step through snapshots, inspect variables and call stack at each execution point
-- **Visualization Lenses**: Pluggable React Flow canvases — Array, LinkedList, Stack, Queue, HashTable with live state updates
-- **Sandboxed Execution**: CSP-locked iframe with no network access; blocked `eval`, `XMLHttpRequest`, `fetch`, `WebSocket`
-- **Space-Themed Dark UI**: Standalone layout with animated starfield canvas, scoped dark theme
-- **Example Snippets**: Curated per-language examples with pre-selected visualization lenses
-- **Keyboard Shortcuts**: F10 (step), F5 (continue/pause), F11 (reset), Space (pause/resume)
-- **Rate-Limited Output**: Console entries capped at 500, oversized strings truncated to 50 KB
+There is one Playground, at `/playground` (`src/features/playground/`). It is where a learner runs their own code and steps through the trace of that run. See [Playground (in progress)](#-playground-in-progress) below for details.
+
+- **Editor**: Monaco, with JavaScript, TypeScript and Python selectable
+- **Trace**: The run is recorded as steps; step controls show the line, the call stack and the variables at each step
+- **Console**: What the code printed, in order
+- **Lenses**: Event Loop, Heap & Stack, Data Structures and Streams
+- **Examples**: Prebuilt code per language, each with a suggested lens
 
 ### 🧠 **Timed Module Quizzes**
 
@@ -77,7 +75,7 @@
 - **Code Editor**: Monaco Editor (`@monaco-editor/react`) for the Playground
 - **AST Tooling**: Acorn + Astring for JS/TS instrumentation
 - **Python Runtime**: Pyodide (WASM) for in-browser Python execution
-- **Graph Visualization**: @xyflow/react (React Flow) for data-structure lenses
+- **Graph Visualization**: @xyflow/react (React Flow) for the Playground's lenses
 
 ### **Visualization Technologies**
 
@@ -100,23 +98,16 @@ src/
 │   │   │   ├── hash/    # HashTable visualization
 │   │   ├── bigo/        # Big-O notation visualizations (10+ components)
 │   │   └── python/      # Python programming visualizations
-│   ├── playground/      # LeetCode-style playground components
-│   │   ├── Playground.tsx          # Main playground component
-│   │   ├── ProblemDisplay.tsx      # Problem statement and examples
-│   │   ├── CodeEditor.tsx          # Monaco-based code editor
-│   │   ├── VisualizationSelector.tsx # Data structure selection
-│   │   ├── TestRunner.tsx          # Test case execution
-│   │   ├── PerformanceAnalyzer.tsx # Big-O analysis
-│   │   ├── ExecutionEngine.tsx     # Advanced debugging engine
-│   │   └── ScoringSystem.tsx       # Gamification system
 │   └── shared/          # Shared UI components
+├── features/
+│   └── playground/      # The Playground (standalone /playground route)
 ├── pages/               # Main application pages
 │   ├── NextjsPage.tsx   # Next.js tutorial page
 │   ├── GitPage.tsx      # Git tutorial page
 │   ├── JavaScriptPage.tsx
 │   ├── RxJSPage.tsx
-│   ├── DataStructuresPage.tsx # Data structures module with playground
-│   ├── BigOPage.tsx     # Big-O notation module with playground
+│   ├── DataStructuresPage.tsx # Data structures module
+│   ├── BigOPage.tsx     # Big-O notation module
 │   └── PythonPage.tsx   # Python programming module
 ├── sections/            # Educational content sections
 │   ├── nextjs/          # Next.js learning modules (7 sections)
@@ -139,15 +130,12 @@ src/
 │   ├── datastructures.ts # Data structures type definitions
 │   ├── bigo.ts         # Big-O notation type definitions
 │   ├── python.ts       # Python programming type definitions
-│   ├── playground.ts   # Playground type definitions
 │   └── quiz.ts         # Shared quiz schema and result types
 ├── utils/              # Utility functions
 │   ├── instrument.ts   # Code instrumentation for debugging
 │   ├── memoryMonitor.ts # Performance monitoring
 │   ├── quiz.ts         # Quiz loading, scoring, and answer utilities
 │   └── theme.ts        # Theme and styling utilities
-├── data/               # Static data and problem sets
-│   └── problems.ts     # LeetCode-style coding problems
 ```
 
 ### Quiz Bank Naming
@@ -378,10 +366,6 @@ Comprehensive DevOps and cloud computing module with 6 interactive visualization
 - **Modern Dev Roles**: Frontend cloud developer, backend serverless developer, DevOps/platform engineer, SRE roles, DevSecOps practices, and career paths
 - **Observability**: Three pillars (metrics, logs, traces) with interactive exploration, alerting best practices, incident management, DORA metrics, and future trends
 
-### 🎯 **Coding Playground (Complete)**
-
-Multi-language coding environment with AST-based instrumentation and live data-structure visualizations:
-
 ### 🏛️ **Backend Architecture (Complete)**
 
 Comprehensive backend architecture module with 6+ interactive visualizations covering the full backend stack:
@@ -410,16 +394,21 @@ Comprehensive database internals module with 7 interactive visualizations coveri
 - **Oracle vs PostgreSQL**: SGA vs shared_buffers, process models, MVCC Undo/Redo vs dead tuples, commit flow comparison with interactive MVCC visualization
 - **Visualization Hub**: 7 interactive visualizations — Database Taxonomy, Query Lifecycle, B-Tree Index, Buffer Manager, ACID Transactions, MVCC Comparison, ER Diagram Builder
 
-- **Multi-Language Execution**: JavaScript, TypeScript (transpiled), and Python (Pyodide WASM) — all in-browser, no server
-- **AST Instrumentation**: Acorn/Astring pipeline injects `__snapshot()` calls around every statement; Python uses `sys.settrace` wrapper with base64-encoded source
-- **Timeline Player**: Step forward/backward through execution snapshots, inspect variables and call stack at each point
-- **Visualization Lenses**: Pluggable React Flow canvases for Array, LinkedList, Stack, Queue, and HashTable — select the lens matching your algorithm
-- **Sandboxed Iframe**: CSP `default-src 'none'; script-src 'unsafe-inline'`; blocked network APIs (`fetch`, `XMLHttpRequest`, `WebSocket`); 10-second execution timeout
-- **Space-Themed Dark UI**: Standalone layout (no Header/Footer/Sidebar), animated starfield canvas, dark theme scoped via `.playground-dark` class
-- **Example Snippets**: Per-language curated examples with pre-selected visualization lenses
-- **Keyboard Shortcuts**: F10 (step), F5 (continue/pause), F11 (reset), Space (pause/resume)
-- **Security Hardening**: HTML entity escaping, prototype-pollution defense, recursive-depth limits, rate-limited console output (500 entries, 50 KB max string)
-- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for adding lenses, languages, and snippets
+### 🎯 **Playground (in progress)**
+
+The Playground is the one place where a learner runs their own code and watches what it does. It is a standalone page at `/playground`, with its own layout (no Header/Footer/Sidebar), and lives in `src/features/playground/`. No module has a playground of its own.
+
+Its visualizations are being rebuilt on the same 2D/3D views the stories use, as decided in [ADR 0004](docs/adr/0004-playground-traces-share-the-snapshot.md); until then the lenses show only part of what a run does.
+
+- **Editor**: Monaco, with JavaScript, TypeScript and Python selectable
+- **Running code**: Everything runs in the browser. JavaScript and TypeScript go to a sandboxed iframe (`sandbox="allow-scripts"`, a CSP with `default-src 'none'`, network APIs blocked); Python goes to Pyodide (WASM). A run times out after 10 seconds
+- **Trace**: The code is instrumented before it runs (Acorn/Astring for JavaScript, `sys.settrace` for Python) so that the run is recorded as a trace: one step per statement, with the line, the call stack and the variables
+- **Step controls**: Move forward and backward through the steps or play them; Left/Right arrows step, Space plays or pauses, Home/End jump to the first or last step
+- **Console**: What the code printed, capped at 500 entries of at most 10 KB each, HTML-escaped before rendering
+- **Lenses**: Event Loop, Heap & Stack, Data Structures and Streams, drawn with React Flow today
+- **Examples**: Prebuilt code per language, each with a suggested lens
+- **Dark theme**: The Playground is the site's only dark page; its styles are scoped under `data-theme="playground"`
+- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for the current structure, lenses, languages and examples
 
 ## 🛠️ Development
 
@@ -486,7 +475,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **React** team for the amazing framework ecosystem
 - **Vite** for lightning-fast development experience
 - **Tailwind CSS** for utility-first styling approach
-- **Monaco Editor** for the professional code editing experience in the playground
+- **Monaco Editor** for the code editor in the Playground
 - **Vercel** for hosting and deployment platform
 - **Open Source Community** for the tools and libraries that make this possible
 
@@ -496,13 +485,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 💬 **Discussions**: Join community discussions for questions and ideas
 - 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
 - 🎓 **Learning Modules**: 16 complete interactive modules with 103+ visualizations
-- 🎯 **Playground**: LeetCode-style coding environment with debugging and gamification
+- 🎯 **Playground**: Run your own JavaScript, TypeScript or Python and step through the trace at `/playground`
 
 ---
 
 **Built with ❤️ for developers, by developers**
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, Python Programming, and AI Fundamentals modules. Practice algorithms with our LeetCode-style playground featuring advanced debugging, real-time visualizations, and gamification._
+_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, Python Programming, and AI Fundamentals modules. Run your own code in the Playground and step through what it did._
 
 ## Visualization Architecture
 

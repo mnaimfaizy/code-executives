@@ -4,6 +4,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import CTASection from '../../../../components/shared/CTASection';
+import { createNavCardClass } from '../../../../utils/theme';
 import { AlgorithmComparer, PerformanceProfiler } from '../visualizations/2d/interactive';
 import {
   TeleporterMetaphor,
@@ -201,12 +202,19 @@ const Introduction: React.FC = () => {
         </ThemeCard>
 
         <ThemeCard>
-          <NavigationCard
-            title="Interactive Playground"
-            description="Solve LeetCode-style problems with real-time visualizations and performance analysis."
-            colorScheme="purple"
-            onClick={() => (window.location.href = '/bigo?section=playground')}
-          />
+          <a
+            href="/playground"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${createNavCardClass('purple')} block w-full text-left group`}
+          >
+            <h4 className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
+              Playground
+            </h4>
+            <p className="text-xs text-gray-600 mt-1">
+              Run your own code and step through it, one line at a time. Opens in a new tab.
+            </p>
+          </a>
         </ThemeCard>
       </div>
 

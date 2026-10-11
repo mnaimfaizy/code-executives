@@ -206,7 +206,7 @@ const Observables: React.FC = () => {
         {/* Interactive Observable Visualization */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Interactive Observable Playground
+            Interactive Observable Visualization
           </h2>
           <Observable2D />
         </div>
