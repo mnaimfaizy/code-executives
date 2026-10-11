@@ -1,19 +1,19 @@
 ---
-name: step-model
-description: "The step-model contract behind every Code Executives story and scenario visualization: spec formats, step snapshot schema, shot vocabulary, and tests. Use when writing a story spec, encoding a step model, or rendering one in 2D or 3D."
+name: beat-model
+description: "The beat-model contract behind every Code Executives story and scenario visualization: spec formats, beat snapshot schema, shot vocabulary, and tests. Use when writing a story spec, encoding a beat model, or rendering one in 2D or 3D."
 ---
 
-A **step model** is the single source of a story visualization: pure data, one **snapshot** per beat. The 2D view and the 3D view are two renderers of the same step; switching views mid-story keeps the step. Reference implementation: `src/features/javascript/utils/stackHeapStory.ts` and its test.
+A **beat model** is the single source of a story visualization: pure data, one **snapshot** per beat. The 2D view and the 3D view are two renderers of the same beat; switching views mid-story keeps the beat. Reference implementation: `src/features/javascript/utils/stackHeapStory.ts` and its test.
 
 ## The contract
 
 A story module `src/features/<module>/utils/<storyId>Story.ts` exports:
 
 - `STORY_CODE: string`: the snippet the beats walk through.
-- `STORY_STEPS: StoryStep[]`: 8–12 steps, in order.
-- Pure helpers the views and tests share (e.g. `getReferences(step)`, `getReachable(step)`, `isFocused(step, key)`). Derived facts come from helpers, never from hand-written duplicate fields.
+- `STORY_BEATS: StoryBeat[]`: 8–12 beats, in order.
+- Pure helpers the views and tests share (e.g. `getReferences(beat)`, `getReachable(beat)`, `isFocused(beat, key)`). Derived facts come from helpers, never from hand-written duplicate fields.
 
-Every `StoryStep` carries these base fields, plus the story's own entity arrays (frames, objects, requests, commits…):
+Every `StoryBeat` carries these base fields, plus the story's own entity arrays (frames, objects, requests, commits…):
 
 | Field | Meaning |
 |---|---|
@@ -27,9 +27,9 @@ Every `StoryStep` carries these base fields, plus the story's own entity arrays 
 
 Rules that make the model render cleanly:
 
-- **Full snapshot per step.** Every step lists every entity present at that beat; stepping backwards is just rendering an earlier step.
-- **Stable identity.** An entity keeps its `id` across steps; views animate enter/exit by id.
-- **Stable placement.** Each entity carries a layout cell (e.g. `cell: { col, row }`) that both views use, so an entity never jumps between steps. Keep it on a small grid (≤ 4×3 per region); larger grids crowd labels in both views.
+- **Full snapshot per beat.** Every beat lists every entity present at that moment; stepping backwards is just rendering an earlier beat.
+- **Stable identity.** An entity keeps its `id` across beats; views animate enter/exit by id.
+- **Stable placement.** Each entity carries a layout cell (e.g. `cell: { col, row }`) that both views use, so an entity never jumps between beats. Keep it on a small grid (≤ 4×3 per region); larger grids crowd labels in both views.
 - **State as data.** Lifecycle changes are an explicit `state` field (`live`, `marked`, `collected`…), never implied by absence, so both views can animate them.
 
 ## Shot vocabulary
@@ -39,12 +39,12 @@ Rules that make the model render cleanly:
 ## Tests (`<storyId>Story.test.ts`)
 
 - Exactly the spec's beat count; unique ids.
-- Per step: `line` within the code; every reference target exists; every `focus` key exists; no two entities share a cell.
+- Per beat: `line` within the code; every reference target exists; every `focus` key exists; no two entities share a cell.
 - One test per aha beat that proves its claim from the data through the helpers (e.g. "Bob is reachable after `bob = null`" via `getReachable`).
 
 ## Scenarios
 
-A **scenario** is a story that follows a whole workplace workflow, with a cast, a timeline and choice points ([ADR 0003](../../../docs/adr/0003-scenarios-with-choice-points.md), terms in `CONTEXT.md`). Everything above still applies to each beat; these rules replace the single `STORY_STEPS` list.
+A **scenario** is a story that follows a whole workplace workflow, with a cast, a timeline and choice points ([ADR 0003](../../../docs/adr/0003-scenarios-with-choice-points.md), terms in `CONTEXT.md`). Everything above still applies to each beat; these rules replace the single `STORY_BEATS` list.
 
 A scenario module `src/features/<module>/utils/<scenarioId>Scenario.ts` exports:
 
@@ -70,4 +70,4 @@ Tests (`<scenarioId>Scenario.test.ts`), in place of the story tests:
 
 - Writing a story spec: [spec-template.md](spec-template.md)
 - Writing a scenario spec: [scenario-spec-template.md](scenario-spec-template.md)
-- Encoding a step model: [model-template.md](model-template.md)
+- Encoding a beat model: [model-template.md](model-template.md)

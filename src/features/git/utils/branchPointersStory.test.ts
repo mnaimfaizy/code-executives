@@ -10,30 +10,30 @@ import {
   reachabilityState,
   resolveHead,
   STORY_CODE,
-  STORY_STEPS,
+  STORY_BEATS,
   slotKey,
-  type StoryStep,
+  type StoryBeat,
 } from './branchPointersStory';
 
-const step = (id: string) => STORY_STEPS.find((s) => s.id === id)!;
-const prev = (id: string) => STORY_STEPS[STORY_STEPS.findIndex((s) => s.id === id) - 1];
+const beat = (id: string) => STORY_BEATS.find((s) => s.id === id)!;
+const prev = (id: string) => STORY_BEATS[STORY_BEATS.findIndex((s) => s.id === id) - 1];
 const codeLines = STORY_CODE.split('\n').length;
 const words = (text: string) => text.trim().split(/\s+/).length;
-const branchTargets = (s: StoryStep) =>
+const branchTargets = (s: StoryBeat) =>
   Object.fromEntries(getBranches(s).map((b) => [b.id, b.target]));
 
 describe('branch pointers story model', () => {
   it('tells the approved 12 beats', () => {
-    expect(STORY_STEPS).toHaveLength(12);
-    expect(new Set(STORY_STEPS.map((s) => s.id)).size).toBe(12);
+    expect(STORY_BEATS).toHaveLength(12);
+    expect(new Set(STORY_BEATS.map((s) => s.id)).size).toBe(12);
   });
 
   it('uses copy-pasteable 4-character SHAs in the code', () => {
     expect(STORY_CODE).toContain('git switch --detach b2c4');
-    for (const s of STORY_STEPS) for (const c of s.commits) expect(c.id).toMatch(/^[0-9a-f]{4}$/);
+    for (const s of STORY_BEATS) for (const c of s.commits) expect(c.id).toMatch(/^[0-9a-f]{4}$/);
   });
 
-  it.each(STORY_STEPS)('$id is internally consistent', (s) => {
+  it.each(STORY_BEATS)('$id is internally consistent', (s) => {
     expect(s.line).toBeGreaterThanOrEqual(1);
     expect(s.line).toBeLessThanOrEqual(codeLines);
     expect(words(s.title)).toBeLessThanOrEqual(8);
@@ -74,9 +74,9 @@ describe('branch pointers story model', () => {
     expect(getRef(s, 'head-reflog')!.entries[0].commit).toBe(resolveHead(s));
   });
 
-  it('keeps every entity identical in identity and placement across steps', () => {
+  it('keeps every entity identical in identity and placement across beats', () => {
     const seen = new Map<string, string>();
-    for (const s of STORY_STEPS) {
+    for (const s of STORY_BEATS) {
       for (const c of s.commits) {
         const sig = JSON.stringify([c.message, c.parents, c.cell]);
         expect(seen.get(c.id) ?? sig).toBe(sig);
@@ -91,7 +91,7 @@ describe('branch pointers story model', () => {
   });
 
   it('derives every commit state from reachability', () => {
-    for (const s of STORY_STEPS)
+    for (const s of STORY_BEATS)
       for (const c of s.commits)
         if (c.state === 'collected')
           expect(getReachable(s, { includeReflog: true }).has(c.id)).toBe(false);
@@ -100,7 +100,7 @@ describe('branch pointers story model', () => {
 
   it('#2 creating a branch adds one pointer and leaves the graph unchanged', () => {
     const before = prev('branch-is-a-label');
-    const s = step('branch-is-a-label');
+    const s = beat('branch-is-a-label');
     expect(s.commits).toEqual(before.commits);
     expect(getBranches(before).map((b) => b.id)).toEqual(['main']);
     expect(branchTargets(s)).toEqual({ main: 'b2c4', feature: 'b2c4' });
@@ -109,8 +109,8 @@ describe('branch pointers story model', () => {
   });
 
   it('#3 committing moves only the branch HEAD names', () => {
-    const before = step('branch-is-a-label');
-    const s = step('only-head-branch-moves');
+    const before = beat('branch-is-a-label');
+    const s = beat('only-head-branch-moves');
     const moved = getBranches(s)
       .filter((b) => branchTargets(before)[b.id] !== b.target)
       .map((b) => b.id);
@@ -121,9 +121,9 @@ describe('branch pointers story model', () => {
   });
 
   it('only ever moves the HEAD-named branch, and never while detached', () => {
-    for (let i = 1; i < STORY_STEPS.length; i++) {
-      const a = STORY_STEPS[i - 1];
-      const b = STORY_STEPS[i];
+    for (let i = 1; i < STORY_BEATS.length; i++) {
+      const a = STORY_BEATS[i - 1];
+      const b = STORY_BEATS[i];
       for (const br of getBranches(b)) {
         const was = branchTargets(a)[br.id];
         if (was !== undefined && was !== br.target) expect(getHeadBranch(a)).toBe(br.id);
@@ -132,34 +132,34 @@ describe('branch pointers story model', () => {
   });
 
   it('points a detached HEAD straight at a commit, not a branch card', () => {
-    const s = step('detached-head');
+    const s = beat('detached-head');
     const head = getReferences(s).find((r) => r.id === 'HEAD.target')!;
     expect(head).toMatchObject({ to: 'b2c4', toKind: 'commit' });
     expect(headFileText(s)).toBe('b2c4');
-    const onBranch = getReferences(step('switch-back')).find((r) => r.id === 'HEAD.target')!;
+    const onBranch = getReferences(beat('switch-back')).find((r) => r.id === 'HEAD.target')!;
     expect(onBranch).toMatchObject({ to: 'main', toKind: 'ref' });
   });
 
   it('#10 keeps f6b1 reachable only through the reflog after switching away', () => {
-    const s = step('orphaned-commit');
+    const s = beat('orphaned-commit');
     const pointsAtF6 = getReferences(s).filter((r) => r.to === 'f6b1');
     expect(pointsAtF6).toEqual([]);
     expect(getReachable(s).has('f6b1')).toBe(false);
     expect(getReflogCommits(s)).toContain('f6b1');
     expect(getReachable(s, { includeReflog: true }).has('f6b1')).toBe(true);
     // One beat earlier, HEAD alone kept it alive.
-    expect(getReachable(step('detached-commit')).has('f6b1')).toBe(true);
+    expect(getReachable(beat('detached-commit')).has('f6b1')).toBe(true);
   });
 
   it('#11 leaves f6b1 unreachable once the reflog entry expires', () => {
-    const s = step('reflog-expired');
+    const s = beat('reflog-expired');
     expect(getReflogCommits(s)).not.toContain('f6b1');
     expect(getReachable(s, { includeReflog: true }).has('f6b1')).toBe(false);
     expect(reachabilityState(s, 'f6b1')).toBe('unreachable');
   });
 
   it('#12 collects f6b1 while a branch still reaches every other commit', () => {
-    const s = step('gc-collects');
+    const s = beat('gc-collects');
     expect(s.commits.find((c) => c.id === 'f6b1')!.state).toBe('collected');
     const fromBranches = new Set<string>();
     for (const b of getBranches(s)) {

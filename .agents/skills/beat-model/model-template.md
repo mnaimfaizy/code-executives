@@ -1,10 +1,10 @@
-# Step model template
+# Beat model template
 
 Skeleton for `src/features/<module>/utils/<storyId>Story.ts`. Rename the entity types to the story's literal concepts. Compare with `src/features/javascript/utils/stackHeapStory.ts`.
 
 ```ts
 /**
- * <Story title>: one step model, rendered by both the 2D (SVG) and 3D (R3F) views.
+ * <Story title>: one beat model, rendered by both the 2D (SVG) and 3D (R3F) views.
  * Spec: docs/stories/<module>/<story-id>.md
  */
 
@@ -24,7 +24,7 @@ export interface Entity {
   cell: { col: number; row: number };
 }
 
-export interface StoryStep {
+export interface StoryBeat {
   id: string;
   title: string;
   caption: string;
@@ -39,10 +39,10 @@ export const STORY_CODE = `...`;
 
 export const slotKey = (owner: string, slot: string) => `${owner}.${slot}`;
 
-// Small factories keep snapshots short and identical across steps.
+// Small factories keep snapshots short and identical across beats.
 const entity = (id: string, label: string, slots: Slot[], cell: Entity['cell'], state: Entity['state'] = 'live'): Entity => ({ id, label, slots, cell, state });
 
-export const STORY_STEPS: StoryStep[] = [
+export const STORY_BEATS: StoryBeat[] = [
   {
     id: 'start',
     title: '...',
@@ -55,28 +55,28 @@ export const STORY_STEPS: StoryStep[] = [
 ];
 
 // Pure helpers shared by views and tests: derive facts, never store them twice.
-export const isFocused = (step: StoryStep, key: string) => step.focus.includes(key);
+export const isFocused = (beat: StoryBeat, key: string) => beat.focus.includes(key);
 ```
 
 Test skeleton, `<storyId>Story.test.ts`:
 
 ```ts
 import { describe, expect, it } from 'vitest';
-import { STORY_CODE, STORY_STEPS } from './<storyId>Story';
+import { STORY_CODE, STORY_BEATS } from './<storyId>Story';
 
 describe('<story> model', () => {
   it('tells the approved <n> beats', () => {
-    expect(STORY_STEPS).toHaveLength(<n>);
-    expect(new Set(STORY_STEPS.map((s) => s.id)).size).toBe(<n>);
+    expect(STORY_BEATS).toHaveLength(<n>);
+    expect(new Set(STORY_BEATS.map((b) => b.id)).size).toBe(<n>);
   });
 
-  it.each(STORY_STEPS)('$id is internally consistent', (s) => {
-    expect(s.line).toBeLessThanOrEqual(STORY_CODE.split('\n').length);
+  it.each(STORY_BEATS)('$id is internally consistent', (b) => {
+    expect(b.line).toBeLessThanOrEqual(STORY_CODE.split('\n').length);
     // every ref target exists, every focus key exists, no shared cells
   });
 
   it('<aha beat claim, proven through a helper>', () => {
-    // e.g. expect(getReachable(step('bob-null'))).toContain('bob');
+    // e.g. expect(getReachable(beat('bob-null'))).toContain('bob');
   });
 });
 ```

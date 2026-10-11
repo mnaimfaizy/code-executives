@@ -1,7 +1,7 @@
 /**
- * Stack & Heap story: one step model, rendered by both the 2D (SVG) and 3D (R3F) views.
+ * Stack & Heap story: one beat model, rendered by both the 2D (SVG) and 3D (R3F) views.
  *
- * Every step is a full snapshot, so stepping backwards is free and switching views
+ * Every beat is a full snapshot, so stepping backwards is free and switching views
  * mid-story keeps the learner on the same beat.
  */
 
@@ -37,7 +37,7 @@ export interface HeapObject {
 
 export type GcPhase = 'mark' | 'sweep';
 
-export interface StoryStep {
+export interface StoryBeat {
   id: string;
   title: string;
   caption: string;
@@ -147,7 +147,7 @@ const allObjects = (state: HeapObjectState) => [
   bobFriends(state),
 ];
 
-export const STORY_STEPS: StoryStep[] = [
+export const STORY_BEATS: StoryBeat[] = [
   {
     id: 'start',
     title: 'The program starts',
@@ -285,10 +285,10 @@ export const STORY_STEPS: StoryStep[] = [
   },
 ];
 
-/** Every reference edge in a step, from stack slots and from heap object slots. */
-export function getReferences(step: StoryStep): Reference[] {
+/** Every reference edge in a beat, from stack slots and from heap object slots. */
+export function getReferences(beat: StoryBeat): Reference[] {
   const refs: Reference[] = [];
-  for (const frame of step.frames) {
+  for (const frame of beat.frames) {
     for (const slot of frame.slots) {
       if (slot.refId) {
         const from = slotKey(frame.id, slot.name);
@@ -296,7 +296,7 @@ export function getReferences(step: StoryStep): Reference[] {
       }
     }
   }
-  for (const object of step.objects) {
+  for (const object of beat.objects) {
     if (object.state === 'collected') continue;
     for (const slot of object.slots) {
       if (slot.refId) {
@@ -309,8 +309,8 @@ export function getReferences(step: StoryStep): Reference[] {
 }
 
 /** Object ids reachable from the roots (every stack frame), following references. */
-export function getReachable(step: StoryStep): Set<string> {
-  const refs = getReferences(step);
+export function getReachable(beat: StoryBeat): Set<string> {
+  const refs = getReferences(beat);
   const reached = new Set<string>();
   const queue = refs.filter((r) => r.fromKind === 'frame').map((r) => r.to);
   while (queue.length) {
@@ -322,7 +322,7 @@ export function getReachable(step: StoryStep): Set<string> {
   return reached;
 }
 
-export const isFocused = (step: StoryStep, key: string) => step.focus.includes(key);
+export const isFocused = (beat: StoryBeat, key: string) => beat.focus.includes(key);
 
 /** An edge is spotlighted when its source slot is in focus. */
-export const isRefFocused = (step: StoryStep, ref: Reference) => step.focus.includes(ref.from);
+export const isRefFocused = (beat: StoryBeat, ref: Reference) => beat.focus.includes(ref.from);

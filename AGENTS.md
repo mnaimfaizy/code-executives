@@ -21,7 +21,7 @@ After editing anything in `.agents/`, run `npm run agents:sync` and commit the g
 - Keep the Axios guardrails in `package.json` `overrides`. Workflow actions are pinned to full commit SHAs with minimal `permissions`.
 
 ### Visualizations
-- New visualizations are **stories**: one step model (`src/features/<module>/utils/<storyId>Story.ts`, pure data, tested) rendered by a 2D view and, optionally, a 3D view. Both views render the same step; 2D is the default.
+- New visualizations are **stories**: one beat model (`src/features/<module>/utils/<storyId>Story.ts`, pure data, tested) rendered by a 2D view and, optionally, a 3D view. Both views render the same beat; 2D is the default.
 - Literal, not metaphor: draw the concept itself (frames, objects, requests), never everyday stand-ins.
 - A **scenario** is a story that follows a whole workplace workflow, with a cast, a timeline and up to 2 choice points whose paths never rejoin ([ADR 0003](docs/adr/0003-scenarios-with-choice-points.md)). Scenarios live in the module's Visualization page, deep-linked with `?scenario=<id>`. Terms are defined in [CONTEXT.md](CONTEXT.md).
 - 3D follows [docs/3D-Visualization-Standard.md](docs/3D-Visualization-Standard.md). three.js is imported only from a `React.lazy` renderer and never reaches the entry bundle; `manualChunks` has no rule for it.
@@ -55,12 +55,12 @@ The session you talk to is the **architect**: it analyzes, plans, decides, and d
 
 | Specialist | Owns |
 |---|---|
-| `viz-story-writer` | Story or scenario spec (`docs/stories/<module>/<id>.md`), then the step model and its tests |
+| `viz-story-writer` | Story or scenario spec (`docs/stories/<module>/<id>.md`), then the beat model and its tests |
 | `viz-2d-builder` | SVG renderer and the story section shell with the 2D/3D toggle |
 | `viz-3d-builder` | The lazy R3F renderer, wired into the toggle |
 | `module-quiz-generator` | `quiz-banks/<module>.quiz.json` |
 
-Story pipeline: story writer (spec) → **owner approves the spec** → story writer (step model) → 2D builder → 3D builder. The architect stops at the approval gate every time.
+Story pipeline: story writer (spec) → **owner approves the spec** → story writer (beat model) → 2D builder → 3D builder. The architect stops at the approval gate every time.
 
 When dispatching a specialist, give it the module, section, story id, and the files it may touch. Each specialist returns a report of ≤ 200 words: files touched, checks run with pass/fail, open issues. Read the diff only when the report raises a doubt. Specialists work within installed dependencies; adding one is the architect's call, with the owner's approval.
 

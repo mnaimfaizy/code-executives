@@ -22,7 +22,7 @@ Renderers tag their DOM so the checks can find it:
 2. `npm run lint` passes.
 3. `npx vitest run <story model test> <section test>` passes.
 4. Browser: open the section, step through **every** beat in 2D, and run [label-overlap.js](scripts/label-overlap.js) → every beat `ok`.
-5. Browser: toggle 2D ↔ 3D (or the disabled placeholder) mid-story; the step number is unchanged.
+5. Browser: toggle 2D ↔ 3D (or the disabled placeholder) mid-story; the beat number is unchanged.
 
 ## 3D checklist
 

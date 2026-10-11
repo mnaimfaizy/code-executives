@@ -7,11 +7,11 @@ import {
   type HeapObject,
   type Reference,
   type StackFrame,
-  type StoryStep,
+  type StoryBeat,
 } from '../../../utils/stackHeapStory';
 
 interface StackHeap2DProps {
-  step: StoryStep;
+  beat: StoryBeat;
 }
 
 const W = 800;
@@ -82,16 +82,16 @@ const slotY = (box: Box, index: number) => box.y + FRAME_HEADER + index * ROW_H 
 
 function refPath(
   ref: Reference,
-  step: StoryStep,
+  beat: StoryBeat,
   frames: Map<string, Box>,
   objects: Map<string, Box>
 ): string | null {
   const target = objects.get(ref.to);
-  const targetObj = step.objects.find((o) => o.id === ref.to);
+  const targetObj = beat.objects.find((o) => o.id === ref.to);
   const owner =
     ref.fromKind === 'frame'
-      ? step.frames.find((f) => f.id === ref.fromOwner)
-      : step.objects.find((o) => o.id === ref.fromOwner);
+      ? beat.frames.find((f) => f.id === ref.fromOwner)
+      : beat.objects.find((o) => o.id === ref.fromOwner);
   const ownerBox =
     ref.fromKind === 'frame' ? frames.get(ref.fromOwner) : objects.get(ref.fromOwner);
   if (!target || !targetObj || !owner || !ownerBox) return null;
@@ -101,7 +101,7 @@ function refPath(
   const ty = target.y + FRAME_HEADER / 2;
 
   if (ref.fromKind === 'object') {
-    const src = step.objects.find((o) => o.id === ref.fromOwner)!;
+    const src = beat.objects.find((o) => o.id === ref.fromOwner)!;
     if (targetObj.cell.col <= src.cell.col && targetObj.cell.row > src.cell.row) {
       // Down-left: leave from the bottom, enter from the top.
       const sx = ownerBox.x + ownerBox.w / 2;
@@ -116,18 +116,18 @@ function refPath(
   return `M ${sx} ${sy} C ${sx + dx} ${sy}, ${tx - dx} ${ty}, ${tx} ${ty}`;
 }
 
-const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
-  const frames = layoutFrames(step.frames);
-  const objects = layoutObjects(step.objects);
-  const refs = getReferences(step);
-  const marking = step.gcPhase === 'mark';
+const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
+  const frames = layoutFrames(beat.frames);
+  const objects = layoutObjects(beat.objects);
+  const refs = getReferences(beat);
+  const marking = beat.gcPhase === 'mark';
 
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       className="h-full w-full"
       role="img"
-      aria-label={`Stack and heap: ${step.title}`}
+      aria-label={`Stack and heap: ${beat.title}`}
     >
       <style>{`
         .sh-enter { animation: sh-fade 450ms ease-out both; }
@@ -205,10 +205,10 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
       </text>
 
       {/* Frames */}
-      {step.frames.map((f, i) => {
+      {beat.frames.map((f, i) => {
         const b = frames.get(f.id)!;
-        const top = i === step.frames.length - 1;
-        const focused = isFocused(step, f.id);
+        const top = i === beat.frames.length - 1;
+        const focused = isFocused(beat, f.id);
         return (
           <g key={f.id} className="sh-enter" data-viz-label>
             <rect
@@ -253,9 +253,9 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
                 fontSize={12}
                 fontFamily="ui-monospace, monospace"
                 className={
-                  isFocused(step, slotKey(f.id, s.name)) ? 'fill-amber-700' : 'fill-slate-700'
+                  isFocused(beat, slotKey(f.id, s.name)) ? 'fill-amber-700' : 'fill-slate-700'
                 }
-                fontWeight={isFocused(step, slotKey(f.id, s.name)) ? 700 : 400}
+                fontWeight={isFocused(beat, slotKey(f.id, s.name)) ? 700 : 400}
               >
                 {s.name} = {s.refId ? '●→' : s.value}
               </text>
@@ -266,9 +266,9 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
 
       {/* References (drawn under objects) */}
       {refs.map((r) => {
-        const d = refPath(r, step, frames, objects);
+        const d = refPath(r, beat, frames, objects);
         if (!d) return null;
-        const focused = isRefFocused(step, r);
+        const focused = isRefFocused(beat, r);
         return (
           <path
             key={r.id}
@@ -283,9 +283,9 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
       })}
 
       {/* Heap objects */}
-      {step.objects.map((o) => {
+      {beat.objects.map((o) => {
         const b = objects.get(o.id)!;
-        const focused = isFocused(step, o.id);
+        const focused = isFocused(beat, o.id);
         const isArray = o.kind === 'array';
         const unmarked = o.state === 'unmarked';
         const collected = o.state === 'collected';
@@ -361,9 +361,9 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ step }) => {
                   fontSize={12}
                   fontFamily="ui-monospace, monospace"
                   className={
-                    isFocused(step, slotKey(o.id, s.name)) ? 'fill-amber-700' : 'fill-slate-700'
+                    isFocused(beat, slotKey(o.id, s.name)) ? 'fill-amber-700' : 'fill-slate-700'
                   }
-                  fontWeight={isFocused(step, slotKey(o.id, s.name)) ? 700 : 400}
+                  fontWeight={isFocused(beat, slotKey(o.id, s.name)) ? 700 : 400}
                 >
                   {isArray ? `[${s.name}]` : s.name}: {s.refId ? '●→' : s.value}
                 </text>

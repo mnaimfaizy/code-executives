@@ -24,14 +24,14 @@ import {
   type Reference,
   type ReflogRef,
   type ShotId,
-  type StoryStep,
+  type StoryBeat,
 } from '../../../utils/branchPointersStory';
 import type { CameraState } from '../../../../../shared/components/viz/viewerCamera';
 import { LabelFramer, StoryCamera } from '../../../../../shared/viz3d/camera';
 import { boundsOf, type Box3, type Shot, type V3 } from '../../../../../shared/viz3d/frameShot';
 
 /**
- * 3D renderer for the Branch Pointers story. Pure view: everything it draws comes from `step`.
+ * 3D renderer for the Branch Pointers story. Pure view: everything it draws comes from `beat`.
  * Style rules (docs/3D-Visualization-Standard.md): isometric-style orthographic camera,
  * flat-shaded limited palette, DOM labels that always face the viewer, preset shot per beat.
  *
@@ -41,7 +41,7 @@ import { boundsOf, type Box3, type Shot, type V3 } from '../../../../../shared/v
  */
 
 export interface BranchPointers3DProps {
-  step: StoryStep;
+  beat: StoryBeat;
   /** The learner's camera: view preset, Hold view, pan mode and one-shot commands. */
   camera: CameraState;
   /** Reduced motion: no tweening, instant camera cuts. */
@@ -343,14 +343,14 @@ const RefCard: React.FC<{
   ref_: HeadRef | BranchRef;
   exiting: boolean;
   focused: boolean;
-  step: StoryStep;
+  beat: StoryBeat;
   instant: boolean;
   compact: boolean;
-}> = ({ ref_, exiting, focused, step, instant, compact }) => {
+}> = ({ ref_, exiting, focused, beat, instant, compact }) => {
   const group = useRef<THREE.Group>(null);
   const mat = useRef<THREE.MeshLambertMaterial>(null);
   const isHead = ref_.kind === 'head';
-  const detached = isHead && isDetached(step);
+  const detached = isHead && isDetached(beat);
   const id = ref_.id as CardId;
   const color = useMemo(
     () => new THREE.Color(isHead ? (detached ? PALETTE.detached : PALETTE.head) : PALETTE.branch),
@@ -364,7 +364,7 @@ const RefCard: React.FC<{
   });
 
   const [cx, , cz] = cardCenter(id);
-  const text = ref_.kind === 'head' ? headFileText(step) : ref_.target;
+  const text = ref_.kind === 'head' ? headFileText(beat) : ref_.target;
   return (
     <group position={[cx, SHELF_Y, cz]}>
       <group ref={group} scale={[1, instant ? 1 : 0.01, 1]}>
@@ -434,11 +434,11 @@ const RefCard: React.FC<{
 
 const ReflogCard: React.FC<{
   reflog: ReflogRef;
-  step: StoryStep;
+  beat: StoryBeat;
   instant: boolean;
   compact: boolean;
-}> = ({ reflog, step, instant, compact }) => {
-  const focused = isFocused(step, reflog.id);
+}> = ({ reflog, beat, instant, compact }) => {
+  const focused = isFocused(beat, reflog.id);
   const shown = reflog.entries.slice(0, REFLOG_ROWS);
   const older = reflog.entries.length - shown.length;
   return (
@@ -476,7 +476,7 @@ const ReflogCard: React.FC<{
           )}
         </div>
         {shown.map((e, i) => {
-          const hot = focused && isFocused(step, e.commit);
+          const hot = focused && isFocused(beat, e.commit);
           return (
             <div
               key={`${e.commit}:${e.action}`}
@@ -528,10 +528,10 @@ function commitTop(c: Commit, from: V3): V3 {
 function dropOnto(
   start: V3,
   target: Commit,
-  step: StoryStep,
+  beat: StoryBeat,
   lift = 1.2
 ): Pick<ArrowSpec, 'start' | 'mid' | 'end'> {
-  const blocked = step.commits.some(
+  const blocked = beat.commits.some(
     (c) =>
       c.state !== 'collected' &&
       c.cell.col === target.cell.col &&
@@ -560,30 +560,30 @@ function parentArc(child: Commit, parent: Commit): Pick<ArrowSpec, 'start' | 'mi
   return { start, mid, end };
 }
 
-function buildArrows(step: StoryStep): ArrowSpec[] {
+function buildArrows(beat: StoryBeat): ArrowSpec[] {
   const arrows: ArrowSpec[] = [];
   const push = (
     ref: Reference,
     kind: ArrowKind,
     pts: Pick<ArrowSpec, 'start' | 'mid' | 'end'>,
     faded = false
-  ) => arrows.push({ id: ref.id, kind, ...pts, focused: isRefFocused(step, ref), faded });
+  ) => arrows.push({ id: ref.id, kind, ...pts, focused: isRefFocused(beat, ref), faded });
 
-  const refs = getReferences(step);
+  const refs = getReferences(beat);
   // The reflog only draws an arrow where it is the last thing keeping a commit alive.
-  for (const r of getReferences(step, { includeReflog: true }))
-    if (r.kind === 'reflog' && reachabilityState(step, r.to) === 'reflog-only') refs.push(r);
+  for (const r of getReferences(beat, { includeReflog: true }))
+    if (r.kind === 'reflog' && reachabilityState(beat, r.to) === 'reflog-only') refs.push(r);
 
   for (const ref of refs) {
     if (ref.kind === 'parent') {
-      const child = getCommit(step, ref.fromOwner);
-      const parent = getCommit(step, ref.to);
+      const child = getCommit(beat, ref.fromOwner);
+      const parent = getCommit(beat, ref.to);
       if (child && parent) push(ref, 'parent', parentArc(child, parent), child.state !== 'live');
     } else if (ref.kind === 'reflog') {
-      const target = getCommit(step, ref.to);
+      const target = getCommit(beat, ref.to);
       if (!target) continue;
       const start: V3 = [REFLOG_POS[0] + REFLOG_SIZE[0] / 2 + 0.05, WING_Y + 0.3, REFLOG_POS[2]];
-      push(ref, 'reflog', dropOnto(start, target, step, 0.6), true);
+      push(ref, 'reflog', dropOnto(start, target, beat, 0.6), true);
     } else if (ref.fromOwner === 'HEAD') {
       const [hx] = cardCenter('HEAD');
       if (ref.toKind === 'ref') {
@@ -600,17 +600,17 @@ function buildArrows(step: StoryStep): ArrowSpec[] {
         push(ref, 'head', { start, mid, end });
       } else {
         // Detached: HEAD dives from its foot straight onto a commit, under every branch card.
-        const target = getCommit(step, ref.to);
+        const target = getCommit(beat, ref.to);
         if (!target) continue;
         const start: V3 = [hx + CARD_W.HEAD / 2 - 0.1, SHELF_Y + 0.05, SHELF_Z + 0.4];
-        push(ref, 'detached', dropOnto(start, target, step, 0.5));
+        push(ref, 'detached', dropOnto(start, target, beat, 0.5));
       }
     } else {
-      const target = getCommit(step, ref.to);
+      const target = getCommit(beat, ref.to);
       if (!target) continue;
       const [bx] = cardCenter(ref.fromOwner as CardId);
       const start: V3 = [bx, SHELF_Y + 0.05, SHELF_Z + CARD_D / 2 + 0.1];
-      push(ref, 'branch', dropOnto(start, target, step));
+      push(ref, 'branch', dropOnto(start, target, beat));
     }
   }
   return arrows;
@@ -721,22 +721,22 @@ const RegionLabel: React.FC<{ position: V3; children: React.ReactNode }> = ({
   </Html>
 );
 
-const Scene: React.FC<BranchPointers3DProps> = ({ step, camera, instant = false }) => {
-  const commits = usePresence(step.commits, commitKey, 700);
+const Scene: React.FC<BranchPointers3DProps> = ({ beat, camera, instant = false }) => {
+  const commits = usePresence(beat.commits, commitKey, 700);
   const cardRefs = useMemo(
-    () => step.refs.filter((r): r is HeadRef | BranchRef => r.kind !== 'reflog'),
-    [step.refs]
+    () => beat.refs.filter((r): r is HeadRef | BranchRef => r.kind !== 'reflog'),
+    [beat.refs]
   );
   const cards = usePresence(cardRefs, cardKey, 500);
-  const reflog = getRef(step, 'head-reflog');
+  const reflog = getRef(beat, 'head-reflog');
   // Narrow viewers get terser ref labels (no path prefixes, no reflog verbs) to keep them apart.
   const compact = useThree((s) => s.size.width) < COMPACT_BELOW;
   // Compact labels overhang less: the reflog needs less room on the left.
   const shot = useMemo(() => {
-    const s = SHOTS[step.shot];
+    const s = SHOTS[beat.shot];
     return compact ? { ...s, pad: { ...s.pad, left: Math.min(s.pad.left, 44) } } : s;
-  }, [step.shot, compact]);
-  const arrows = buildArrows(step);
+  }, [beat.shot, compact]);
+  const arrows = buildArrows(beat);
 
   const floorCenter: V3 = [
     (FLOOR_MIN[0] + FLOOR_MAX[0]) / 2,
@@ -789,7 +789,7 @@ const Scene: React.FC<BranchPointers3DProps> = ({ step, camera, instant = false 
           key={item.id}
           commit={item}
           exiting={exiting}
-          focused={isFocused(step, item.id)}
+          focused={isFocused(beat, item.id)}
           instant={instant}
         />
       ))}
@@ -799,14 +799,14 @@ const Scene: React.FC<BranchPointers3DProps> = ({ step, camera, instant = false 
           key={item.id}
           ref_={item}
           exiting={exiting}
-          focused={isFocused(step, item.id)}
-          step={step}
+          focused={isFocused(beat, item.id)}
+          beat={beat}
           instant={instant}
           compact={compact}
         />
       ))}
 
-      {reflog && <ReflogCard reflog={reflog} step={step} instant={instant} compact={compact} />}
+      {reflog && <ReflogCard reflog={reflog} beat={beat} instant={instant} compact={compact} />}
 
       {arrows.map((a) => (
         <Arrow key={a.id} spec={a} instant={instant} />
@@ -824,7 +824,7 @@ const BranchPointers3D: React.FC<BranchPointers3DProps> = (props) => (
     dpr={[1, 2]}
     camera={{ position: [10, 10, 14], zoom: 30, near: -100, far: 200 }}
     gl={{ antialias: true, powerPreference: 'high-performance' }}
-    aria-label={`3D view of branch pointers: ${props.step.title}`}
+    aria-label={`3D view of branch pointers: ${props.beat.title}`}
     role="img"
   >
     <Scene {...props} />

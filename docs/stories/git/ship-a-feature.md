@@ -113,7 +113,7 @@ Outcome (ending): Merging preserved the true history: every SHA you pushed survi
 
 Aha beats:
 
-- main#5 `looks-up-to-date`: breaks "`origin/main` is GitHub's `main`" and "up to date means up to date with the server". Test: at this beat `isStale(step, 'you.origin/main')` is true (`a1f0` vs `c9d1`), and it turns false only at `fetch`.
+- main#5 `looks-up-to-date`: breaks "`origin/main` is GitHub's `main`" and "up to date means up to date with the server". Test: at this beat `isStale(beat, 'you.origin/main')` is true (`a1f0` vs `c9d1`), and it turns false only at `fetch`.
 - rebase#1 `rebase-copies`: breaks "rebase moves my commit". Test: `you.d4e2` and `you.f1a3` both exist with the same message and different parents, and `d4e2` is still reachable from `you.origin/feature/search`.
 - rebase#2 `rebase-push-rejected`: breaks "once I've integrated `main`, my push will go through". Test: `isAncestor(route, 'you', 'd4e2', 'f1a3')` is false while `origin.feature/search` names `d4e2`; the contrast test on `merge-push` shows `isAncestor(…, 'd4e2', 'e5a6')` is true.
 

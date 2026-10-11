@@ -30,7 +30,7 @@ export interface StoryViewer {
   toggleHold: () => void;
   togglePan: () => void;
   command: (c: CameraCommandInput) => void;
-  /** Isometric preset, Hold view off, and the step's shot re-framed. */
+  /** Isometric preset, Hold view off, and the beat's shot re-framed. */
   reset: () => void;
   fullscreen: Fullscreen;
   onKeyDown: (e: KeyboardEvent) => void;

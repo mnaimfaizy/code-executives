@@ -17,20 +17,20 @@ import {
   type Reference,
   type ShotId,
   type StackFrame,
-  type StoryStep,
+  type StoryBeat,
 } from '../../../utils/stackHeapStory';
 import type { CameraState } from '../../../../../shared/components/viz/viewerCamera';
 import { LabelFramer, StoryCamera } from '../../../../../shared/viz3d/camera';
 import { boundsOf, type Box3, type Shot, type V3 } from '../../../../../shared/viz3d/frameShot';
 
 /**
- * 3D renderer for the Stack & Heap story. Pure view: everything it draws comes from `step`.
+ * 3D renderer for the Stack & Heap story. Pure view: everything it draws comes from `beat`.
  * Style rules (docs/3D-Visualization-Standard.md): isometric-style orthographic camera,
  * flat-shaded limited palette, DOM labels that always face the viewer, preset shot per beat.
  */
 
 export interface StackHeap3DProps {
-  step: StoryStep;
+  beat: StoryBeat;
   /** The learner's camera: view preset, Hold view, pan mode and one-shot commands. */
   camera: CameraState;
   /** Reduced motion: no tweening, instant camera cuts. */
@@ -138,9 +138,9 @@ const FrameSlab: React.FC<{
   isTop: boolean;
   focused: boolean;
   root: boolean;
-  step: StoryStep;
+  beat: StoryBeat;
   instant: boolean;
-}> = ({ entry, exiting, isTop, focused, root, step, instant }) => {
+}> = ({ entry, exiting, isTop, focused, root, beat, instant }) => {
   const group = useRef<THREE.Group>(null);
   const mat = useRef<THREE.MeshLambertMaterial>(null);
   const targetY = frameY(entry.index) + (exiting ? 1.6 : 0);
@@ -190,7 +190,7 @@ const FrameSlab: React.FC<{
             </div>
             <div className="flex gap-2.5">
               {entry.frame.slots.map((s) => {
-                const f = isFocused(step, slotKey(entry.frame.id, s.name));
+                const f = isFocused(beat, slotKey(entry.frame.id, s.name));
                 return (
                   <span key={s.name} className={f ? 'font-bold text-amber-700' : 'text-slate-600'}>
                     {s.name}: {s.refId ? '●→' : s.value}
@@ -211,9 +211,9 @@ const HeapBlock: React.FC<{
   object: HeapObject;
   exiting: boolean;
   focused: boolean;
-  step: StoryStep;
+  beat: StoryBeat;
   instant: boolean;
-}> = ({ object, exiting, focused, step, instant }) => {
+}> = ({ object, exiting, focused, beat, instant }) => {
   const group = useRef<THREE.Group>(null);
   const mat = useRef<THREE.MeshLambertMaterial>(null);
   const size = OBJ_SIZE[object.kind];
@@ -225,7 +225,7 @@ const HeapBlock: React.FC<{
   // The GC shot adds UNMARKED/RECLAIMED badges, widening every label until neighbours in a
   // row meet over the gap between columns. With no stack arcs to cover on those beats, each
   // column's label leans outward (left column left, right column right) to open that gap.
-  const labelX = step.shot === 'gc' ? (object.cell.col === 0 ? '-80%' : '-20%') : '-50%';
+  const labelX = beat.shot === 'gc' ? (object.cell.col === 0 ? '-80%' : '-20%') : '-50%';
   const baseColor = useMemo(
     () =>
       new THREE.Color(
@@ -308,7 +308,7 @@ const HeapBlock: React.FC<{
               <div className="text-slate-400">(empty)</div>
             ) : (
               object.slots.map((s) => {
-                const f = isFocused(step, slotKey(object.id, s.name));
+                const f = isFocused(beat, slotKey(object.id, s.name));
                 return (
                   <div key={s.name} className={f ? 'font-bold text-amber-700' : 'text-slate-600'}>
                     {object.kind === 'array' ? `[${s.name}]` : s.name}: {s.refId ? '●→' : s.value}
@@ -324,14 +324,14 @@ const HeapBlock: React.FC<{
 
 // ---- References -----------------------------------------------------------------------
 
-function refEndpoints(ref: Reference, step: StoryStep): { start: V3; end: V3; mid: V3 } | null {
-  const target = step.objects.find((o) => o.id === ref.to);
+function refEndpoints(ref: Reference, beat: StoryBeat): { start: V3; end: V3; mid: V3 } | null {
+  const target = beat.objects.find((o) => o.id === ref.to);
   if (!target) return null;
   const th = OBJ_SIZE[target.kind][1];
 
   if (ref.fromKind === 'frame') {
-    const index = step.frames.findIndex((f) => f.id === ref.fromOwner);
-    const frame = step.frames[index];
+    const index = beat.frames.findIndex((f) => f.id === ref.fromOwner);
+    const frame = beat.frames[index];
     if (!frame) return null;
     const slotIdx = frame.slots.findIndex((s) => slotKey(frame.id, s.name) === ref.from);
     const z = -FRAME_SIZE[2] / 4 + (slotIdx * FRAME_SIZE[2]) / 2;
@@ -347,7 +347,7 @@ function refEndpoints(ref: Reference, step: StoryStep): { start: V3; end: V3; mi
     return { start, end, mid };
   }
 
-  const source = step.objects.find((o) => o.id === ref.fromOwner);
+  const source = beat.objects.find((o) => o.id === ref.fromOwner);
   if (!source) return null;
   const sh = OBJ_SIZE[source.kind][1];
   // Heap → heap: a low bridge between the facing top edges, below the object labels.
@@ -453,15 +453,15 @@ const RootPulse: React.FC = () => {
 const frameKey = (e: FrameEntry) => e.frame.id;
 const objectKey = (o: HeapObject) => o.id;
 
-const Scene: React.FC<StackHeap3DProps> = ({ step, camera, instant = false }) => {
+const Scene: React.FC<StackHeap3DProps> = ({ beat, camera, instant = false }) => {
   const frameEntries = useMemo(
-    () => step.frames.map((frame, index) => ({ frame, index })),
-    [step.frames]
+    () => beat.frames.map((frame, index) => ({ frame, index })),
+    [beat.frames]
   );
   const frames = usePresence(frameEntries, frameKey, 700);
-  const objects = usePresence(step.objects, objectKey, 700);
-  const refs = getReferences(step);
-  const marking = step.gcPhase === 'mark';
+  const objects = usePresence(beat.objects, objectKey, 700);
+  const refs = getReferences(beat);
+  const marking = beat.gcPhase === 'mark';
 
   return (
     <>
@@ -510,10 +510,10 @@ const Scene: React.FC<StackHeap3DProps> = ({ step, camera, instant = false }) =>
           key={item.frame.id}
           entry={item}
           exiting={exiting}
-          isTop={!exiting && item.index === step.frames.length - 1}
-          focused={isFocused(step, item.frame.id)}
+          isTop={!exiting && item.index === beat.frames.length - 1}
+          focused={isFocused(beat, item.frame.id)}
           root={marking}
-          step={step}
+          beat={beat}
           instant={instant}
         />
       ))}
@@ -523,16 +523,16 @@ const Scene: React.FC<StackHeap3DProps> = ({ step, camera, instant = false }) =>
           key={item.id}
           object={item}
           exiting={exiting}
-          focused={isFocused(step, item.id)}
-          step={step}
+          focused={isFocused(beat, item.id)}
+          beat={beat}
           instant={instant}
         />
       ))}
 
       {refs.map((r) => {
-        const pts = refEndpoints(r, step);
+        const pts = refEndpoints(r, beat);
         return pts ? (
-          <RefArc key={r.id} {...pts} focused={isRefFocused(step, r)} instant={instant} />
+          <RefArc key={r.id} {...pts} focused={isRefFocused(beat, r)} instant={instant} />
         ) : null;
       })}
 
@@ -540,7 +540,7 @@ const Scene: React.FC<StackHeap3DProps> = ({ step, camera, instant = false }) =>
 
       <LabelFramer />
       <StoryCamera
-        shot={SHOTS[step.shot]}
+        shot={SHOTS[beat.shot]}
         bounds={SCENE_BOUNDS}
         camera={camera}
         instant={instant}
@@ -556,7 +556,7 @@ const StackHeap3D: React.FC<StackHeap3DProps> = (props) => (
     dpr={[1, 2]}
     camera={{ position: [10, 10, 14], zoom: 40, near: -100, far: 200 }}
     gl={{ antialias: true, powerPreference: 'high-performance' }}
-    aria-label={`3D view of the stack and heap: ${props.step.title}`}
+    aria-label={`3D view of the stack and heap: ${props.beat.title}`}
     role="img"
   >
     <Scene {...props} />

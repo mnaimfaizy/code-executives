@@ -1,6 +1,6 @@
 // Evaluate in the page (async, returns a string). Steps through every beat of the story on the
 // page and reports labels that overlap each other or are clipped by the viewer.
-// Relies on: [data-viz-viewer], [data-viz-label], buttons labelled "Restart" / "Next step", and in
+// Relies on: [data-viz-viewer], [data-viz-label], buttons labelled "Restart" / "Next beat", and in
 // scenarios [data-viz-choice] option buttons. Restart must also clear every pick.
 (async () => {
   const SETTLE_MS = 2200; // camera glide + enter animations
@@ -8,7 +8,7 @@
     [...document.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === label);
   const viewer = document.querySelector('[data-viz-viewer]');
   if (!viewer) return 'FAIL: no [data-viz-viewer] on the page';
-  if (!button('Restart') || !button('Next step')) return 'FAIL: story controls not found';
+  if (!button('Restart') || !button('Next beat')) return 'FAIL: story controls not found';
 
   // A hidden or background tab throttles requestAnimationFrame, so animations and camera moves
   // never settle and every result would be meaningless.
@@ -71,7 +71,7 @@
       lines.push(
         `${picks.length ? `[${picks.join(' > ')}] ` : ''}${beat}: ${problems.join(' | ') || 'ok'} (${labels.length} labels)${hidden}`
       );
-      const next = button('Next step');
+      const next = button('Next beat');
       if (next && !next.disabled) {
         next.click();
         continue;

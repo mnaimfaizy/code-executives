@@ -7,14 +7,14 @@ const webgl = vi.hoisted(() => ({ available: true }));
 
 vi.mock('../../../../shared/utils/webgl', () => ({ canUseWebGL: () => webgl.available }));
 vi.mock('../visualizations/3d/StackHeap3D', () => ({
-  default: ({ step, camera }: StackHeap3DProps) => (
+  default: ({ beat, camera }: StackHeap3DProps) => (
     <div
       data-testid="scene-3d"
       data-preset={camera.preset}
       data-hold={String(camera.hold)}
       data-command={camera.command?.kind ?? ''}
     >
-      {step.id}
+      {beat.id}
     </div>
   ),
 }));
@@ -27,45 +27,45 @@ describe('StackHeapStory', () => {
     webgl.available = true;
   });
 
-  it('starts in 2D on step 1 and steps forward and back', async () => {
+  it('starts in 2D on beat 1 and steps forward and back', async () => {
     const user = userEvent.setup();
     render(<StackHeapStory />);
 
     expect(screen.getByRole('radio', { name: /2d/i })).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByText('Step 1 / 10')).toBeInTheDocument();
+    expect(screen.getByText('Beat 1 / 10')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Next step' }));
+    await user.click(screen.getByRole('button', { name: 'Next beat' }));
     expect(screen.getByText('main() is called')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Previous step' }));
+    await user.click(screen.getByRole('button', { name: 'Previous beat' }));
     expect(screen.getByText('The program starts')).toBeInTheDocument();
   });
 
-  it('keeps the current step when switching to 3D and back', async () => {
+  it('keeps the current beat when switching to 3D and back', async () => {
     const user = userEvent.setup();
     render(<StackHeapStory />);
 
-    for (let i = 0; i < 6; i++) await user.click(screen.getByRole('button', { name: 'Next step' }));
+    for (let i = 0; i < 6; i++) await user.click(screen.getByRole('button', { name: 'Next beat' }));
     await user.click(screen.getByRole('radio', { name: /3d/i }));
 
     expect(await screen.findByTestId('scene-3d')).toHaveTextContent('bob-null');
-    expect(screen.getByText('Step 7 / 10')).toBeInTheDocument();
+    expect(screen.getByText('Beat 7 / 10')).toBeInTheDocument();
 
     await user.click(screen.getByRole('radio', { name: /2d/i }));
     expect(screen.queryByTestId('scene-3d')).not.toBeInTheDocument();
     expect(screen.getByRole('img', { name: /bob = null/ })).toBeInTheDocument();
   });
 
-  it('drives the 3D camera from the viewer toolbar and keys without losing the step', async () => {
+  it('drives the 3D camera from the viewer toolbar and keys without losing the beat', async () => {
     const user = userEvent.setup();
     const { container } = render(<StackHeapStory />);
 
-    await user.click(screen.getByRole('button', { name: 'Next step' }));
+    await user.click(screen.getByRole('button', { name: 'Next beat' }));
     await user.click(screen.getByRole('radio', { name: /3d/i }));
     const scene = await screen.findByTestId('scene-3d');
-    const stepText = screen.getByText(/^Step 2 \//);
+    const beatText = screen.getByText(/^Beat 2 \//);
 
-    // Reset view lives in the viewer's toolbar now, not in the step controls.
+    // Reset view lives in the viewer's toolbar now, not in the beat controls.
     const viewerEl = container.querySelector<HTMLElement>('[data-viz-viewer]')!;
     const reset = within(viewerEl).getByRole('button', { name: 'Reset view' });
 
@@ -77,7 +77,7 @@ describe('StackHeapStory', () => {
     expect(scene).toHaveAttribute('data-hold', 'true');
     await user.keyboard('{Shift>}{ArrowRight}{/Shift}');
     expect(scene).toHaveAttribute('data-command', 'orbit');
-    expect(stepText).toHaveTextContent(/^Step 2 \//);
+    expect(beatText).toHaveTextContent(/^Beat 2 \//);
 
     await user.click(reset);
     expect(scene).toHaveAttribute('data-preset', 'iso');
@@ -85,7 +85,7 @@ describe('StackHeapStory', () => {
     expect(scene).toHaveAttribute('data-command', 'reset');
 
     await user.keyboard('{ArrowRight}');
-    expect(screen.getByText(/^Step 3 \//)).toBeInTheDocument();
+    expect(screen.getByText(/^Beat 3 \//)).toBeInTheDocument();
   });
 
   it('falls back to 2D when WebGL is unavailable', async () => {

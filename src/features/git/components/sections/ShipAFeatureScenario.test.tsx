@@ -28,8 +28,8 @@ type User = ReturnType<typeof userEvent.setup>;
 
 const MAIN = routeFor([]);
 const CHOICE_BEAT = MAIN.length; // 1-based beat number of the choice point
-const next = (user: User) => user.click(screen.getByRole('button', { name: 'Next step' }));
-const prev = (user: User) => user.click(screen.getByRole('button', { name: 'Previous step' }));
+const next = (user: User) => user.click(screen.getByRole('button', { name: 'Next beat' }));
+const prev = (user: User) => user.click(screen.getByRole('button', { name: 'Previous beat' }));
 const choice = (id: string) =>
   document.querySelector<HTMLButtonElement>(`[data-viz-choice="${id}"]`);
 const strip = () => screen.getByTestId('route-strip').querySelectorAll('button');
@@ -40,7 +40,7 @@ async function toChoice(user: User) {
 }
 
 async function toEnd(user: User) {
-  while (!screen.getByRole('button', { name: 'Next step' }).hasAttribute('disabled'))
+  while (!screen.getByRole('button', { name: 'Next beat' }).hasAttribute('disabled'))
     await next(user);
 }
 
@@ -60,12 +60,12 @@ describe('ShipAFeatureScenario', { timeout: 20_000 }, () => {
     expect(screen.getByRole('radio', { name: /2d/i })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByText('Beat 1')).toBeInTheDocument();
     expect(scene('Branch off main')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Previous step' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Previous beat' })).toBeDisabled();
     expect(choice('rebase')).toBeNull();
 
     await toChoice(user);
     expect(screen.getByText(`Beat ${CHOICE_BEAT}`)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next step' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next beat' })).toBeDisabled();
     expect(
       screen.getByText("How do you bring Sam's work into feature/search?")
     ).toBeInTheDocument();
@@ -111,7 +111,7 @@ describe('ShipAFeatureScenario', { timeout: 20_000 }, () => {
 
     await user.click(screen.getByRole('button', { name: /Try the other path/ }));
     expect(screen.getByText(`Beat ${CHOICE_BEAT}`)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next step' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next beat' })).toBeDisabled();
     expect(strip()).toHaveLength(CHOICE_BEAT);
 
     await user.click(choice('merge')!);
@@ -143,7 +143,7 @@ describe('ShipAFeatureScenario', { timeout: 20_000 }, () => {
     await prev(user);
     expect(screen.getByText(`Beat ${CHOICE_BEAT}`)).toBeInTheDocument();
     expect(choice('rebase')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next step' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next beat' })).toBeDisabled();
     expect(strip()).toHaveLength(CHOICE_BEAT);
   });
 
@@ -159,7 +159,7 @@ describe('ShipAFeatureScenario', { timeout: 20_000 }, () => {
     expect(strip()).toHaveLength(CHOICE_BEAT);
 
     await toChoice(user);
-    expect(screen.getByRole('button', { name: 'Next step' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next beat' })).toBeDisabled();
     expect(choice('merge')).toBeInTheDocument();
   });
 
