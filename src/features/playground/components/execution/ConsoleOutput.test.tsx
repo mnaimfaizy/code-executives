@@ -23,7 +23,7 @@ describe('ConsoleOutput', () => {
 
   it('renders empty state when no entries', () => {
     render(<ConsoleOutput entries={[]} onClear={onClear} />);
-    expect(screen.getByText(/Run code to see output/)).toBeInTheDocument();
+    expect(screen.getByText(/Run code to see what it prints/)).toBeInTheDocument();
   });
 
   it('renders log entries', () => {
@@ -94,11 +94,27 @@ describe('ConsoleOutput', () => {
     expect(screen.getByText('Hello World 123')).toBeInTheDocument();
   });
 
-  it('escapes HTML in output to prevent XSS', () => {
-    const entries = [makeEntry('log', ['<script>alert("xss")</script>'], 'e1')];
-    render(<ConsoleOutput entries={entries} onClear={onClear} />);
-    // The angle brackets should be escaped, not rendered as HTML
-    const pre = screen.getByText(/&lt;script&gt;/);
-    expect(pre).toBeInTheDocument();
+  it('shows text as written, without escaping it twice', () => {
+    const text = `"Hello, World!" <script>alert("xss")</script> a & b it's`;
+    const entries = [makeEntry('log', [text], 'e1')];
+    const { container } = render(<ConsoleOutput entries={entries} onClear={onClear} />);
+    const pre = container.querySelector('pre');
+    expect(pre?.textContent).toBe(text);
+    expect(pre?.textContent).not.toMatch(/&quot;|&lt;|&amp;|&#x27;/);
+  });
+
+  it('renders markup in console text as text, never as elements', () => {
+    const entries = [makeEntry('error', ['<script>alert(1)</script><img src=x>'], 'e1')];
+    const { container } = render(<ConsoleOutput entries={entries} onClear={onClear} />);
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('appends the source line of an entry that has one', () => {
+    const entries: ConsoleEntry[] = [
+      { ...makeEntry('error', ['x is not defined'], 'e1'), line: 7 },
+    ];
+    const { container } = render(<ConsoleOutput entries={entries} onClear={onClear} />);
+    expect(container.querySelector('pre')?.textContent).toBe('x is not defined (line 7)');
   });
 });

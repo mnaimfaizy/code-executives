@@ -16,7 +16,8 @@ import { usePyodide } from './hooks/usePyodide';
 import { useTimeline } from './hooks/useTimeline';
 import { usePaneLayout } from './hooks/usePaneLayout';
 import { prepareInstrumentedCode } from './instrumentation/JsInstrumenter';
-import type { ExampleSnippet } from './utils/exampleSnippets';
+import { transpileTypeScript } from './services/transpileTypeScript';
+import type { Example } from './utils/examples';
 import type { VisualizationLens } from './types';
 import {
   loadSettings,
@@ -64,15 +65,10 @@ const PlaygroundApp: React.FC = () => {
 
   // Determine which console entries to show based on language
   const consoleEntries = language === 'python' ? pyodide.entries : sandbox.entries;
-  const isRunning = language === 'python' ? pyodide.isRunning : sandbox.isRunning;
 
-  // Sync execution state
-  useEffect(() => {
-    if (isRunning) {
-      setExecutionState('running');
-    }
-  }, [isRunning, setExecutionState]);
-
+  // handleRun sets the execution state itself. An effect that copied `isRunning`
+  // into it could run after a fast run had already completed (a TypeScript run
+  // starts outside a click event) and leave the state stuck on 'running'.
   const handleRun = useCallback((): void => {
     setExecutionState('running');
     timeline.clear();
@@ -85,28 +81,45 @@ const PlaygroundApp: React.FC = () => {
           timeline.loadSnapshots(result.snapshots);
         }
       });
-    } else {
-      // For JS/TS: instrument the code if mode is enabled
+      return;
+    }
+
+    const runJavaScript = (js: string, mapLine?: (line: number) => number): void => {
       if (instrumentedMode) {
-        const prepared = prepareInstrumentedCode(code);
+        const prepared = prepareInstrumentedCode(js);
         if ('error' in prepared) {
           // Fall back to non-instrumented execution on parse error
-          sandbox.execute(code).then((result) => {
+          sandbox.execute(js, { mapLine }).then((result) => {
             setExecutionState(result.error ? 'error' : 'completed');
           });
           return;
         }
-        sandbox.execute(prepared.code).then((result) => {
+        sandbox.execute(prepared.code, { mapLine }).then((result) => {
           setExecutionState(result.error ? 'error' : 'completed');
           if (result.snapshots.length > 0) {
             timeline.loadSnapshots(result.snapshots);
           }
         });
       } else {
-        sandbox.execute(code).then((result) => {
+        sandbox.execute(js, { mapLine }).then((result) => {
           setExecutionState(result.error ? 'error' : 'completed');
         });
       }
+    };
+
+    if (language === 'typescript') {
+      // The sandbox and the instrumenter take JavaScript: strip the types first,
+      // and keep the way back to the lines of the TypeScript source
+      transpileTypeScript(code).then((transpiled) => {
+        if (!transpiled.ok) {
+          sandbox.reportError(transpiled.message, transpiled.line);
+          setExecutionState('error');
+          return;
+        }
+        runJavaScript(transpiled.code, transpiled.mapLine);
+      });
+    } else {
+      runJavaScript(code);
     }
   }, [language, code, sandbox, pyodide, setExecutionState, instrumentedMode, timeline]);
 
@@ -137,11 +150,11 @@ const PlaygroundApp: React.FC = () => {
     }
   }, [language, sandbox, pyodide]);
 
-  const handleLoadSnippet = useCallback(
-    (snippet: ExampleSnippet): void => {
-      setLanguage(snippet.language);
-      setCode(snippet.code);
-      setActiveLens(snippet.suggestedLens);
+  const handleLoadExample = useCallback(
+    (example: Example): void => {
+      setLanguage(example.language);
+      setCode(example.code);
+      setActiveLens(example.suggestedLens);
       sandbox.clearEntries();
       pyodide.clearEntries();
       sandbox.clearSnapshots();
@@ -177,7 +190,7 @@ const PlaygroundApp: React.FC = () => {
         handleClearConsole();
         return;
       }
-      // Left/Right arrow, Space → timeline stepping (when not in editor or any interactive element)
+      // Left/Right arrow, Space → stepping through the trace (when not in editor or any interactive element)
       const activeEl = document.activeElement;
       const target = e.target instanceof HTMLElement ? e.target : null;
       const inEditor =
@@ -198,7 +211,7 @@ const PlaygroundApp: React.FC = () => {
           timeline.nextStep();
           return;
         }
-        // Space → play/pause timeline
+        // Space → play/pause the steps
         if (e.key === ' ') {
           e.preventDefault();
           if (timeline.isPlaying) {
@@ -246,7 +259,7 @@ const PlaygroundApp: React.FC = () => {
           onRun={handleRun}
           onStop={handleStop}
           onReset={handleReset}
-          onLoadSnippet={handleLoadSnippet}
+          onLoadExample={handleLoadExample}
           onOpenSettings={() => setSettingsOpen((prev) => !prev)}
         />
         {settingsOpen && (
@@ -297,7 +310,7 @@ const PlaygroundApp: React.FC = () => {
           aria-label="Resize editor and visualization panes"
         />
 
-        {/* Visualization / Timeline Pane */}
+        {/* Visualization / Steps Pane */}
         <div
           className="flex flex-col rounded-lg overflow-hidden"
           style={{
@@ -315,7 +328,7 @@ const PlaygroundApp: React.FC = () => {
               previousSnapshot={timeline.previousSnapshot}
             />
           </div>
-          {/* Timeline controls (bottom) */}
+          {/* Step controls (bottom) */}
           <div
             style={{
               borderTop: '1px solid var(--pg-border)',
@@ -347,7 +360,7 @@ const PlaygroundApp: React.FC = () => {
           aria-label="Resize visualization and console panes"
         />
 
-        {/* Output Pane */}
+        {/* Console Pane */}
         <div
           className="flex flex-col rounded-lg overflow-hidden"
           style={{

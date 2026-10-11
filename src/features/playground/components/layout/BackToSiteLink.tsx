@@ -15,7 +15,9 @@ const BackToSiteLink: React.FC = () => {
     <a
       href="/"
       onClick={handleClick}
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md"
+      className="inline-flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md shrink-0 lg:px-3"
+      aria-label="Back to Code Executives"
+      title="Back to Code Executives"
       style={{
         color: 'var(--pg-text-secondary)',
         background: 'rgba(255, 255, 255, 0.05)',
@@ -31,7 +33,8 @@ const BackToSiteLink: React.FC = () => {
       }}
     >
       <ArrowLeft className="w-3.5 h-3.5" />
-      Code Executives
+      {/* The label is dropped below lg; the aria-label carries it */}
+      <span className="hidden lg:inline">Code Executives</span>
     </a>
   );
 };

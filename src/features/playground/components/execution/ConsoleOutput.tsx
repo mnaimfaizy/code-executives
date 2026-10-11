@@ -1,7 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import type { ConsoleEntry } from '../../types';
-import { escapeHtml } from '../../utils/sanitize';
 
 interface ConsoleOutputProps {
   entries: ConsoleEntry[];
@@ -67,7 +66,7 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear }) => {
         className="flex-1 overflow-y-auto p-2"
         role="log"
         aria-live="polite"
-        aria-label="Console output"
+        aria-label="Console"
         style={{ background: 'var(--pg-bg-primary)' }}
       >
         {entries.length === 0 ? (
@@ -75,7 +74,7 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear }) => {
             className="flex items-center justify-center h-full text-xs"
             style={{ color: 'var(--pg-text-muted)', fontFamily: 'var(--pg-font-mono)' }}
           >
-            Run code to see output here...
+            Run code to see what it prints here...
           </div>
         ) : (
           entries.map((entry) => (
@@ -92,7 +91,8 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear }) => {
                 {TYPE_PREFIXES[entry.type]}
               </span>
               <pre className="whitespace-pre-wrap break-all flex-1 m-0">
-                {entry.args.map((arg) => escapeHtml(String(arg))).join(' ')}
+                {entry.args.map((arg) => String(arg)).join(' ')}
+                {entry.line ? ` (line ${entry.line})` : ''}
               </pre>
             </div>
           ))

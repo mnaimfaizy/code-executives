@@ -4,7 +4,7 @@ import BackToSiteLink from './BackToSiteLink';
 import LanguagePicker from '../editor/LanguagePicker';
 import ExecutionController from '../execution/ExecutionController';
 import LensSelector from '../visualizations/LensSelector';
-import { exampleSnippets, type ExampleSnippet } from '../../utils/exampleSnippets';
+import { examples, type Example } from '../../utils/examples';
 import type {
   PlaygroundLanguage,
   VisualizationLens,
@@ -24,7 +24,7 @@ interface PlaygroundToolbarProps {
   onRun: () => void;
   onStop: () => void;
   onReset: () => void;
-  onLoadSnippet: (snippet: ExampleSnippet) => void;
+  onLoadExample: (example: Example) => void;
   onOpenSettings: () => void;
 }
 
@@ -40,38 +40,40 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
   onRun,
   onStop,
   onReset,
-  onLoadSnippet,
+  onLoadExample,
   onOpenSettings,
 }) => {
-  const [snippetMenuOpen, setSnippetMenuOpen] = useState(false);
+  const [exampleMenuOpen, setExampleMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu on outside click
   useEffect(() => {
-    if (!snippetMenuOpen) return;
+    if (!exampleMenuOpen) return;
     const handler = (e: MouseEvent): void => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setSnippetMenuOpen(false);
+        setExampleMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [snippetMenuOpen]);
+  }, [exampleMenuOpen]);
 
   // Close on Escape
   const handleMenuKeyDown = useCallback((e: React.KeyboardEvent): void => {
     if (e.key === 'Escape') {
-      setSnippetMenuOpen(false);
+      setExampleMenuOpen(false);
     }
   }, []);
 
-  const filteredSnippets = exampleSnippets.filter((s) => s.language === language);
+  const languageExamples = examples.filter((s) => s.language === language);
 
   return (
+    // Below 2xl the lens and the examples move to a second row, so the first row
+    // (with Run at its end) always fits; from 2xl everything is one row.
     <div
-      className="flex items-center gap-3 px-4 shrink-0"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-1.5 shrink-0 2xl:flex-nowrap"
       style={{
-        height: 'var(--pg-toolbar-height)',
+        minHeight: 'var(--pg-toolbar-height)',
         borderBottom: '1px solid var(--pg-border)',
         background: 'var(--pg-bg-toolbar-translucent)',
         backdropFilter: 'blur(10px)',
@@ -79,7 +81,7 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
     >
       <BackToSiteLink />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <div className="w-2 h-2 rounded-full" style={{ background: 'var(--pg-accent-green)' }} />
         <span
           className="text-sm font-semibold tracking-wide"
@@ -97,7 +99,7 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
 
       {/* Trace toggle */}
       <label
-        className="flex items-center gap-1.5 text-xs cursor-pointer select-none"
+        className="flex items-center gap-1.5 text-xs cursor-pointer select-none shrink-0"
         style={{ color: 'var(--pg-text-secondary)' }}
       >
         <input
@@ -109,136 +111,143 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
         <span>Trace</span>
       </label>
 
-      {/* Separator */}
-      <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
+      {/* Lens and examples: a row of their own below 2xl */}
+      <div className="order-last flex basis-full items-center gap-3 min-w-0 2xl:order-none 2xl:basis-auto">
+        {/* Separator */}
+        <div
+          className="hidden w-px h-5 2xl:block"
+          style={{ background: 'var(--pg-border)' }}
+          aria-hidden="true"
+        />
 
-      {/* Lens selector */}
-      <LensSelector
-        activeLens={activeLens}
-        onLensChange={onLensChange}
-        currentSnapshot={currentSnapshot}
-      />
+        {/* Lens selector */}
+        <LensSelector
+          activeLens={activeLens}
+          onLensChange={onLensChange}
+          currentSnapshot={currentSnapshot}
+        />
 
-      {/* Separator */}
-      <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
+        {/* Separator */}
+        <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />
 
-      {/* Example snippets dropdown */}
-      <div ref={menuRef} className="relative" onKeyDown={handleMenuKeyDown}>
-        <button
-          onClick={() => setSnippetMenuOpen((prev) => !prev)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors duration-150"
-          style={{
-            color: 'var(--pg-text-secondary)',
-            border: '1px solid var(--pg-border)',
-            background: snippetMenuOpen ? 'var(--pg-bg-surface-hover)' : 'transparent',
-          }}
-          aria-haspopup="listbox"
-          aria-expanded={snippetMenuOpen}
-        >
-          <BookOpen size={13} />
-          <span>Examples</span>
-          <ChevronDown
-            size={12}
-            className={`transition-transform duration-150 ${snippetMenuOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-
-        {snippetMenuOpen && (
-          <div
-            role="listbox"
-            className="absolute top-full left-0 mt-1 min-w-56 rounded-lg shadow-xl overflow-hidden z-50"
+        {/* Examples dropdown */}
+        <div ref={menuRef} className="relative" onKeyDown={handleMenuKeyDown}>
+          <button
+            onClick={() => setExampleMenuOpen((prev) => !prev)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs transition-colors duration-150"
             style={{
+              color: 'var(--pg-text-secondary)',
               border: '1px solid var(--pg-border)',
-              background: 'var(--pg-bg-secondary)',
+              background: exampleMenuOpen ? 'var(--pg-bg-surface-hover)' : 'transparent',
             }}
+            aria-haspopup="listbox"
+            aria-expanded={exampleMenuOpen}
           >
-            {filteredSnippets.length > 0 ? (
-              filteredSnippets.map((snippet) => (
-                <button
-                  key={snippet.id}
-                  role="option"
-                  aria-selected={false}
-                  onClick={() => {
-                    onLoadSnippet(snippet);
-                    setSnippetMenuOpen(false);
-                  }}
-                  className="w-full text-left px-3 py-2 transition-colors duration-100"
-                  style={{
-                    borderBottom: '1px solid var(--pg-border)',
-                    color: 'var(--pg-text-primary)',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background =
-                      'var(--pg-bg-surface-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'transparent';
-                  }}
-                >
-                  <div className="text-xs font-medium">{snippet.label}</div>
-                  <div className="text-[10px] mt-0.5" style={{ color: 'var(--pg-text-muted)' }}>
-                    {snippet.description}
-                  </div>
-                </button>
-              ))
-            ) : (
-              <div className="px-3 py-3 text-xs" style={{ color: 'var(--pg-text-muted)' }}>
-                No examples for this language yet.
-              </div>
-            )}
+            <BookOpen size={13} />
+            <span>Examples</span>
+            <ChevronDown
+              size={12}
+              className={`transition-transform duration-150 ${exampleMenuOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
 
-            {/* Show other languages' snippets as dimmed */}
-            {exampleSnippets.filter((s) => s.language !== language).length > 0 && (
-              <>
-                <div
-                  className="px-3 py-1.5 text-[10px] uppercase tracking-wider"
-                  style={{
-                    color: 'var(--pg-text-muted)',
-                    background: 'var(--pg-bg-tertiary)',
-                  }}
-                >
-                  Other Languages
+          {exampleMenuOpen && (
+            <div
+              role="listbox"
+              className="absolute top-full left-0 mt-1 min-w-56 rounded-lg shadow-xl overflow-hidden z-50"
+              style={{
+                border: '1px solid var(--pg-border)',
+                background: 'var(--pg-bg-secondary)',
+              }}
+            >
+              {languageExamples.length > 0 ? (
+                languageExamples.map((example) => (
+                  <button
+                    key={example.id}
+                    role="option"
+                    aria-selected={false}
+                    onClick={() => {
+                      onLoadExample(example);
+                      setExampleMenuOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 transition-colors duration-100"
+                    style={{
+                      borderBottom: '1px solid var(--pg-border)',
+                      color: 'var(--pg-text-primary)',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background =
+                        'var(--pg-bg-surface-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }}
+                  >
+                    <div className="text-xs font-medium">{example.label}</div>
+                    <div className="text-[10px] mt-0.5" style={{ color: 'var(--pg-text-muted)' }}>
+                      {example.description}
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <div className="px-3 py-3 text-xs" style={{ color: 'var(--pg-text-muted)' }}>
+                  No examples for this language yet.
                 </div>
-                {exampleSnippets
-                  .filter((s) => s.language !== language)
-                  .map((snippet) => (
-                    <button
-                      key={snippet.id}
-                      role="option"
-                      aria-selected={false}
-                      onClick={() => {
-                        onLoadSnippet(snippet);
-                        setSnippetMenuOpen(false);
-                      }}
-                      className="w-full text-left px-3 py-2 transition-colors duration-100"
-                      style={{
-                        borderBottom: '1px solid var(--pg-border)',
-                        color: 'var(--pg-text-muted)',
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background =
-                          'var(--pg-bg-surface-hover)';
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = 'transparent';
-                      }}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs font-medium">
-                        <span>{snippet.label}</span>
-                        <span
-                          className="px-1 py-0.5 rounded text-[9px]"
-                          style={{ background: 'var(--pg-bg-tertiary)' }}
-                        >
-                          {snippet.language}
-                        </span>
-                      </div>
-                      <div className="text-[10px] mt-0.5">{snippet.description}</div>
-                    </button>
-                  ))}
-              </>
-            )}
-          </div>
-        )}
+              )}
+
+              {/* Show other languages' examples as dimmed */}
+              {examples.filter((s) => s.language !== language).length > 0 && (
+                <>
+                  <div
+                    className="px-3 py-1.5 text-[10px] uppercase tracking-wider"
+                    style={{
+                      color: 'var(--pg-text-muted)',
+                      background: 'var(--pg-bg-tertiary)',
+                    }}
+                  >
+                    Other Languages
+                  </div>
+                  {examples
+                    .filter((s) => s.language !== language)
+                    .map((example) => (
+                      <button
+                        key={example.id}
+                        role="option"
+                        aria-selected={false}
+                        onClick={() => {
+                          onLoadExample(example);
+                          setExampleMenuOpen(false);
+                        }}
+                        className="w-full text-left px-3 py-2 transition-colors duration-100"
+                        style={{
+                          borderBottom: '1px solid var(--pg-border)',
+                          color: 'var(--pg-text-muted)',
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.background =
+                            'var(--pg-bg-surface-hover)';
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background = 'transparent';
+                        }}
+                      >
+                        <div className="flex items-center gap-1.5 text-xs font-medium">
+                          <span>{example.label}</span>
+                          <span
+                            className="px-1 py-0.5 rounded text-[9px]"
+                            style={{ background: 'var(--pg-bg-tertiary)' }}
+                          >
+                            {example.language}
+                          </span>
+                        </div>
+                        <div className="text-[10px] mt-0.5">{example.description}</div>
+                      </button>
+                    ))}
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex-1" />
@@ -246,7 +255,7 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
       {/* Settings gear */}
       <button
         onClick={onOpenSettings}
-        className="p-1.5 rounded-md transition-colors duration-150"
+        className="p-1.5 rounded-md transition-colors duration-150 shrink-0"
         style={{ color: 'var(--pg-text-muted)' }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLElement).style.color = 'var(--pg-text-primary)';

@@ -1,8 +1,9 @@
 /**
  * Output sanitization utilities for the Playground.
  *
- * Prevents XSS in console output, handles circular references,
- * limits output size, and guards against prototype pollution.
+ * Handles circular references, limits output size, and guards against
+ * prototype pollution. Console text is never HTML-escaped here: React escapes
+ * text nodes when it renders them, so escaping first shows `&quot;` to the learner.
  */
 
 /** Maximum length of a single stringified output entry */
@@ -13,26 +14,6 @@ export const MAX_CONSOLE_ENTRIES = 500;
 
 /** Maximum recursion depth for object stringification */
 const MAX_DEPTH = 10;
-
-/** Characters that could trigger HTML/script injection */
-const HTML_ESCAPE_MAP: Record<string, string> = {
-  '&': '&amp;',
-  '<': '&lt;',
-  '>': '&gt;',
-  '"': '&quot;',
-  "'": '&#x27;',
-  '/': '&#x2F;',
-  '`': '&#x60;',
-};
-
-const HTML_ESCAPE_RE = /[&<>"'/`]/g;
-
-/**
- * HTML-encode a string to prevent XSS when displayed in the console.
- */
-export function escapeHtml(str: string): string {
-  return str.replace(HTML_ESCAPE_RE, (ch) => HTML_ESCAPE_MAP[ch] ?? ch);
-}
 
 /**
  * Safely stringify any value for display, guarding against:
@@ -47,14 +28,6 @@ export function escapeHtml(str: string): string {
 export function sanitizeOutput(value: unknown): string {
   const raw = safeStringify(value, MAX_DEPTH);
   return truncateString(raw, MAX_ENTRY_LENGTH);
-}
-
-/**
- * Full sanitization pipeline: stringify → HTML-escape → truncate.
- * Use this when the output will be rendered as HTML (e.g., innerHTML).
- */
-export function sanitizeForDisplay(value: unknown): string {
-  return escapeHtml(sanitizeOutput(value));
 }
 
 /**

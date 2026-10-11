@@ -4,7 +4,7 @@
 
 > **This guide describes the code as it is today, and part of it will change.** [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) replaces the React Flow lenses with the 2D/3D views the stories use, and changes what a step records. [How to Add a New Visualization Lens](#how-to-add-a-new-visualization-lens) describes the current mechanism, which that work will replace.
 >
-> **Words.** The prose follows the glossary in [CONTEXT.md](../CONTEXT.md): the record of a run is a **trace** made of **steps**, prebuilt code is an **example**, and the output pane is the **console**. The code has not been renamed yet, so file and identifier names keep their old words: `StateSnapshot` is the data of one step, `useTimeline.ts` and `TimelinePlayer.tsx` move through the steps of a trace, and `exampleSnippets.ts` holds the examples.
+> **Words.** The prose follows the glossary in [CONTEXT.md](../CONTEXT.md): the record of a run is a **trace** made of **steps**, prebuilt code is an **example**, and the output pane is the **console**. The code has not been renamed yet, so file and identifier names keep their old words: `StateSnapshot` is the data of one step, and `useTimeline.ts` and `TimelinePlayer.tsx` move through the steps of a trace.
 
 ---
 
@@ -81,7 +81,7 @@ src/features/playground/
 │   └── pyodide-loader.ts          # Loads Pyodide
 ├── utils/
 │   ├── codeTemplates.ts           # Default starter code per language
-│   ├── exampleSnippets.ts         # The examples
+│   ├── examples.ts                # The examples
 │   └── sanitize.ts                # XSS prevention + output limits
 ├── components/
 │   ├── editor/
@@ -207,7 +207,7 @@ const LANGUAGE_MAP: Record<PlaygroundLanguage, string> = {
 
 5. **Wire it into `PlaygroundApp.tsx`** — add the language to the `consoleEntries` selection logic and execution handlers.
 
-6. **Add examples** in `utils/exampleSnippets.ts`.
+6. **Add examples** in `utils/examples.ts`.
 
 7. **Update `LanguagePicker.tsx`** to show the new language in the dropdown.
 
@@ -255,7 +255,7 @@ All playground styling is scoped under `[data-theme="playground"]` via CSS custo
 
 ## How to Add Examples
 
-An example is prebuilt code the learner can load and run, with a suggested lens. Edit `utils/exampleSnippets.ts`:
+An example is prebuilt code the learner can load and run, with a suggested lens. Edit `utils/examples.ts`:
 
 ```ts
 {
@@ -295,7 +295,7 @@ Examples appear in the toolbar's "Examples" dropdown, filtered by the currently 
 
 ### Output Sanitization
 
-- Everything written to the console is HTML-escaped via `escapeHtml()` before rendering.
+- Everything written to the console is rendered as a React text node, which React escapes. It is never HTML-escaped by hand first (that showed `&quot;` to the learner) and never set through `dangerouslySetInnerHTML`.
 - `sanitizeOutput()` handles circular references, prototype pollution keys (`__proto__`, `constructor`), BigInt, Symbol, and deeply nested objects.
 - Entry counts capped at `MAX_CONSOLE_ENTRIES` (500).
 - Individual entries capped at `MAX_ENTRY_LENGTH` (10 KB).
