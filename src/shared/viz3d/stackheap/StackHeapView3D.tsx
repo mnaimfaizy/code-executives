@@ -26,10 +26,12 @@ import {
   OBJECT_LABEL_LIFT,
   STACK_X,
   cellPos,
+  frameLabelPlan,
   frameY,
   layoutFor,
   refArc,
   type Arc,
+  type FrameLabelPlan,
   type StackHeapLayout,
 } from './layout';
 
@@ -82,6 +84,22 @@ const lineStyle = (dense: boolean): React.CSSProperties | undefined =>
 const titleClass = (dense: boolean) => (dense ? 'font-bold' : 'flex items-center gap-2 font-bold');
 const badgeGap = (dense: boolean) => (dense ? ' ml-2' : '');
 
+/**
+ * Frame label cards. `half` is half the height of the one-row card (name, one row of slots,
+ * padding and border) and `line` its line height, both in px: a stacked card starts from the
+ * one-row card's edge and grows away from it, so its neighbour on the other side sees no change.
+ */
+const FRAME_CARD = {
+  story: { className: 'border px-2 py-0.5 text-[11px] leading-[14px]', half: 17, line: 14 },
+  dense: { className: 'border px-2 text-[11px] leading-[13px]', half: 14, line: 13 },
+};
+/** A stacked card leans further from the heap: its right edge stays over the slab's front. */
+const STACKED_FRAME_LEAN = '-75%';
+
+/** Lines a stacked frame label adds to the one-row label (which has one line of slots). */
+const extraLines = (plan: FrameLabelPlan) =>
+  plan.stacked ? plan.slots.length + (plan.more > 0 ? 1 : 0) - 1 : 0;
+
 // ---- Stack ----------------------------------------------------------------------------
 
 interface FrameEntry {
@@ -96,10 +114,12 @@ const FrameSlab: React.FC<{
   focused: boolean;
   root: boolean;
   focus: readonly string[];
+  /** How the label lays out the frame's slots: one row, or one per line. */
+  plan: FrameLabelPlan;
   dense: boolean;
   P: VizPalette;
   instant: boolean;
-}> = ({ entry, exiting, isTop, focused, root, focus, dense, P, instant }) => {
+}> = ({ entry, exiting, isTop, focused, root, focus, plan, dense, P, instant }) => {
   const group = useRef<THREE.Group>(null);
   const mat = useRef<THREE.MeshLambertMaterial>(null);
   const targetY = frameY(entry.index) + (exiting ? 1.6 : 0);
@@ -110,6 +130,8 @@ const FrameSlab: React.FC<{
   });
 
   const highlight = focused || root;
+  // An overfull frame with no room to stack takes the dense card: one line, cut at its width.
+  const tight = dense || (!plan.stacked && plan.cut);
   const role = isTop ? P.frameActive : P.frame;
   return (
     <group ref={group} position={[STACK_X, frameY(entry.index) + (instant ? 0 : 2), 0]}>
@@ -128,50 +150,122 @@ const FrameSlab: React.FC<{
           <meshBasicMaterial color={P.root} transparent opacity={0.55} />
         </mesh>
       )}
-      <Label
-        position={[0, 0, FRAME_SIZE[2] / 2 + 0.02]}
-        // A dense frame label leans away from the heap, clear of the back row's labels.
-        anchor={dense ? 'translate(-65%, -50%)' : 'translate(-50%, -50%)'}
-        opacity={exiting ? 0 : 1}
-        fadeMs={250}
-        instant={instant}
-        className={
-          dense
-            ? 'border px-2 text-[11px] leading-[13px]'
-            : 'border px-2 py-0.5 text-[11px] leading-[14px]'
-        }
-        style={{
-          ...cardStyle(P, dense ? DENSE_FRAME_WIDTH : undefined),
-          borderColor: highlight ? P.label.focusBorder : P.label.frameBorder,
-        }}
-      >
-        <div className={titleClass(dense)} style={{ color: P.text.frameName, ...lineStyle(dense) }}>
-          {entry.frame.name}
-          {root && (
-            <span
-              className={`text-[9px] font-bold${badgeGap(dense)}`}
-              style={{ color: P.text.root }}
-            >
-              ROOT
-            </span>
-          )}
-        </div>
-        <div className={dense ? undefined : 'flex gap-2.5'} style={lineStyle(dense)}>
-          {entry.frame.slots.map((s, i) => {
-            const f = focus.includes(slotKey(entry.frame.id, s.name));
-            return (
+      {plan.stacked ? (
+        <StackedFrameLabel
+          frame={entry.frame}
+          plan={plan}
+          exiting={exiting}
+          highlight={highlight}
+          root={root}
+          focus={focus}
+          dense={dense}
+          P={P}
+          instant={instant}
+        />
+      ) : (
+        <Label
+          position={[0, 0, FRAME_SIZE[2] / 2 + 0.02]}
+          // A dense frame label leans away from the heap, clear of the back row's labels.
+          anchor={tight ? 'translate(-65%, -50%)' : 'translate(-50%, -50%)'}
+          opacity={exiting ? 0 : 1}
+          fadeMs={250}
+          instant={instant}
+          className={FRAME_CARD[tight ? 'dense' : 'story'].className}
+          style={{
+            ...cardStyle(P, tight ? DENSE_FRAME_WIDTH : undefined),
+            borderColor: highlight ? P.label.focusBorder : P.label.frameBorder,
+          }}
+        >
+          <div
+            className={titleClass(tight)}
+            style={{ color: P.text.frameName, ...lineStyle(tight) }}
+          >
+            {entry.frame.name}
+            {root && (
               <span
-                key={s.name}
-                className={`${f ? 'font-bold' : ''}${dense && i > 0 ? ' ml-2.5' : ''}`}
-                style={{ color: f ? P.text.onFocus : P.text.secondary }}
+                className={`text-[9px] font-bold${badgeGap(tight)}`}
+                style={{ color: P.text.root }}
               >
-                {s.name}: {s.refId ? '●→' : s.value}
+                ROOT
               </span>
-            );
-          })}
-        </div>
-      </Label>
+            )}
+          </div>
+          <div className={tight ? undefined : 'flex gap-2.5'} style={lineStyle(tight)}>
+            {entry.frame.slots.map((s, i) => {
+              const f = focus.includes(slotKey(entry.frame.id, s.name));
+              return (
+                <span
+                  key={s.name}
+                  className={`${f ? 'font-bold' : ''}${tight && i > 0 ? ' ml-2.5' : ''}`}
+                  style={{ color: f ? P.text.onFocus : P.text.secondary }}
+                >
+                  {s.name}: {s.refId ? '●→' : s.value}
+                </span>
+              );
+            })}
+          </div>
+        </Label>
+      )}
     </group>
+  );
+};
+
+/**
+ * The label of a frame with more slots than one row holds: its slots one per line, like a heap
+ * object's label, capped by the plan with a final `+N more` line. Every line is cut at the
+ * card's width.
+ */
+const StackedFrameLabel: React.FC<{
+  frame: StackFrame;
+  plan: Extract<FrameLabelPlan, { stacked: true }>;
+  exiting: boolean;
+  highlight: boolean;
+  root: boolean;
+  focus: readonly string[];
+  dense: boolean;
+  P: VizPalette;
+  instant: boolean;
+}> = ({ frame, plan, exiting, highlight, root, focus, dense, P, instant }) => {
+  const card = FRAME_CARD[dense ? 'dense' : 'story'];
+  // The card keeps the one-row card's top edge when it grows down, and its bottom edge when
+  // it grows up.
+  const y = plan.grow === 'down' ? `-${card.half}px` : `calc(-100% + ${card.half}px)`;
+  return (
+    <Label
+      position={[0, 0, FRAME_SIZE[2] / 2 + 0.02]}
+      anchor={`translate(${STACKED_FRAME_LEAN}, ${y})`}
+      opacity={exiting ? 0 : 1}
+      fadeMs={250}
+      instant={instant}
+      className={card.className}
+      style={{
+        ...cardStyle(P, DENSE_FRAME_WIDTH),
+        borderColor: highlight ? P.label.focusBorder : P.label.frameBorder,
+      }}
+    >
+      <div className="font-bold" style={{ color: P.text.frameName, ...lineStyle(true) }}>
+        {frame.name}
+        {root && (
+          <span className="ml-2 text-[9px] font-bold" style={{ color: P.text.root }}>
+            ROOT
+          </span>
+        )}
+      </div>
+      {plan.slots.map((i) => {
+        const s = frame.slots[i];
+        const f = focus.includes(slotKey(frame.id, s.name));
+        return (
+          <div
+            key={s.name}
+            className={f ? 'font-bold' : undefined}
+            style={{ color: f ? P.text.onFocus : P.text.secondary, ...lineStyle(true) }}
+          >
+            {s.name}: {s.refId ? '●→' : s.value}
+          </div>
+        );
+      })}
+      {plan.more > 0 && <div style={{ color: P.text.muted }}>+{plan.more} more</div>}
+    </Label>
   );
 };
 
@@ -399,7 +493,12 @@ const RootPulse: React.FC<{ color: string; reach: number }> = ({ color, reach })
 
 // ---- Regions --------------------------------------------------------------------------
 
-const Regions: React.FC<{ layout: StackHeapLayout; P: VizPalette }> = ({ layout, P }) => {
+const Regions: React.FC<{
+  layout: StackHeapLayout;
+  /** Px the bottom frame's label grows downward, over the stack caption's usual place. */
+  stackLabelDrop: number;
+  P: VizPalette;
+}> = ({ layout, stackLabelDrop, P }) => {
   const { heapCenter, heapSize } = layout;
   return (
     <>
@@ -421,13 +520,23 @@ const Regions: React.FC<{ layout: StackHeapLayout; P: VizPalette }> = ({ layout,
       <RegionLabel
         position={[STACK_X, -0.1, FRAME_SIZE[2] / 2 + 0.5]}
         color={P.region.label}
+        // Under a stacked bottom label the caption moves down with the card's lower edge, and
+        // ends where the card does, clear of the heap's front rows.
+        anchor={stackLabelDrop > 0 ? `translate(-100%, ${stackLabelDrop}px)` : undefined}
         style={{ fontFamily: MONO }}
       >
         CALL STACK
       </RegionLabel>
       <RegionLabel
-        position={[heapCenter[0], -0.1, heapCenter[2] + heapSize[2] / 2]}
+        // A dense floor's front edge lies under its front row's labels, so the caption stands
+        // beside the floor's front-right corner instead.
+        position={
+          layout.dense
+            ? [layout.floor[1][0], -0.1, layout.floor[1][2]]
+            : [heapCenter[0], -0.1, heapCenter[2] + heapSize[2] / 2]
+        }
         color={P.region.label}
+        anchor={layout.dense ? 'translate(10px, -50%)' : undefined}
         style={{ fontFamily: MONO }}
       >
         HEAP
@@ -466,6 +575,14 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
     [markUnreachable, snapshot]
   );
   const marking = gcPhase === 'mark';
+  const planFor = ({ frame, index }: FrameEntry) =>
+    frameLabelPlan(index, snapshot.frames.length, frame.slots.length, (i) =>
+      focus.includes(slotKey(frame.id, frame.slots[i].name))
+    );
+  const bottom = frameEntries[0];
+  const stackLabelDrop = bottom
+    ? extraLines(planFor(bottom)) * FRAME_CARD[layout.dense ? 'dense' : 'story'].line
+    : 0;
 
   return (
     <>
@@ -473,7 +590,7 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
       <hemisphereLight args={[P.lighting.sky, P.lighting.ground, 1.4]} />
       <directionalLight position={[6, 12, 8]} intensity={1.6} />
 
-      <Regions layout={layout} P={P} />
+      <Regions layout={layout} stackLabelDrop={stackLabelDrop} P={P} />
 
       {frames.map(({ item, exiting }) => (
         <FrameSlab
@@ -484,6 +601,7 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
           focused={focus.includes(item.frame.id)}
           root={marking}
           focus={focus}
+          plan={planFor(item)}
           dense={layout.dense}
           P={P}
           instant={instant}

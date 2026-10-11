@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 
-const STORAGE_KEY = 'pg-pane-layout';
-const DEFAULT_DIVIDERS: [number, number] = [0.33, 0.66];
+// v2: the defaults changed when the lens moved to the shared views, which need the widest pane
+const STORAGE_KEY = 'pg-pane-layout-v2';
+const DEFAULT_DIVIDERS: [number, number] = [0.3, 0.78];
 const MIN_FRACTION = 0.15;
 
 /**

@@ -1,8 +1,14 @@
 import React from 'react';
+import type { VizTheme } from '../../viz/palette';
+
+const HINT: Record<VizTheme, string> = {
+  light: 'text-slate-400',
+  dark: 'text-[#a0a0cc]',
+};
 
 /** The standing hint under the 3D canvas. */
-export const Viewer3DHint: React.FC = () => (
-  <div className="pointer-events-none absolute bottom-2 left-3 text-[11px] text-slate-400">
+export const Viewer3DHint: React.FC<{ theme?: VizTheme }> = ({ theme = 'light' }) => (
+  <div className={`pointer-events-none absolute bottom-2 left-3 text-[11px] ${HINT[theme]}`}>
     Drag to orbit · right-drag to pan · Ctrl + scroll to zoom
   </div>
 );

@@ -68,9 +68,6 @@ export default defineConfig({
             if (id.includes('monaco-editor')) {
               return 'vendor-monaco';
             }
-            if (id.includes('@xyflow')) {
-              return 'vendor-xyflow';
-            }
 
             // Let Rollup group the rest of node_modules automatically.
             // The previous manual vendor splitting created circular chunk dependencies

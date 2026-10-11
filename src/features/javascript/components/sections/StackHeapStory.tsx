@@ -1,6 +1,5 @@
-import React, { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import React, { lazy, useCallback, useEffect, useRef, useState } from 'react';
 import {
-  Box,
   ChevronLeft,
   ChevronRight,
   Maximize2,
@@ -8,56 +7,35 @@ import {
   Pause,
   Play,
   RotateCcw,
-  Square,
 } from 'lucide-react';
-import { ErrorBoundary } from '../../../../shared/components/feedback';
 import { useReducedMotion, useStoryViewer } from '../../../../shared/hooks';
+import { useViewChoice } from '../../../../shared/hooks/useViewChoice';
+import ViewToggle from '../../../../shared/components/viz/ViewToggle';
+import View3DBoundary from '../../../../shared/components/viz/View3DBoundary';
 import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
 import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
 import StackHeap2D from '../visualizations/2d/StackHeap2D';
 import { STORY_CODE, STORY_BEATS } from '../../utils/stackHeapStory';
-import { canUseWebGL } from '../../../../shared/utils/webgl';
 
 // three.js + R3F only download when the learner switches to 3D.
 const StackHeap3D = lazy(() => import('../visualizations/3d/StackHeap3D'));
 
-type View = '2d' | '3d';
 type Speed = 'slow' | 'normal' | 'fast';
 
 const SPEED_MS: Record<Speed, number> = { slow: 6000, normal: 4000, fast: 2500 };
 const VIEW_KEY = 'code-executives.stack-heap-story.view';
 const CODE_LINES = STORY_CODE.split('\n');
 
-const readStoredView = (): View | null => {
-  try {
-    const v = window.localStorage.getItem(VIEW_KEY);
-    return v === '2d' || v === '3d' ? v : null;
-  } catch {
-    return null;
-  }
-};
-
 const StackHeapStory: React.FC = () => {
   const reducedMotion = useReducedMotion();
-  const [webgl] = useState(canUseWebGL);
-  const [chosenView, setChosenView] = useState<View | null>(readStoredView);
+  const { view, webgl, chooseView } = useViewChoice(VIEW_KEY);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<Speed>('normal');
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const view: View = webgl && chosenView === '3d' ? '3d' : '2d';
   const beat = STORY_BEATS[index];
   const last = STORY_BEATS.length - 1;
-
-  const chooseView = (v: View) => {
-    setChosenView(v);
-    try {
-      window.localStorage.setItem(VIEW_KEY, v);
-    } catch {
-      // Storage unavailable (private mode): the choice just isn't remembered.
-    }
-  };
 
   const go = useCallback(
     (delta: number) => setIndex((i) => Math.min(last, Math.max(0, i + delta))),
@@ -101,36 +79,7 @@ const StackHeapStory: React.FC = () => {
           </p>
         </div>
 
-        <div
-          role="radiogroup"
-          aria-label="Visualization mode"
-          className="flex rounded-lg border border-slate-300 bg-white p-0.5 shadow-sm"
-        >
-          {(['2d', '3d'] as const).map((v) => {
-            const disabled = v === '3d' && !webgl;
-            return (
-              <button
-                key={v}
-                type="button"
-                role="radio"
-                aria-checked={view === v}
-                disabled={disabled}
-                title={
-                  disabled ? '3D needs WebGL, which is unavailable in this browser' : undefined
-                }
-                onClick={() => chooseView(v)}
-                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
-                  view === v
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-600 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40'
-                }`}
-              >
-                {v === '2d' ? <Square className="h-3.5 w-3.5" /> : <Box className="h-3.5 w-3.5" />}
-                {v.toUpperCase()}
-              </button>
-            );
-          })}
-        </div>
+        <ViewToggle view={view} onChange={chooseView} webgl={webgl} />
       </div>
 
       <div className="flex min-w-0 flex-col gap-3 lg:flex-row">
@@ -186,29 +135,9 @@ const StackHeapStory: React.FC = () => {
             }`}
           >
             {view === '3d' ? (
-              <ErrorBoundary
-                fallback={
-                  <div className="relative h-full">
-                    {view2D}
-                    <div className="absolute left-3 top-3 rounded bg-rose-50 px-2 py-1 text-xs text-rose-700">
-                      3D failed to start — showing 2D.
-                    </div>
-                  </div>
-                }
-              >
-                <Suspense
-                  fallback={
-                    <div className="relative h-full">
-                      {view2D}
-                      <div className="absolute inset-0 flex items-center justify-center bg-white/60 text-sm font-medium text-slate-600 backdrop-blur-[1px]">
-                        Loading 3D…
-                      </div>
-                    </div>
-                  }
-                >
-                  <StackHeap3D beat={beat} camera={viewer.camera} instant={reducedMotion} />
-                </Suspense>
-              </ErrorBoundary>
+              <View3DBoundary view2D={view2D}>
+                <StackHeap3D beat={beat} camera={viewer.camera} instant={reducedMotion} />
+              </View3DBoundary>
             ) : (
               view2D
             )}

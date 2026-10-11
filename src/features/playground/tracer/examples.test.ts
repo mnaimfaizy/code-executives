@@ -1,32 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { codeTemplates } from '../utils/codeTemplates';
+import { examples as allExamples } from '../utils/examples';
 import { startTrace } from './trace';
 
-interface Listed {
-  id: string;
-  language: string;
-  code: string;
-}
-
-/**
- * The examples the Playground offers. The file that lists them is being renamed, so this
- * finds it under either name and takes every entry that has JavaScript code.
- */
-const modules = import.meta.glob<Record<string, unknown>>(
-  ['../utils/examples.ts', '../utils/exampleSnippets.ts'],
-  { eager: true }
-);
-const isListed = (entry: unknown): entry is Listed =>
-  typeof entry === 'object' &&
-  entry !== null &&
-  typeof (entry as Listed).code === 'string' &&
-  typeof (entry as Listed).id === 'string';
-const examples = Object.values(modules)
-  .flatMap((module) => Object.values(module))
-  .filter(Array.isArray)
-  .flat()
-  .filter(isListed)
-  .filter((entry) => entry.language === 'javascript');
+const examples = allExamples.filter((example) => example.language === 'javascript');
 
 afterEach(() => {
   vi.useRealTimers();

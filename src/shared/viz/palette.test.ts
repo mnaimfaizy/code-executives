@@ -112,4 +112,14 @@ describe('vizPalette', () => {
       );
     }
   });
+
+  it('keeps the dark regions apart from the surface they sit on', () => {
+    // Seen in the Playground: a floor as dark as the surface vanishes, leaving a bare grid.
+    const { region, surface } = vizPalette.dark;
+    expect(contrast(region.floor, surface)).toBeGreaterThanOrEqual(1.15);
+    expect(contrast(region.plinth, surface)).toBeGreaterThanOrEqual(1.5);
+    // The outline of a 2D region and the 3D floor grid share one colour.
+    expect(contrast(region.stroke, region.fill)).toBeGreaterThanOrEqual(1.5);
+    expect(contrast(region.stroke, region.floor)).toBeGreaterThanOrEqual(1.5);
+  });
 });

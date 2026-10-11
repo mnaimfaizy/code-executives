@@ -43,7 +43,7 @@ There is one Playground, at `/playground` (`src/features/playground/`). It is wh
 - **Editor**: Monaco, with JavaScript, TypeScript and Python selectable
 - **Trace**: The run is recorded as steps; step controls show the line, the call stack and the variables at each step
 - **Console**: What the code printed, in order
-- **Lenses**: Event Loop, Heap & Stack, Data Structures and Streams
+- **Lenses**: Stack & Heap, drawn with the same 2D/3D views the stories use
 - **Examples**: Prebuilt code per language, each with a suggested lens
 
 ### 🧠 **Timed Module Quizzes**
@@ -75,7 +75,6 @@ There is one Playground, at `/playground` (`src/features/playground/`). It is wh
 - **Code Editor**: Monaco Editor (`@monaco-editor/react`) for the Playground
 - **AST Tooling**: Acorn + Astring for JS/TS instrumentation
 - **Python Runtime**: Pyodide (WASM) for in-browser Python execution
-- **Graph Visualization**: @xyflow/react (React Flow) for the Playground's lenses
 
 ### **Visualization Technologies**
 
@@ -398,17 +397,17 @@ Comprehensive database internals module with 7 interactive visualizations coveri
 
 The Playground is the one place where a learner runs their own code and watches what it does. It is a standalone page at `/playground`, with its own layout (no Header/Footer/Sidebar), and lives in `src/features/playground/`. No module has a playground of its own.
 
-Its visualizations are being rebuilt on the same 2D/3D views the stories use, as decided in [ADR 0004](docs/adr/0004-playground-traces-share-the-snapshot.md); until then the lenses show only part of what a run does.
+A run is recorded as a trace: each step holds the same snapshot a story's beat holds, so the lenses draw it with the 2D/3D views the stories use, as decided in [ADR 0004](docs/adr/0004-playground-traces-share-the-snapshot.md). JavaScript and TypeScript record the stack and the heap, with references; Python records values only for now.
 
 - **Editor**: Monaco, with JavaScript, TypeScript and Python selectable
 - **Running code**: Everything runs in the browser. JavaScript and TypeScript go to a sandboxed iframe (`sandbox="allow-scripts"`, a CSP with `default-src 'none'`, network APIs blocked); Python goes to Pyodide (WASM). A run times out after 10 seconds
-- **Trace**: The code is instrumented before it runs (Acorn/Astring for JavaScript, `sys.settrace` for Python) so that the run is recorded as a trace: one step per statement, with the line, the call stack and the variables
+- **Trace**: The code is instrumented before it runs (Acorn/Astring for JavaScript, `sys.settrace` for Python) so that the run is recorded as a trace: one step per statement, with the line and a snapshot of the stack and, for JavaScript and TypeScript, the heap. A trace stops at 2,000 steps, which also ends an infinite loop
 - **Step controls**: Move forward and backward through the steps or play them; Left/Right arrows step, Space plays or pauses, Home/End jump to the first or last step
 - **Console**: What the code printed, capped at 500 entries of at most 10 KB each, HTML-escaped before rendering
-- **Lenses**: Event Loop, Heap & Stack, Data Structures and Streams, drawn with React Flow today
+- **Lenses**: Stack & Heap. The Event Loop lens returns in a later change
 - **Examples**: Prebuilt code per language, each with a suggested lens
 - **Dark theme**: The Playground is the site's only dark page; its styles are scoped under `data-theme="playground"`
-- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for the current structure, lenses, languages and examples
+- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for the structure, tracer, lenses, languages and examples
 
 ## 🛠️ Development
 

@@ -1,6 +1,7 @@
 import { useRef, useCallback, useState } from 'react';
 import type { SandboxFrameHandle } from '../components/execution/SandboxFrame';
-import type { ConsoleEntry, StateSnapshot } from '../types';
+import type { ConsoleEntry } from '../types';
+import type { Trace, TraceLimits } from '../tracer';
 import { DEFAULT_EXECUTION_TIMEOUT_MS } from '../types/playground-v2';
 import { isTextContent, enforceEntryLimit } from '../utils/sanitize';
 
@@ -13,7 +14,8 @@ const MIN_EXECUTION_INTERVAL_MS = 1_000;
 /** Result returned directly from execute() for immediate use by the caller */
 export interface SandboxExecuteResult {
   error: string | null;
-  snapshots: StateSnapshot[];
+  /** The trace of a traced run that reached the sandbox, otherwise null */
+  trace: Trace | null;
 }
 
 /** Options for one execution */
@@ -24,18 +26,20 @@ export interface SandboxExecuteOptions {
    * and to the line of an uncaught error.
    */
   mapLine?: (line: number) => number;
+  /** Set when `code` is instrumented code: the sandbox records a trace within these limits */
+  traceLimits?: TraceLimits;
 }
 
-/** Give every line a step carries its place in the learner's source */
-export function mapSnapshotLines(
-  snapshots: StateSnapshot[],
-  mapLine: (line: number) => number
-): StateSnapshot[] {
-  return snapshots.map((snapshot) => ({
-    ...snapshot,
-    line: mapLine(snapshot.line),
-    callStack: snapshot.callStack.map((frame) => ({ ...frame, line: mapLine(frame.line) })),
-  }));
+/** Give every line a trace carries its place in the learner's source */
+export function mapTraceLines(trace: Trace, mapLine: (line: number) => number): Trace {
+  const mapped: Trace = {
+    ...trace,
+    steps: trace.steps.map((step) => ({ ...step, line: mapLine(step.line) })),
+  };
+  if (trace.error?.line !== undefined) {
+    mapped.error = { ...trace.error, line: mapLine(trace.error.line) };
+  }
+  return mapped;
 }
 
 interface UseSandboxReturn {
@@ -55,10 +59,6 @@ interface UseSandboxReturn {
   error: string | null;
   /** Ref to attach to the SandboxFrame component */
   sandboxRef: React.RefObject<SandboxFrameHandle | null>;
-  /** Snapshots from the last instrumented execution */
-  snapshots: StateSnapshot[];
-  /** Clear the snapshots */
-  clearSnapshots: () => void;
 }
 
 /**
@@ -71,16 +71,11 @@ export function useSandbox(): UseSandboxReturn {
   const [isRunning, setIsRunning] = useState(false);
   const [entries, setEntries] = useState<ConsoleEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [snapshots, setSnapshots] = useState<StateSnapshot[]>([]);
   const lastExecutionRef = useRef<number>(0);
 
   const clearEntries = useCallback((): void => {
     setEntries([]);
     setError(null);
-  }, []);
-
-  const clearSnapshots = useCallback((): void => {
-    setSnapshots([]);
   }, []);
 
   const reportError = useCallback((message: string, line?: number): void => {
@@ -105,7 +100,7 @@ export function useSandbox(): UseSandboxReturn {
       if (!sandbox) {
         const msg = 'Sandbox not initialized';
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Input validation: max code length
@@ -123,7 +118,7 @@ export function useSandbox(): UseSandboxReturn {
             },
           ])
         );
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Input validation: reject binary content
@@ -141,7 +136,7 @@ export function useSandbox(): UseSandboxReturn {
             },
           ])
         );
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Rate limiting: max 1 execution per second
@@ -149,7 +144,7 @@ export function useSandbox(): UseSandboxReturn {
       if (now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS) {
         const msg = 'Please wait before running again';
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
       lastExecutionRef.current = now;
 
@@ -157,7 +152,11 @@ export function useSandbox(): UseSandboxReturn {
       setError(null);
 
       try {
-        const result = await sandbox.execute(code, DEFAULT_EXECUTION_TIMEOUT_MS);
+        const result = await sandbox.execute(
+          code,
+          DEFAULT_EXECUTION_TIMEOUT_MS,
+          options?.traceLimits
+        );
         const mapLine = options?.mapLine;
         const resultEntries = mapLine
           ? result.entries.map((entry) =>
@@ -165,16 +164,14 @@ export function useSandbox(): UseSandboxReturn {
             )
           : result.entries;
         setEntries((prev) => enforceEntryLimit([...prev, ...resultEntries]));
-        const resultSnapshots = mapLine
-          ? mapSnapshotLines(result.snapshots ?? [], mapLine)
-          : (result.snapshots ?? []);
-        if (resultSnapshots.length > 0) {
-          setSnapshots(resultSnapshots);
-        }
+        const trace = result.trace ?? null;
         if (result.error) {
           setError(result.error);
         }
-        return { error: result.error ?? null, snapshots: resultSnapshots };
+        return {
+          error: result.error ?? null,
+          trace: trace && mapLine ? mapTraceLines(trace, mapLine) : trace,
+        };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown execution error';
         setError(message);
@@ -189,7 +186,7 @@ export function useSandbox(): UseSandboxReturn {
             },
           ])
         );
-        return { error: message, snapshots: [] };
+        return { error: message, trace: null };
       } finally {
         setIsRunning(false);
       }
@@ -211,7 +208,5 @@ export function useSandbox(): UseSandboxReturn {
     clearEntries,
     error,
     sandboxRef,
-    snapshots,
-    clearSnapshots,
   };
 }

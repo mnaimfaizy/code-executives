@@ -4,10 +4,17 @@
  *
  * The trace function captures: line number, local variables, call stack depth.
  * Internal Pyodide frames are filtered out — only user code is traced.
- * The collected frame data is serialized to JSON and returned to JavaScript.
+ * The collected records are serialized to JSON and returned to JavaScript, where
+ * `parsePythonSteps` turns them into the steps every trace holds (ADR 0004).
+ *
+ * Python records values only: a step's snapshot has frames and no heap objects, so
+ * a list shows as its text and two names for one list cannot be told apart. A record
+ * is taken when a line is about to run, so a step shows what the lines before it did.
  */
 
-import type { StateSnapshot } from '../types';
+import { slotKey } from '../../../shared/snapshot';
+import type { Slot, StackFrame } from '../../../shared/snapshot';
+import type { Step } from '../tracer';
 
 /** Maximum number of steps to capture before sampling */
 const MAX_PYTHON_STEPS = 1000;
@@ -19,8 +26,8 @@ const MAX_PYTHON_STEPS = 1000;
  * 1. Sets up a trace function that fires on every line
  * 2. Captures local variables, call stack, and line numbers
  * 3. Filters out Pyodide internals (exec frames, importlib, etc.)
- * 4. Stores snapshots in a JSON-serializable list
- * 5. Returns the snapshots list after execution
+ * 4. Stores one record per line in a JSON-serializable list
+ * 5. Leaves the list in a global after execution
  */
 export function wrapPythonCodeWithTrace(userCode: string): string {
   // Escape the user code for embedding in a Python string.
@@ -33,7 +40,7 @@ import json
 import base64
 import traceback
 
-_snapshots = []
+_records = []
 _call_stack = []
 _step_counter = [0]
 _MAX_STEPS = ${MAX_PYTHON_STEPS}
@@ -127,16 +134,10 @@ def _trace_function(frame, event, arg):
         local_vars = {k: v for k, v in frame.f_locals.items()
                        if not k.startswith('__') and not callable(v)}
 
-        _snapshots.append({
-            'step': _step_counter[0],
+        _records.append({
             'line': frame.f_lineno,
-            'timestamp': 0,
             'callStack': list(_call_stack),
-            'variables': _capture_vars(local_vars),
-            'heapObjects': [],
-            'microtaskQueue': [],
-            'macrotaskQueue': [],
-            'consoleOutput': []
+            'variables': _capture_vars(local_vars)
         })
         _step_counter[0] += 1
         return _trace_function
@@ -147,25 +148,99 @@ def _trace_function(frame, event, arg):
 _user_code = base64.b64decode('${encoded}').decode('utf-8')
 sys.settrace(_trace_function)
 try:
-    exec(compile(_user_code, _TRACE_FILE, 'exec'))
+    # A namespace of its own, so that the wrapper's imports are not the learner's variables
+    exec(compile(_user_code, _TRACE_FILE, 'exec'), {'__name__': '__main__'})
 except Exception as e:
     print(f"Error: {e}", file=sys.stderr)
 finally:
     sys.settrace(None)
 
-# Make snapshots available to JavaScript
-_instrumentation_result = json.dumps(_snapshots)
+# Make the records available to JavaScript
+_instrumentation_result = json.dumps(_records)
 `;
 }
 
+/** What the trace function records each time a line is about to run */
+interface PythonRecord {
+  line: number;
+  callStack: Array<{ functionName: string }>;
+  /** The locals of the function that is running */
+  variables: Array<{ name: string; value: unknown }>;
+}
+
+const MAX_VALUE_LENGTH = 60;
+
+/** A recorded value as Python would write it */
+function pythonText(value: unknown): string {
+  if (value === null || value === undefined) return 'None';
+  if (typeof value === 'boolean') return value ? 'True' : 'False';
+  if (typeof value === 'string') return `'${value}'`;
+  if (Array.isArray(value)) return `[${value.map(pythonText).join(', ')}]`;
+  if (typeof value === 'object') {
+    const pairs = Object.entries(value).map(([key, item]) => `'${key}': ${pythonText(item)}`);
+    return `{${pairs.join(', ')}}`;
+  }
+  return String(value);
+}
+
+const cut = (text: string): string =>
+  text.length > MAX_VALUE_LENGTH ? `${text.slice(0, MAX_VALUE_LENGTH)}…` : text;
+
 /**
- * Parse the JSON snapshots string returned from Python execution.
+ * Turn the JSON the trace function produced into steps.
+ *
+ * A record holds the locals of the running function only, so a frame further down the
+ * stack keeps the slots it had when it was last on top. A frame's id is its depth.
  */
-export function parsePythonSnapshots(jsonStr: string): StateSnapshot[] {
+export function parsePythonSteps(json: string): Step[] {
+  let records: PythonRecord[];
   try {
-    const raw = JSON.parse(jsonStr) as StateSnapshot[];
-    return raw;
+    const parsed: unknown = JSON.parse(json);
+    if (!Array.isArray(parsed)) return [];
+    records = parsed as PythonRecord[];
   } catch {
     return [];
   }
+
+  const steps: Step[] = [];
+  /** The slots each depth had when it was last on top */
+  const known: Slot[][] = [];
+  let previous: StackFrame[] = [];
+
+  for (const record of records) {
+    // The module's own code is the first entry of the call stack
+    const names = record.callStack.map(({ functionName }) =>
+      functionName === '<module>' ? 'global' : functionName
+    );
+    if (names.length === 0) names.push('global');
+    const top = names.length - 1;
+    known.length = names.length;
+    known[top] = record.variables.map(({ name, value }) => ({
+      name,
+      value: cut(pythonText(value)),
+    }));
+
+    const frames: StackFrame[] = names.map((name, depth) => ({
+      id: `frame-${depth}`,
+      name,
+      slots: known[depth] ?? [],
+    }));
+
+    const before = previous[top];
+    const focus = frames[top].slots
+      .filter((slot) => before?.slots.find((old) => old.name === slot.name)?.value !== slot.value)
+      .map((slot) => slotKey(frames[top].id, slot.name));
+    if (!before) focus.unshift(frames[top].id);
+
+    steps.push({
+      snapshot: { frames, objects: [] },
+      line: record.line,
+      focus,
+      kind: 'statement',
+      consoleLength: 0,
+      truncated: false,
+    });
+    previous = frames;
+  }
+  return steps;
 }

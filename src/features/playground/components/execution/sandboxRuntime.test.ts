@@ -4,6 +4,8 @@
  * script's messages to the host arrive on the same window.
  */
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { instrument, resolveTraceLimits, runtimeSource, TRACER_NAME } from '../../tracer';
+import type { Trace } from '../../tracer';
 import { SANDBOX_RUNTIME_SOURCE } from './sandboxRuntime';
 
 interface Report {
@@ -11,12 +13,17 @@ interface Report {
   runId: number;
   error?: string;
   entries: Array<{ type: string; args: string[]; line?: number }>;
+  trace: Trace | null;
 }
 
 let nextRunId = 0;
 
 /** Send code to the sandbox script and wait for its report */
-function runInSandbox(code: string, timeout = 2_000): Promise<Report & { elapsedMs: number }> {
+function runInSandbox(
+  code: string,
+  timeout = 2_000,
+  tracer?: object
+): Promise<Report & { elapsedMs: number }> {
   const runId = ++nextRunId;
   const startedAt = performance.now();
   return new Promise((resolve) => {
@@ -28,7 +35,18 @@ function runInSandbox(code: string, timeout = 2_000): Promise<Report & { elapsed
       resolve({ ...(data as Report), elapsedMs: performance.now() - startedAt });
     };
     window.addEventListener('message', onMessage);
-    window.postMessage({ type: 'execute', code, timeout, runId }, '*');
+    window.postMessage({ type: 'execute', code, timeout, runId, tracer }, '*');
+  });
+}
+
+/** Instrument code and run it the way the Playground does with Trace on */
+function runTraced(code: string, maxSteps?: number): Promise<Report & { elapsedMs: number }> {
+  const instrumented = instrument(code);
+  if (!instrumented.ok) throw new Error(instrumented.error.message);
+  return runInSandbox(instrumented.code, 2_000, {
+    runtime: runtimeSource,
+    name: TRACER_NAME,
+    limits: resolveTraceLimits({ maxSteps }),
   });
 }
 
@@ -199,5 +217,102 @@ describe('sandbox runtime', () => {
     await wait(80);
     window.removeEventListener('message', onMessage);
     expect(reports).toEqual([]);
+  });
+
+  describe('a traced run', () => {
+    it('reports no trace for code that was not instrumented', async () => {
+      const report = await runInSandbox('console.log("plain")');
+      expect(report.trace).toBeNull();
+    });
+
+    it('records two slots that reference one array as one object', async () => {
+      const report = await runTraced('const a = [1];\nconst b = a;\nb.push(2);\nconsole.log(a);');
+      expect(report.type).toBe('result');
+      const trace = report.trace!;
+      expect(trace.outcome).toBe('completed');
+      expect(trace.steps.map((step) => step.line)).toContain(3);
+
+      const { frames, objects } = trace.steps[trace.steps.length - 1].snapshot;
+      const slot = (name: string) => frames[0].slots.find((s) => s.name === name);
+      expect(slot('a')?.refId).toBeDefined();
+      expect(slot('b')?.refId).toBe(slot('a')?.refId);
+      expect(objects.filter((object) => object.kind === 'array')).toHaveLength(1);
+      // Each step knows how much of the Console had been printed by then
+      expect(trace.steps[0].consoleLength).toBe(0);
+      expect(trace.steps[trace.steps.length - 1].consoleLength).toBe(1);
+      // What crossed postMessage is plain data
+      expect(structuredClone(trace)).toEqual(trace);
+    });
+
+    it('waits for a timer, and the steps of its callback are in the trace', async () => {
+      const report = await runTraced(
+        'let count = 0;\nsetTimeout(() => {\n  count = count + 1;\n  console.log("late", count);\n}, 30);\nconsole.log("first");'
+      );
+      expect(report.type).toBe('result');
+      expect(printed(report)).toEqual(['first', 'late 1']);
+      const trace = report.trace!;
+      expect(trace.outcome).toBe('completed');
+
+      const lines = trace.steps.map((step) => step.line);
+      expect(lines.lastIndexOf(6)).toBeLessThan(lines.indexOf(3));
+      expect(lines).toContain(4);
+      const last = trace.steps[trace.steps.length - 1];
+      expect(last.snapshot.frames[0].slots.find((s) => s.name === 'count')?.value).toBe('1');
+    });
+
+    it('ends an infinite loop at the step limit, keeps its steps and says so once', async () => {
+      const report = await runTraced('let i = 0;\nwhile (true) {\n  i++;\n}', 50);
+      expect(report.type).toBe('result');
+      expect(report.error).toBeUndefined();
+      expect(report.elapsedMs).toBeLessThan(1_500);
+      const trace = report.trace!;
+      expect(trace.outcome).toBe('step-limit');
+      expect(trace.error).toBeUndefined();
+      expect(trace.steps).toHaveLength(50);
+      expect(report.entries).toEqual([
+        {
+          type: 'warn',
+          args: ['Stopped after 50 steps. The steps recorded so far are kept.'],
+        },
+      ]);
+    });
+
+    it('ends a loop with nothing to record, and one that timers keep going', async () => {
+      const empty = await runTraced('while (true) {}');
+      expect(empty.trace?.outcome).toBe('step-limit');
+      expect(printed(empty)).toEqual([
+        'Stopped after 2,000 loop turns or calls that recorded no step. The steps recorded so far are kept.',
+      ]);
+
+      const ticking = await runTraced('let n = 0;\nsetInterval(() => {\n  n++;\n}, 1);', 20);
+      expect(ticking.type).toBe('result');
+      expect(ticking.trace?.outcome).toBe('step-limit');
+      expect(ticking.entries).toHaveLength(1);
+      expect(ticking.elapsedMs).toBeLessThan(1_500);
+    });
+
+    it('reports a thrown error with the line of the learner’s code, and keeps the steps', async () => {
+      const report = await runTraced(
+        'const a = 1;\nfunction fail() {\n  throw new Error("boom");\n}\nfail();\nconsole.log("never");'
+      );
+      expect(report.type).toBe('error');
+      expect(report.error).toBe('Error: boom');
+      expect(report.entries).toEqual([{ type: 'error', args: ['Uncaught Error: boom'], line: 3 }]);
+      const trace = report.trace!;
+      expect(trace.outcome).toBe('error');
+      expect(trace.error).toEqual({ message: 'Error: boom', line: 3 });
+      expect(trace.steps.length).toBeGreaterThan(2);
+    });
+
+    // jsdom does not raise unhandledrejection, so a rejected promise is checked in a browser
+    it('reports an error thrown in a timer', async () => {
+      const timer = await runTraced(
+        'console.log("before");\nsetTimeout(() => {\n  null.x;\n}, 10);'
+      );
+      expect(timer.type).toBe('error');
+      expect(timer.trace?.outcome).toBe('error');
+      expect(timer.entries[1].args[0]).toMatch(/^Uncaught TypeError: /);
+      expect(timer.entries[1].line).toBe(3);
+    });
   });
 });

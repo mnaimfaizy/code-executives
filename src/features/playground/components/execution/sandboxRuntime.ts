@@ -8,6 +8,11 @@
  * work drain before it checks. A run that still has timers at the execution
  * timeout (an interval that is never cleared) ends there with what it has
  * collected and a note in the Console.
+ *
+ * A traced run also gets the tracer runtime as source and its limits. The script
+ * builds the tracer, hands it to the instrumented code, and sends the trace back
+ * with the report. A trace that has stopped (the step limit, or an error nothing
+ * caught) ends the run there, with the steps recorded so far.
  */
 export const SANDBOX_RUNTIME_SOURCE = String.raw`
 (function() {
@@ -47,7 +52,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
   var MAX_ENTRIES = 500;
   var MAX_ENTRY_LENGTH = 10240;
 
-  /** The run in progress: { id, timers, done, failed, error, checkQueued, capId } */
+  /** The run in progress: { id, timers, done, failed, error, checkQueued, capId, tracer, maxSteps } */
   var run = null;
 
   function safeStringify(val) {
@@ -114,20 +119,8 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     return 0;
   })();
 
-  // Line of the code that was run where an error came from, when it can be known.
-  // Traced code is rewritten, so its stack lines mean nothing: the line of the last
-  // step is used instead, and only while the synchronous part runs, because
-  // callbacks inside expressions record no steps.
-  function errorLine(err, isSync) {
-    if (typeof window.__tracker__ !== 'undefined' && window.__tracker__) {
-      if (!isSync) return undefined;
-      try {
-        var snapshots = window.__tracker__.getSnapshots();
-        return snapshots.length > 0 ? snapshots[snapshots.length - 1].line || undefined : undefined;
-      } catch (e) {
-        return undefined;
-      }
-    }
+  // Line of the code that was run where an error came from, when it can be known
+  function errorLine(err) {
     var line = stackLine(err);
     return line && line > WRAPPER_LINES ? line - WRAPPER_LINES : undefined;
   }
@@ -137,12 +130,24 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     return String(err);
   }
 
-  function uncaught(r, err, prefix, isSync) {
+  function uncaught(r, err, prefix) {
     if (r !== run || r.done) return;
+    var line;
+    if (r.tracer) {
+      // The tracer's own signal is how it stops a run, and after the first error it
+      // stops everything that still runs: neither is an error of the learner's code
+      if (r.failed || r.tracer.stopped(err)) return;
+      r.tracer.fail(err);
+      // Traced code is rewritten, so its stack lines mean nothing: the tracer knows the line
+      var failure = r.tracer.getTrace().error;
+      line = failure ? failure.line : undefined;
+    } else {
+      line = errorLine(err);
+    }
     var message = describeError(err);
     r.failed = true;
     if (!r.error) r.error = message;
-    entries.push({ type: 'error', args: [prefix + message], line: errorLine(err, isSync) });
+    entries.push({ type: 'error', args: [prefix + message], line: line });
   }
 
   function finish(r, type, error) {
@@ -155,28 +160,40 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     r.timers.clear();
     if (r !== run) return;
 
-    // If instrumented code injected a __tracker__, include its snapshots
-    var snapshots = null;
-    var totalSteps = 0;
-    if (typeof window.__tracker__ !== 'undefined' && window.__tracker__) {
-      try {
-        snapshots = window.__tracker__.getSnapshots();
-        totalSteps = window.__tracker__.getStepCount();
-      } catch(e) { /* tracker may not be available */ }
-    }
     _hostWindow.postMessage({
       type: type,
       runId: r.id,
       error: error,
       entries: entries,
-      snapshots: snapshots,
-      totalSteps: totalSteps
+      trace: r.tracer ? r.tracer.getTrace() : null
     }, '*');
+  }
+
+  // A trace that has stopped ends the run: nothing more can be recorded, and the
+  // tracer stops whatever the code still tries to run
+  function endStoppedTrace(r) {
+    if (!r.tracer || r !== run || r.done) return false;
+    var trace = r.tracer.getTrace();
+    if (trace.outcome === 'completed') return false;
+    if (trace.outcome === 'step-limit') {
+      // The limit also counts loop turns and calls that record no step, such as an empty loop
+      var limit = r.maxSteps.toLocaleString('en-US');
+      entries.push({
+        type: 'warn',
+        args: [(trace.steps.length >= r.maxSteps
+          ? 'Stopped after ' + limit + ' steps.'
+          : 'Stopped after ' + limit + ' loop turns or calls that recorded no step.') +
+          ' The steps recorded so far are kept.']
+      });
+    }
+    finish(r, r.failed ? 'error' : 'result', r.error || undefined);
+    return true;
   }
 
   // Report once no timer is pending. The check runs as a task of its own, so all
   // promise work queued so far has drained before it looks.
   function settleSoon(r) {
+    if (endStoppedTrace(r)) return;
     if (r !== run || r.done || r.checkQueued) return;
     r.checkQueued = true;
     _setTimeout(function() {
@@ -200,7 +217,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     var r = run;
     var id = _setTimeout(function() {
       if (r) r.timers.delete(id);
-      try { callHandler(handler, args); } catch (err) { if (r) uncaught(r, err, 'Uncaught ', false); }
+      try { callHandler(handler, args); } catch (err) { if (r) uncaught(r, err, 'Uncaught '); }
       if (r) settleSoon(r);
     }, delay);
     if (r && !r.done) r.timers.set(id, 'timeout');
@@ -211,7 +228,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     var args = Array.prototype.slice.call(arguments, 2);
     var r = run;
     var id = _setInterval(function() {
-      try { callHandler(handler, args); } catch (err) { if (r) uncaught(r, err, 'Uncaught ', false); }
+      try { callHandler(handler, args); } catch (err) { if (r) uncaught(r, err, 'Uncaught '); }
       if (r) settleSoon(r);
     }, delay);
     if (r && !r.done) r.timers.set(id, 'interval');
@@ -228,8 +245,9 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
 
   window.addEventListener('unhandledrejection', function(event) {
     if (!run || run.done) return;
-    uncaught(run, event.reason, 'Uncaught (in promise) ', false);
+    uncaught(run, event.reason, 'Uncaught (in promise) ');
     if (event.preventDefault) event.preventDefault();
+    endStoppedTrace(run);
   });
 
   window.addEventListener('message', function(event) {
@@ -246,9 +264,11 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
 
     entries = [];
     installConsole();
-    try { window.__tracker__ = undefined; } catch(e) {}
 
-    var r = { id: msg.runId, timers: new Map(), done: false, failed: false, error: null, checkQueued: false, capId: 0 };
+    var r = {
+      id: msg.runId, timers: new Map(), done: false, failed: false, error: null,
+      checkQueued: false, capId: 0, tracer: null, maxSteps: 0
+    };
     run = r;
 
     // The cap: a run that still has timers by now ends with what it has collected
@@ -268,7 +288,15 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
 
     var fn;
     try {
-      fn = new Function(msg.code);
+      if (msg.tracer) {
+        // Each step notes how many Console entries had been printed by then
+        var createTracer = new Function('return (' + msg.tracer.runtime + ');')();
+        r.tracer = createTracer(msg.tracer.limits, function() { return entries.length; });
+        r.maxSteps = msg.tracer.limits.maxSteps;
+        fn = new Function(msg.tracer.name, msg.code);
+      } else {
+        fn = new Function(msg.code);
+      }
     } catch (err) {
       // The code did not parse, so nothing ran
       var parseError = describeError(err);
@@ -278,9 +306,9 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     }
 
     try {
-      fn();
+      fn(r.tracer);
     } catch (err) {
-      uncaught(r, err, 'Uncaught ', true);
+      uncaught(r, err, 'Uncaught ');
     }
     settleSoon(r);
   });
