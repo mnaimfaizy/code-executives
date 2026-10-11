@@ -19,9 +19,15 @@ workflow are in [AGENTS.md](../AGENTS.md); architecture decisions are in [docs/a
 - 3D follows [docs/3D-Visualization-Standard.md](../docs/3D-Visualization-Standard.md). three.js is imported only from a `React.lazy` renderer and never reaches the entry bundle; `manualChunks` has no rule for it.
 - Motion respects `useReducedMotion` (`src/shared/hooks`).
 
+### Playground
+- There is exactly one Playground, at `/playground` (`src/features/playground/`). No module gets a playground of its own ([ADR 0004](../docs/adr/0004-playground-traces-share-the-snapshot.md)).
+- A trace's steps and a story's beats hold the same snapshot and are drawn by the same 2D and 3D views. A lens chooses which regions are drawn; it never brings its own renderer.
+- A trace is never presented as a story: no authored captions, and no garbage-collection sweep, because a run cannot observe one.
+- JavaScript first; other languages emit the same snapshot.
+
 ### Code
 - Icon props are typed `LucideIcon`: R3F's global JSX types make a bare `React.ElementType` reject `className`.
-- Light mode only. Tailwind v4 can't see class names built at runtime (`bg-${color}-50`): write classes out literally or map them through a fixed object.
+- Light mode only, except the Playground, which is dark ([ADR 0004](../docs/adr/0004-playground-traces-share-the-snapshot.md)). Tailwind v4 can't see class names built at runtime (`bg-${color}-50`): write classes out literally or map them through a fixed object.
 - Browser support: use Baseline widely available web features directly; a newer feature needs a fallback. The `modern-web-guidance` skill (vendored, read its files, never run its npx CLI) has the patterns.
 - Tests sit next to the code as `*.test.ts(x)`.
 
