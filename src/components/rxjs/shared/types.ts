@@ -34,7 +34,7 @@ export interface OperatorParameter {
   required: boolean;
 }
 
-export interface PlaygroundState {
+export interface MarbleDiagramState {
   sourceStream: MarbleStream;
   operators: AppliedOperator[];
   resultStream: MarbleStream;

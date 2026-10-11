@@ -124,14 +124,6 @@ export const theme = {
       border: 'slate-200',
       shadow: 'slate-200',
     },
-    playground: {
-      primary: 'blue',
-      secondary: 'indigo',
-      accent: 'purple',
-      gradient: 'from-blue-50 via-indigo-50 to-purple-50',
-      border: 'blue-200',
-      shadow: 'blue-200',
-    },
     database: {
       primary: 'teal',
       secondary: 'cyan',

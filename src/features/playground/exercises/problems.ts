@@ -1,7 +1,7 @@
-// src/data/problems.ts
-// Comprehensive problem database for the Visual Algorithm Playground
+// Parked for the Exercise feature (docs/adr/0004, decision 5): the problem set of the retired old playground.
+// Not yet wired into the Playground; the data is unchanged.
 
-import type { PlaygroundProblem } from '../types/playground';
+import type { PlaygroundProblem } from './types';
 
 export const PROBLEM_DATABASE: PlaygroundProblem[] = [
   // ===== ARRAY PROBLEMS =====

@@ -11,7 +11,6 @@ import CommonComplexities from './components/sections/CommonComplexities';
 import AlgorithmAnalysis from './components/sections/AlgorithmAnalysis';
 import RealWorldApplications from './components/sections/RealWorldApplications';
 import AdvancedTopics from './components/sections/AdvancedTopics';
-import Playground from '../../components/playground/Playground';
 const Quiz = () => <ModuleQuizSection moduleId="bigo" />;
 // import AlgorithmAnalysis from './components/sections/AlgorithmAnalysis';
 // import RealWorldApplications from './components/sections/RealWorldApplications';
@@ -51,8 +50,6 @@ const BigOPage: React.FC = () => {
         return <CodingChallenges />;
       case 'gamification-hub':
         return <GamificationHub />;
-      case 'playground':
-        return <Playground />;
       case 'quiz':
         return <Quiz />;
       default:

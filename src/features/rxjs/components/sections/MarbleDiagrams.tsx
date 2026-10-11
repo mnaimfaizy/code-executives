@@ -105,10 +105,10 @@ const MarbleDiagrams: React.FC = () => {
           </div>
         </div>
 
-        {/* Interactive Marble Diagram Playground */}
+        {/* Interactive Marble Diagram */}
         <div className="mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Interactive Marble Diagram Playground
+            Interactive Marble Diagram
           </h2>
           <MarbleDiagram2D />
         </div>
@@ -924,7 +924,7 @@ const expected = '--x--y--z--|';`}
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 inline-block">
                 <p className="text-yellow-800 text-sm">
                   🚧 <strong>Coming Soon:</strong> Interactive marble diagram editor with
-                  drag-and-drop functionality, operator playground, and real-time visualization of
+                  drag-and-drop functionality, an operator picker, and real-time visualization of
                   custom streams.
                 </p>
               </div>

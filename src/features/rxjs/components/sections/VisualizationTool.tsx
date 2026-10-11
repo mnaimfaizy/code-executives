@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IntegratedPlayground } from '../../../../components/rxjs/playground/IntegratedPlayground';
+import { MarbleDiagramTool } from '../../../../components/rxjs/marble/MarbleDiagramTool';
 
 interface TutorialStep {
   id: string;
@@ -27,11 +27,8 @@ const tutorialSteps: TutorialStep[] = [
             <strong>Marble Diagrams:</strong> Visual representations of observable streams
           </li>
           <li>
-            <strong>Interactive Playground:</strong> Experiment with operators and see real-time
-            results
-          </li>
-          <li>
-            <strong>Live Code Editor:</strong> Write and execute RxJS code directly in your browser
+            <strong>Marble Diagram Tool:</strong> Write a stream as marbles, pick an operator and
+            see the stream it produces
           </li>
           <li>
             <strong>Step-by-step Tutorials:</strong> Guided learning for all skill levels
@@ -39,7 +36,8 @@ const tutorialSteps: TutorialStep[] = [
         </ul>
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-blue-800 font-medium">
-            💡 Pro Tip: Start with the Marble Playground to get familiar with stream visualization!
+            💡 Pro Tip: Start with the Marble Diagram Tool to get familiar with stream
+            visualization!
           </p>
         </div>
       </div>
@@ -127,10 +125,10 @@ const tutorialSteps: TutorialStep[] = [
   },
 ];
 
-type ViewMode = 'tutorial' | 'playground' | 'reference';
+type ViewMode = 'tutorial' | 'marble' | 'reference';
 
 const VisualizationTool: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>('playground');
+  const [viewMode, setViewMode] = useState<ViewMode>('marble');
   const [currentTutorialStep, setCurrentTutorialStep] = useState(0);
 
   const renderTutorial = () => {
@@ -192,7 +190,7 @@ const VisualizationTool: React.FC = () => {
                 if (currentTutorialStep < tutorialSteps.length - 1) {
                   setCurrentTutorialStep(currentTutorialStep + 1);
                 } else {
-                  setViewMode('playground');
+                  setViewMode('marble');
                 }
               }}
               className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -289,8 +287,8 @@ const VisualizationTool: React.FC = () => {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">RxJS Visualization Tool</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Master reactive programming through interactive marble diagrams, live code execution,
-            and step-by-step tutorials designed for all skill levels.
+            Master reactive programming through interactive marble diagrams and step-by-step
+            tutorials designed for all skill levels.
           </p>
         </div>
 
@@ -308,14 +306,14 @@ const VisualizationTool: React.FC = () => {
               📚 Tutorial
             </button>
             <button
-              onClick={() => setViewMode('playground')}
+              onClick={() => setViewMode('marble')}
               className={`px-6 py-3 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'playground'
+                viewMode === 'marble'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              🎮 Playground
+              🎮 Marble Diagram Tool
             </button>
             <button
               onClick={() => setViewMode('reference')}
@@ -332,7 +330,7 @@ const VisualizationTool: React.FC = () => {
 
         {/* Content */}
         {viewMode === 'tutorial' && renderTutorial()}
-        {viewMode === 'playground' && <IntegratedPlayground />}
+        {viewMode === 'marble' && <MarbleDiagramTool />}
         {viewMode === 'reference' && renderReference()}
       </div>
     </div>

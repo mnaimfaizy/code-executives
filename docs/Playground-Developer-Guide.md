@@ -1,6 +1,10 @@
 # Playground Developer Guide
 
-> Internal reference for contributors working on the Code Executives interactive coding playground.
+> Internal reference for contributors working on the Code Executives Playground.
+
+> **This guide describes the code as it is today, and part of it will change.** [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) replaces the React Flow lenses with the 2D/3D views the stories use, and changes what a step records. [How to Add a New Visualization Lens](#how-to-add-a-new-visualization-lens) describes the current mechanism, which that work will replace.
+>
+> **Words.** The prose follows the glossary in [CONTEXT.md](../CONTEXT.md): the record of a run is a **trace** made of **steps**, prebuilt code is an **example**, and the output pane is the **console**. The code has not been renamed yet, so file and identifier names keep their old words: `StateSnapshot` is the data of one step, `useTimeline.ts` and `TimelinePlayer.tsx` move through the steps of a trace, and `exampleSnippets.ts` holds the examples.
 
 ---
 
@@ -11,7 +15,7 @@
 3. [How to Add a New Visualization Lens](#how-to-add-a-new-visualization-lens)
 4. [How to Add a New Language](#how-to-add-a-new-language)
 5. [How to Modify the Theme](#how-to-modify-the-theme)
-6. [How to Add Example Snippets](#how-to-add-example-snippets)
+6. [How to Add Examples](#how-to-add-examples)
 7. [Security Considerations](#security-considerations)
 8. [Performance Budget & Monitoring](#performance-budget--monitoring)
 9. [Testing](#testing)
@@ -26,15 +30,17 @@ The Playground is a **standalone feature module** at `src/features/playground/` 
 
 | Decision                                        | Rationale                                                                |
 | ----------------------------------------------- | ------------------------------------------------------------------------ |
-| Standalone layout (`PlaygroundLayout`)          | Full viewport needed for editor + visualizations                         |
+| Standalone layout (`PlaygroundLayout`)          | Full viewport needed for editor + lenses                                 |
 | Dark theme scoped via `data-theme="playground"` | CSS custom properties avoid polluting the light-mode main site           |
 | Sandboxed `<iframe>` for JS/TS execution        | Defense-in-depth: CSP + `sandbox="allow-scripts"` + network API blocking |
 | Pyodide for Python                              | WASM-based CPython in the browser, lazy-loaded from CDN (~11 MB)         |
 | `acorn` + `astring` for JS instrumentation      | Parse → transform → regenerate; no eval-based instrumentation            |
 | `sys.settrace()` for Python instrumentation     | CPython's native tracing mechanism, captured via Pyodide FFI             |
-| React Flow (`@xyflow/react`) for visualizations | Interactive node graphs with built-in pan/zoom                           |
+| React Flow (`@xyflow/react`) for the lenses     | Interactive node graphs with built-in pan/zoom (to be replaced, ADR 0004) |
 
 ### Data Flow
+
+A run produces a trace (`StateSnapshot[]`, one entry per step) and the console entries (`ConsoleEntry[]`).
 
 ```
 User Code → [Instrumenter] → Instrumented Code → [Sandbox/Pyodide]
@@ -52,6 +58,7 @@ User Code → [Instrumenter] → Instrumented Code → [Sandbox/Pyodide]
 
 ```
 src/features/playground/
+├── PlaygroundEntry.tsx            # Lazy-loaded entry for the /playground route
 ├── PlaygroundApp.tsx              # Root orchestrator
 ├── PlaygroundApp.test.tsx         # Smoke tests
 ├── types/
@@ -62,7 +69,7 @@ src/features/playground/
 │   ├── usePlaygroundState.ts      # Language, code, execution state
 │   ├── useSandbox.ts              # JS/TS sandbox execution
 │   ├── usePyodide.ts              # Python/Pyodide execution
-│   ├── useTimeline.ts             # Timeline step navigation + auto-play
+│   ├── useTimeline.ts             # Moving through the steps of a trace + auto-play
 │   └── usePaneLayout.ts           # Resizable 3-pane layout
 ├── instrumentation/
 │   ├── JsInstrumenter.ts          # JS instrumentation wrapper
@@ -70,22 +77,24 @@ src/features/playground/
 │   ├── StateSnapshot.ts           # Clone, diff, format utilities
 │   └── index.ts                   # Re-exports
 ├── services/
-│   └── instrumentCode.ts          # Low-level acorn AST transformation
+│   ├── instrumentCode.ts          # Low-level acorn AST transformation
+│   └── pyodide-loader.ts          # Loads Pyodide
 ├── utils/
 │   ├── codeTemplates.ts           # Default starter code per language
-│   ├── exampleSnippets.ts         # Pre-built example snippets
+│   ├── exampleSnippets.ts         # The examples
 │   └── sanitize.ts                # XSS prevention + output limits
 ├── components/
 │   ├── editor/
 │   │   ├── MonacoEditor.tsx       # Monaco wrapper
-│   │   └── EditorTabs.tsx         # File tab bar
+│   │   ├── EditorTabs.tsx         # File tab bar
+│   │   └── LanguagePicker.tsx     # Language dropdown
 │   ├── execution/
 │   │   ├── SandboxFrame.tsx       # Sandboxed iframe for JS/TS
-│   │   ├── ConsoleOutput.tsx      # Console output panel
+│   │   ├── ConsoleOutput.tsx      # The console
 │   │   ├── PythonRunner.tsx       # Pyodide loading indicator
 │   │   └── ExecutionController.tsx
 │   ├── instrumentation/
-│   │   └── TimelinePlayer.tsx     # Timeline slider + variables + call stack
+│   │   └── TimelinePlayer.tsx     # Step slider + variables + call stack
 │   ├── visualizations/
 │   │   ├── VisualizationCanvas.tsx
 │   │   ├── LensSelector.tsx
@@ -114,6 +123,8 @@ src/features/playground/
 
 ## How to Add a New Visualization Lens
 
+> This is the current mechanism. ADR 0004 rebuilds the lenses on the shared 2D/3D views, so check the ADR before investing in a new React Flow lens.
+
 1. **Create the lens component** in `components/visualizations/lenses/`:
 
 ```tsx
@@ -128,7 +139,7 @@ interface MyLensProps {
 }
 
 const MyLens: React.FC<MyLensProps> = ({ currentSnapshot }) => {
-  // Transform snapshot data into React Flow nodes + edges
+  // Transform the current step's data into React Flow nodes + edges
   const nodes = useMemo(() => buildNodes(currentSnapshot), [currentSnapshot]);
   const edges = useMemo(() => buildEdges(currentSnapshot), [currentSnapshot]);
 
@@ -166,7 +177,7 @@ export type VisualizationLens =
 
 4. **Update LensSelector** to show the new lens in the toolbar dropdown.
 
-5. **Wrap in `React.memo`** for performance (the snapshot props change on every step).
+5. **Wrap in `React.memo`** for performance (the `currentSnapshot` and `previousSnapshot` props change on every step).
 
 ---
 
@@ -196,7 +207,7 @@ const LANGUAGE_MAP: Record<PlaygroundLanguage, string> = {
 
 5. **Wire it into `PlaygroundApp.tsx`** — add the language to the `consoleEntries` selection logic and execution handlers.
 
-6. **Add example snippets** in `utils/exampleSnippets.ts`.
+6. **Add examples** in `utils/exampleSnippets.ts`.
 
 7. **Update `LanguagePicker.tsx`** to show the new language in the dropdown.
 
@@ -242,9 +253,9 @@ All playground styling is scoped under `[data-theme="playground"]` via CSS custo
 
 ---
 
-## How to Add Example Snippets
+## How to Add Examples
 
-Edit `utils/exampleSnippets.ts`:
+An example is prebuilt code the learner can load and run, with a suggested lens. Edit `utils/exampleSnippets.ts`:
 
 ```ts
 {
@@ -259,7 +270,7 @@ console.log(x);`,
 },
 ```
 
-Snippets appear in the toolbar's "Examples" dropdown, filtered by the currently selected language.
+Examples appear in the toolbar's "Examples" dropdown, filtered by the currently selected language.
 
 ---
 
@@ -284,14 +295,14 @@ Snippets appear in the toolbar's "Examples" dropdown, filtered by the currently 
 
 ### Output Sanitization
 
-- All console output is HTML-escaped via `escapeHtml()` before rendering.
+- Everything written to the console is HTML-escaped via `escapeHtml()` before rendering.
 - `sanitizeOutput()` handles circular references, prototype pollution keys (`__proto__`, `constructor`), BigInt, Symbol, and deeply nested objects.
 - Entry counts capped at `MAX_CONSOLE_ENTRIES` (500).
 - Individual entries capped at `MAX_ENTRY_LENGTH` (10 KB).
 
 ### For Contributors
 
-- **Never** use `dangerouslySetInnerHTML` with unsanitized user output.
+- **Never** use `dangerouslySetInnerHTML` with unsanitized console entries.
 - **Never** inject user code directly into iframe `srcdoc` — always use `postMessage`.
 - **Never** add `allow-same-origin` to the sandbox iframe.
 - When adding new network/system APIs, block them in `SandboxFrame.tsx`.
@@ -311,7 +322,7 @@ Snippets appear in the toolbar's "Examples" dropdown, filtered by the currently 
 
 ### Optimization Strategies
 
-- **React.memo** on all visualization lenses and `AnimatedNode`.
+- **React.memo** on all lenses and `AnimatedNode`.
 - **Data caps**: `DataStructureLens` limits to 200 nodes max.
 - **Adaptive canvas**: `SpaceBackground` adjusts star count based on `navigator.hardwareConcurrency`.
 - **Monaco features disabled**: `codeLens`, `colorDecorators`, `inlayHints`, `lightbulb`, `links`, `renderWhitespace`, `occurrencesHighlight`, `selectionHighlight`.
@@ -321,7 +332,7 @@ Snippets appear in the toolbar's "Examples" dropdown, filtered by the currently 
 
 Use `PerformanceDashboard` (bottom-right in dev mode) to watch:
 
-- Component re-render frequency during timeline stepping
+- Component re-render frequency while stepping through a trace
 - Bundle chunk sizes after `npm run build`
 - Lighthouse performance score (target: > 80 for `/playground`)
 
