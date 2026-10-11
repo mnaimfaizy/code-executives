@@ -70,6 +70,8 @@ export interface ConsoleEntry {
   type: ConsoleEntryType;
   args: unknown[];
   timestamp: number;
+  /** Line of the learner's source an error came from (1-based), when it is known */
+  line?: number;
 }
 
 /** Playground configuration state */

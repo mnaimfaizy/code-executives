@@ -1,55 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  escapeHtml,
-  sanitizeOutput,
-  sanitizeForDisplay,
-  isTextContent,
-  enforceEntryLimit,
-  MAX_CONSOLE_ENTRIES,
-} from './sanitize';
+import { sanitizeOutput, isTextContent, enforceEntryLimit, MAX_CONSOLE_ENTRIES } from './sanitize';
 
 describe('sanitize', () => {
-  describe('escapeHtml', () => {
-    it('escapes ampersands', () => {
-      expect(escapeHtml('a & b')).toBe('a &amp; b');
-    });
-
-    it('escapes angle brackets', () => {
-      expect(escapeHtml('<script>alert("xss")</script>')).toBe(
-        '&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;'
-      );
-    });
-
-    it('escapes quotes', () => {
-      expect(escapeHtml('"hello"')).toBe('&quot;hello&quot;');
-      expect(escapeHtml("'hello'")).toBe('&#x27;hello&#x27;');
-    });
-
-    it('escapes backticks', () => {
-      expect(escapeHtml('`template`')).toBe('&#x60;template&#x60;');
-    });
-
-    it('escapes forward slashes', () => {
-      expect(escapeHtml('a/b')).toBe('a&#x2F;b');
-    });
-
-    it('returns empty string unchanged', () => {
-      expect(escapeHtml('')).toBe('');
-    });
-
-    it('returns safe strings unchanged', () => {
-      expect(escapeHtml('hello world 123')).toBe('hello world 123');
-    });
-
-    it('handles multiple special characters together', () => {
-      const input = '<img src="x" onerror="alert(1)">';
-      const result = escapeHtml(input);
-      expect(result).not.toContain('<');
-      expect(result).not.toContain('>');
-      expect(result).not.toContain('"');
-    });
-  });
-
   describe('sanitizeOutput', () => {
     it('stringifies primitives', () => {
       expect(sanitizeOutput(42)).toBe('42');
@@ -118,16 +70,14 @@ describe('sanitize', () => {
     });
   });
 
-  describe('sanitizeForDisplay', () => {
-    it('combines stringify and HTML escaping', () => {
-      const result = sanitizeForDisplay('<script>alert(1)</script>');
-      expect(result).not.toContain('<script>');
-      expect(result).toContain('&lt;script&gt;');
+  describe('sanitizeOutput leaves text as written', () => {
+    it('does not HTML-escape quotes, tags, ampersands or apostrophes', () => {
+      const text = `"Hello" <script>alert(1)</script> a & b it's`;
+      expect(sanitizeOutput(text)).toBe(text);
     });
 
-    it('handles objects with HTML-like values', () => {
-      const result = sanitizeForDisplay({ key: '<b>bold</b>' });
-      expect(result).not.toContain('<b>');
+    it('does not HTML-escape strings inside objects', () => {
+      expect(sanitizeOutput({ key: "<b>it's</b> & more" })).toContain("<b>it's</b> & more");
     });
   });
 

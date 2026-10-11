@@ -1,6 +1,6 @@
 import type { PlaygroundLanguage, VisualizationLens } from '../types';
 
-export interface ExampleSnippet {
+export interface Example {
   id: string;
   label: string;
   description: string;
@@ -9,7 +9,7 @@ export interface ExampleSnippet {
   code: string;
 }
 
-export const exampleSnippets: ExampleSnippet[] = [
+export const examples: Example[] = [
   {
     id: 'event-loop-demo',
     label: 'Event Loop Demo',

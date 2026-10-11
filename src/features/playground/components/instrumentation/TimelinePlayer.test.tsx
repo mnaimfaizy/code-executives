@@ -43,14 +43,14 @@ describe('TimelinePlayer', () => {
     vi.clearAllMocks();
   });
 
-  it('renders "No timeline data" when totalSteps is 0', () => {
+  it('says there are no steps yet when totalSteps is 0', () => {
     render(<TimelinePlayer {...defaultProps} totalSteps={0} />);
-    expect(screen.getByText('No timeline data')).toBeInTheDocument();
+    expect(screen.getByText('No steps yet')).toBeInTheDocument();
   });
 
   it('displays step counter', () => {
     render(<TimelinePlayer {...defaultProps} currentStep={2} totalSteps={10} />);
-    expect(screen.getByText('Step 3 / 10')).toBeInTheDocument();
+    expect(screen.getByText('Step 3 of 10')).toBeInTheDocument();
   });
 
   it('displays current line number', () => {
@@ -149,9 +149,9 @@ describe('TimelinePlayer', () => {
     expect(screen.getByText('y')).toBeInTheDocument();
   });
 
-  it('renders the timeline slider', () => {
+  it('renders the step slider', () => {
     render(<TimelinePlayer {...defaultProps} />);
-    const slider = screen.getByLabelText(/Timeline step/);
+    const slider = screen.getByRole('slider', { name: /^Step \d+ of \d+$/ });
     expect(slider).toBeInTheDocument();
     expect(slider).toHaveAttribute('min', '0');
     expect(slider).toHaveAttribute('max', '4');
@@ -159,6 +159,6 @@ describe('TimelinePlayer', () => {
 
   it('has a region landmark for accessibility', () => {
     render(<TimelinePlayer {...defaultProps} />);
-    expect(screen.getByRole('region', { name: 'Timeline player' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Steps' })).toBeInTheDocument();
   });
 });

@@ -56,7 +56,11 @@ const LensSelector: React.FC<LensSelectorProps> = ({
   const suggested = useMemo(() => suggestLens(currentSnapshot), [currentSnapshot]);
 
   return (
-    <div className="flex items-center gap-1" role="radiogroup" aria-label="Visualization lens">
+    <div
+      className="flex flex-wrap items-center gap-1"
+      role="radiogroup"
+      aria-label="Visualization lens"
+    >
       {LENS_OPTIONS.map((option) => {
         const isActive = activeLens === option.value;
         const isSuggested = suggested === option.value && activeLens === 'none';
@@ -67,7 +71,7 @@ const LensSelector: React.FC<LensSelectorProps> = ({
             role="radio"
             aria-checked={isActive}
             onClick={() => onLensChange(option.value)}
-            className="flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors"
+            className="flex items-center gap-1 px-2 py-1 rounded text-xs whitespace-nowrap transition-colors"
             style={{
               background: isActive ? 'var(--pg-accent-blue)' : 'transparent',
               color: isActive ? 'var(--pg-bg-primary)' : 'var(--pg-text-secondary)',

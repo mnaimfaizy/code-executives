@@ -20,7 +20,7 @@ const ExecutionController: React.FC<ExecutionControllerProps> = ({
     executionState === 'idle' || executionState === 'completed' || executionState === 'error';
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 shrink-0">
       {/* Run / Stop button */}
       {isRunning ? (
         <button

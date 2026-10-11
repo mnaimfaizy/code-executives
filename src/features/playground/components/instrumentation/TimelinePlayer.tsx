@@ -93,18 +93,14 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
         style={{ color: 'var(--pg-text-muted)' }}
       >
         <Layers size={32} className="mb-2 opacity-40" />
-        <span className="text-sm font-medium">No timeline data</span>
-        <span className="text-xs mt-1">Run code with instrumentation to see execution steps</span>
+        <span className="text-sm font-medium">No steps yet</span>
+        <span className="text-xs mt-1">Run code with Trace on to record its steps</span>
       </div>
     );
   }
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      role="region"
-      aria-label="Timeline player"
-    >
+    <div className="flex flex-col h-full overflow-hidden" role="region" aria-label="Steps">
       {/* Timeline slider + controls */}
       <div
         className="px-3 py-2 shrink-0"
@@ -119,7 +115,7 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
             className="text-xs font-medium"
             style={{ color: 'var(--pg-text-secondary)', fontFamily: 'var(--pg-font-mono)' }}
           >
-            Step {currentStep + 1} / {totalSteps}
+            Step {currentStep + 1} of {totalSteps}
           </span>
           {currentSnapshot && (
             <span
@@ -143,7 +139,7 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
             accentColor: 'var(--pg-accent-blue)',
             background: 'var(--pg-bg-panel)',
           }}
-          aria-label={`Timeline step ${currentStep + 1} of ${totalSteps}`}
+          aria-label={`Step ${currentStep + 1} of ${totalSteps}`}
         />
 
         {/* Playback buttons */}
