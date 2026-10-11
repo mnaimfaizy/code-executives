@@ -5,60 +5,43 @@
  * mid-story keeps the learner on the same beat.
  */
 
+import type {
+  HeapObject as SharedHeapObject,
+  HeapState,
+  Placed,
+  Reference,
+  Slot,
+  Snapshot,
+  StackFrame,
+} from '../../../shared/snapshot';
+
+// The snapshot shape and its reference helpers are shared with Playground traces (ADR 0004).
+export type { Reference, Slot, StackFrame } from '../../../shared/snapshot';
+export { getReachable, getReferences, slotKey } from '../../../shared/snapshot';
+
 export type ShotId = 'overview' | 'stack' | 'bridge' | 'heap' | 'gc';
 
-/** A slot holds either a primitive `value` or a reference (`refId`) to a heap object. */
-export interface Slot {
-  name: string;
-  value?: string;
-  refId?: string;
-}
-
-export interface StackFrame {
-  id: string;
-  name: string;
-  slots: Slot[];
-}
-
+/** This story allocates only plain objects and arrays. */
 export type HeapObjectKind = 'object' | 'array';
 
-/** `unmarked` = GC mark phase found no path from a root; `collected` = swept. */
-export type HeapObjectState = 'live' | 'marked' | 'unmarked' | 'collected';
+export type HeapObjectState = HeapState;
 
-export interface HeapObject {
-  id: string;
-  label: string;
-  kind: HeapObjectKind;
-  slots: Slot[];
-  state: HeapObjectState;
-  /** Stable grid position on the heap floor, shared by both views. */
-  cell: { col: number; row: number };
-}
+/** A story authors every object's cell, so here it is required. */
+export type HeapObject = Placed<SharedHeapObject<HeapObjectKind>>;
 
 export type GcPhase = 'mark' | 'sweep';
 
-export interface StoryBeat {
+/** A snapshot plus what the author wrote. */
+export interface StoryBeat extends Snapshot<HeapObject> {
   id: string;
   title: string;
   caption: string;
   /** 1-based line in STORY_CODE. */
   line: number;
   shot: ShotId;
-  /** Bottom of the stack first. */
-  frames: StackFrame[];
-  objects: HeapObject[];
   /** Slot keys (`owner.slot`) and object ids to spotlight on this beat. */
   focus: string[];
   gcPhase?: GcPhase;
-}
-
-export interface Reference {
-  id: string;
-  /** Slot key: `${frameId|objectId}.${slotName}` */
-  from: string;
-  fromOwner: string;
-  fromKind: 'frame' | 'object';
-  to: string;
 }
 
 export const STORY_CODE = `function makeUser(name) {
@@ -75,8 +58,6 @@ function main() {
 }
 
 main();`;
-
-export const slotKey = (owner: string, slot: string) => `${owner}.${slot}`;
 
 const globalFrame: StackFrame = {
   id: 'global',
@@ -284,43 +265,6 @@ export const STORY_BEATS: StoryBeat[] = [
     gcPhase: 'sweep',
   },
 ];
-
-/** Every reference edge in a beat, from stack slots and from heap object slots. */
-export function getReferences(beat: StoryBeat): Reference[] {
-  const refs: Reference[] = [];
-  for (const frame of beat.frames) {
-    for (const slot of frame.slots) {
-      if (slot.refId) {
-        const from = slotKey(frame.id, slot.name);
-        refs.push({ id: from, from, fromOwner: frame.id, fromKind: 'frame', to: slot.refId });
-      }
-    }
-  }
-  for (const object of beat.objects) {
-    if (object.state === 'collected') continue;
-    for (const slot of object.slots) {
-      if (slot.refId) {
-        const from = slotKey(object.id, slot.name);
-        refs.push({ id: from, from, fromOwner: object.id, fromKind: 'object', to: slot.refId });
-      }
-    }
-  }
-  return refs;
-}
-
-/** Object ids reachable from the roots (every stack frame), following references. */
-export function getReachable(beat: StoryBeat): Set<string> {
-  const refs = getReferences(beat);
-  const reached = new Set<string>();
-  const queue = refs.filter((r) => r.fromKind === 'frame').map((r) => r.to);
-  while (queue.length) {
-    const id = queue.shift()!;
-    if (reached.has(id)) continue;
-    reached.add(id);
-    for (const r of refs) if (r.fromOwner === id) queue.push(r.to);
-  }
-  return reached;
-}
 
 export const isFocused = (beat: StoryBeat, key: string) => beat.focus.includes(key);
 

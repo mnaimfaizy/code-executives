@@ -9,6 +9,7 @@ import {
   type StackFrame,
   type StoryBeat,
 } from '../../../utils/stackHeapStory';
+import { vizPalette } from '../../../../../shared/viz/palette';
 
 interface StackHeap2DProps {
   beat: StoryBeat;
@@ -30,19 +31,8 @@ const CELL_Y0 = 78;
 const CELL_DY = 190;
 const OBJ_W = 180;
 
-const COLORS = {
-  frame: '#e0e7ff',
-  frameStroke: '#6366f1',
-  object: '#d1fae5',
-  objectStroke: '#10b981',
-  array: '#e0f2fe',
-  arrayStroke: '#0ea5e9',
-  ref: '#64748b',
-  focus: '#f59e0b',
-  root: '#f59e0b',
-  unmarked: '#ffe4e6',
-  unmarkedStroke: '#f43f5e',
-};
+/** Light only for now; the theme becomes a prop when the view is generalised. */
+const P = vizPalette.light;
 
 interface Box {
   x: number;
@@ -149,7 +139,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
           markerHeight="7"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill={COLORS.ref} />
+          <path d="M 0 0 L 10 5 L 0 10 z" fill={P.reference.stroke} />
         </marker>
         <marker
           id="sh-arrow-focus"
@@ -160,7 +150,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
           markerHeight="7"
           orient="auto-start-reverse"
         >
-          <path d="M 0 0 L 10 5 L 0 10 z" fill={COLORS.focus} />
+          <path d="M 0 0 L 10 5 L 0 10 z" fill={P.focus} />
         </marker>
       </defs>
 
@@ -171,8 +161,8 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
         width={STACK_W}
         height={H - 36}
         rx={14}
-        fill="#f8fafc"
-        stroke="#cbd5e1"
+        fill={P.region.fill}
+        stroke={P.region.stroke}
       />
       <text
         x={STACK_X + 14}
@@ -190,8 +180,8 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
         width={W - HEAP_X - 16}
         height={H - 36}
         rx={14}
-        fill="#f8fafc"
-        stroke="#cbd5e1"
+        fill={P.region.fill}
+        stroke={P.region.stroke}
       />
       <text
         x={HEAP_X + 14}
@@ -218,8 +208,8 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
               width={b.w}
               height={b.h}
               rx={8}
-              fill={COLORS.frame}
-              stroke={marking || focused ? COLORS.root : COLORS.frameStroke}
+              fill={P.frame.fill}
+              stroke={marking || focused ? P.root : P.frame.stroke}
               strokeWidth={marking || focused ? 3 : top ? 2 : 1}
               strokeDasharray={marking ? '6 4' : undefined}
             />
@@ -240,7 +230,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
                 fontSize={10}
                 fontWeight={700}
                 textAnchor="end"
-                fill={COLORS.root}
+                fill={P.root}
               >
                 ROOT
               </text>
@@ -275,7 +265,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
             className="sh-ref sh-enter"
             d={d}
             fill="none"
-            stroke={focused ? COLORS.focus : COLORS.ref}
+            stroke={focused ? P.focus : P.reference.stroke}
             strokeWidth={focused ? 3 : 1.6}
             markerEnd={`url(#${focused ? 'sh-arrow-focus' : 'sh-arrow'})`}
           />
@@ -304,15 +294,15 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
               width={b.w}
               height={b.h}
               rx={isArray ? 4 : 10}
-              fill={unmarked ? COLORS.unmarked : isArray ? COLORS.array : COLORS.object}
+              fill={unmarked ? P.unreachable.fill : isArray ? P.array.fill : P.object.fill}
               stroke={
                 focused
-                  ? COLORS.focus
+                  ? P.focus
                   : unmarked
-                    ? COLORS.unmarkedStroke
+                    ? P.unreachable.stroke
                     : isArray
-                      ? COLORS.arrayStroke
-                      : COLORS.objectStroke
+                      ? P.array.stroke
+                      : P.object.stroke
               }
               strokeWidth={focused ? 3 : 1.5}
               strokeDasharray={collected ? '5 4' : undefined}
@@ -337,7 +327,7 @@ const StackHeap2D: React.FC<StackHeap2DProps> = ({ beat }) => {
                 fontSize={10}
                 fontWeight={700}
                 textAnchor="end"
-                fill={COLORS.unmarkedStroke}
+                fill={P.unreachable.stroke}
               >
                 {collected ? 'RECLAIMED' : 'UNMARKED'}
               </text>

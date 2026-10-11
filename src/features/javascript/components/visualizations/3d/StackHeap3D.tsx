@@ -21,6 +21,7 @@ import {
 } from '../../../utils/stackHeapStory';
 import type { CameraState } from '../../../../../shared/components/viz/viewerCamera';
 import { LabelFramer, StoryCamera } from '../../../../../shared/viz3d/camera';
+import { vizPalette } from '../../../../../shared/viz/palette';
 import { boundsOf, type Box3, type Shot, type V3 } from '../../../../../shared/viz3d/frameShot';
 
 /**
@@ -37,20 +38,8 @@ export interface StackHeap3DProps {
   instant?: boolean;
 }
 
-const PALETTE = {
-  ground: '#e2e8f0',
-  stackBase: '#cbd5e1',
-  heapFloor: '#f1f5f9',
-  heapEdge: '#cbd5e1',
-  frame: '#818cf8',
-  frameTop: '#6366f1',
-  object: '#34d399',
-  array: '#38bdf8',
-  unmarked: '#fb7185',
-  ref: '#475569',
-  focus: '#f59e0b',
-  root: '#f59e0b',
-};
+/** Light only for now; the theme becomes a prop when the view is generalised. */
+const P = vizPalette.light;
 
 // ---- Layout (world units) ----------------------------------------------------------
 
@@ -156,7 +145,7 @@ const FrameSlab: React.FC<{
       <RoundedBox args={FRAME_SIZE} radius={0.08} smoothness={2}>
         <meshLambertMaterial
           ref={mat}
-          color={isTop ? PALETTE.frameTop : PALETTE.frame}
+          color={isTop ? P.frameActive.solid : P.frame.solid}
           transparent
           opacity={instant ? 1 : 0}
           flatShading
@@ -165,7 +154,7 @@ const FrameSlab: React.FC<{
       {highlight && !exiting && (
         <mesh position={[0, -FRAME_SIZE[1] / 2 + 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[FRAME_SIZE[0] + 0.35, FRAME_SIZE[2] + 0.35]} />
-          <meshBasicMaterial color={PALETTE.root} transparent opacity={0.55} />
+          <meshBasicMaterial color={P.root} transparent opacity={0.55} />
         </mesh>
       )}
       <Html position={[0, 0, FRAME_SIZE[2] / 2 + 0.02]} zIndexRange={[10, 0]}>
@@ -230,10 +219,10 @@ const HeapBlock: React.FC<{
     () =>
       new THREE.Color(
         object.state === 'unmarked' || object.state === 'collected'
-          ? PALETTE.unmarked
+          ? P.unreachable.solid
           : object.kind === 'array'
-            ? PALETTE.array
-            : PALETTE.object
+            ? P.array.solid
+            : P.object.solid
       ),
     [object.state, object.kind]
   );
@@ -253,7 +242,7 @@ const HeapBlock: React.FC<{
       {focused && !collected && (
         <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[size[0] + 0.4, size[2] + 0.4]} />
-          <meshBasicMaterial color={PALETTE.focus} transparent opacity={0.6} />
+          <meshBasicMaterial color={P.focus} transparent opacity={0.6} />
         </mesh>
       )}
       <group ref={group} scale={instant ? [1, 1, 1] : [0.2, 0.01, 0.2]}>
@@ -269,7 +258,7 @@ const HeapBlock: React.FC<{
           [1, 2, 3].map((i) => (
             <mesh key={i} position={[-size[0] / 2 + (i * size[0]) / 4, size[1] + 0.005, 0]}>
               <boxGeometry args={[0.03, 0.01, size[2] * 0.8]} />
-              <meshBasicMaterial color="#0369a1" transparent opacity={0.35} />
+              <meshBasicMaterial color={P.array.divider} transparent opacity={0.35} />
             </mesh>
           ))}
       </group>
@@ -384,7 +373,7 @@ const RefArc: React.FC<{ start: V3; end: V3; mid: V3; focused: boolean; instant:
   instant,
 }) => {
   const line = useRef<QuadraticBezierLineRef>(null);
-  const color = focused ? PALETTE.focus : PALETTE.ref;
+  const color = focused ? P.focus : P.reference.solid;
 
   const cone = useMemo(() => {
     const e = new THREE.Vector3(...end);
@@ -441,7 +430,7 @@ const RootPulse: React.FC = () => {
       {[0, 1, 2].map((i) => (
         <mesh key={i} ref={(m) => void (rings.current[i] = m)}>
           <ringGeometry args={[1, 1.08, 64]} />
-          <meshBasicMaterial color={PALETTE.root} transparent opacity={0} depthWrite={false} />
+          <meshBasicMaterial color={P.root} transparent opacity={0} depthWrite={false} />
         </mesh>
       ))}
     </group>
@@ -465,21 +454,21 @@ const Scene: React.FC<StackHeap3DProps> = ({ beat, camera, instant = false }) =>
 
   return (
     <>
-      <color attach="background" args={['#f8fafc']} />
-      <hemisphereLight args={['#ffffff', '#cbd5e1', 1.4]} />
+      <color attach="background" args={[P.surface]} />
+      <hemisphereLight args={[P.lighting.sky, P.lighting.ground, 1.4]} />
       <directionalLight position={[6, 12, 8]} intensity={1.6} />
 
       {/* Stack plinth + heap floor */}
       <mesh position={[STACK_X, -0.06, 0]}>
         <boxGeometry args={[FRAME_SIZE[0] + 0.8, 0.12, FRAME_SIZE[2] + 0.8]} />
-        <meshLambertMaterial color={PALETTE.stackBase} flatShading />
+        <meshLambertMaterial color={P.region.plinth} flatShading />
       </mesh>
       <mesh position={[HEAP_CENTER[0], -0.06, HEAP_CENTER[2]]}>
         <boxGeometry args={HEAP_SIZE} />
-        <meshLambertMaterial color={PALETTE.heapFloor} flatShading />
+        <meshLambertMaterial color={P.region.floor} flatShading />
       </mesh>
       <gridHelper
-        args={[HEAP_SIZE[0], 12, PALETTE.heapEdge, PALETTE.heapEdge]}
+        args={[HEAP_SIZE[0], 12, P.region.stroke, P.region.stroke]}
         position={[HEAP_CENTER[0], 0.001, HEAP_CENTER[2]]}
         scale={[1, 1, HEAP_SIZE[2] / HEAP_SIZE[0]]}
       />

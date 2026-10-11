@@ -27,6 +27,8 @@ Every `StoryBeat` carries these base fields, plus the story's own entity arrays 
 | `focus` | keys to spotlight: entity ids and `owner.slot` keys |
 | `phase?` | optional story-specific stage (e.g. GC `mark` / `sweep`) |
 
+Stack-and-heap stories take `Slot`, `StackFrame`, `HeapObject`, `Snapshot` and the reference helpers (`slotKey`, `getReferences`, `getReachable`) from `src/shared/snapshot`, because a Playground trace step holds the same snapshot ([ADR 0004](../../../docs/adr/0004-playground-traces-share-the-snapshot.md)). The story narrows them: `Placed<HeapObject<…>>` makes the authored `cell` required. Other domains (e.g. Git commits and refs) keep their own typed snapshots.
+
 Rules that make the model render cleanly:
 
 - **Full snapshot per beat.** Every beat lists every entity present at that moment; stepping backwards is just rendering an earlier beat.
