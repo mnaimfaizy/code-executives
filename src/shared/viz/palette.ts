@@ -63,9 +63,24 @@ export interface VizPalette {
     muted: string;
     /** Text of a focused slot. */
     onFocus: string;
+    /** 2D: the name heading a frame or a retained scope. */
+    frameName: string;
+    /** 2D: a slot's name and value. */
+    slot: string;
+    /** The ROOT tag on a frame. */
+    root: string;
   };
   /** The DOM labels that float over the 3D scene. */
-  label: { bg: string; border: string };
+  label: {
+    bg: string;
+    border: string;
+    /** Border of a frame's label. */
+    frameBorder: string;
+    /** Border of a label in focus. */
+    focusBorder: string;
+    /** Border of an unreachable object's label. */
+    unreachableBorder: string;
+  };
 }
 
 /** The entity roles, for code that treats them uniformly (and for the palette tests). */
@@ -103,8 +118,22 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
     reference: { stroke: '#64748b', solid: '#475569' },
     focus: '#f59e0b',
     root: '#f59e0b',
-    text: { primary: '#1e293b', secondary: '#475569', muted: '#94a3b8', onFocus: '#b45309' },
-    label: { bg: '#ffffff', border: '#e2e8f0' },
+    text: {
+      primary: '#1e293b',
+      secondary: '#475569',
+      muted: '#94a3b8',
+      onFocus: '#b45309',
+      frameName: '#312e81',
+      slot: '#334155',
+      root: '#d97706',
+    },
+    label: {
+      bg: '#ffffff',
+      border: '#e2e8f0',
+      frameBorder: '#c7d2fe',
+      focusBorder: '#fbbf24',
+      unreachableBorder: '#fda4af',
+    },
   },
   dark: {
     surface: '#0a0a1a',
@@ -119,15 +148,29 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
     lighting: { sky: '#ffffff', ground: '#3a3a6e' },
     frame: { fill: '#1e1b4b', stroke: '#818cf8', solid: '#6366f1' },
     frameActive: { fill: '#312e81', stroke: '#a5b4fc', solid: '#818cf8' },
-    object: { fill: '#064e3b', stroke: '#34d399', solid: '#10b981' },
-    array: { fill: '#0c4a6e', stroke: '#38bdf8', solid: '#0ea5e9', divider: '#bae6fd' },
+    object: { fill: '#043d2e', stroke: '#34d399', solid: '#10b981' },
+    array: { fill: '#093a56', stroke: '#38bdf8', solid: '#0ea5e9', divider: '#bae6fd' },
     function: { fill: '#3b0764', stroke: '#c084fc', solid: '#a855f7' },
     scope: { fill: '#262a45', stroke: '#8b93c9', solid: '#5c6399' },
     unreachable: { fill: '#4c0519', stroke: '#fb7185', solid: '#f43f5e' },
     reference: { stroke: '#94a3b8', solid: '#94a3b8' },
     focus: '#fbbf24',
     root: '#fbbf24',
-    text: { primary: '#e0e0ff', secondary: '#a0a0cc', muted: '#6b6b99', onFocus: '#fcd34d' },
-    label: { bg: '#12122a', border: '#2a2a4e' },
+    text: {
+      primary: '#e0e0ff',
+      secondary: '#b8b8e0',
+      muted: '#a3a3cf',
+      onFocus: '#fcd34d',
+      frameName: '#c7d2fe',
+      slot: '#cbd5e1',
+      root: '#fbbf24',
+    },
+    label: {
+      bg: '#12122a',
+      border: '#2a2a4e',
+      frameBorder: '#4f46e5',
+      focusBorder: '#fbbf24',
+      unreachableBorder: '#be123c',
+    },
   },
 };

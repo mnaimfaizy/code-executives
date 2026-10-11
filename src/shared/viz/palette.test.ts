@@ -97,4 +97,19 @@ describe('vizPalette', () => {
     }
     expect(contrast(p.focus, p.surface)).toBeLessThan(GRAPHIC_MIN);
   });
+
+  it('keeps every kind of dark text readable on every dark entity fill', () => {
+    // The Playground is dark. Light keeps the muted greys the stories shipped with.
+    const p = vizPalette.dark;
+    for (const [name, colour] of Object.entries(p.text)) {
+      for (const role of ENTITY_ROLES) {
+        expect(contrast(colour, p[role].fill), `text.${name} on ${role}`).toBeGreaterThanOrEqual(
+          TEXT_MIN
+        );
+      }
+      expect(contrast(colour, p.label.bg), `text.${name} on label`).toBeGreaterThanOrEqual(
+        TEXT_MIN
+      );
+    }
+  });
 });
