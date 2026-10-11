@@ -18,17 +18,17 @@ This standard exists so that doesn't happen again.
 
 1. **3D must teach, not decorate.** Use 3D only where depth carries meaning: layers, regions, references crossing space. If the 2D view explains it just as well, don't build 3D.
 2. **Literal, not metaphor.** Draw the concept itself: frames, objects, references. No kitchens, libraries or robots.
-3. **3D is an option, and 2D is the default.** Both views render **one step model**. Switching views keeps the learner on the same step.
-4. **A guided camera the learner can take over.** Every step has a preset shot and the camera glides to it. The learner can orbit, pan and zoom; the next step glides back to its shot unless **Hold view** is on, and **Reset view** returns to the preset. The plain scroll wheel never zooms the scene, so page scrolling keeps working. See [Viewer controls](#viewer-controls).
-5. **The learner sets the pace.** Provide step back/forward, play/pause and speed, and keep the defaults slow. Each step is a full snapshot, so stepping backwards costs nothing.
+3. **3D is an option, and 2D is the default.** Both views render **one beat model**. Switching views keeps the learner on the same beat.
+4. **A guided camera the learner can take over.** Every beat has a preset shot and the camera glides to it. The learner can orbit, pan and zoom; the next beat glides back to its shot unless **Hold view** is on, and **Reset view** returns to the preset. The plain scroll wheel never zooms the scene, so page scrolling keeps working. See [Viewer controls](#viewer-controls).
+5. **The learner sets the pace.** Provide step back/forward, play/pause and speed, and keep the defaults slow. Each beat is a full snapshot, so stepping backwards costs nothing.
 6. **Labels are always readable.** Labels are DOM elements (drei `<Html>`) that always face the camera, sit on or beside their object, and are never smaller than 11px. Use `zIndexRange={[10, 0]}` so they never cover site chrome.
 
 ## Quality bar (references)
 
 | Aspect | Reference |
 |---|---|
-| Teaching pace, one idea per step | [Bartosz Ciechanowski](https://ciechanow.ski/) |
-| Guided camera per step in a CS scene | [LLM Visualization (Bycroft)](https://bbycroft.net/llm) |
+| Teaching pace, one idea per beat | [Bartosz Ciechanowski](https://ciechanow.ski/) |
+| Guided camera per beat in a CS scene | [LLM Visualization (Bycroft)](https://bbycroft.net/llm) |
 | Visual language: isometric, clean, readable | [Cloudcraft](https://www.cloudcraft.co/), [Isoflow](https://isoflow.io/) |
 | Performance and graceful fallback | [How we built the GitHub globe](https://github.blog/engineering/engineering-principles/how-we-built-the-github-globe/) |
 | Polish ceiling (look only, not the navigation) | [Bruno Simon](https://bruno-simon.com/), [R3F examples](https://r3f.docs.pmnd.rs/getting-started/examples) |
@@ -39,10 +39,10 @@ This standard exists so that doesn't happen again.
 ## Architecture
 
 ```
-utils/<story>.ts               step model + scenario (pure data, unit-tested)
-visualizations/2d/<Name>2D.tsx SVG renderer of one step
-visualizations/3d/<Name>3D.tsx R3F renderer of one step (lazy chunk)
-sections/<Story>.tsx           shell: code panel, narration, controls, 2D/3D toggle
+utils/<story>.ts               beat model (pure data, unit-tested)
+visualizations/2d/<Name>2D.tsx SVG renderer of one beat
+visualizations/3d/<Name>3D.tsx R3F renderer of one beat (lazy chunk)
+sections/<Story>.tsx           shell: code panel, caption, controls, 2D/3D toggle
 ```
 
 - **Tech:** `three`, `@react-three/fiber` and `@react-three/drei` (`CameraControls`, `Html`, `QuadraticBezierLine`, `RoundedBox`).
@@ -80,13 +80,13 @@ Every 3D story uses the shared toolbar and camera (`src/shared/components/viz/Vi
 1. From the 3D view alone, a learner can explain the story's key insight (for the prototype: *why Bob survives `bob = null`*).
 2. Every label is readable at every preset shot (isometric preset). Zooming, panning and the other presets never show a clipped label.
 3. It runs smoothly on a normal laptop. 3D loads only on toggle, and 2D pages are the same size as before.
-4. Switching views mid-story keeps the step.
+4. Switching views mid-story keeps the beat.
 5. With no WebGL or with reduced motion on, it falls back correctly.
 6. It meets the look and feel of the references above.
 
 ## Prototype: JavaScript › Memory Heap › "Stack ↔ Heap"
 
-- **Story:** 10 steps following `makeUser('Ada')` / `makeUser('Bob')`: frames pushed and popped, a heap-to-heap reference, `bob = null` (Bob survives through Ada), `ada = null`, the GC mark phase, and the GC sweep.
+- **Story:** 10 beats following `makeUser('Ada')` / `makeUser('Bob')`: frames pushed and popped, a heap-to-heap reference, `bob = null` (Bob survives through Ada), `ada = null`, the GC mark phase, and the GC sweep.
 - **Model:** `src/features/javascript/utils/stackHeapStory.ts`, with tests covering reachability and consistency.
 - **Views:** `StackHeap2D.tsx` and `StackHeap3D.tsx`. The shell is `sections/StackHeapStory.tsx`, mounted in `MemoryHeap.tsx`.
-- **Rollout gate:** don't roll out to other modules until the owner signs off on the checklist. After that, replace the hand-authored scenario with traces from the playground's `JsInstrumenter`, then pick the next module.
+- **Rollout gate:** don't roll out to other modules until the owner signs off on the checklist. After that, replace the hand-authored beats with traces from the playground's `JsInstrumenter`, then pick the next module.

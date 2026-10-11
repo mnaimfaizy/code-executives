@@ -1,8 +1,8 @@
 /**
- * Branch Pointers story: one step model, rendered by both the 2D (SVG) and 3D (R3F) views.
+ * Branch Pointers story: one beat model, rendered by both the 2D (SVG) and 3D (R3F) views.
  * Spec: docs/stories/git/branch-pointers.md
  *
- * Every step is a full snapshot, so stepping backwards is free and switching views
+ * Every beat is a full snapshot, so stepping backwards is free and switching views
  * mid-story keeps the learner on the same beat. Commit ids are 4-character fake SHAs.
  */
 
@@ -71,7 +71,7 @@ export type RefId = Ref['id'];
 
 export type GcPhase = 'expire' | 'prune';
 
-export interface StoryStep {
+export interface StoryBeat {
   id: string;
   title: string;
   caption: string;
@@ -88,7 +88,7 @@ export interface StoryStep {
 export type ReferenceKind = 'parent' | 'ref' | 'reflog';
 
 export interface Reference {
-  /** Unique per step, e.g. `e5a6.parents.1`, `HEAD.target`, `head-reflog.f6b1`. */
+  /** Unique per beat, e.g. `e5a6.parents.1`, `HEAD.target`, `head-reflog.f6b1`. */
   id: string;
   kind: ReferenceKind;
   /** Slot key the arrow starts from, e.g. `e5a6.parents`, `main.target`, `head-reflog`. */
@@ -114,7 +114,7 @@ git gc --prune=now`;
 export const slotKey = (owner: string, slot: string) => `${owner}.${slot}`;
 
 // ---------------------------------------------------------------------------
-// Factories: identity, message, parents and cell never change across steps.
+// Factories: identity, message, parents and cell never change across beats.
 
 const commit =
   (id: string, message: string, parents: string[], cell: Cell) =>
@@ -188,7 +188,7 @@ const mergedCommits = () => [a1f0(), b2c4(), c3d8(), d4e2(), e5a6()];
 
 // ---------------------------------------------------------------------------
 
-export const STORY_STEPS: StoryStep[] = [
+export const STORY_BEATS: StoryBeat[] = [
   {
     id: 'commit-parent',
     title: 'A commit points to its parent',
@@ -328,55 +328,55 @@ export const STORY_STEPS: StoryStep[] = [
 // ---------------------------------------------------------------------------
 // Pure helpers shared by views and tests: derive facts, never store them twice.
 
-export const getCommit = (step: StoryStep, id: string) => step.commits.find((c) => c.id === id);
+export const getCommit = (beat: StoryBeat, id: string) => beat.commits.find((c) => c.id === id);
 
-export const getRef = <K extends RefId>(step: StoryStep, id: K) =>
-  step.refs.find((r) => r.id === id) as Extract<Ref, { id: K }> | undefined;
+export const getRef = <K extends RefId>(beat: StoryBeat, id: K) =>
+  beat.refs.find((r) => r.id === id) as Extract<Ref, { id: K }> | undefined;
 
-export const getHead = (step: StoryStep): HeadRef => getRef(step, 'HEAD')!;
+export const getHead = (beat: StoryBeat): HeadRef => getRef(beat, 'HEAD')!;
 
-export const getBranches = (step: StoryStep): BranchRef[] =>
-  step.refs.filter((r): r is BranchRef => r.kind === 'branch');
+export const getBranches = (beat: StoryBeat): BranchRef[] =>
+  beat.refs.filter((r): r is BranchRef => r.kind === 'branch');
 
 /** The branch HEAD names, or `null` when HEAD is detached. */
-export const getHeadBranch = (step: StoryStep): BranchId | null => {
-  const t = getHead(step).target;
+export const getHeadBranch = (beat: StoryBeat): BranchId | null => {
+  const t = getHead(beat).target;
   return t.kind === 'branch' ? t.branch : null;
 };
 
-export const isDetached = (step: StoryStep) => getHeadBranch(step) === null;
+export const isDetached = (beat: StoryBeat) => getHeadBranch(beat) === null;
 
 /** The commit HEAD resolves to, through its branch when symbolic. */
-export const resolveHead = (step: StoryStep): string => {
-  const t = getHead(step).target;
+export const resolveHead = (beat: StoryBeat): string => {
+  const t = getHead(beat).target;
   if (t.kind === 'commit') return t.commit;
-  return getRef(step, t.branch)!.target;
+  return getRef(beat, t.branch)!.target;
 };
 
 /** Text of the `.git/HEAD` file: `ref: refs/heads/main` or a commit id. */
-export const headFileText = (step: StoryStep): string => {
-  const t = getHead(step).target;
+export const headFileText = (beat: StoryBeat): string => {
+  const t = getHead(beat).target;
   return t.kind === 'branch' ? `ref: refs/heads/${t.branch}` : t.commit;
 };
 
 /** Commit ids the HEAD reflog still lists, newest first, without duplicates. */
-export const getReflogCommits = (step: StoryStep): string[] => {
-  const reflog = getRef(step, 'head-reflog');
+export const getReflogCommits = (beat: StoryBeat): string[] => {
+  const reflog = getRef(beat, 'head-reflog');
   return reflog ? [...new Set(reflog.entries.map((e) => e.commit))] : [];
 };
 
 /**
- * Every arrow in a step: parent arrows (child to parent), ref arrows (HEAD to a branch
+ * Every arrow in a beat: parent arrows (child to parent), ref arrows (HEAD to a branch
  * card or, when detached, straight to a commit; each branch to its commit) and, with
  * `includeReflog`, one arrow from the head-reflog card to each commit it lists.
  * Collected commits draw no arrows.
  */
 export function getReferences(
-  step: StoryStep,
+  beat: StoryBeat,
   { includeReflog = false }: { includeReflog?: boolean } = {}
 ): Reference[] {
   const refs: Reference[] = [];
-  for (const c of step.commits) {
+  for (const c of beat.commits) {
     if (c.state === 'collected') continue;
     const from = slotKey(c.id, 'parents');
     c.parents.forEach((p, i) =>
@@ -390,7 +390,7 @@ export function getReferences(
       })
     );
   }
-  for (const r of step.refs) {
+  for (const r of beat.refs) {
     if (r.kind === 'head') {
       const from = slotKey('HEAD', 'target');
       const to = r.target.kind === 'branch' ? r.target.branch : r.target.commit;
@@ -402,7 +402,7 @@ export function getReferences(
     }
   }
   if (includeReflog) {
-    for (const id of getReflogCommits(step))
+    for (const id of getReflogCommits(beat))
       refs.push({
         id: `head-reflog.${id}`,
         kind: 'reflog',
@@ -420,15 +420,15 @@ export function getReferences(
  * `includeReflog`), following parent arrows. Collected commits are gone and reach nothing.
  */
 export function getReachable(
-  step: StoryStep,
+  beat: StoryBeat,
   { includeReflog = false }: { includeReflog?: boolean } = {}
 ): Set<string> {
-  const refs = getReferences(step, { includeReflog });
+  const refs = getReferences(beat, { includeReflog });
   const queue = refs.filter((r) => r.kind !== 'parent' && r.toKind === 'commit').map((r) => r.to);
   const reached = new Set<string>();
   while (queue.length) {
     const id = queue.shift()!;
-    if (reached.has(id) || getCommit(step, id)?.state === 'collected') continue;
+    if (reached.has(id) || getCommit(beat, id)?.state === 'collected') continue;
     reached.add(id);
     for (const r of refs) if (r.kind === 'parent' && r.fromOwner === id) queue.push(r.to);
   }
@@ -436,13 +436,13 @@ export function getReachable(
 }
 
 /** The state reachability implies for a commit that has not been collected. */
-export function reachabilityState(step: StoryStep, id: string): Exclude<CommitState, 'collected'> {
-  if (getReachable(step).has(id)) return 'live';
-  if (getReachable(step, { includeReflog: true }).has(id)) return 'reflog-only';
+export function reachabilityState(beat: StoryBeat, id: string): Exclude<CommitState, 'collected'> {
+  if (getReachable(beat).has(id)) return 'live';
+  if (getReachable(beat, { includeReflog: true }).has(id)) return 'reflog-only';
   return 'unreachable';
 }
 
-export const isFocused = (step: StoryStep, key: string) => step.focus.includes(key);
+export const isFocused = (beat: StoryBeat, key: string) => beat.focus.includes(key);
 
 /** An arrow is spotlighted when its source slot (or owner, for the reflog) is in focus. */
-export const isRefFocused = (step: StoryStep, ref: Reference) => step.focus.includes(ref.from);
+export const isRefFocused = (beat: StoryBeat, ref: Reference) => beat.focus.includes(ref.from);

@@ -32,7 +32,7 @@ const wheelPixels = (e: WheelEvent) =>
   e.deltaMode === 1 ? e.deltaY * 33 : e.deltaMode === 2 ? e.deltaY * 400 : e.deltaY;
 
 export interface StoryCameraProps {
-  /** The step's preset shot. */
+  /** The beat's preset shot. */
   shot: Shot;
   /** The scene's extent plus a margin: panning keeps the target inside it. */
   bounds: Box3;
@@ -44,9 +44,9 @@ export interface StoryCameraProps {
 }
 
 /**
- * Frames each step's shot from the learner's view preset and lets them take over: orbit
+ * Frames each beat's shot from the learner's view preset and lets them take over: orbit
  * (left-drag, one finger), pan (right-drag, pan mode, two fingers), zoom (toolbar, Ctrl/⌘ +
- * wheel, pinch; plain wheel only in full screen). Hold view keeps the camera across steps.
+ * wheel, pinch; plain wheel only in full screen). Hold view keeps the camera across beats.
  */
 export const StoryCamera: React.FC<StoryCameraProps> = ({
   shot,

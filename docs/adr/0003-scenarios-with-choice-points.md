@@ -9,7 +9,7 @@ Stories teach one concept each. The owner also wants learners to follow a whole 
 
 ## Decision
 
-- A **scenario** is a kind of story: the same step model (full snapshot per beat, stable ids and cells, state as data), the same 2D and optional 3D views, and the same pipeline and approval gate. It adds a **cast**, a **timeline** and a **transcript** (who acted, when, what they ran, what it printed).
+- A **scenario** is a kind of story: the same beat model (full snapshot per beat, stable ids and cells, state as data), the same 2D and optional 3D views, and the same pipeline and approval gate. It adds a **cast**, a **timeline** and a **transcript** (who acted, when, what they ran, what it printed).
 - A scenario has a main path that may end at a **choice point**. Each option runs its own **path** to its own ending, and a path may end at one more choice point. At most 2 choice points; main path 5–10 beats, other paths 3–6, at most 24 beats in total.
 - **Paths never rejoin.** Each ending shows an outcome summary and offers the other path.
 - Each member of the cast is drawn as their own copy of the system (their clone, the remote, the CI runner), never as a person. People appear only as name tags.

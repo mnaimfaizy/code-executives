@@ -8,11 +8,11 @@ import {
   isRefFocused,
   type Commit,
   type Ref,
-  type StoryStep,
+  type StoryBeat,
 } from '../../../utils/branchPointersStory';
 
 interface BranchPointers2DProps {
-  step: StoryStep;
+  beat: StoryBeat;
 }
 
 const W = 680;
@@ -63,7 +63,7 @@ interface Point {
   y: number;
 }
 
-/** The one layout function: model cells to SVG coordinates, identical for every step. */
+/** The one layout function: model cells to SVG coordinates, identical for every beat. */
 const nodeCenter = (c: Commit): Point => ({
   x: NODE_X0 + c.cell.col * NODE_DX,
   y: NODE_Y0 + c.cell.row * NODE_DY,
@@ -154,14 +154,14 @@ interface Arrow {
   faded: boolean;
 }
 
-function buildArrows(step: StoryStep): Arrow[] {
+function buildArrows(beat: StoryBeat): Arrow[] {
   const arrows: Arrow[] = [];
-  const cards = new Map(step.refs.map((r) => [r.id as string, refBox(r)]));
+  const cards = new Map(beat.refs.map((r) => [r.id as string, refBox(r)]));
   const liveAt = (col: number, row: number) =>
-    step.commits.some((c) => c.state !== 'collected' && c.cell.col === col && c.cell.row < row);
+    beat.commits.some((c) => c.state !== 'collected' && c.cell.col === col && c.cell.row < row);
 
-  for (const ref of getReferences(step)) {
-    const focused = isRefFocused(step, ref);
+  for (const ref of getReferences(beat)) {
+    const focused = isRefFocused(beat, ref);
     const arrow = (d: string, color: ArrowColor, width: number, faded = false) =>
       arrows.push({
         id: ref.id,
@@ -172,8 +172,8 @@ function buildArrows(step: StoryStep): Arrow[] {
       });
 
     if (ref.kind === 'parent') {
-      const child = getCommit(step, ref.fromOwner);
-      const parent = getCommit(step, ref.to);
+      const child = getCommit(beat, ref.fromOwner);
+      const parent = getCommit(beat, ref.to);
       if (!child || !parent) continue;
       arrow(
         parentPath(nodeCenter(child), nodeCenter(parent)),
@@ -186,12 +186,12 @@ function buildArrows(step: StoryStep): Arrow[] {
       if (ref.toKind === 'ref') {
         arrow(headToCardPath(head, cards.get(ref.to)!), 'head', 2);
       } else {
-        const target = getCommit(step, ref.to);
+        const target = getCommit(beat, ref.to);
         if (target) arrow(headToCommitPath(head, nodeCenter(target)), 'detached', 2.6);
       }
     } else {
       const card = cards.get(ref.fromOwner);
-      const target = getCommit(step, ref.to);
+      const target = getCommit(beat, ref.to);
       if (!card || !target) continue;
       arrow(
         branchPath(card, nodeCenter(target), liveAt(target.cell.col, target.cell.row)),
@@ -218,17 +218,17 @@ const STATE_TAG: Record<Commit['state'], string | null> = {
   collected: null,
 };
 
-const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
-  const arrows = buildArrows(step);
-  const detached = isDetached(step);
-  const reflogFocused = isFocused(step, 'head-reflog');
+const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ beat }) => {
+  const arrows = buildArrows(beat);
+  const detached = isDetached(beat);
+  const reflogFocused = isFocused(beat, 'head-reflog');
 
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
       className="h-full w-full"
       role="img"
-      aria-label={`Branch pointers: ${step.title}`}
+      aria-label={`Branch pointers: ${beat.title}`}
     >
       <style>{`
         .bp-enter { animation: bp-fade 450ms ease-out both; }
@@ -301,7 +301,7 @@ const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
       >
         COMMIT GRAPH
       </text>
-      {step.phase && (
+      {beat.phase && (
         <text
           x={W - 20}
           y={GRAPH_TOP + 18}
@@ -311,7 +311,7 @@ const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
           fontFamily={MONO}
           className="fill-rose-600"
         >
-          {step.phase === 'expire' ? 'reflog expire' : 'gc --prune'}
+          {beat.phase === 'expire' ? 'reflog expire' : 'gc --prune'}
         </text>
       )}
 
@@ -332,9 +332,9 @@ const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
       ))}
 
       {/* Commits */}
-      {step.commits.map((c) => {
+      {beat.commits.map((c) => {
         const p = nodeCenter(c);
-        const focused = isFocused(step, c.id);
+        const focused = isFocused(beat, c.id);
         const tag = STATE_TAG[c.state];
         const live = c.state === 'live';
         const unreachable = c.state === 'unreachable';
@@ -400,9 +400,9 @@ const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
       })}
 
       {/* Ref cards */}
-      {step.refs.map((r) => {
+      {beat.refs.map((r) => {
         const b = refBox(r);
-        const focused = isFocused(step, r.id);
+        const focused = isFocused(beat, r.id);
         if (r.kind === 'reflog') {
           const count = r.entries.length;
           return (
@@ -438,7 +438,7 @@ const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
                 .git/{r.path}
               </text>
               {r.entries.map((e, i) => {
-                const hot = reflogFocused && isFocused(step, e.commit);
+                const hot = reflogFocused && isFocused(beat, e.commit);
                 const y = b.y + 30 + i * REFLOG_LINE;
                 return (
                   <g
@@ -564,7 +564,7 @@ const BranchPointers2D: React.FC<BranchPointers2DProps> = ({ step }) => {
                   isHead ? (detached ? 'fill-rose-700' : 'fill-pink-800') : 'fill-orange-700'
                 }
               >
-                {r.kind === 'head' ? headFileText(step) : r.kind === 'branch' ? r.target : ''}
+                {r.kind === 'head' ? headFileText(beat) : r.kind === 'branch' ? r.target : ''}
               </text>
             </g>
           </g>

@@ -25,7 +25,7 @@ export type CameraCommandInput =
 /** Everything a 3D renderer needs to drive its camera, owned by the story section. */
 export interface CameraState {
   preset: ViewPreset;
-  /** On: a new step keeps the learner's camera instead of gliding to its shot. */
+  /** On: a new beat keeps the learner's camera instead of gliding to its shot. */
   hold: boolean;
   /** On: left-drag (and one finger) pans instead of orbiting. */
   pan: boolean;

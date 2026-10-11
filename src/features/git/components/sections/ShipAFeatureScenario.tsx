@@ -390,7 +390,7 @@ const ShipAFeatureScenario: React.FC = () => {
             <ControlButton label="Restart" onClick={restart}>
               <RotateCcw className="h-4 w-4" />
             </ControlButton>
-            <ControlButton label="Previous step" onClick={() => go(-1)} disabled={index === 0}>
+            <ControlButton label="Previous beat" onClick={() => go(-1)} disabled={index === 0}>
               <ChevronLeft className="h-4 w-4" />
             </ControlButton>
             <ControlButton
@@ -404,7 +404,7 @@ const ShipAFeatureScenario: React.FC = () => {
             >
               {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </ControlButton>
-            <ControlButton label="Next step" onClick={() => go(1)} disabled={index === last}>
+            <ControlButton label="Next beat" onClick={() => go(1)} disabled={index === last}>
               <ChevronRight className="h-4 w-4" />
             </ControlButton>
 

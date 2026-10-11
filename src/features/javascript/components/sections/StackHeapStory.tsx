@@ -15,7 +15,7 @@ import { useReducedMotion, useStoryViewer } from '../../../../shared/hooks';
 import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
 import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
 import StackHeap2D from '../visualizations/2d/StackHeap2D';
-import { STORY_CODE, STORY_STEPS } from '../../utils/stackHeapStory';
+import { STORY_CODE, STORY_BEATS } from '../../utils/stackHeapStory';
 import { canUseWebGL } from '../../../../shared/utils/webgl';
 
 // three.js + R3F only download when the learner switches to 3D.
@@ -47,8 +47,8 @@ const StackHeapStory: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const view: View = webgl && chosenView === '3d' ? '3d' : '2d';
-  const step = STORY_STEPS[index];
-  const last = STORY_STEPS.length - 1;
+  const beat = STORY_BEATS[index];
+  const last = STORY_BEATS.length - 1;
 
   const chooseView = (v: View) => {
     setChosenView(v);
@@ -77,7 +77,7 @@ const StackHeapStory: React.FC = () => {
   const viewer = useStoryViewer({ rootRef, is3D: view === '3d', step: go });
   const fullscreen = viewer.fullscreen.isFullscreen;
 
-  const view2D = <StackHeap2D step={step} />;
+  const view2D = <StackHeap2D beat={beat} />;
 
   return (
     <div
@@ -97,7 +97,7 @@ const StackHeapStory: React.FC = () => {
             Stack ↔ Heap: who keeps an object alive?
           </h3>
           <p className="mt-1 text-xs text-slate-600">
-            A 10-step story. Frames come and go; objects live as long as a root can reach them.
+            A 10-beat story. Frames come and go; objects live as long as a root can reach them.
           </p>
         </div>
 
@@ -139,7 +139,7 @@ const StackHeapStory: React.FC = () => {
           <div className="overflow-x-auto rounded-xl border border-slate-700 bg-slate-900 py-3 shadow">
             <pre className="text-[12.5px] leading-6" aria-label="Story code">
               {CODE_LINES.map((text, i) => {
-                const active = i + 1 === step.line;
+                const active = i + 1 === beat.line;
                 return (
                   <div
                     key={i}
@@ -169,10 +169,10 @@ const StackHeapStory: React.FC = () => {
             aria-live="polite"
           >
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-600">
-              Step {index + 1} / {STORY_STEPS.length}
+              Beat {index + 1} / {STORY_BEATS.length}
             </div>
-            <h4 className="mb-2 text-base font-bold text-slate-900">{step.title}</h4>
-            <p className="text-sm leading-relaxed text-slate-700">{step.caption}</p>
+            <h4 className="mb-2 text-base font-bold text-slate-900">{beat.title}</h4>
+            <p className="text-sm leading-relaxed text-slate-700">{beat.caption}</p>
           </div>
         </div>
 
@@ -206,7 +206,7 @@ const StackHeapStory: React.FC = () => {
                     </div>
                   }
                 >
-                  <StackHeap3D step={step} camera={viewer.camera} instant={reducedMotion} />
+                  <StackHeap3D beat={beat} camera={viewer.camera} instant={reducedMotion} />
                 </Suspense>
               </ErrorBoundary>
             ) : (
@@ -238,7 +238,7 @@ const StackHeapStory: React.FC = () => {
             >
               <RotateCcw className="h-4 w-4" />
             </ControlButton>
-            <ControlButton label="Previous step" onClick={() => go(-1)} disabled={index === 0}>
+            <ControlButton label="Previous beat" onClick={() => go(-1)} disabled={index === 0}>
               <ChevronLeft className="h-4 w-4" />
             </ControlButton>
             <ControlButton
@@ -251,12 +251,12 @@ const StackHeapStory: React.FC = () => {
             >
               {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </ControlButton>
-            <ControlButton label="Next step" onClick={() => go(1)} disabled={index === last}>
+            <ControlButton label="Next beat" onClick={() => go(1)} disabled={index === last}>
               <ChevronRight className="h-4 w-4" />
             </ControlButton>
 
             <div className="mx-1 flex gap-1" aria-hidden>
-              {STORY_STEPS.map((s, i) => (
+              {STORY_BEATS.map((s, i) => (
                 <button
                   key={s.id}
                   type="button"

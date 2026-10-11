@@ -1,6 +1,6 @@
 ---
 name: modern-web-guidance
-description: "Curated modern web platform guides (accessibility, forms, CSS, performance, view transitions, dialogs/popovers, canvas and 3D accessibility) from Google Chrome. Use when building or reviewing browser UI in Code Executives and you need current, Baseline-aware HTML/CSS/JS patterns. Not for backend, tooling or story step models."
+description: "Curated modern web platform guides (accessibility, forms, CSS, performance, view transitions, dialogs/popovers, canvas and 3D accessibility) from Google Chrome. Use when building or reviewing browser UI in Code Executives and you need current, Baseline-aware HTML/CSS/JS patterns. Not for backend, tooling or story beat models."
 ---
 
 A vendored, read-only subset of [GoogleChrome/modern-web-guidance](https://github.com/GoogleChrome/modern-web-guidance) at commit `84ae725` (v0.0.191, Apache-2.0). Read the files directly: **never** run `npx modern-web-guidance` (unpinned remote code, default-on telemetry). Provenance and licence: `NOTICE`, `LICENSE`. Evaluation: `docs/RESEARCH/Modern Web Guidance Skill Report.md`.

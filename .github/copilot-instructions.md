@@ -13,7 +13,7 @@ workflow are in [AGENTS.md](../AGENTS.md); architecture decisions are in [docs/a
 - Keep the Axios guardrails in `package.json` `overrides`. Workflow actions are pinned to full commit SHAs with minimal `permissions`.
 
 ### Visualizations
-- New visualizations are **stories**: one step model (`src/features/<module>/utils/<storyId>Story.ts`, pure data, tested) rendered by a 2D view and, optionally, a 3D view. Both views render the same step; 2D is the default.
+- New visualizations are **stories**: one beat model (`src/features/<module>/utils/<storyId>Story.ts`, pure data, tested) rendered by a 2D view and, optionally, a 3D view. Both views render the same beat; 2D is the default.
 - Literal, not metaphor: draw the concept itself (frames, objects, requests), never everyday stand-ins.
 - A **scenario** is a story that follows a whole workplace workflow, with a cast, a timeline and up to 2 choice points whose paths never rejoin ([ADR 0003](../docs/adr/0003-scenarios-with-choice-points.md)). Scenarios live in the module's Visualization page, deep-linked with `?scenario=<id>`. Terms are defined in [CONTEXT.md](../CONTEXT.md).
 - 3D follows [docs/3D-Visualization-Standard.md](../docs/3D-Visualization-Standard.md). three.js is imported only from a `React.lazy` renderer and never reaches the entry bundle; `manualChunks` has no rule for it.
