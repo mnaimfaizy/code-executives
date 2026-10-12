@@ -8,23 +8,29 @@ import {
   type HeapObject,
   type Placed,
   type Reference,
-  type Slot,
-  type StackFrame,
 } from '../../../snapshot';
 import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import { vizPalette, type EntityColors } from '../../../viz/palette';
+import { SlotLines, StackFrames, StackPanel } from './StackFrames2D';
+import {
+  FRAME_HEADER,
+  MONO,
+  STACK_CSS,
+  STACK_PAD_BOTTOM,
+  STACK_PAD_TOP,
+  boxHeight,
+  clip,
+  slotY,
+  stackBoxes,
+  stackHeight as heightOfStack,
+  type Box,
+} from './stackGeometry';
 import type { PlacedSnapshot, StackHeapViewProps } from './types';
 
 /*
  * Geometry. A 2×2 heap with a short stack is the 800×480 drawing of the Stack ↔ Heap story;
  * more columns widen the viewBox, more rows, taller objects or more frames make it taller.
  */
-const STACK_X = 24;
-const STACK_W = 230;
-const FRAME_HEADER = 30;
-const ROW_H = 22;
-const FRAME_GAP = 8;
-
 const HEAP_X = 310;
 const CELL_X0 = 340;
 const CELL_DX = 230;
@@ -35,27 +41,10 @@ const CELL_DY = 190;
 const ROW_CLEARANCE = 40;
 const OBJ_W = 180;
 
-/** Space under the lowest frame, and above the highest one (it clears the region caption). */
-const STACK_PAD_BOTTOM = 28;
-const STACK_PAD_TOP = 52;
 /** What the heap needs around its rows: 78 above the first, 22 under the last. */
 const HEAP_PAD_Y = 100;
 
-/** Monospace 12px runs about 7.2px a character: what fits a frame and an object. */
-const FRAME_LINE_CHARS = 25;
-const OBJECT_LINE_CHARS = 21;
-const FRAME_NAME_CHARS = 18;
-
-const MONO = 'ui-monospace, monospace';
-
 type PlacedObject = Placed<HeapObject>;
-
-interface Box {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
 
 interface Layout {
   width: number;
@@ -63,13 +52,6 @@ interface Layout {
   frames: Map<string, Box>;
   objects: Map<string, Box>;
 }
-
-const boxHeight = (slots: readonly Slot[]) => FRAME_HEADER + Math.max(1, slots.length) * ROW_H + 8;
-
-const slotY = (box: Box, index: number) => box.y + FRAME_HEADER + index * ROW_H + ROW_H / 2 + 2;
-
-const clip = (text: string, max: number) =>
-  text.length > max ? `${text.slice(0, Math.max(1, max - 1))}…` : text;
 
 /** The one place positions are decided, so an entity keeps its place from snapshot to snapshot. */
 function layout(snapshot: PlacedSnapshot, minGrid?: HeapGrid): Layout {
@@ -86,20 +68,14 @@ function layout(snapshot: PlacedSnapshot, minGrid?: HeapGrid): Layout {
     nextRowY += pitch;
   }
 
-  const stackHeight = snapshot.frames.reduce((sum, f) => sum + boxHeight(f.slots) + FRAME_GAP, 0);
+  const stackHeight = heightOfStack(snapshot.frames);
   const width = CELL_X0 + grid.cols * CELL_DX;
   const height = Math.max(
     HEAP_PAD_Y + rowPitch.reduce((sum, pitch) => sum + pitch, 0),
     STACK_PAD_TOP + stackHeight + STACK_PAD_BOTTOM
   );
 
-  const frames = new Map<string, Box>();
-  let y = height - STACK_PAD_BOTTOM;
-  for (const f of snapshot.frames) {
-    const h = boxHeight(f.slots);
-    y -= h + FRAME_GAP;
-    frames.set(f.id, { x: STACK_X + 12, y, w: STACK_W - 24, h });
-  }
+  const frames = stackBoxes(snapshot.frames, height);
 
   const objects = new Map<string, Box>();
   for (const o of snapshot.objects) {
@@ -188,13 +164,6 @@ const KIND_RX: Record<HeapObject['kind'], number> = {
   scope: 8,
 };
 
-function slotLine(kind: HeapObject['kind'] | 'frame', s: Slot): string {
-  const value = s.refId ? '●→' : s.value;
-  if (kind === 'frame' || kind === 'scope') return clip(`${s.name} = ${value}`, FRAME_LINE_CHARS);
-  const name = kind === 'array' ? `[${s.name}]` : s.name;
-  return clip(`${name}: ${value}`, OBJECT_LINE_CHARS);
-}
-
 /** The label shares its line with `#id`, so it gets what the id leaves (13px bold ≈ 7.5px). */
 const labelChars = (id: string) => Math.max(6, Math.floor((160 - (id.length + 3) * 6.2) / 7.5));
 
@@ -223,24 +192,6 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
   const arrowId = theme === 'light' ? 'sh-arrow' : `sh-arrow-${theme}`;
   const arrowFocusId = `${arrowId}-focus`;
 
-  const slotText = (owner: StackFrame | PlacedObject, kind: HeapObject['kind'] | 'frame', b: Box) =>
-    owner.slots.map((s, si) => {
-      const on = focused(slotKey(owner.id, s.name));
-      return (
-        <text
-          key={s.name}
-          x={b.x + 12}
-          y={slotY(b, si) + 4}
-          fontSize={12}
-          fontFamily={MONO}
-          fill={on ? P.text.onFocus : P.text.slot}
-          fontWeight={on ? 700 : 400}
-        >
-          {slotLine(kind, s)}
-        </text>
-      );
-    });
-
   return (
     <svg
       viewBox={`0 0 ${at.width} ${at.height}`}
@@ -248,16 +199,7 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
       role="img"
       aria-label={label}
     >
-      <style>{`
-        .sh-enter { animation: sh-fade 450ms ease-out both; }
-        .sh-shape { transition: fill 400ms, stroke 400ms, opacity 500ms; }
-        .sh-ref { transition: stroke 300ms, stroke-width 300ms, opacity 300ms; }
-        @keyframes sh-fade { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
-        @media (prefers-reduced-motion: reduce) {
-          .sh-enter { animation: none; }
-          .sh-shape, .sh-ref { transition: none; }
-        }
-      `}</style>
+      <style>{STACK_CSS}</style>
       <defs>
         <marker
           id={arrowId}
@@ -284,25 +226,7 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
       </defs>
 
       {/* Regions */}
-      <rect
-        x={STACK_X}
-        y={20}
-        width={STACK_W}
-        height={at.height - 36}
-        rx={14}
-        fill={P.region.fill}
-        stroke={P.region.stroke}
-      />
-      <text
-        x={STACK_X + 14}
-        y={42}
-        fill={P.region.label}
-        fontSize={12}
-        fontWeight={700}
-        letterSpacing={1.5}
-      >
-        CALL STACK
-      </text>
+      <StackPanel height={at.height} palette={P} />
       <rect
         x={HEAP_X}
         y={20}
@@ -324,50 +248,13 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
       </text>
 
       {/* Frames */}
-      {snapshot.frames.map((f, i) => {
-        const b = at.frames.get(f.id)!;
-        const top = i === snapshot.frames.length - 1;
-        const on = focused(f.id);
-        return (
-          <g key={f.id} className="sh-enter" data-viz-label data-viz-entity="frame">
-            <rect
-              className="sh-shape"
-              x={b.x}
-              y={b.y}
-              width={b.w}
-              height={b.h}
-              rx={8}
-              fill={P.frame.fill}
-              stroke={marking || on ? P.root : P.frame.stroke}
-              strokeWidth={marking || on ? 3 : top ? 2 : 1}
-              strokeDasharray={marking ? '6 4' : undefined}
-            />
-            <text
-              x={b.x + 10}
-              y={b.y + 20}
-              fontSize={13}
-              fontWeight={700}
-              fill={P.text.frameName}
-              fontFamily={MONO}
-            >
-              {clip(f.name, FRAME_NAME_CHARS)}
-            </text>
-            {marking && (
-              <text
-                x={b.x + b.w - 10}
-                y={b.y + 20}
-                fontSize={10}
-                fontWeight={700}
-                textAnchor="end"
-                fill={P.root}
-              >
-                ROOT
-              </text>
-            )}
-            {slotText(f, 'frame', b)}
-          </g>
-        );
-      })}
+      <StackFrames
+        frames={snapshot.frames}
+        boxes={at.frames}
+        palette={P}
+        focused={focused}
+        marking={marking}
+      />
 
       {/* References (drawn under objects) */}
       {refs.map((r) => {
@@ -458,7 +345,7 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
                 (empty)
               </text>
             ) : (
-              slotText(o, o.kind, b)
+              <SlotLines owner={o} kind={o.kind} box={b} palette={P} focused={focused} />
             )}
           </g>
         );

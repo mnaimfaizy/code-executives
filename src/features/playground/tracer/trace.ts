@@ -13,9 +13,9 @@ export interface TraceRun {
   getTrace(): Trace;
   /** What the code printed, one string per Console entry. */
   console: string[];
+  /** The trace once no task and no timer is left. Timers take no real time in a traced run. */
+  finished: Promise<Trace>;
 }
-
-type Callback = (...args: unknown[]) => unknown;
 
 /** Starts a run and returns as soon as its synchronous part has ended. */
 export function startTrace(code: string, options: TraceOptions = {}): TraceRun {
@@ -23,43 +23,32 @@ export function startTrace(code: string, options: TraceOptions = {}): TraceRun {
   const instrumented = instrument(code);
   if (!instrumented.ok) {
     const trace: Trace = { steps: [], outcome: 'error', error: instrumented.error };
-    return { getTrace: () => trace, console: printed };
+    return { getTrace: () => trace, console: printed, finished: Promise.resolve(trace) };
   }
 
-  const tracer = createTracer(resolveTraceLimits(options), () => printed.length);
+  let settle: (trace: Trace) => void = () => {};
+  const finished = new Promise<Trace>((resolve) => {
+    settle = resolve;
+  });
+  const tracer = createTracer(resolveTraceLimits(options), () => printed.length, {
+    // Looked up at each turn, so a test's fake timers drive the event loop too.
+    defer: (turn) => {
+      if (typeof setImmediate === 'function') setImmediate(turn);
+      else setTimeout(turn, 0);
+    },
+    settled: () => settle(tracer.getTrace()),
+  });
   const print = (...args: unknown[]) => {
     printed.push(args.map((arg) => (typeof arg === 'string' ? arg : String(arg))).join(' '));
   };
   const fakeConsole = { log: print, info: print, warn: print, error: print, debug: print };
-  // A callback the engine runs later has no caller to throw to, so its error ends the trace here.
-  const guarded =
-    (callback: Callback): Callback =>
-    (...args) => {
-      try {
-        return callback(...args);
-      } catch (error) {
-        tracer.fail(error);
-      }
-    };
-  const later = (callback: Callback, delay?: number, ...args: unknown[]) =>
-    setTimeout(guarded(callback), delay, ...args);
-  const repeat = (callback: Callback, delay?: number, ...args: unknown[]) =>
-    setInterval(guarded(callback), delay, ...args);
-  const microtask = (callback: Callback) => queueMicrotask(guarded(callback));
 
   try {
-    new Function(
-      TRACER_NAME,
-      'console',
-      'setTimeout',
-      'setInterval',
-      'queueMicrotask',
-      instrumented.code
-    )(tracer, fakeConsole, later, repeat, microtask);
+    new Function(TRACER_NAME, 'console', instrumented.code)(tracer, fakeConsole);
   } catch (error) {
     tracer.fail(error);
   }
-  return { getTrace: () => tracer.getTrace(), console: printed };
+  return { getTrace: () => tracer.getTrace(), console: printed, finished };
 }
 
 /** Traces the synchronous part of `code`. Work left to timers and promises is not waited for. */

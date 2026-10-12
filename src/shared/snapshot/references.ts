@@ -30,7 +30,8 @@ export function getReferences(snapshot: Snapshot): Reference[] {
 }
 
 /**
- * Heap object ids reachable from the roots (every stack frame), following references.
+ * Heap object ids reachable from the roots (every stack frame and `snapshot.roots`), following
+ * references.
  * Frame ids and ids that match nothing are never in the result: a frame is a root already,
  * so its own slots are followed whether or not something points at it.
  */
@@ -38,7 +39,10 @@ export function getReachable(snapshot: Snapshot): Set<string> {
   const objectIds = new Set(snapshot.objects.map((o) => o.id));
   const refs = getReferences(snapshot);
   const reached = new Set<string>();
-  const queue = refs.filter((r) => r.fromKind === 'frame').map((r) => r.to);
+  const queue = [
+    ...(snapshot.roots ?? []),
+    ...refs.filter((r) => r.fromKind === 'frame').map((r) => r.to),
+  ];
   while (queue.length) {
     const id = queue.shift()!;
     if (!objectIds.has(id) || reached.has(id)) continue;

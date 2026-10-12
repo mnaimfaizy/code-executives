@@ -332,6 +332,7 @@ const PlaygroundApp: React.FC = () => {
               steps={trace.steps}
               index={trace.index}
               language={language}
+              queuesApproximate={trace.queuesApproximate}
             />
           </div>
           {/* Step controls (bottom) */}

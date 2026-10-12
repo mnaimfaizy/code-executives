@@ -1,5 +1,6 @@
 /**
- * The one palette for the stack-and-heap views (2D SVG and 3D), organised by role.
+ * The one palette for the shared views (stack and heap, event loop; 2D SVG and 3D), organised
+ * by role.
  *
  * Each colour means one role (docs/3D-Visualization-Standard.md, "Style"), and each role keeps
  * its hue family in both variants so a story met in light mode is recognisable in the dark
@@ -28,6 +29,8 @@ export interface VizPalette {
     stroke: string;
     /** "CALL STACK" / "HEAP" captions. */
     label: string;
+    /** The line under a region's caption that says when its work runs. */
+    note: string;
     /** 3D ground plane. */
     ground: string;
     /** 3D heap floor. */
@@ -51,6 +54,12 @@ export interface VizPalette {
   scope: EntityColors;
   /** A heap object the collector could not reach (unmarked, then reclaimed). */
   unreachable: EntityColors;
+  /** A callback in the microtask queue. */
+  microtask: EntityColors;
+  /** A callback in the task queue. */
+  task: EntityColors;
+  /** A timer that is still counting down. */
+  timer: EntityColors;
   /** A reference arrow: `stroke` in 2D, `solid` in 3D. */
   reference: { stroke: string; solid: string };
   /** What the current beat is about. */
@@ -96,6 +105,15 @@ export const ENTITY_ROLES = [
 
 export type EntityRole = (typeof ENTITY_ROLES)[number];
 
+/** The roles of the event loop's entries: one per region that holds callbacks. */
+export const QUEUE_ROLES = [
+  'microtask',
+  'task',
+  'timer',
+] as const satisfies readonly (keyof VizPalette)[];
+
+export type QueueRole = (typeof QUEUE_ROLES)[number];
+
 export const vizPalette: Record<VizTheme, VizPalette> = {
   light: {
     surface: '#f8fafc',
@@ -103,6 +121,7 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
       fill: '#f8fafc',
       stroke: '#cbd5e1',
       label: '#64748b',
+      note: '#5b6b82',
       ground: '#e2e8f0',
       floor: '#f1f5f9',
       plinth: '#cbd5e1',
@@ -115,6 +134,9 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
     function: { fill: '#f3e8ff', stroke: '#a855f7', solid: '#c084fc' },
     scope: { fill: '#e8eaf6', stroke: '#5c6399', solid: '#9aa0c9' },
     unreachable: { fill: '#ffe4e6', stroke: '#f43f5e', solid: '#fb7185' },
+    microtask: { fill: '#fae8ff', stroke: '#c026d3', solid: '#e879f9' },
+    task: { fill: '#ccfbf1', stroke: '#0d9488', solid: '#2dd4bf' },
+    timer: { fill: '#ecfccb', stroke: '#4d7c0f', solid: '#a3e635' },
     reference: { stroke: '#64748b', solid: '#475569' },
     focus: '#f59e0b',
     root: '#f59e0b',
@@ -141,6 +163,7 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
       fill: '#12122a',
       stroke: '#3a3a6e',
       label: '#a0a0cc',
+      note: '#8f8fc2',
       ground: '#0f0f2e',
       floor: '#1a1a3e',
       plinth: '#3a3a6e',
@@ -153,6 +176,9 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
     function: { fill: '#3b0764', stroke: '#c084fc', solid: '#a855f7' },
     scope: { fill: '#262a45', stroke: '#8b93c9', solid: '#5c6399' },
     unreachable: { fill: '#4c0519', stroke: '#fb7185', solid: '#f43f5e' },
+    microtask: { fill: '#4a044e', stroke: '#e879f9', solid: '#c026d3' },
+    task: { fill: '#042f2e', stroke: '#2dd4bf', solid: '#0d9488' },
+    timer: { fill: '#1a2e05', stroke: '#a3e635', solid: '#65a30d' },
     reference: { stroke: '#94a3b8', solid: '#94a3b8' },
     focus: '#fbbf24',
     root: '#fbbf24',

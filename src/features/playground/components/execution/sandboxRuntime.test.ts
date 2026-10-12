@@ -256,8 +256,11 @@ describe('sandbox runtime', () => {
       const lines = trace.steps.map((step) => step.line);
       expect(lines.lastIndexOf(6)).toBeLessThan(lines.indexOf(3));
       expect(lines).toContain(4);
+      // The script has ended by then: the global variables are a scope on the heap
       const last = trace.steps[trace.steps.length - 1];
-      expect(last.snapshot.frames[0].slots.find((s) => s.name === 'count')?.value).toBe('1');
+      expect(last.snapshot.frames.map((frame) => frame.name)).toEqual(['anonymous()']);
+      const globals = last.snapshot.objects.find((object) => object.label === 'global');
+      expect(globals?.slots.find((s) => s.name === 'count')?.value).toBe('1');
     });
 
     it('ends an infinite loop at the step limit, keeps its steps and says so once', async () => {
@@ -302,6 +305,54 @@ describe('sandbox runtime', () => {
       expect(trace.outcome).toBe('error');
       expect(trace.error).toEqual({ message: 'Error: boom', line: 3 });
       expect(trace.steps.length).toBeGreaterThan(2);
+    });
+
+    it('runs timers on the tracer’s clock: a 5 second timer takes no time, and the queues are in the trace', async () => {
+      const before = waits.length;
+      const report = await runTraced(
+        'setTimeout(function late() {\n  console.log("late");\n}, 5000);\nPromise.resolve().then(function soon() {\n  console.log("soon");\n});\nconsole.log("first");'
+      );
+      expect(report.type).toBe('result');
+      expect(printed(report)).toEqual(['first', 'soon', 'late']);
+      expect(report.elapsedMs).toBeLessThan(1_500);
+      // No real timer was asked to wait 5 seconds
+      expect(waits.slice(before)).not.toContain(5000);
+
+      const trace = report.trace!;
+      expect(trace.outcome).toBe('completed');
+      expect(trace.queuesApproximate).toBeUndefined();
+      const waiting = trace.steps.find((step) => step.snapshot.frames.length === 0)!;
+      expect(waiting.snapshot.microtasks).toEqual([
+        { id: expect.any(String), label: 'soon', source: 'promise' },
+      ]);
+      expect(waiting.snapshot.tasks).toEqual([]);
+      expect(waiting.snapshot.timers).toEqual([
+        { id: expect.any(String), label: 'late', source: 'timeout', delay: 5000 },
+      ]);
+      const ran = trace.steps.filter((step) => step.entryId !== undefined);
+      expect(ran.map((step) => step.snapshot.frames[0].name)).toEqual(['soon()', 'late()']);
+      expect(structuredClone(trace)).toEqual(trace);
+    });
+
+    it('ends when a traced interval clears itself, and leaves Promise.prototype as it was', async () => {
+      const then = Promise.prototype.then;
+      const report = await runTraced(
+        'let ticks = 0;\nconst id = setInterval(() => {\n  ticks++;\n  console.log("tick", ticks);\n  if (ticks === 3) clearInterval(id);\n}, 1000);'
+      );
+      expect(report.type).toBe('result');
+      expect(printed(report)).toEqual(['tick 1', 'tick 2', 'tick 3']);
+      expect(report.elapsedMs).toBeLessThan(1_500);
+      expect(Promise.prototype.then).toBe(then);
+    });
+
+    it('reports an error thrown in a queueMicrotask callback', async () => {
+      const report = await runTraced(
+        'queueMicrotask(() => {\n  null.x;\n});\nconsole.log("before");'
+      );
+      expect(report.type).toBe('error');
+      expect(report.trace?.outcome).toBe('error');
+      expect(report.entries[1].args[0]).toMatch(/^Uncaught TypeError: /);
+      expect(report.entries[1].line).toBe(2);
     });
 
     // jsdom does not raise unhandledrejection, so a rejected promise is checked in a browser

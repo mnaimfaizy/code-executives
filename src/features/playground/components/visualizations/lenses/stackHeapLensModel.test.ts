@@ -100,7 +100,14 @@ describe('the Stack ↔ Heap story code', () => {
   const trace = prepareTrace(steps);
 
   it('draws every step whole, exactly as placeTrace places it', () => {
-    const placed = placeTrace(steps.map((s) => s.snapshot));
+    // This lens draws the stack and the heap; the queue regions belong to the other lens.
+    const placed = placeTrace(
+      steps.map(({ snapshot }) => ({
+        frames: snapshot.frames,
+        objects: snapshot.objects,
+        ...(snapshot.roots && { roots: snapshot.roots }),
+      }))
+    );
     trace.steps.forEach((step, i) => {
       expect(drawn(step)).toEqual(placed[i]);
       expect(notesFor(step)).toEqual([]);

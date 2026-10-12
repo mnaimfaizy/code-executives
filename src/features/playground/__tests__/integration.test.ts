@@ -125,7 +125,7 @@ describe('Integration: Examples coverage', () => {
   });
 
   it('all examples reference valid visualization lenses', () => {
-    const validLenses = ['stack-heap', 'none'];
+    const validLenses = ['stack-heap', 'stack-queues', 'none'];
     for (const example of examples) {
       expect(validLenses).toContain(example.suggestedLens);
     }

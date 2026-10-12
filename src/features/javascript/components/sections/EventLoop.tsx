@@ -13,17 +13,7 @@ import {
   Code2,
   BookOpen,
 } from 'lucide-react';
-import EventLoop2D from '../visualizations/2d/EventLoop2D';
-
-const initialStack = ['main()', 'console.log()'];
-const initialMicrotasks = ['Promise.then()', 'async/await'];
-const initialMacrotasks = ['setTimeout()', 'DOM Event'];
-
-interface SimulationState {
-  phase: 'executing' | 'microtasks' | 'macrotask' | 'idle';
-  nextTask?: string;
-  nextSource?: 'micro' | 'macro';
-}
+import EventLoopStory from './EventLoopStory';
 
 // ─── Scenarios for code demonstration ────────────────────────────────────────
 const scenarios = [
@@ -105,16 +95,17 @@ console.log('B – after call (sync)');
   {
     id: 'queueMicrotask',
     title: 'queueMicrotask',
-    description: 'queueMicrotask() is lower priority than Promise.then() within the same tick.',
+    description:
+      'queueMicrotask() and Promise.then() feed the same microtask queue: first in, first out.',
     code: `queueMicrotask(() => console.log('queueMicrotask'));
 Promise.resolve().then(() => console.log('Promise.then'));
 setTimeout(() => console.log('setTimeout'), 0);
 
 // Output:
-// Promise.then
 // queueMicrotask
+// Promise.then
 // setTimeout`,
-    output: ['Promise.then', 'queueMicrotask', 'setTimeout'],
+    output: ['queueMicrotask', 'Promise.then', 'setTimeout'],
   },
 ];
 
@@ -131,7 +122,7 @@ const gotchas = [
     title: 'setTimeout(fn, 0) is NOT immediate',
     severity: 'medium',
     description:
-      'Zero-delay timers still run after ALL pending microtasks of the current tick. They are also subject to a minimum 4 ms clamp in browsers.',
+      'Zero-delay timers still run after ALL pending microtasks of the current tick. Browsers also clamp the delay to at least 4 ms, but only once timers are nested more than five levels deep.',
     fix: 'Use Promise.resolve().then(fn) or queueMicrotask(fn) if you need truly immediate async execution.',
   },
   {
@@ -220,64 +211,7 @@ const colorCls: Record<string, { bg: string; border: string; text: string; num: 
 // ─── Main component ───────────────────────────────────────────────────────────
 const EventLoop: React.FC = () => {
   const navigate = useNavigate();
-  const [callStack, setCallStack] = useState<string[]>(initialStack);
-  const [microtasks, setMicrotasks] = useState<string[]>(initialMicrotasks);
-  const [macrotasks, setMacrotasks] = useState<string[]>(initialMacrotasks);
-  const [step, setStep] = useState<number>(0);
-  const [simulationState, setSimulationState] = useState<SimulationState>({ phase: 'executing' });
-  const [animating, setAnimating] = useState<
-    { type: 'pop' | 'push' | 'source'; label?: string; source?: 'micro' | 'macro' } | undefined
-  >();
   const [activeScenario, setActiveScenario] = useState(0);
-
-  // ── Simulation step logic ─────────────────────────────────────────────────
-  const nextStep = () => {
-    setStep((prev) => prev + 1);
-    setAnimating(undefined);
-
-    setTimeout(() => {
-      if (callStack.length > 0) {
-        const poppedTask = callStack[callStack.length - 1];
-        setAnimating({ type: 'pop', label: poppedTask });
-        setSimulationState({ phase: 'executing' });
-        setTimeout(() => {
-          setCallStack((stack) => stack.slice(0, -1));
-          setAnimating(undefined);
-        }, 500);
-      } else if (microtasks.length > 0) {
-        const nextMicrotask = microtasks[0];
-        setAnimating({ type: 'source', label: nextMicrotask, source: 'micro' });
-        setSimulationState({ phase: 'microtasks', nextTask: nextMicrotask, nextSource: 'micro' });
-        setTimeout(() => {
-          setCallStack((stack) => [...stack, nextMicrotask]);
-          setMicrotasks((q) => q.slice(1));
-          setAnimating({ type: 'push', label: nextMicrotask });
-          setTimeout(() => setAnimating(undefined), 300);
-        }, 500);
-      } else if (macrotasks.length > 0) {
-        const nextMacrotask = macrotasks[0];
-        setAnimating({ type: 'source', label: nextMacrotask, source: 'macro' });
-        setSimulationState({ phase: 'macrotask', nextTask: nextMacrotask, nextSource: 'macro' });
-        setTimeout(() => {
-          setCallStack((stack) => [...stack, nextMacrotask]);
-          setMacrotasks((q) => q.slice(1));
-          setAnimating({ type: 'push', label: nextMacrotask });
-          setTimeout(() => setAnimating(undefined), 300);
-        }, 500);
-      } else {
-        setSimulationState({ phase: 'idle' });
-      }
-    }, 100);
-  };
-
-  const reset = () => {
-    setCallStack(initialStack);
-    setMicrotasks(initialMicrotasks);
-    setMacrotasks(initialMacrotasks);
-    setStep(0);
-    setSimulationState({ phase: 'executing' });
-    setAnimating(undefined);
-  };
 
   const scenario = scenarios[activeScenario];
 
@@ -414,6 +348,84 @@ const EventLoop: React.FC = () => {
         </div>
       </div>
 
+      {/* ── Story: one program, beat by beat ───────────────────────────────── */}
+      <div className="mb-8">
+        <EventLoopStory />
+      </div>
+
+      {/* ── Code scenarios ─────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <Code2 className="inline w-7 h-7 mr-2 text-indigo-600" />
+          Execution Order Scenarios
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Choose a scenario to see the exact console output order and understand why.
+        </p>
+
+        {/* Tab strip */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {scenarios.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveScenario(i)}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                activeScenario === i
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              {s.title}
+            </button>
+          ))}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Code panel */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <BookOpen className="w-4 h-4 text-indigo-600" />
+              <span className="font-semibold text-gray-800 text-sm">{scenario.title}</span>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">{scenario.description}</p>
+            <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
+              {scenario.code}
+            </pre>
+          </div>
+
+          {/* Output panel */}
+          <div>
+            <div className="font-semibold text-gray-800 text-sm mb-3">
+              Console Output (in order)
+            </div>
+            <div className="space-y-2">
+              {scenario.output.map((line, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2"
+                >
+                  <span className="w-5 h-5 bg-indigo-600 text-white rounded-full text-xs flex items-center justify-center font-bold flex-shrink-0">
+                    {i + 1}
+                  </span>
+                  <code className="text-sm text-gray-800 font-mono">{line}</code>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
+              <strong>Why this order?</strong>{' '}
+              {activeScenario === 0 &&
+                'Synchronous code runs first, then all microtasks drain before the macrotask (setTimeout) fires.'}
+              {activeScenario === 1 &&
+                'Each .then() enqueues a new microtask. All three drain before the setTimeout macrotask.'}
+              {activeScenario === 2 &&
+                'await suspends execution as a microtask. The caller continues synchronously, then the resumed async function runs.'}
+              {activeScenario === 3 &&
+                'Both callbacks join the one microtask queue, which is first in, first out. queueMicrotask() is called first, so its callback runs first; neither has priority over the other. The setTimeout task runs after the queue is empty.'}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Queue types deep-dive ──────────────────────────────────────────── */}
       <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
         <h2 className="text-3xl font-bold text-gray-900 mb-6">Queues in Detail</h2>
@@ -501,233 +513,6 @@ const EventLoop: React.FC = () => {
                 <li>• DOM event callbacks</li>
                 <li>• I/O callbacks (Node.js)</li>
               </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Interactive simulation ─────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Interactive Simulation</h2>
-        <p className="text-gray-600 mb-6">
-          Step through the event loop tick-by-tick and watch tasks move between the Call Stack,
-          Microtask Queue, and Macrotask Queue.
-        </p>
-        <div className="flex flex-col lg:flex-row gap-6 items-start w-full">
-          <div className="flex-1 min-w-0 w-full">
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-              <EventLoop2D
-                callStack={callStack}
-                microtasks={microtasks}
-                macrotasks={macrotasks}
-                animating={animating}
-                activeLight={
-                  simulationState.phase === 'executing'
-                    ? 'red'
-                    : simulationState.phase === 'microtasks'
-                      ? 'yellow'
-                      : simulationState.phase === 'macrotask'
-                        ? 'green'
-                        : undefined
-                }
-                activeBlock={
-                  simulationState.phase === 'executing'
-                    ? 'stack'
-                    : simulationState.phase === 'microtasks'
-                      ? 'micro'
-                      : simulationState.phase === 'macrotask'
-                        ? 'macro'
-                        : simulationState.phase === 'idle'
-                          ? 'eventloop'
-                          : undefined
-                }
-              />
-            </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {[
-                { label: 'Call Stack', bg: '#818cf8', color: '#fff' },
-                { label: 'Microtask Queue', bg: '#a5b4fc', color: '#312e81' },
-                { label: 'Macrotask Queue', bg: '#fde68a', color: '#92400e' },
-              ].map(({ label, bg, color }) => (
-                <span
-                  key={label}
-                  className="inline-flex items-center gap-2 rounded-md px-2 py-1 text-xs font-semibold"
-                  style={{ backgroundColor: bg, color }}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Side panel */}
-          <div className="w-full lg:w-80 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl shadow border border-indigo-200 p-5 text-sm text-indigo-900 font-medium leading-relaxed">
-            <div className="font-bold text-lg mb-3 text-indigo-800">Event Loop Explained</div>
-            <div className="space-y-2 mb-4">
-              <p className="text-gray-700 text-xs">
-                The Event Loop manages JavaScript's async tasks, providing the illusion of
-                concurrency in a single-threaded environment.
-              </p>
-              <div className="space-y-1.5 text-xs">
-                {[
-                  {
-                    label: 'Call Stack',
-                    color: 'text-indigo-700',
-                    desc: 'Executes synchronous code (LIFO)',
-                  },
-                  {
-                    label: 'Microtask Queue',
-                    color: 'text-blue-700',
-                    desc: 'High-priority — Promise, async/await',
-                  },
-                  {
-                    label: 'Macrotask Queue',
-                    color: 'text-amber-700',
-                    desc: 'Lower-priority — setTimeout, DOM events',
-                  },
-                  {
-                    label: 'Event Loop',
-                    color: 'text-indigo-700',
-                    desc: 'Moves tasks from queues when stack is empty',
-                  },
-                ].map(({ label, color, desc }) => (
-                  <div key={label}>
-                    <span className={`font-semibold ${color}`}>{label}:</span>{' '}
-                    <span className="text-gray-600">{desc}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3">
-                <div className="font-semibold mb-1 text-xs">Execution Order:</div>
-                <ol className="text-xs space-y-1 list-decimal list-inside text-gray-600">
-                  <li>Run all synchronous code on the Call Stack</li>
-                  <li>When stack is empty, drain ALL microtasks</li>
-                  <li>Process ONE macrotask</li>
-                  <li>Repeat the cycle</li>
-                </ol>
-              </div>
-            </div>
-            <div className="p-3 bg-white rounded-lg border border-indigo-200 mb-3 text-xs text-gray-700">
-              <div className="font-bold text-indigo-800">Step {step}</div>
-              <div className="flex items-center gap-2 mt-1">
-                <span>Phase:</span>
-                <span
-                  className={`font-semibold ${
-                    simulationState.phase === 'executing'
-                      ? 'text-red-600'
-                      : simulationState.phase === 'microtasks'
-                        ? 'text-blue-600'
-                        : simulationState.phase === 'macrotask'
-                          ? 'text-amber-600'
-                          : 'text-gray-500'
-                  }`}
-                >
-                  {simulationState.phase === 'executing'
-                    ? 'Executing Call Stack'
-                    : simulationState.phase === 'microtasks'
-                      ? 'Draining Microtasks'
-                      : simulationState.phase === 'macrotask'
-                        ? 'Processing Macrotask'
-                        : 'Idle — loop complete'}
-                </span>
-              </div>
-              {simulationState.nextTask && (
-                <div className="mt-1 text-indigo-700">
-                  <span className="font-medium">Next:</span> {simulationState.nextTask}
-                </div>
-              )}
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={nextStep}
-                disabled={simulationState.phase === 'idle'}
-                className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors ${
-                  simulationState.phase === 'idle'
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white cursor-pointer'
-                }`}
-              >
-                {simulationState.phase === 'idle' ? 'Finished' : 'Next Step'}
-              </button>
-              <button
-                onClick={reset}
-                className="px-4 py-2 rounded-lg font-semibold text-sm bg-indigo-100 hover:bg-indigo-200 text-indigo-800 cursor-pointer transition-colors"
-              >
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Code scenarios ─────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl p-8 mb-8 shadow-lg border border-gray-200">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          <Code2 className="inline w-7 h-7 mr-2 text-indigo-600" />
-          Execution Order Scenarios
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Choose a scenario to see the exact console output order and understand why.
-        </p>
-
-        {/* Tab strip */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {scenarios.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => setActiveScenario(i)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                activeScenario === i
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-              }`}
-            >
-              {s.title}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Code panel */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <BookOpen className="w-4 h-4 text-indigo-600" />
-              <span className="font-semibold text-gray-800 text-sm">{scenario.title}</span>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">{scenario.description}</p>
-            <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
-              {scenario.code}
-            </pre>
-          </div>
-
-          {/* Output panel */}
-          <div>
-            <div className="font-semibold text-gray-800 text-sm mb-3">
-              Console Output (in order)
-            </div>
-            <div className="space-y-2">
-              {scenario.output.map((line, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2"
-                >
-                  <span className="w-5 h-5 bg-indigo-600 text-white rounded-full text-xs flex items-center justify-center font-bold flex-shrink-0">
-                    {i + 1}
-                  </span>
-                  <code className="text-sm text-gray-800 font-mono">{line}</code>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-800">
-              <strong>Why this order?</strong>{' '}
-              {activeScenario === 0 &&
-                'Synchronous code runs first, then all microtasks drain before the macrotask (setTimeout) fires.'}
-              {activeScenario === 1 &&
-                'Each .then() enqueues a new microtask. All three drain before the setTimeout macrotask.'}
-              {activeScenario === 2 &&
-                'await suspends execution as a microtask. The caller continues synchronously, then the resumed async function runs.'}
-              {activeScenario === 3 &&
-                'Promise.then() enqueues before queueMicrotask() in the same synchronous block, so it runs first within the microtask drain.'}
             </div>
           </div>
         </div>
