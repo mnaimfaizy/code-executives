@@ -421,8 +421,8 @@ const Introduction: React.FC = () => {
             onClick={() => navigateToSection('Professional Workflows')}
           />
           <NavigationCard
-            title="Interactive Playground"
-            description="Practice Git concepts safely"
+            title="Interactive Visualization"
+            description="Scenarios and diagrams of Git's objects, trees and branches"
             colorScheme="orange"
             onClick={() => navigateToSection('Visualization')}
           />

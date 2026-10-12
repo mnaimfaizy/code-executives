@@ -11,7 +11,7 @@ import { installSandbox, runCheckInSandbox } from './exercises/sandboxForTests';
 import { exercises } from './exercises/exercises';
 import { examples } from './utils/examples';
 import { getDefaultTemplate } from './utils/codeTemplates';
-import { storyOf } from './utils/playgroundStart';
+import { sourceOf } from './utils/playgroundStart';
 import { loadProgress, PROGRESS_STORAGE_KEY } from './exercises/exerciseProgress';
 import { traceSync } from './tracer';
 
@@ -209,8 +209,8 @@ describe('PlaygroundApp exercises and links', () => {
     });
 
     it('links to the story of an example that has one, and to nothing otherwise', () => {
-      const withStory = examples.find((item) => storyOf(item) !== null);
-      const without = examples.find((item) => storyOf(item) === null)!;
+      const withStory = examples.find((item) => sourceOf(item)?.kind === 'story');
+      const without = examples.find((item) => sourceOf(item) === null)!;
       open(`?example=${without.id}`);
       expect(screen.queryByRole('link', { name: /^Read the story/ })).toBeNull();
       if (!withStory) return;
@@ -219,7 +219,7 @@ describe('PlaygroundApp exercises and links', () => {
       fireEvent.click(screen.getByRole('button', { name: /Examples/ }));
       fireEvent.click(screen.getByRole('option', { name: new RegExp(`^${withStory.label}`) }));
       const link = screen.getByRole('link', { name: /^Read the story/ });
-      expect(link).toHaveAttribute('href', storyOf(withStory)!.href);
+      expect(link).toHaveAttribute('href', sourceOf(withStory)!.href);
       expect(window.location.search).toBe(`?example=${withStory.id}`);
     });
   });

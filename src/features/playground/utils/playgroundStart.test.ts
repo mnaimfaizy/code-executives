@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { replacePlaygroundUrl, resolvePlaygroundStart, storyOf } from './playgroundStart';
+import { replacePlaygroundUrl, resolvePlaygroundStart, sourceOf } from './playgroundStart';
 import { examples, type Example } from './examples';
 import { exercises } from '../exercises/exercises';
 import { getDefaultTemplate } from './codeTemplates';
@@ -66,23 +66,34 @@ describe('resolvePlaygroundStart', () => {
   });
 });
 
-describe('storyOf', () => {
-  const example = (story: unknown): Example => ({ ...examples[0], story }) as Example;
+describe('sourceOf', () => {
+  const example = (source: unknown): Example => ({ ...examples[0], source }) as Example;
 
-  it('returns the story of an example that names one', () => {
-    expect(
-      storyOf(example({ label: 'The story', href: '/javascript?section=Call%20Stack' }))
-    ).toEqual({ label: 'The story', href: '/javascript?section=Call%20Stack' });
+  it('returns the story or the section of an example that names one', () => {
+    const story = { kind: 'story', label: 'The story', href: '/javascript?section=Call%20Stack' };
+    const section = {
+      kind: 'section',
+      label: 'Call Stack',
+      href: '/javascript?section=Call%20Stack',
+    };
+    expect(sourceOf(example(story))).toEqual(story);
+    expect(sourceOf(example(section))).toEqual(section);
   });
 
-  it('returns null for no example, no story, or a story that is not a path in this site', () => {
-    expect(storyOf(null)).toBeNull();
-    expect(storyOf(example(undefined))).toBeNull();
-    expect(storyOf(example('a string'))).toBeNull();
-    expect(storyOf(example({ label: 'x' }))).toBeNull();
-    expect(storyOf(example({ label: 'x', href: 'https://elsewhere.example/' }))).toBeNull();
-    expect(storyOf(example({ label: 'x', href: '//elsewhere.example/' }))).toBeNull();
-    expect(storyOf(example({ label: 'x', href: 'javascript:alert(1)' }))).toBeNull();
+  it('returns null for no example, no source, or a source that is not a path in this site', () => {
+    expect(sourceOf(null)).toBeNull();
+    expect(sourceOf(example(undefined))).toBeNull();
+    expect(sourceOf(example('a string'))).toBeNull();
+    expect(sourceOf(example({ kind: 'story', label: 'x' }))).toBeNull();
+    expect(sourceOf(example({ label: 'x', href: '/javascript' }))).toBeNull();
+    expect(sourceOf(example({ kind: 'other', label: 'x', href: '/javascript' }))).toBeNull();
+    for (const href of [
+      'https://elsewhere.example/',
+      '//elsewhere.example/',
+      'javascript:alert(1)',
+    ]) {
+      expect(sourceOf(example({ kind: 'story', label: 'x', href }))).toBeNull();
+    }
   });
 });
 

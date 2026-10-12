@@ -452,11 +452,14 @@ const Header: React.FC = () => {
                   rel="noopener noreferrer"
                   className="flex items-center space-x-3 rounded-lg px-4 py-3 bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition-colors shadow-sm"
                 >
-                  <Rocket className="w-4 h-4" />
+                  <Rocket className="w-4 h-4 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm">Playground</div>
+                    <div className="font-medium text-sm">
+                      Playground<span className="sr-only"> (opens in a new tab)</span>
+                    </div>
                     <div className="text-xs text-indigo-200 mt-0.5">
-                      Interactive coding environment
+                      Run your own JavaScript and watch the stack, the heap and the queues change,
+                      step by step. Or practice with exercises.
                     </div>
                   </div>
                 </a>

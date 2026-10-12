@@ -303,7 +303,7 @@ Complete App Router tutorial with 24 interactive visualizations covering modern 
 - **Data Fetching & Mutations**: Server Actions, caching strategies, and request memoization
 - **Middleware & Route Handlers**: Request processing pipeline, edge runtime, and API routes
 - **Performance Optimization**: Bundle analysis, image optimization, and caching strategies
-- **Interactive Visualizations**: 24+ components including flow diagrams, performance dashboards, and code playgrounds
+- **Interactive Visualizations**: 24+ components including flow diagrams, performance dashboards, and a component composition explorer
 - **Real-world Patterns**: Progressive enhancement, error boundaries, and production best practices
 
 ### 📊 **Big-O Notation Mastery (Complete)**

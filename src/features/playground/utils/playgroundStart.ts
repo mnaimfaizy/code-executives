@@ -6,7 +6,7 @@
 import type { PlaygroundLanguage, VisualizationLens } from '../types';
 import type { Exercise } from '../exercises/types';
 import { findExercise } from '../exercises/exercises';
-import { examples, type Example } from './examples';
+import { examples, type Example, type ExampleSource } from './examples';
 import { getDefaultTemplate } from './codeTemplates';
 import { parsePlaygroundLink, playgroundHref, type PlaygroundLink } from './playgroundLink';
 
@@ -24,15 +24,16 @@ export function findExample(id: string | undefined): Example | undefined {
   return id === undefined ? undefined : examples.find((example) => example.id === id);
 }
 
-/** The story an example is the program of, when it names one. Read defensively. */
-export function storyOf(example: Example | null): { label: string; href: string } | null {
-  const story = (example as { story?: unknown } | null)?.story;
-  if (!story || typeof story !== 'object') return null;
-  const { label, href } = story as { label?: unknown; href?: unknown };
+/** The story or section an example's code is taken from, when it names one. Read defensively. */
+export function sourceOf(example: Example | null): ExampleSource | null {
+  const source = (example as { source?: unknown } | null)?.source;
+  if (!source || typeof source !== 'object') return null;
+  const { kind, label, href } = source as { kind?: unknown; label?: unknown; href?: unknown };
+  if (kind !== 'story' && kind !== 'section') return null;
   if (typeof label !== 'string' || typeof href !== 'string') return null;
   // Only a path inside this site
   if (!href.startsWith('/') || href.startsWith('//')) return null;
-  return { label, href };
+  return { kind, label, href };
 }
 
 /**

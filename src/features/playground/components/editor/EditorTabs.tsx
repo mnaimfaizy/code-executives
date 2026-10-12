@@ -2,6 +2,7 @@ import React from 'react';
 import { BookOpen, X } from 'lucide-react';
 import { FILE_EXTENSION_MAP } from '../../hooks/useMonaco';
 import type { PlaygroundLanguage } from '../../types';
+import type { ExampleSource } from '../../utils/examples';
 
 interface EditorTabsProps {
   language: PlaygroundLanguage;
@@ -10,8 +11,8 @@ interface EditorTabsProps {
   resetLabel?: string;
   /** The open exercise's title, shown beside the file name */
   exerciseTitle?: string;
-  /** The story the loaded example is the program of */
-  story?: { label: string; href: string } | null;
+  /** The story or section the loaded example's code is taken from */
+  source?: ExampleSource | null;
 }
 
 const EditorTabs: React.FC<EditorTabsProps> = ({
@@ -19,7 +20,7 @@ const EditorTabs: React.FC<EditorTabsProps> = ({
   onReset,
   resetLabel,
   exerciseTitle,
-  story,
+  source,
 }) => {
   const filename = FILE_EXTENSION_MAP[language];
 
@@ -63,16 +64,19 @@ const EditorTabs: React.FC<EditorTabsProps> = ({
         </span>
       )}
 
-      {story && (
+      {source && (
         <a
-          href={story.href}
-          className="ml-auto mr-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs shrink-0 underline-offset-2 hover:underline"
+          href={source.href}
+          className="ml-auto mr-2 inline-flex min-w-0 items-center gap-1.5 px-2 py-0.5 rounded text-xs underline-offset-2 hover:underline"
           style={{ color: 'var(--pg-accent-blue)' }}
-          title={story.label}
-          aria-label={`Read the story: ${story.label}`}
+          title={source.label}
+          aria-label={`Read the ${source.kind}: ${source.label}`}
         >
-          <BookOpen className="w-3.5 h-3.5" aria-hidden="true" />
-          Read the story
+          <BookOpen className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+          {/* A story's title is long and the learner just came from it; a section is named */}
+          <span className="truncate">
+            {source.kind === 'section' ? `Read the section: ${source.label}` : 'Read the story'}
+          </span>
         </a>
       )}
     </div>

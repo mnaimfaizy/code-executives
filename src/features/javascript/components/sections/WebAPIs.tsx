@@ -18,6 +18,8 @@ import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
 import Editor from '../../../../components/shared/Editor';
 import useRunner from '../../../../hooks/useRunner';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+import { timerApisSample } from '../../utils/sectionSamples';
 
 type RuntimeEnvironment = 'browser' | 'node' | 'deno' | 'bun';
 type APICategory = 'dom' | 'timing' | 'network' | 'storage' | 'media' | 'system';
@@ -419,20 +421,8 @@ console.log('2 – after fetch (sync continues!)');
     title: 'Timer APIs',
     description: 'setTimeout callbacks are macrotasks — they run after all microtasks drain.',
     env: 'All Runtimes',
-    code: `// setTimeout is a macrotask — it runs after microtasks.
-console.log('sync: start');
-
-setTimeout(() => console.log('macro: timeout'), 0);
-
-Promise.resolve().then(() => console.log('micro: promise'));
-
-console.log('sync: end');
-
-// Console output:
-// sync: start
-// sync: end
-// micro: promise   ← microtask runs first
-// macro: timeout   ← macrotask runs last`,
+    code: timerApisSample.code,
+    playground: timerApisSample,
     output: ['sync: start', 'sync: end', 'micro: promise', 'macro: timeout'],
     note: 'Even with a 0 ms delay, setTimeout is a macrotask and will always run after all pending microtasks (Promises) are drained.',
   },
@@ -1182,6 +1172,16 @@ const WebAPIs: React.FC = () => {
             <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
               {scenarios[activeScenario].code}
             </pre>
+            {scenarios[activeScenario].playground && (
+              <div className="mt-3">
+                <TryInPlaygroundLink
+                  example={scenarios[activeScenario].playground.example}
+                  lens={scenarios[activeScenario].playground.lens}
+                >
+                  {scenarios[activeScenario].playground.tryIt}
+                </TryInPlaygroundLink>
+              </div>
+            )}
           </div>
           <div>
             <div className="font-semibold text-gray-800 text-sm mb-3">

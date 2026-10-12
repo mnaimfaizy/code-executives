@@ -6,7 +6,7 @@ import CTASection from '../../../../components/shared/CTASection';
 import ComponentTree2D from '../visualizations/2d/ComponentTree2D';
 import HydrationFlow from '../visualizations/2d/HydrationFlow';
 import CompositionPatterns from '../visualizations/2d/CompositionPatterns';
-import ComponentPlayground from '../visualizations/2d/ComponentPlayground';
+import ComponentExplorer from '../visualizations/2d/ComponentExplorer';
 import CodeSplitter from '../visualizations/2d/CodeSplitter';
 import PayloadViewer from '../visualizations/2d/PayloadViewer';
 
@@ -118,14 +118,14 @@ const ServerClientComponents: React.FC = () => {
         </div>
       </ThemeCard>
 
-      {/* Interactive Playground */}
+      {/* Interactive Explorer */}
       <ThemeCard>
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Interactive Playground</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Interactive Explorer</h2>
           <p className="text-gray-600 mb-6">
             Experiment with different component combinations and see the generated code.
           </p>
-          <ComponentPlayground />
+          <ComponentExplorer />
         </div>
       </ThemeCard>
 

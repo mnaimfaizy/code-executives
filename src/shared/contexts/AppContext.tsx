@@ -58,7 +58,6 @@ const defaultAppState: AppState = {
   currentPath: '/',
   featureFlags: {
     '3dVisualizations': true,
-    interactivePlayground: true,
     advancedFeatures: false,
   },
 };

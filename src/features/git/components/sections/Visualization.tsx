@@ -105,7 +105,7 @@ const Visualization: React.FC = () => {
       <ScenarioGallery scenarios={GIT_SCENARIOS} />
 
       <div className="text-center mb-8">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">Git Visualization Playground</h2>
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">Git Visualization</h2>
         <p className="text-xl text-gray-600 max-w-4xl mx-auto">
           Interactive visualizations to help you understand Git concepts. Select different views to
           explore how Git works internally and how various operations affect your repository.

@@ -26,7 +26,7 @@ import { getDefaultTemplate } from './utils/codeTemplates';
 import {
   replacePlaygroundUrl,
   resolvePlaygroundStart,
-  storyOf,
+  sourceOf,
   type PlaygroundStart,
 } from './utils/playgroundStart';
 import { exercisesByLevel } from './exercises/exercises';
@@ -85,7 +85,7 @@ const PlaygroundApp: React.FC = () => {
   /** The exercise a Check was started for: its results are dropped if another one is open by then */
   const exerciseIdRef = useRef<string | null>(start.exercise?.id ?? null);
 
-  // The example in the editor, for the link to its story
+  // The example in the editor, for the link back to its story or section
   const [loadedExample, setLoadedExample] = useState<Example | null>(start.example);
 
   // The right pane shows the Task or the Console
@@ -628,7 +628,7 @@ const PlaygroundApp: React.FC = () => {
             onReset={handleReset}
             resetLabel={inExercise ? 'Start the exercise over with its starter code' : undefined}
             exerciseTitle={inExercise ? exercise.title : undefined}
-            story={exercise ? null : storyOf(loadedExample)}
+            source={exercise ? null : sourceOf(loadedExample)}
           />
           <div className="flex-1 min-h-0">
             <MonacoEditor

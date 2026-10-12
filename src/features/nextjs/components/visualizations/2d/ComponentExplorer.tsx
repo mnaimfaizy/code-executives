@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import type { BaseNextJSVisualizationProps } from '../../../../../types/nextjs';
 
-interface PlaygroundComponent {
+interface ExplorerComponent {
   id: string;
   name: string;
   type: 'server' | 'client';
@@ -11,7 +11,7 @@ interface PlaygroundComponent {
 }
 
 interface TreeNode {
-  component: PlaygroundComponent;
+  component: ExplorerComponent;
   children: TreeNode[];
   x: number;
   y: number;
@@ -19,23 +19,23 @@ interface TreeNode {
   height: number;
 }
 
-interface PlaygroundState {
-  components: PlaygroundComponent[];
+interface ExplorerState {
+  components: ExplorerComponent[];
   selectedComponent: string | null;
   draggedComponent: string | null;
   output: string;
   errors: string[];
 }
 
-interface ComponentPlaygroundProps extends BaseNextJSVisualizationProps {
-  initialComponents?: PlaygroundComponent[];
+interface ComponentExplorerProps extends BaseNextJSVisualizationProps {
+  initialComponents?: ExplorerComponent[];
 }
 
-const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
+const ComponentExplorer: React.FC<ComponentExplorerProps> = ({
   initialComponents,
   className = '',
 }) => {
-  const [playgroundState, setPlaygroundState] = useState<PlaygroundState>({
+  const [explorerState, setExplorerState] = useState<ExplorerState>({
     components: initialComponents || [
       {
         id: 'page',
@@ -79,7 +79,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
       if (visited.has(componentId)) return null;
       visited.add(componentId);
 
-      const component = playgroundState.components.find((c) => c.id === componentId);
+      const component = explorerState.components.find((c) => c.id === componentId);
       if (!component) return null;
 
       const children =
@@ -98,7 +98,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
     };
 
     return buildTree('page');
-  }, [playgroundState.components]);
+  }, [explorerState.components]);
 
   // Calculate positions for tree layout
   const calculatePositions = useCallback(
@@ -138,7 +138,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
     if (!node) return null;
 
     const { component, x, y, width, height, children } = node;
-    const isSelected = playgroundState.selectedComponent === component.id;
+    const isSelected = explorerState.selectedComponent === component.id;
     const hasChildren = children && children.length > 0;
 
     return (
@@ -169,7 +169,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
           rx="8"
           className="cursor-pointer hover:opacity-80 transition-opacity"
           onClick={() =>
-            setPlaygroundState((prev) => ({
+            setExplorerState((prev) => ({
               ...prev,
               selectedComponent: prev.selectedComponent === component.id ? null : component.id,
             }))
@@ -214,7 +214,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
   // Add new component
   const addComponent = (type: 'server' | 'client') => {
     const newId = `component-${Date.now()}`;
-    const newComponent: PlaygroundComponent = {
+    const newComponent: ExplorerComponent = {
       id: newId,
       name: type === 'server' ? 'NewServerComponent' : 'NewClientComponent',
       type,
@@ -225,7 +225,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
       children: [],
     };
 
-    setPlaygroundState((prev) => ({
+    setExplorerState((prev) => ({
       ...prev,
       components: [...prev.components, newComponent],
     }));
@@ -233,7 +233,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
 
   // Update component code
   const updateComponentCode = (componentId: string, newCode: string) => {
-    setPlaygroundState((prev) => ({
+    setExplorerState((prev) => ({
       ...prev,
       components: prev.components.map((comp) =>
         comp.id === componentId ? { ...comp, code: newCode } : comp
@@ -243,7 +243,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
 
   // Add child to component
   const addChildToComponent = (parentId: string, childId: string) => {
-    setPlaygroundState((prev) => ({
+    setExplorerState((prev) => ({
       ...prev,
       components: prev.components.map((comp) =>
         comp.id === parentId ? { ...comp, children: [...(comp.children || []), childId] } : comp
@@ -253,7 +253,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
 
   // Remove component
   const removeComponent = (componentId: string) => {
-    setPlaygroundState((prev) => ({
+    setExplorerState((prev) => ({
       ...prev,
       components: prev.components
         .filter((comp) => comp.id !== componentId)
@@ -268,7 +268,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
   // Generate output code
   const generateOutput = () => {
     const buildComponentCode = (componentId: string, indent = 0): string => {
-      const component = playgroundState.components.find((c) => c.id === componentId);
+      const component = explorerState.components.find((c) => c.id === componentId);
       if (!component) return '';
 
       const indentStr = '  '.repeat(indent);
@@ -298,7 +298,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
       return code;
     };
 
-    const pageComponent = playgroundState.components.find((c) => c.id === 'page');
+    const pageComponent = explorerState.components.find((c) => c.id === 'page');
     if (!pageComponent) return '';
 
     let output = `// Generated Page Component\n`;
@@ -314,18 +314,18 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
     output += '  );\n';
     output += '}\n';
 
-    setPlaygroundState((prev) => ({ ...prev, output }));
+    setExplorerState((prev) => ({ ...prev, output }));
   };
 
-  const selectedComponent = playgroundState.components.find(
-    (c) => c.id === playgroundState.selectedComponent
+  const selectedComponent = explorerState.components.find(
+    (c) => c.id === explorerState.selectedComponent
   );
 
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header */}
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Component Composition Playground</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">Component Composition Explorer</h3>
         <p className="text-gray-600">Experiment with server and client component combinations</p>
       </div>
 
@@ -351,7 +351,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
         </button>
       </div>
 
-      {/* Main Playground Area */}
+      {/* Main Explorer Area */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Component Tree Visualization */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -370,16 +370,16 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
           {/* Component List */}
           <div className="mt-4 space-y-2">
             <h5 className="font-medium text-gray-900">Available Components:</h5>
-            {playgroundState.components.map((component) => (
+            {explorerState.components.map((component) => (
               <div
                 key={component.id}
                 className={`flex items-center justify-between p-2 rounded border cursor-pointer transition-colors ${
-                  playgroundState.selectedComponent === component.id
+                  explorerState.selectedComponent === component.id
                     ? 'bg-blue-50 border-blue-300'
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                 }`}
                 onClick={() =>
-                  setPlaygroundState((prev) => ({
+                  setExplorerState((prev) => ({
                     ...prev,
                     selectedComponent:
                       prev.selectedComponent === component.id ? null : component.id,
@@ -456,7 +456,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
                     onChange={(e) => {
                       try {
                         const props = JSON.parse(e.target.value);
-                        setPlaygroundState((prev) => ({
+                        setExplorerState((prev) => ({
                           ...prev,
                           components: prev.components.map((comp) =>
                             comp.id === selectedComponent.id ? { ...comp, props } : comp
@@ -488,7 +488,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
                   defaultValue=""
                 >
                   <option value="">Select a component...</option>
-                  {playgroundState.components
+                  {explorerState.components
                     .filter(
                       (comp) =>
                         comp.id !== selectedComponent.id &&
@@ -508,7 +508,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-2">Children:</label>
                   <div className="space-y-1">
                     {selectedComponent.children.map((childId) => {
-                      const child = playgroundState.components.find((c) => c.id === childId);
+                      const child = explorerState.components.find((c) => c.id === childId);
                       return (
                         <div
                           key={childId}
@@ -519,7 +519,7 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
                           </span>
                           <button
                             onClick={() => {
-                              setPlaygroundState((prev) => ({
+                              setExplorerState((prev) => ({
                                 ...prev,
                                 components: prev.components.map((comp) =>
                                   comp.id === selectedComponent.id
@@ -553,12 +553,12 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
       </div>
 
       {/* Generated Output */}
-      {playgroundState.output && (
+      {explorerState.output && (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h4 className="text-lg font-semibold text-gray-900 mb-4">Generated Page Code</h4>
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <pre className="text-sm font-mono text-gray-800 whitespace-pre-wrap overflow-x-auto">
-              {playgroundState.output}
+              {explorerState.output}
             </pre>
           </div>
         </div>
@@ -568,19 +568,19 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-green-600">
-            {playgroundState.components.filter((c) => c.type === 'server').length}
+            {explorerState.components.filter((c) => c.type === 'server').length}
           </div>
           <div className="text-sm text-gray-600">Server Components</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-blue-600">
-            {playgroundState.components.filter((c) => c.type === 'client').length}
+            {explorerState.components.filter((c) => c.type === 'client').length}
           </div>
           <div className="text-sm text-gray-600">Client Components</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
           <div className="text-2xl font-bold text-gray-600">
-            {playgroundState.components.length}
+            {explorerState.components.length}
           </div>
           <div className="text-sm text-gray-600">Total Components</div>
         </div>
@@ -589,4 +589,4 @@ const ComponentPlayground: React.FC<ComponentPlaygroundProps> = ({
   );
 };
 
-export default ComponentPlayground;
+export default ComponentExplorer;

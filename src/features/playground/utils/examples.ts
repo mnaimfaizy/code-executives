@@ -1,8 +1,19 @@
 import type { PlaygroundLanguage, VisualizationLens } from '../types';
-// Only the stories' code is imported, from their beat models (pure data): an example that is a
-// story's program is that program, so the two cannot drift apart.
+// Only code that the site already shows is imported, from pure data modules: an example that is
+// a story's program, or a section's sample, is that same string, so the two cannot drift apart.
 import { STORY_CODE as EVENT_LOOP_STORY_CODE } from '../../javascript/utils/eventLoopStory';
+import { sectionSamples, type SectionSample } from '../../javascript/utils/sectionSamples';
 import { STORY_CODE as STACK_HEAP_STORY_CODE } from '../../javascript/utils/stackHeapStory';
+
+/** Where on the site an example's code comes from, and so where its link back leads. */
+export interface ExampleSource {
+  /** `story`: the example is a story's program. `section`: it is a sample a section shows. */
+  kind: 'story' | 'section';
+  /** The story's title, or the section's label exactly as the sidebar spells it. */
+  label: string;
+  /** The section's own path, inside this site. */
+  href: string;
+}
 
 export interface Example {
   id: string;
@@ -11,9 +22,34 @@ export interface Example {
   language: PlaygroundLanguage;
   suggestedLens: VisualizationLens;
   code: string;
-  /** The story this example is the program of, and the section that tells it. */
-  story?: { label: string; href: string };
+  /** The story or section this example's code is taken from. Absent for a standalone program. */
+  source?: ExampleSource;
 }
+
+/** A JavaScript section's path, as `moduleNavigation.ts` builds it (a test holds the two equal). */
+const javascriptSectionHref = (label: string): string =>
+  `/javascript?section=${encodeURIComponent(label)}`;
+
+/** A section's sample as an example: the same code, its lens, and the way back to the section. */
+const fromSection = (sample: SectionSample): Example => ({
+  id: sample.example,
+  label: `${sample.section}: ${sample.title}`,
+  description: sample.description,
+  language: 'javascript',
+  suggestedLens: sample.lens,
+  code: sample.code,
+  source: {
+    kind: 'section',
+    label: sample.section,
+    href: javascriptSectionHref(sample.section),
+  },
+});
+
+/** The label an example shows under a heading that already names its section. */
+export const labelWithinSource = (example: Example): string =>
+  example.source?.kind === 'section' && example.label.startsWith(`${example.source.label}: `)
+    ? example.label.slice(example.source.label.length + 2)
+    : example.label;
 
 export const examples: Example[] = [
   {
@@ -23,7 +59,8 @@ export const examples: Example[] = [
     language: 'javascript',
     suggestedLens: 'stack-heap',
     code: STACK_HEAP_STORY_CODE,
-    story: {
+    source: {
+      kind: 'story',
       label: 'Stack ↔ Heap: who keeps an object alive?',
       href: '/javascript?section=Memory%20Heap%20%26%20Objects',
     },
@@ -35,7 +72,8 @@ export const examples: Example[] = [
     language: 'javascript',
     suggestedLens: 'stack-queues',
     code: EVENT_LOOP_STORY_CODE,
-    story: {
+    source: {
+      kind: 'story',
       label: 'The Event Loop: what runs next?',
       href: '/javascript?section=Event%20Loop%20%26%20Coordination',
     },
@@ -291,4 +329,6 @@ console.log("Reversed:");
 printList(reversed);
 `,
   },
+  // The JavaScript sections' own samples, section by section (`sectionSamples.ts`)
+  ...sectionSamples.map(fromSection),
 ];
