@@ -183,7 +183,9 @@ describe('runChecks', () => {
       const result = await statuses(base, 'function double(n) { return double(n); }');
       // The engine's own stack limit may come first: either way the check fails and ends
       expect(['step-limit', 'threw']).toContain(result[0]);
-    });
+      // Every step snapshots the whole stack, so this is the slowest run there is: it takes a
+      // second or two alone and longer beside the rest of the suite.
+    }, 30_000);
 
     it('ends a loop at the top level, before the entry function is reached', async () => {
       expect(await statuses(base, 'function double(n) { return n * 2; }\nwhile (true) {}')).toEqual(
