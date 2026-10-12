@@ -6,6 +6,7 @@ import { useUI } from '../shared/contexts';
 import {
   getModuleIdFromPathname,
   getSectionQueryValue,
+  withQuizItem,
 } from '../shared/constants/moduleNavigation';
 
 // Helper function to get theme color classes
@@ -445,12 +446,8 @@ const Sidebar: React.FC = () => {
   const touchStartX = useRef<number>(0);
   const touchCurrentX = useRef<number>(0);
 
-  const getSidebarItems = (path: string): SidebarItem[] => {
-    const baseItems = sidebarSections[path] || [];
-    return getModuleIdFromPathname(path)
-      ? [...baseItems, { label: 'Quiz', path: `${path}?section=Quiz` }]
-      : baseItems;
-  };
+  const getSidebarItems = (path: string): SidebarItem[] =>
+    withQuizItem(path, sidebarSections[path] || []);
 
   const section = getModuleIdFromPathname(location.pathname) ?? 'javascript';
   const theme = getSectionTheme(section);

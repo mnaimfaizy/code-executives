@@ -74,7 +74,7 @@ export interface ModuleProgress {
   bestQuiz?: BestQuizResult;
 }
 
-/** How a module's Quiz section is addressed (`moduleNavigation.ts` appends it to every module). */
+/** How a module's Quiz section is addressed. A module without a quiz bank has none. */
 export function quizHref(moduleId: LearningModuleId): string | undefined {
   return getSectionPathByLabel(moduleId, 'Quiz') ?? undefined;
 }

@@ -79,6 +79,11 @@ export interface QuizQuestionOutcome {
   selectedAnswer: QuizStoredAnswer | null;
 }
 
+/**
+ * The result of one attempt: correct answers out of a total, a percentage and the time taken.
+ * It carries no points and no tier (ADR 0005). Results stored by an earlier version of the site
+ * still hold `points` and `performanceTier`; they are read as they are and those two are ignored.
+ */
 export interface QuizResultSummary {
   attemptId: string;
   moduleId: LearningModuleId;
@@ -91,8 +96,6 @@ export interface QuizResultSummary {
   correctAnswers: number;
   incorrectAnswers: number;
   scorePercentage: number;
-  performanceTier: string;
-  points: number;
   questionOutcomes: QuizQuestionOutcome[];
 }
 

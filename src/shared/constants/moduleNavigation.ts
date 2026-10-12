@@ -1,3 +1,5 @@
+import { hasQuizBank } from './quizBanks';
+
 export interface SidebarItem {
   label: string;
   path: string;
@@ -483,21 +485,6 @@ export const getSectionQueryValue = (path: string): string | null => {
   return new URLSearchParams(query).get('section');
 };
 
-const createQuizSidebarItem = (path: string): SidebarItem => ({
-  label: 'Quiz',
-  path: `${path}?section=Quiz`,
-});
-
-export const moduleNavigationSections: Record<string, SidebarItem[]> = Object.fromEntries(
-  Object.entries(baseModuleNavigationSections).map(([path, items]) => {
-    if (path === '/' || path === '/about') {
-      return [path, items];
-    }
-
-    return [path, [...items, createQuizSidebarItem(path)]];
-  })
-);
-
 export const learningModuleIds = Object.keys(learningModuleConfigs) as LearningModuleId[];
 
 export const getModuleIdFromPathname = (pathname: string): LearningModuleId | null => {
@@ -511,6 +498,33 @@ export const getModuleConfigFromPathname = (pathname: string): LearningModuleCon
   const moduleId = getModuleIdFromPathname(pathname);
   return moduleId ? learningModuleConfigs[moduleId] : null;
 };
+
+export const QUIZ_SECTION_LABEL = 'Quiz';
+
+/** Whether a module has a quiz: it does when `quiz-banks/` holds a bank for it. */
+export const moduleHasQuiz = (moduleId: LearningModuleId): boolean => hasQuizBank(moduleId);
+
+/**
+ * A module's items with its Quiz item at the end, when the module at `path` has a quiz bank.
+ * The sidebar and the navigation both build their lists with this, so they stay in step.
+ */
+export const withQuizItem = (
+  path: string,
+  items: SidebarItem[],
+  hasQuiz: (moduleId: LearningModuleId) => boolean = moduleHasQuiz
+): SidebarItem[] => {
+  const moduleId = getModuleIdFromPathname(path);
+  return moduleId && hasQuiz(moduleId)
+    ? [...items, { label: QUIZ_SECTION_LABEL, path: `${path}?section=${QUIZ_SECTION_LABEL}` }]
+    : items;
+};
+
+export const moduleNavigationSections: Record<string, SidebarItem[]> = Object.fromEntries(
+  Object.entries(baseModuleNavigationSections).map(([path, items]) => [
+    path,
+    withQuizItem(path, items),
+  ])
+);
 
 const flattenSidebarItems = (items: SidebarItem[]): SidebarItem[] =>
   items.flatMap((item) => [item, ...(item.subItems ? flattenSidebarItems(item.subItems) : [])]);

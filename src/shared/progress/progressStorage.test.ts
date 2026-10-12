@@ -54,8 +54,6 @@ const quizResult = (
   correctAnswers: Math.round(scorePercentage / 10),
   incorrectAnswers: 10 - Math.round(scorePercentage / 10),
   scorePercentage,
-  performanceTier: 'x',
-  points: 0,
   questionOutcomes: [],
 });
 

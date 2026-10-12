@@ -31,6 +31,7 @@ The owner wants learners to see where they are and to have real milestones to re
 8. **Progress belongs to the whole site**, on one page at `/progress`, linked from the header. No module has a progress or achievements section of its own.
 9. **Progress lives in this browser only**, and the page says so. One control, with a confirmation, clears passed marks, solution-seen marks, milestones and quiz results. It does not clear the code the learner wrote.
 10. **The Gamification Hub is removed**, with its fake numbers and its leaderboard. The score and streak inside one sitting of Big-O's Practice Challenges stay: they are the state of one game, are not stored, and claim nothing about the learner.
+11. **The quiz shows no points and no tiers.** A result is the correct answers out of the total, a percentage and the time taken. The quiz keeps its time limit: it is a condition of the test, not a reward, and finishing sooner earns nothing. The quiz says what its milestone asks for. (Added 2026-10-13.)
 
 ## Considered options
 
