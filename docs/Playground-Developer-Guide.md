@@ -2,9 +2,7 @@
 
 > Internal reference for contributors working on the Code Executives Playground.
 
-> **This guide describes the code as it is today, and part of it will change.** [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) replaces the React Flow lenses with the 2D/3D views the stories use, and changes what a step records. [How to Add a New Visualization Lens](#how-to-add-a-new-visualization-lens) describes the current mechanism, which that work will replace.
->
-> **Words.** The prose follows the glossary in [CONTEXT.md](../CONTEXT.md): the record of a run is a **trace** made of **steps**, prebuilt code is an **example**, and the output pane is the **console**. The code has not been renamed yet, so file and identifier names keep their old words: `StateSnapshot` is the data of one step, and `useTimeline.ts` and `TimelinePlayer.tsx` move through the steps of a trace.
+> **Words.** This guide follows the glossary in [CONTEXT.md](../CONTEXT.md): the record of a run is a **trace** made of **steps**, each step holds a **snapshot**, a **lens** chooses which part of a snapshot is drawn, prebuilt code is an **example**, and the output pane is the **Console**. [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) is the decision behind the design.
 
 ---
 
@@ -12,7 +10,7 @@
 
 1. [Architecture Overview](#architecture-overview)
 2. [Directory Structure](#directory-structure)
-3. [How to Add a New Visualization Lens](#how-to-add-a-new-visualization-lens)
+3. [How to Add a New Lens](#how-to-add-a-new-lens)
 4. [How to Add a New Language](#how-to-add-a-new-language)
 5. [How to Modify the Theme](#how-to-modify-the-theme)
 6. [How to Add Examples](#how-to-add-examples)
@@ -28,29 +26,45 @@ The Playground is a **standalone feature module** at `src/features/playground/` 
 
 ### Key Design Decisions
 
-| Decision                                        | Rationale                                                                |
-| ----------------------------------------------- | ------------------------------------------------------------------------ |
-| Standalone layout (`PlaygroundLayout`)          | Full viewport needed for editor + lenses                                 |
-| Dark theme scoped via `data-theme="playground"` | CSS custom properties avoid polluting the light-mode main site           |
-| Sandboxed `<iframe>` for JS/TS execution        | Defense-in-depth: CSP + `sandbox="allow-scripts"` + network API blocking |
-| Pyodide for Python                              | WASM-based CPython in the browser, lazy-loaded from CDN (~11 MB)         |
-| `acorn` + `astring` for JS instrumentation      | Parse → transform → regenerate; no eval-based instrumentation            |
-| `sys.settrace()` for Python instrumentation     | CPython's native tracing mechanism, captured via Pyodide FFI             |
-| React Flow (`@xyflow/react`) for the lenses     | Interactive node graphs with built-in pan/zoom (to be replaced, ADR 0004) |
+| Decision                                        | Rationale                                                                 |
+| ----------------------------------------------- | ------------------------------------------------------------------------- |
+| Standalone layout (`PlaygroundLayout`)          | Full viewport needed for editor + lenses                                  |
+| Dark theme scoped via `data-theme="playground"` | CSS custom properties avoid polluting the light-mode main site            |
+| Sandboxed `<iframe>` for JS/TS execution        | Defense-in-depth: CSP + `sandbox="allow-scripts"` + network API blocking  |
+| Pyodide for Python                              | WASM-based CPython in the browser, lazy-loaded from CDN (~11 MB)          |
+| `acorn` + `astring` for JS instrumentation      | Parse → transform → regenerate; the code runs on the browser's own engine |
+| `sys.settrace()` for Python instrumentation     | CPython's native tracing mechanism, captured via Pyodide FFI              |
+| One snapshot shape, shared with the stories     | A lens draws a step with the same 2D/3D views a story uses (ADR 0004)     |
 
 ### Data Flow
 
-A run produces a trace (`StateSnapshot[]`, one entry per step) and the console entries (`ConsoleEntry[]`).
+A run produces a trace (`Trace`: its `Step[]`, an outcome and, for a run that failed, the error) and the Console entries (`ConsoleEntry[]`). Every step holds a snapshot in the shape of `src/shared/snapshot`, the line that ran, and a focus: the entities that step created and the slots it changed.
 
 ```
-User Code → [Instrumenter] → Instrumented Code → [Sandbox/Pyodide]
-                                                        ↓
-                                            StateSnapshot[] + ConsoleEntry[]
-                                                        ↓
-                                    [useTimeline] → TimelinePlayer (step-by-step)
-                                    [Lens]        → VisualizationCanvas (React Flow)
-                                    [Console]     → ConsoleOutput
+JS / TS code → [tracer/instrument] → instrumented code ─┐
+                                                         ↓
+              SandboxFrame (iframe) ← tracer runtime as source + limits
+                                                         ↓
+                                              Trace + ConsoleEntry[]
+                                                         ↓
+                         [useTrace] → StepControls (step by step, editor line)
+                         [Lens]     → VisualizationCanvas → StackHeapLens
+                         [Console]  → ConsoleOutput
 ```
+
+- **JavaScript.** With Trace on, `PlaygroundApp` calls `instrument()` and sends the result to the sandbox together with `runtimeSource` (the tracer runtime as a string) and the limits from `resolveTraceLimits()`. The sandbox script builds the tracer, runs the code with it, waits for pending timers, and posts the trace back with its report.
+- **TypeScript.** `services/transpileTypeScript.ts` strips the types first. Its `mapLine` is applied to every step's `line` and to `trace.error.line` (`mapTraceLines` in `useSandbox.ts`).
+- **Python.** `PythonInstrumenter.ts` records a line, the call stack and the running function's locals with `sys.settrace`; `parsePythonSteps` turns that into `Step[]`. Python records values only: its snapshots have frames and no heap objects.
+
+### How a traced run ends
+
+| Outcome      | What happens                                                                                              |
+| ------------ | --------------------------------------------------------------------------------------------------------- |
+| `completed`  | The sandbox reports once no timer is pending; steps recorded by late callbacks are in the trace           |
+| `step-limit` | The tracer stops the run (an infinite loop ends); the steps so far are kept and the Console gets one note |
+| `error`      | The Console shows the uncaught error with its line; the steps up to it are kept                           |
+
+Code that does not parse, or that the tracer cannot rewrite, never reaches the sandbox: the Console says why there are no steps. It is not run untraced behind the learner's back.
 
 ---
 
@@ -60,51 +74,52 @@ User Code → [Instrumenter] → Instrumented Code → [Sandbox/Pyodide]
 src/features/playground/
 ├── PlaygroundEntry.tsx            # Lazy-loaded entry for the /playground route
 ├── PlaygroundApp.tsx              # Root orchestrator
-├── PlaygroundApp.test.tsx         # Smoke tests
+├── PlaygroundApp.test.tsx
 ├── types/
 │   ├── index.ts                   # Re-exports
-│   └── playground-v2.ts           # All type definitions
+│   └── playground-v2.ts           # Language, lens, execution state, Console entry
+├── tracer/                        # The JavaScript tracer (ADR 0004)
+│   ├── instrument.ts              # Rewrites the learner's code (acorn + astring)
+│   ├── runtime.ts                 # What instrumented code calls; also exported as source
+│   ├── trace.ts                   # Runs a trace without the sandbox (tests)
+│   ├── types.ts                   # Trace, Step, limits
+│   └── index.ts                   # Public API
 ├── hooks/
 │   ├── useMonaco.ts               # Monaco lifecycle + theme
 │   ├── usePlaygroundState.ts      # Language, code, execution state
-│   ├── useSandbox.ts              # JS/TS sandbox execution
+│   ├── useSandbox.ts              # JS/TS sandbox execution; maps a trace's lines
 │   ├── usePyodide.ts              # Python/Pyodide execution
-│   ├── useTimeline.ts             # Moving through the steps of a trace + auto-play
+│   ├── useTrace.ts                # The trace held, the current step, auto-play
 │   └── usePaneLayout.ts           # Resizable 3-pane layout
 ├── instrumentation/
-│   ├── JsInstrumenter.ts          # JS instrumentation wrapper
-│   ├── PythonInstrumenter.ts      # Python sys.settrace wrapper
-│   ├── StateSnapshot.ts           # Clone, diff, format utilities
-│   └── index.ts                   # Re-exports
+│   └── PythonInstrumenter.ts      # Python sys.settrace wrapper → Step[]
 ├── services/
-│   ├── instrumentCode.ts          # Low-level acorn AST transformation
+│   ├── transpileTypeScript.ts     # Strips types with Monaco's TypeScript worker
+│   ├── sourceMapLines.ts          # Emitted line → source line
 │   └── pyodide-loader.ts          # Loads Pyodide
 ├── utils/
 │   ├── codeTemplates.ts           # Default starter code per language
 │   ├── examples.ts                # The examples
-│   └── sanitize.ts                # XSS prevention + output limits
+│   └── sanitize.ts                # Output limits
+├── exercises/                     # Tasks with checks and hints
 ├── components/
 │   ├── editor/
-│   │   ├── MonacoEditor.tsx       # Monaco wrapper
+│   │   ├── MonacoEditor.tsx       # Monaco wrapper; highlights the step's line
 │   │   ├── EditorTabs.tsx         # File tab bar
 │   │   └── LanguagePicker.tsx     # Language dropdown
 │   ├── execution/
 │   │   ├── SandboxFrame.tsx       # Sandboxed iframe for JS/TS
-│   │   ├── ConsoleOutput.tsx      # The console
+│   │   ├── sandboxRuntime.ts      # The script that runs inside the iframe
+│   │   ├── ConsoleOutput.tsx      # The Console
 │   │   ├── PythonRunner.tsx       # Pyodide loading indicator
 │   │   └── ExecutionController.tsx
 │   ├── instrumentation/
-│   │   └── TimelinePlayer.tsx     # Step slider + variables + call stack
+│   │   └── StepControls.tsx       # Step slider, playback, top frame + call stack
 │   ├── visualizations/
 │   │   ├── VisualizationCanvas.tsx
 │   │   ├── LensSelector.tsx
-│   │   ├── lenses/
-│   │   │   ├── EventLoopLens.tsx
-│   │   │   ├── HeapStackLens.tsx
-│   │   │   ├── DataStructureLens.tsx
-│   │   │   └── StreamLens.tsx
-│   │   └── shared/
-│   │       └── AnimatedNode.tsx
+│   │   └── lenses/
+│   │       └── StackHeapLens.tsx  # The stack and heap regions of the current step
 │   ├── layout/
 │   │   ├── PlaygroundLayout.tsx
 │   │   ├── PlaygroundToolbar.tsx
@@ -121,63 +136,42 @@ src/features/playground/
 
 ---
 
-## How to Add a New Visualization Lens
+## How to Add a New Lens
 
-> This is the current mechanism. ADR 0004 rebuilds the lenses on the shared 2D/3D views, so check the ADR before investing in a new React Flow lens.
+A lens chooses which regions of a snapshot are drawn. It never brings its own renderer: it draws with the shared 2D and 3D views, so every lens works in both (ADR 0004, `docs/3D-Visualization-Standard.md`). There is one lens today, Stack & Heap. The Event Loop lens returns once the tracer's queues are drawn; the Data Structures and Streams lenses were removed.
 
-1. **Create the lens component** in `components/visualizations/lenses/`:
+1. **Create the lens component** in `components/visualizations/lenses/`. It takes the whole trace and the index of the step to draw, so that entities keep their cells for the whole run:
 
 ```tsx
 // MyLens.tsx
 import React from 'react';
-import { ReactFlow, Background } from '@xyflow/react';
-import type { StateSnapshot } from '../../../types';
+import type { Step } from '../../../tracer';
 
 interface MyLensProps {
-  currentSnapshot: StateSnapshot | null;
-  previousSnapshot: StateSnapshot | null;
+  steps: readonly Step[];
+  index: number;
 }
 
-const MyLens: React.FC<MyLensProps> = ({ currentSnapshot }) => {
-  // Transform the current step's data into React Flow nodes + edges
-  const nodes = useMemo(() => buildNodes(currentSnapshot), [currentSnapshot]);
-  const edges = useMemo(() => buildEdges(currentSnapshot), [currentSnapshot]);
-
-  return (
-    <ReactFlow nodes={nodes} edges={edges} fitView>
-      <Background />
-    </ReactFlow>
-  );
+const MyLens: React.FC<MyLensProps> = ({ steps, index }) => {
+  const { snapshot, focus } = steps[index];
+  // Pick the regions of `snapshot` this lens shows and hand them to the shared views
+  return null;
 };
 
-export default React.memo(MyLens);
+export default MyLens;
 ```
 
-2. **Register the lens** in `VisualizationCanvas.tsx`:
-
-```tsx
-import MyLens from './lenses/MyLens';
-
-// In the switch/map:
-case 'my-lens':
-  return <MyLens currentSnapshot={currentSnapshot} previousSnapshot={previousSnapshot} />;
-```
-
-3. **Add the type** to `types/playground-v2.ts`:
+2. **Add the type** to `types/playground-v2.ts`:
 
 ```ts
-export type VisualizationLens =
-  | 'event-loop'
-  | 'heap-stack'
-  | 'data-structure'
-  | 'stream'
-  | 'my-lens'
-  | 'none';
+export type VisualizationLens = 'stack-heap' | 'my-lens' | 'none';
 ```
 
-4. **Update LensSelector** to show the new lens in the toolbar dropdown.
+3. **Register the lens** in `VisualizationCanvas.tsx` with `React.lazy`, next to `StackHeapLens`. Anything that is not a known lens id draws the "select a lens" placeholder.
 
-5. **Wrap in `React.memo`** for performance (the `currentSnapshot` and `previousSnapshot` props change on every step).
+4. **Update `LensSelector.tsx`** (`LENS_OPTIONS`) to show the new lens in the toolbar.
+
+A trace is never presented as a story: a lens adds no authored captions and never shows a garbage-collection sweep, because a run cannot observe one.
 
 ---
 
@@ -201,7 +195,7 @@ const LANGUAGE_MAP: Record<PlaygroundLanguage, string> = {
 ```
 
 4. **Create an execution hook** (e.g., `useRust.ts`) or extend an existing one. The hook must return:
-   - `execute(code)` → `Promise<{ error, snapshots }>`
+   - `execute(code)` → `Promise<{ error, trace }>`, where `trace` is a `Trace` from `tracer/` (or `null` for an untraced run). A new language emits the same snapshot shape; see `parsePythonSteps` for the smallest example.
    - `entries: ConsoleEntry[]`
    - `clearEntries()`
 
@@ -263,7 +257,7 @@ An example is prebuilt code the learner can load and run, with a suggested lens.
   label: 'Display Name',
   description: 'Brief description shown in dropdown',
   language: 'javascript',    // Must be a valid PlaygroundLanguage
-  suggestedLens: 'heap-stack', // Which lens to auto-select
+  suggestedLens: 'stack-heap', // Which lens to select: 'stack-heap' or 'none'
   code: `// Your code here
 const x = 1;
 console.log(x);`,
@@ -316,14 +310,13 @@ Examples appear in the toolbar's "Examples" dropdown, filtered by the currently 
 | Chunk                      | Budget                                        |
 | -------------------------- | --------------------------------------------- |
 | Playground app code        | < 60 KB gzipped                               |
-| @xyflow/react              | < 45 KB gzipped                               |
 | Monaco (loaded separately) | External, lazy-loaded                         |
 | Pyodide (CDN)              | ~11 MB, lazy-loaded on first Python execution |
 
 ### Optimization Strategies
 
-- **React.memo** on all lenses and `AnimatedNode`.
-- **Data caps**: `DataStructureLens` limits to 200 nodes max.
+- **Trace limits** (`tracer/types.ts`): 2,000 steps per run, 20 slots per frame or object, 60 heap objects per snapshot. A step past the heap limit is marked `truncated`.
+- **Lazy lens**: `VisualizationCanvas` loads the lens with `React.lazy`; three.js is only ever imported by a lazy 3D view.
 - **Adaptive canvas**: `SpaceBackground` adjusts star count based on `navigator.hardwareConcurrency`.
 - **Monaco features disabled**: `codeLens`, `colorDecorators`, `inlayHints`, `lightbulb`, `links`, `renderWhitespace`, `occurrencesHighlight`, `selectionHighlight`.
 - **Lazy loading**: Monaco and Pyodide are loaded on demand, not at page load.
@@ -351,11 +344,13 @@ npm run test:coverage                 # Coverage report
 
 ### Test Architecture
 
-| Category          | Files                                                                                                                                                       | Count     |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| Unit tests        | `JsInstrumenter.test.ts`, `PythonInstrumenter.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`                                                         | ~40 tests |
-| Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `TimelinePlayer.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx` | ~50 tests |
-| Integration tests | `__tests__/integration.test.ts`                                                                                                                             | ~19 tests |
+| Category          | Files                                                                                                                                                     |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tracer            | `tracer/*.test.ts` (instrumenting, the runtime as source, traces of the shipped examples)                                                                 |
+| Sandbox script    | `sandboxRuntime.test.ts` runs the real iframe script, traced and untraced: aliasing, timers, the step limit, errors                                       |
+| Unit tests        | `PythonInstrumenter.test.ts`, `useSandbox.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`, `sourceMapLines.test.ts`                                 |
+| Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `StepControls.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx` |
+| Integration tests | `__tests__/integration.test.ts`                                                                                                                           |
 
 ### Mock Strategy
 
@@ -363,7 +358,7 @@ npm run test:coverage                 # Coverage report
 - **SandboxFrame**: Real component but iframe content doesn't execute in jsdom.
 - **SpaceBackground**: Canvas context mocked (`getContext` returns stub).
 - **Pyodide**: Hook fully mocked (WASM can't load in jsdom).
-- **Pure utilities** (`sanitize`, `codeTemplates`, instrumentation): Tested directly, no mocks.
+- **Pure utilities** (`sanitize`, `codeTemplates`, the tracer, `parsePythonSteps`): Tested directly, no mocks.
 
 ### Adding Tests
 

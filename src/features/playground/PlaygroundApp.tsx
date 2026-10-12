@@ -8,14 +8,14 @@ import EditorTabs from './components/editor/EditorTabs';
 import SandboxFrame from './components/execution/SandboxFrame';
 import ConsoleOutput from './components/execution/ConsoleOutput';
 import PythonRunner from './components/execution/PythonRunner';
-import TimelinePlayer from './components/instrumentation/TimelinePlayer';
+import StepControls from './components/instrumentation/StepControls';
 import VisualizationCanvas from './components/visualizations/VisualizationCanvas';
 import { usePlaygroundState } from './hooks/usePlaygroundState';
 import { useSandbox } from './hooks/useSandbox';
 import { usePyodide } from './hooks/usePyodide';
-import { useTimeline } from './hooks/useTimeline';
+import { useTrace } from './hooks/useTrace';
 import { usePaneLayout } from './hooks/usePaneLayout';
-import { prepareInstrumentedCode } from './instrumentation/JsInstrumenter';
+import { instrument, resolveTraceLimits } from './tracer';
 import { transpileTypeScript } from './services/transpileTypeScript';
 import type { Example } from './utils/examples';
 import type { VisualizationLens } from './types';
@@ -32,7 +32,7 @@ const PlaygroundApp: React.FC = () => {
 
   const sandbox = useSandbox();
   const pyodide = usePyodide();
-  const timeline = useTimeline();
+  const trace = useTrace();
 
   // Instrumented mode toggle
   const [instrumentedMode, setInstrumentedMode] = useState(true);
@@ -71,14 +71,14 @@ const PlaygroundApp: React.FC = () => {
   // starts outside a click event) and leave the state stuck on 'running'.
   const handleRun = useCallback((): void => {
     setExecutionState('running');
-    timeline.clear();
+    trace.clear();
 
     if (language === 'python') {
       const runFn = instrumentedMode ? pyodide.runPythonInstrumented : pyodide.runPython;
       runFn(code).then((result) => {
         setExecutionState(result.error ? 'error' : 'completed');
-        if (instrumentedMode && result.snapshots.length > 0) {
-          timeline.loadSnapshots(result.snapshots);
+        if (result.trace && result.trace.steps.length > 0) {
+          trace.loadTrace(result.trace);
         }
       });
       return;
@@ -86,20 +86,30 @@ const PlaygroundApp: React.FC = () => {
 
     const runJavaScript = (js: string, mapLine?: (line: number) => number): void => {
       if (instrumentedMode) {
-        const prepared = prepareInstrumentedCode(js);
-        if ('error' in prepared) {
-          // Fall back to non-instrumented execution on parse error
-          sandbox.execute(js, { mapLine }).then((result) => {
-            setExecutionState(result.error ? 'error' : 'completed');
-          });
+        const instrumented = instrument(js);
+        if (!instrumented.ok) {
+          // Nothing runs, so the Console says why there are no steps: a syntax error
+          // has a line, code the tracer cannot rewrite has none
+          const { message, line } = instrumented.error;
+          if (line === undefined) {
+            // The position at the end of the message is one in the rewritten code
+            const reason = message.replace(/\s*\(\d+:\d+\)$/, '');
+            sandbox.reportError(`${reason}. No steps were recorded; turn Trace off to run it.`);
+          } else {
+            sandbox.reportError(`SyntaxError: ${message}`, mapLine ? mapLine(line) : line);
+          }
+          setExecutionState('error');
           return;
         }
-        sandbox.execute(prepared.code, { mapLine }).then((result) => {
-          setExecutionState(result.error ? 'error' : 'completed');
-          if (result.snapshots.length > 0) {
-            timeline.loadSnapshots(result.snapshots);
-          }
-        });
+        sandbox
+          .execute(instrumented.code, { mapLine, traceLimits: resolveTraceLimits() })
+          .then((result) => {
+            setExecutionState(result.error ? 'error' : 'completed');
+            // A run that stopped at the step limit or on an error keeps its steps
+            if (result.trace && result.trace.steps.length > 0) {
+              trace.loadTrace(result.trace);
+            }
+          });
       } else {
         sandbox.execute(js, { mapLine }).then((result) => {
           setExecutionState(result.error ? 'error' : 'completed');
@@ -121,7 +131,7 @@ const PlaygroundApp: React.FC = () => {
     } else {
       runJavaScript(code);
     }
-  }, [language, code, sandbox, pyodide, setExecutionState, instrumentedMode, timeline]);
+  }, [language, code, sandbox, pyodide, setExecutionState, instrumentedMode, trace]);
 
   const handleStop = useCallback((): void => {
     if (language === 'python') {
@@ -137,10 +147,8 @@ const PlaygroundApp: React.FC = () => {
     resetCode();
     sandbox.clearEntries();
     pyodide.clearEntries();
-    sandbox.clearSnapshots();
-    pyodide.clearSnapshots();
-    timeline.clear();
-  }, [resetCode, sandbox, pyodide, timeline]);
+    trace.clear();
+  }, [resetCode, sandbox, pyodide, trace]);
 
   const handleClearConsole = useCallback((): void => {
     if (language === 'python') {
@@ -157,11 +165,9 @@ const PlaygroundApp: React.FC = () => {
       setActiveLens(example.suggestedLens);
       sandbox.clearEntries();
       pyodide.clearEntries();
-      sandbox.clearSnapshots();
-      pyodide.clearSnapshots();
-      timeline.clear();
+      trace.clear();
     },
-    [setLanguage, setCode, sandbox, pyodide, timeline]
+    [setLanguage, setCode, sandbox, pyodide, trace]
   );
 
   // Keyboard shortcuts
@@ -200,36 +206,36 @@ const PlaygroundApp: React.FC = () => {
         activeEl?.tagName === 'INPUT' ||
         activeEl?.getAttribute('role') === 'textbox' ||
         activeEl?.getAttribute('contenteditable') === 'true';
-      if (!inEditor && timeline.totalSteps > 0) {
+      if (!inEditor && trace.stepCount > 0) {
         if (e.key === 'ArrowLeft') {
           e.preventDefault();
-          timeline.prevStep();
+          trace.prevStep();
           return;
         }
         if (e.key === 'ArrowRight') {
           e.preventDefault();
-          timeline.nextStep();
+          trace.nextStep();
           return;
         }
         // Space → play/pause the steps
         if (e.key === ' ') {
           e.preventDefault();
-          if (timeline.isPlaying) {
-            timeline.pause();
+          if (trace.isPlaying) {
+            trace.pause();
           } else {
-            timeline.play();
+            trace.play();
           }
           return;
         }
         // Home/End → first/last step
         if (e.key === 'Home') {
           e.preventDefault();
-          timeline.firstStep();
+          trace.firstStep();
           return;
         }
         if (e.key === 'End') {
           e.preventDefault();
-          timeline.lastStep();
+          trace.lastStep();
           return;
         }
       }
@@ -241,7 +247,7 @@ const PlaygroundApp: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [executionState, settingsOpen, handleRun, handleStop, handleClearConsole, timeline]);
+  }, [executionState, settingsOpen, handleRun, handleStop, handleClearConsole, trace]);
 
   return (
     <PlaygroundLayout>
@@ -252,7 +258,6 @@ const PlaygroundApp: React.FC = () => {
           onLanguageChange={setLanguage}
           activeLens={activeLens}
           onLensChange={setActiveLens}
-          currentSnapshot={timeline.currentSnapshot}
           instrumentedMode={instrumentedMode}
           onInstrumentedModeChange={setInstrumentedMode}
           executionState={executionState}
@@ -296,7 +301,7 @@ const PlaygroundApp: React.FC = () => {
               language={language}
               onChange={setCode}
               onExecute={handleRun}
-              highlightLine={timeline.currentSnapshot?.line}
+              highlightLine={trace.currentStep?.line}
               fontSize={settings.fontSize}
               wordWrap={settings.wordWrap}
             />
@@ -324,8 +329,9 @@ const PlaygroundApp: React.FC = () => {
           <div className="flex-1 min-h-0">
             <VisualizationCanvas
               lens={activeLens}
-              currentSnapshot={timeline.currentSnapshot}
-              previousSnapshot={timeline.previousSnapshot}
+              steps={trace.steps}
+              index={trace.index}
+              language={language}
             />
           </div>
           {/* Step controls (bottom) */}
@@ -334,21 +340,21 @@ const PlaygroundApp: React.FC = () => {
               borderTop: '1px solid var(--pg-border)',
             }}
           >
-            <TimelinePlayer
-              currentStep={timeline.currentStep}
-              totalSteps={timeline.totalSteps}
-              currentSnapshot={timeline.currentSnapshot}
-              previousSnapshot={timeline.previousSnapshot}
-              isPlaying={timeline.isPlaying}
-              speed={timeline.speed}
-              onGoToStep={timeline.goToStep}
-              onNextStep={timeline.nextStep}
-              onPrevStep={timeline.prevStep}
-              onFirstStep={timeline.firstStep}
-              onLastStep={timeline.lastStep}
-              onPlay={timeline.play}
-              onPause={timeline.pause}
-              onSetSpeed={timeline.setSpeed}
+            <StepControls
+              index={trace.index}
+              stepCount={trace.stepCount}
+              step={trace.currentStep}
+              isPlaying={trace.isPlaying}
+              speed={trace.speed}
+              onGoToStep={trace.goToStep}
+              onNextStep={trace.nextStep}
+              onPrevStep={trace.prevStep}
+              onFirstStep={trace.firstStep}
+              onLastStep={trace.lastStep}
+              onPlay={trace.play}
+              onPause={trace.pause}
+              onSetSpeed={trace.setSpeed}
+              compact={activeLens !== 'none'}
             />
           </div>
         </div>

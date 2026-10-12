@@ -1,10 +1,26 @@
 import { useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
-import type { ConsoleEntry, ConsoleEntryType, StateSnapshot } from '../../types';
+import type { ConsoleEntry, ConsoleEntryType } from '../../types';
+import { runtimeSource, TRACER_NAME, type Trace, type TraceLimits } from '../../tracer';
 import { SANDBOX_RUNTIME_SOURCE } from './sandboxRuntime';
+
+/** What the sandbox needs to record a trace: the tracer runtime as source, and its limits */
+interface SandboxTracer {
+  runtime: string;
+  /** The name instrumented code calls the tracer by */
+  name: string;
+  limits: TraceLimits;
+}
 
 /** Messages sent from host → sandbox iframe */
 type HostToSandbox =
-  | { type: 'execute'; code: string; nonce: string; timeout: number; runId: number }
+  | {
+      type: 'execute';
+      code: string;
+      nonce: string;
+      timeout: number;
+      runId: number;
+      tracer?: SandboxTracer;
+    }
   | { type: 'cancel' };
 
 interface RawConsoleEntry {
@@ -16,13 +32,12 @@ interface RawConsoleEntry {
 
 /** Messages sent from sandbox iframe → host */
 interface SandboxToHost {
-  type: 'console' | 'result' | 'error' | 'ready' | 'timeline';
+  type: 'console' | 'result' | 'error' | 'ready';
   /** The run this message reports on; a message from a run that was stopped is ignored */
   runId?: number;
   entries?: RawConsoleEntry[];
   error?: string;
-  snapshots?: StateSnapshot[];
-  totalSteps?: number;
+  trace?: Trace | null;
 }
 
 /**
@@ -53,13 +68,17 @@ function generateNonce(): string {
 export interface SandboxExecutionResult {
   entries: ConsoleEntry[];
   error?: string;
-  /** Snapshots from instrumented execution (if __tracker__ was present) */
-  snapshots?: StateSnapshot[];
-  totalSteps?: number;
+  /** The trace of a traced run */
+  trace?: Trace;
 }
 
 export interface SandboxFrameHandle {
-  execute: (code: string, timeout: number) => Promise<SandboxExecutionResult>;
+  /** With `traceLimits`, `code` is instrumented code and the result carries its trace */
+  execute: (
+    code: string,
+    timeout: number,
+    traceLimits?: TraceLimits
+  ) => Promise<SandboxExecutionResult>;
   terminate: () => void;
 }
 
@@ -101,8 +120,7 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
           pending.resolve({
             entries: parseEntries(data.entries),
             error: data.type === 'error' ? data.error : undefined,
-            snapshots: data.snapshots ?? undefined,
-            totalSteps: data.totalSteps ?? undefined,
+            trace: data.trace ?? undefined,
           });
           pendingRef.current = null;
         }
@@ -136,7 +154,7 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
   }, []);
 
   const execute = useCallback(
-    (code: string, timeout: number): Promise<SandboxExecutionResult> => {
+    (code: string, timeout: number, traceLimits?: TraceLimits): Promise<SandboxExecutionResult> => {
       // Terminate any pending execution
       if (pendingRef.current) terminate();
 
@@ -177,6 +195,9 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
           nonce: nonceRef.current,
           timeout,
           runId,
+          ...(traceLimits
+            ? { tracer: { runtime: runtimeSource, name: TRACER_NAME, limits: traceLimits } }
+            : {}),
         };
 
         iframe.contentWindow.postMessage(msg, '*');

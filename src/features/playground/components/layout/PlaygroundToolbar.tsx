@@ -5,19 +5,13 @@ import LanguagePicker from '../editor/LanguagePicker';
 import ExecutionController from '../execution/ExecutionController';
 import LensSelector from '../visualizations/LensSelector';
 import { examples, type Example } from '../../utils/examples';
-import type {
-  PlaygroundLanguage,
-  VisualizationLens,
-  ExecutionState,
-  StateSnapshot,
-} from '../../types';
+import type { PlaygroundLanguage, VisualizationLens, ExecutionState } from '../../types';
 
 interface PlaygroundToolbarProps {
   language: PlaygroundLanguage;
   onLanguageChange: (lang: PlaygroundLanguage) => void;
   activeLens: VisualizationLens;
   onLensChange: (lens: VisualizationLens) => void;
-  currentSnapshot: StateSnapshot | null;
   instrumentedMode: boolean;
   onInstrumentedModeChange: (on: boolean) => void;
   executionState: ExecutionState;
@@ -33,7 +27,6 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
   onLanguageChange,
   activeLens,
   onLensChange,
-  currentSnapshot,
   instrumentedMode,
   onInstrumentedModeChange,
   executionState,
@@ -121,11 +114,7 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
         />
 
         {/* Lens selector */}
-        <LensSelector
-          activeLens={activeLens}
-          onLensChange={onLensChange}
-          currentSnapshot={currentSnapshot}
-        />
+        <LensSelector activeLens={activeLens} onLensChange={onLensChange} />
 
         {/* Separator */}
         <div className="w-px h-5" style={{ background: 'var(--pg-border)' }} aria-hidden="true" />

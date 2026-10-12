@@ -1,15 +1,17 @@
 import React, { Suspense, lazy } from 'react';
-import type { VisualizationLens, StateSnapshot } from '../../types';
+import type { PlaygroundLanguage, VisualizationLens } from '../../types';
+import type { Step } from '../../tracer';
 
-const EventLoopLens = lazy(() => import('./lenses/EventLoopLens'));
-const HeapStackLens = lazy(() => import('./lenses/HeapStackLens'));
-const DataStructureLens = lazy(() => import('./lenses/DataStructureLens'));
-const StreamLens = lazy(() => import('./lenses/StreamLens'));
+const StackHeapLens = lazy(() => import('./lenses/StackHeapLens'));
 
 interface VisualizationCanvasProps {
   lens: VisualizationLens;
-  currentSnapshot: StateSnapshot | null;
-  previousSnapshot: StateSnapshot | null;
+  /** Every step of the trace */
+  steps: readonly Step[];
+  /** Index into `steps` of the step to draw */
+  index: number;
+  /** The language of the run: Python records values only, so its steps have no heap */
+  language: PlaygroundLanguage;
 }
 
 const LensLoading: React.FC = () => (
@@ -43,7 +45,7 @@ const NoLensPlaceholder: React.FC = () => (
         Select a visualization lens
       </p>
       <p className="text-xs max-w-48">
-        Choose a lens from the toolbar to visualize your code execution in real time.
+        Choose a lens from the toolbar to see what each step of your code did.
       </p>
     </div>
   </div>
@@ -62,7 +64,7 @@ const NoDataPlaceholder: React.FC = () => (
         Run code with Trace enabled
       </p>
       <p className="text-xs max-w-48">
-        Execute your code with the Trace toggle on to see the visualization.
+        Run your code with the Trace toggle on to record its steps.
       </p>
     </div>
   </div>
@@ -70,26 +72,23 @@ const NoDataPlaceholder: React.FC = () => (
 
 const VisualizationCanvas: React.FC<VisualizationCanvasProps> = ({
   lens,
-  currentSnapshot,
-  previousSnapshot,
+  steps,
+  index,
+  language,
 }) => {
-  if (lens === 'none') {
+  // Anything but a lens that exists draws nothing, such as the id of a lens that was removed
+  if (lens !== 'stack-heap') {
     return <NoLensPlaceholder />;
   }
 
-  if (!currentSnapshot) {
+  if (steps.length === 0) {
     return <NoDataPlaceholder />;
   }
 
-  const lensProps = { currentSnapshot, previousSnapshot };
-
   return (
-    <div className="h-full w-full" role="img" aria-label={`${lens} visualization`}>
+    <div className="h-full w-full">
       <Suspense fallback={<LensLoading />}>
-        {lens === 'event-loop' && <EventLoopLens {...lensProps} />}
-        {lens === 'heap-stack' && <HeapStackLens {...lensProps} />}
-        {lens === 'data-structure' && <DataStructureLens {...lensProps} />}
-        {lens === 'stream' && <StreamLens {...lensProps} />}
+        <StackHeapLens steps={steps} index={index} heapRecorded={language !== 'python'} />
       </Suspense>
     </div>
   );

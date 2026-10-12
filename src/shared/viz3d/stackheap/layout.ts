@@ -9,6 +9,9 @@
  * Labels are DOM cards of a fixed pixel size, while a larger scene is framed at a lower zoom.
  * So a third column or row also widens the pitch on that axis: the blocks keep their size and
  * each label keeps the room it needs.
+ *
+ * `frameLabelPlan` decides, for the same reason, which frame labels may list their slots one
+ * per line and how many lines they get.
  */
 import {
   gridOf,
@@ -35,7 +38,7 @@ export const CELL_X0 = 0.9;
 export const CELL_Z0 = -1.8;
 /** Distance between neighbouring cells while an axis has at most two of them (the story). */
 export const CELL_PITCH = 3.6;
-/** The pitch once an axis has a third cell: room for a label per column, and per row. */
+/** The pitch once the grid has a third column or row: room for a label per column, and per row. */
 const WIDE_PITCH = { x: 5.6, z: 6.9 };
 
 /** Footprint and height of each heap kind. Every footprint fits a cell with room for arcs. */
@@ -124,8 +127,10 @@ export function layoutOf(grid: HeapGrid, frameCount: number): StackHeapLayout {
   const hit = cache.get(key);
   if (hit) return hit;
 
+  // A third row lowers the zoom as much as a third column does, so it widens the columns too:
+  // at the story's pitch, the labels of two neighbours in a row would meet.
   const pitch = {
-    x: cols > 2 ? WIDE_PITCH.x : CELL_PITCH,
+    x: cols > 2 || rows > 2 ? WIDE_PITCH.x : CELL_PITCH,
     z: rows > 2 ? WIDE_PITCH.z : CELL_PITCH,
   };
   const dense = cols > 2 || rows > 2 || depth > MIN_STACK_DEPTH;
@@ -175,6 +180,74 @@ export function layoutOf(grid: HeapGrid, frameCount: number): StackHeapLayout {
 /** The layout that holds everything in `snapshot`. */
 export const layoutFor = (snapshot: PlacedSnapshot, minGrid?: HeapGrid): StackHeapLayout =>
   layoutOf(gridOf(snapshot.objects, minGrid), snapshot.frames.length);
+
+// ---- Frame labels -----------------------------------------------------------------------
+
+/**
+ * A frame with at most this many slots keeps the one-row label. The Stack ↔ Heap story's
+ * largest frame holds 2 slots, so the story never leaves that label.
+ */
+export const FRAME_ROW_SLOTS = 2;
+/**
+ * The most lines under the name in a stacked frame label. A frame with more slots ends its
+ * list with a `+N more` line, which counts as one of them.
+ */
+export const FRAME_SLOT_LINES = 6;
+/**
+ * The same cap for the top frame of a stack deeper than `MIN_STACK_DEPTH`: its label grows
+ * upward, into the little room such a scene leaves above the stack.
+ */
+export const FRAME_SLOT_LINES_DEEP = 4;
+
+export type FrameLabelPlan =
+  | {
+      stacked: false;
+      /** More slots than a row holds, but no room to stack: one line, cut at a fixed width. */
+      cut: boolean;
+    }
+  | {
+      stacked: true;
+      /** The side the card grows toward from the one-row label's place. */
+      grow: 'down' | 'up';
+      /** Indexes of the slots listed, in frame order. */
+      slots: number[];
+      /** Slots left out, named by the final `+N more` line. */
+      more: number;
+    };
+
+/**
+ * How the frame at `index` of `frameCount` labels its `slotCount` slots.
+ *
+ * Frame labels sit a fixed pitch apart, so only the ends of the stack have room to list slots
+ * one per line: the bottom frame (the global frame of a trace) grows downward over its plinth,
+ * and the top frame, the one that is running, grows upward. A frame between them stays on one
+ * line. When the list is capped, a focused slot takes the place of an unfocused one, so what a
+ * step changed is never the part left out.
+ */
+export function frameLabelPlan(
+  index: number,
+  frameCount: number,
+  slotCount: number,
+  isFocused: (slotIndex: number) => boolean = () => false
+): FrameLabelPlan {
+  if (slotCount <= FRAME_ROW_SLOTS) return { stacked: false, cut: false };
+  const bottom = index === 0;
+  if (!bottom && index < frameCount - 1) return { stacked: false, cut: true };
+
+  const lines = bottom || frameCount <= MIN_STACK_DEPTH ? FRAME_SLOT_LINES : FRAME_SLOT_LINES_DEEP;
+  const all = Array.from({ length: slotCount }, (_, i) => i);
+  if (slotCount <= lines)
+    return { stacked: true, grow: bottom ? 'down' : 'up', slots: all, more: 0 };
+
+  const keep = lines - 1;
+  const slots = all.slice(0, keep);
+  const waiting = all.slice(keep).filter(isFocused);
+  for (let i = keep - 1; i >= 0 && waiting.length > 0; i--) {
+    if (!isFocused(slots[i])) slots[i] = waiting.pop()!;
+  }
+  slots.sort((a, b) => a - b);
+  return { stacked: true, grow: bottom ? 'down' : 'up', slots, more: slotCount - keep };
+}
 
 // ---- Entity boxes -----------------------------------------------------------------------
 

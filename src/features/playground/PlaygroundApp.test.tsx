@@ -7,16 +7,38 @@
  */
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
+import { traceSync } from './tracer';
 
 // ---- Mocks ----
+
+const mocks = vi.hoisted(() => ({
+  execute: vi.fn(),
+  reportError: vi.fn(),
+}));
 
 // Mock Monaco Editor
 vi.mock('./components/editor/MonacoEditor', () => ({
   __esModule: true,
-  default: ({ language, code }: { language: string; code: string }) => (
-    <div data-testid="mock-editor" data-language={language}>
+  default: ({
+    language,
+    code,
+    onChange,
+    highlightLine,
+  }: {
+    language: string;
+    code: string;
+    onChange: (code: string) => void;
+    highlightLine?: number;
+  }) => (
+    <div data-testid="mock-editor" data-language={language} data-line={highlightLine}>
       {code}
+      <button onClick={() => onChange('const a = 1;\nconst = ;')}>break the code</button>
+      <button
+        onClick={() => onChange('function f() {\n  var twice = 1;\n  function twice() {}\n}')}
+      >
+        write untraceable code
+      </button>
     </div>
   ),
 }));
@@ -40,7 +62,7 @@ vi.mock('./components/theme/SpaceBackground', () => ({
   default: () => <div data-testid="mock-space-bg" />,
 }));
 
-// Mock VisualizationCanvas (React Flow)
+// Mock VisualizationCanvas (the lens loads lazily)
 vi.mock('./components/visualizations/VisualizationCanvas', () => ({
   __esModule: true,
   default: () => <div data-testid="mock-visualization" />,
@@ -52,8 +74,8 @@ vi.mock('./components/theme/playground-theme.css', () => ({}));
 // Mock usePyodide
 vi.mock('./hooks/usePyodide', () => ({
   usePyodide: () => ({
-    runPython: vi.fn().mockResolvedValue({ error: null, snapshots: [] }),
-    runPythonInstrumented: vi.fn().mockResolvedValue({ error: null, snapshots: [] }),
+    runPython: vi.fn().mockResolvedValue({ error: null, trace: null }),
+    runPythonInstrumented: vi.fn().mockResolvedValue({ error: null, trace: null }),
     loadingState: { status: 'idle' },
     isReady: false,
     isRunning: false,
@@ -61,8 +83,6 @@ vi.mock('./hooks/usePyodide', () => ({
     clearEntries: vi.fn(),
     error: null,
     preload: vi.fn(),
-    snapshots: [],
-    clearSnapshots: vi.fn(),
   }),
 }));
 
@@ -70,21 +90,20 @@ vi.mock('./hooks/usePyodide', () => ({
 vi.mock('./hooks/useSandbox', () => ({
   useSandbox: () => ({
     sandboxRef: { current: null },
-    execute: vi.fn().mockResolvedValue({ error: null, snapshots: [] }),
+    execute: mocks.execute,
+    reportError: mocks.reportError,
     terminate: vi.fn(),
     isRunning: false,
     entries: [],
     clearEntries: vi.fn(),
     error: null,
-    snapshots: [],
-    clearSnapshots: vi.fn(),
   }),
 }));
 
 // Mock usePaneLayout
 vi.mock('./hooks/usePaneLayout', () => ({
   usePaneLayout: () => ({
-    dividers: [0.33, 0.66],
+    dividers: [0.3, 0.78],
     setDivider: vi.fn(),
     resetDividers: vi.fn(),
   }),
@@ -112,7 +131,15 @@ import PlaygroundApp from './PlaygroundApp';
 describe('PlaygroundApp', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.execute.mockResolvedValue({ error: null, trace: null });
   });
+
+  /** Ctrl+Enter runs the code */
+  async function run(): Promise<void> {
+    await act(async () => {
+      fireEvent.keyDown(window, { key: 'Enter', ctrlKey: true });
+    });
+  }
 
   it('renders without crashing', async () => {
     await act(async () => {
@@ -156,5 +183,60 @@ describe('PlaygroundApp', () => {
     });
     const editor = screen.getByTestId('mock-editor');
     expect(editor.getAttribute('data-language')).toBe('javascript');
+  });
+
+  it('runs instrumented code with Trace on and shows the steps of the trace it gets back', async () => {
+    const trace = traceSync('const a = [1];\nconst b = a;');
+    mocks.execute.mockResolvedValue({ error: null, trace });
+    render(<PlaygroundApp />);
+    await run();
+
+    const [code, options] = mocks.execute.mock.calls[0];
+    expect(code).toContain('__t.step(');
+    expect(options.traceLimits.maxSteps).toBe(2000);
+    expect(screen.getByText(`Step 1 of ${trace.steps.length}`)).toBeInTheDocument();
+    expect(screen.getByTestId('mock-editor').getAttribute('data-line')).toBe(
+      String(trace.steps[0].line)
+    );
+
+    // The arrow keys step through the trace, and the editor line follows
+    await act(async () => {
+      fireEvent.keyDown(document.body, { key: 'End' });
+    });
+    expect(
+      screen.getByText(`Step ${trace.steps.length} of ${trace.steps.length}`)
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('mock-editor').getAttribute('data-line')).toBe('2');
+  });
+
+  it('keeps the steps of a run that ended in an error', async () => {
+    const trace = traceSync('const a = 1;\nnull.x;');
+    mocks.execute.mockResolvedValue({ error: 'TypeError', trace });
+    render(<PlaygroundApp />);
+    await run();
+    expect(screen.getByText(`Step 1 of ${trace.steps.length}`)).toBeInTheDocument();
+  });
+
+  it('reports a syntax error with its line and runs nothing', async () => {
+    render(<PlaygroundApp />);
+    fireEvent.click(screen.getByText('break the code'));
+    await run();
+
+    expect(mocks.execute).not.toHaveBeenCalled();
+    expect(mocks.reportError).toHaveBeenCalledTimes(1);
+    const [message, line] = mocks.reportError.mock.calls[0];
+    expect(message).toMatch(/^SyntaxError: /);
+    expect(line).toBe(2);
+  });
+
+  it('says why there are no steps for code the tracer refuses, and does not run it untraced', async () => {
+    render(<PlaygroundApp />);
+    fireEvent.click(screen.getByText('write untraceable code'));
+    await run();
+
+    expect(mocks.execute).not.toHaveBeenCalled();
+    const [message, line] = mocks.reportError.mock.calls[0];
+    expect(message).toMatch(/^This code cannot be traced: [^()]*declared\. No steps were recorded/);
+    expect(line).toBeUndefined();
   });
 });

@@ -13,6 +13,7 @@ import {
   ZoomOut,
   type LucideIcon,
 } from 'lucide-react';
+import type { VizTheme } from '../../viz/palette';
 import type { CameraCommandInput, ViewPreset } from './viewerCamera';
 
 export interface Viewer3DToolbarProps {
@@ -27,6 +28,8 @@ export interface Viewer3DToolbarProps {
   togglePan: () => void;
   reset: () => void;
   fullscreen: { supported: boolean; isFullscreen: boolean; toggle: () => void };
+  /** Stories are light; the Playground is dark. Default `light`. */
+  theme?: VizTheme;
 }
 
 const PRESETS: { id: ViewPreset; label: string; icon: LucideIcon }[] = [
@@ -37,8 +40,22 @@ const PRESETS: { id: ViewPreset; label: string; icon: LucideIcon }[] = [
 
 const base =
   'flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500';
-const idle = 'text-slate-700 hover:bg-slate-100';
-const on = 'bg-slate-800 text-white hover:bg-slate-700';
+
+/** The toolbar's chrome per theme, written out so Tailwind sees every class. */
+const CHROME: Record<VizTheme, { bar: string; idle: string; on: string; divider: string }> = {
+  light: {
+    bar: 'border-slate-300 bg-white/90',
+    idle: 'text-slate-700 hover:bg-slate-100',
+    on: 'bg-slate-800 text-white hover:bg-slate-700',
+    divider: 'bg-slate-200',
+  },
+  dark: {
+    bar: 'border-[#2a2a4e] bg-[#12122a]/90',
+    idle: 'text-[#e0e0ff] hover:bg-[#1e1e42]',
+    on: 'bg-indigo-500 text-white hover:bg-indigo-400',
+    divider: 'bg-[#2a2a4e]',
+  },
+};
 
 const ToolButton: React.FC<{
   label: string;
@@ -47,7 +64,8 @@ const ToolButton: React.FC<{
   icon: LucideIcon;
   onClick: () => void;
   pressed?: boolean;
-}> = ({ label, shortcut, keys, icon: Icon, onClick, pressed }) => (
+  theme: VizTheme;
+}> = ({ label, shortcut, keys, icon: Icon, onClick, pressed, theme }) => (
   <button
     type="button"
     aria-label={label}
@@ -55,13 +73,15 @@ const ToolButton: React.FC<{
     aria-keyshortcuts={keys}
     aria-pressed={pressed}
     onClick={onClick}
-    className={`${base} ${pressed ? on : idle}`}
+    className={`${base} ${pressed ? CHROME[theme].on : CHROME[theme].idle}`}
   >
     <Icon className="h-4 w-4" aria-hidden />
   </button>
 );
 
-const Divider: React.FC = () => <div className="mx-1 my-0.5 h-px bg-slate-200" aria-hidden />;
+const Divider: React.FC<{ theme: VizTheme }> = ({ theme }) => (
+  <div className={`mx-1 my-0.5 h-px ${CHROME[theme].divider}`} aria-hidden />
+);
 
 /**
  * The viewer's camera controls: a vertical strip in the viewer's top-right corner. Place it
@@ -78,6 +98,7 @@ const Viewer3DToolbar: React.FC<Viewer3DToolbarProps> = ({
   togglePan,
   reset,
   fullscreen,
+  theme = 'light',
 }) => {
   // In 2D the full-screen button lives in the story's control row, where it can't cover the diagram.
   if (!is3D) return null;
@@ -86,9 +107,10 @@ const Viewer3DToolbar: React.FC<Viewer3DToolbarProps> = ({
       role="toolbar"
       aria-label="Viewer controls"
       aria-orientation="vertical"
-      className="absolute right-2 top-2 z-20 flex flex-col gap-0.5 rounded-lg border border-slate-300 bg-white/90 p-1 shadow-sm backdrop-blur-sm"
+      className={`absolute right-2 top-2 z-20 flex flex-col gap-0.5 rounded-lg border p-1 shadow-sm backdrop-blur-sm ${CHROME[theme].bar}`}
     >
       <ToolButton
+        theme={theme}
         label="Zoom in"
         shortcut="+"
         keys="+"
@@ -96,15 +118,16 @@ const Viewer3DToolbar: React.FC<Viewer3DToolbarProps> = ({
         onClick={() => command({ kind: 'zoomIn' })}
       />
       <ToolButton
+        theme={theme}
         label="Zoom out"
         shortcut="-"
         keys="-"
         icon={ZoomOut}
         onClick={() => command({ kind: 'zoomOut' })}
       />
-      <ToolButton label="Fit" icon={Scan} onClick={() => command({ kind: 'fit' })} />
-      <ToolButton label="Pan mode" icon={Hand} pressed={pan} onClick={togglePan} />
-      <Divider />
+      <ToolButton theme={theme} label="Fit" icon={Scan} onClick={() => command({ kind: 'fit' })} />
+      <ToolButton theme={theme} label="Pan mode" icon={Hand} pressed={pan} onClick={togglePan} />
+      <Divider theme={theme} />
       <div role="radiogroup" aria-label="View preset" className="flex flex-col gap-0.5">
         {PRESETS.map(({ id, label, icon: Icon }) => (
           <button
@@ -115,14 +138,15 @@ const Viewer3DToolbar: React.FC<Viewer3DToolbarProps> = ({
             aria-label={label}
             title={label}
             onClick={() => setPreset(id)}
-            className={`${base} ${preset === id ? on : idle}`}
+            className={`${base} ${preset === id ? CHROME[theme].on : CHROME[theme].idle}`}
           >
             <Icon className="h-4 w-4" aria-hidden />
           </button>
         ))}
       </div>
-      <Divider />
+      <Divider theme={theme} />
       <ToolButton
+        theme={theme}
         label="Hold view"
         shortcut="H"
         keys="H"
@@ -130,11 +154,19 @@ const Viewer3DToolbar: React.FC<Viewer3DToolbarProps> = ({
         pressed={hold}
         onClick={toggleHold}
       />
-      <ToolButton label="Reset view" shortcut="0" keys="0" icon={LocateFixed} onClick={reset} />
+      <ToolButton
+        theme={theme}
+        label="Reset view"
+        shortcut="0"
+        keys="0"
+        icon={LocateFixed}
+        onClick={reset}
+      />
       {fullscreen.supported && (
         <>
-          <Divider />
+          <Divider theme={theme} />
           <ToolButton
+            theme={theme}
             label={fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
             shortcut="F"
             keys="F"

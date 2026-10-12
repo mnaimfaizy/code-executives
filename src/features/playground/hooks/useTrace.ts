@@ -1,27 +1,28 @@
 /**
- * useTimeline — Manages the timeline of execution snapshots.
+ * useTrace — Holds the trace of the last run and which of its steps is shown.
  *
- * Provides step navigation, auto-play with configurable speed,
- * and respects prefers-reduced-motion to disable auto-advance animations.
+ * Provides stepping and auto-play with a configurable speed. With reduced
+ * motion, Play goes straight to the last step instead of advancing on a timer.
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { StateSnapshot } from '../types';
+import { useReducedMotion } from '../../../shared/hooks';
+import type { Step, Trace } from '../tracer';
 
 /** Playback speed multipliers */
 export type PlaybackSpeed = 0.5 | 1 | 2 | 4;
 
-interface UseTimelineReturn {
-  /** Current step index */
-  currentStep: number;
-  /** Total number of steps */
-  totalSteps: number;
-  /** Current snapshot data */
-  currentSnapshot: StateSnapshot | null;
-  /** Previous snapshot (for diff highlighting) */
-  previousSnapshot: StateSnapshot | null;
+interface UseTraceReturn {
+  /** Every step of the trace, in order */
+  steps: Step[];
+  /** Index of the current step */
+  index: number;
+  /** Number of steps */
+  stepCount: number;
+  /** The current step */
+  currentStep: Step | null;
   /** Go to a specific step */
-  goToStep: (step: number) => void;
+  goToStep: (index: number) => void;
   /** Advance to next step */
   nextStep: () => void;
   /** Go to previous step */
@@ -40,36 +41,30 @@ interface UseTimelineReturn {
   speed: PlaybackSpeed;
   /** Set playback speed */
   setSpeed: (speed: PlaybackSpeed) => void;
-  /** Load new snapshots (replaces existing) */
-  loadSnapshots: (snapshots: StateSnapshot[]) => void;
-  /** Clear all snapshots */
+  /** Load a trace (replaces the one held) and show its first step */
+  loadTrace: (trace: Trace) => void;
+  /** Drop the trace */
   clear: () => void;
-  /** Whether timeline has data */
-  hasData: boolean;
 }
 
 /** Base interval in ms between steps at 1x speed */
 const BASE_INTERVAL_MS = 500;
 
+const NO_STEPS: Step[] = [];
+
 /**
- * Hook for managing time-travel through execution snapshots.
+ * Hook for stepping through a trace.
  */
-export function useTimeline(): UseTimelineReturn {
-  const [snapshots, setSnapshots] = useState<StateSnapshot[]>([]);
-  const [currentStep, setCurrentStep] = useState(0);
+export function useTrace(): UseTraceReturn {
+  const [steps, setSteps] = useState<Step[]>(NO_STEPS);
+  const [index, setIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<PlaybackSpeed>(1);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
-  // Check reduced motion preference
-  const prefersReducedMotion =
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const totalSteps = snapshots.length;
-  const currentSnapshot = totalSteps > 0 ? (snapshots[currentStep] ?? null) : null;
-  const previousSnapshot =
-    totalSteps > 0 && currentStep > 0 ? (snapshots[currentStep - 1] ?? null) : null;
-  const hasData = totalSteps > 0;
+  const stepCount = steps.length;
+  const currentStep = steps[index] ?? null;
 
   const stopInterval = useCallback((): void => {
     if (intervalRef.current !== null) {
@@ -79,17 +74,16 @@ export function useTimeline(): UseTimelineReturn {
   }, []);
 
   const goToStep = useCallback(
-    (step: number): void => {
-      const clamped = Math.max(0, Math.min(step, totalSteps - 1));
-      setCurrentStep(clamped);
+    (target: number): void => {
+      setIndex(Math.max(0, Math.min(target, stepCount - 1)));
     },
-    [totalSteps]
+    [stepCount]
   );
 
   const nextStep = useCallback((): void => {
-    setCurrentStep((prev) => {
+    setIndex((prev) => {
       const next = prev + 1;
-      if (next >= totalSteps) {
+      if (next >= stepCount) {
         // Stop playing at end
         setIsPlaying(false);
         stopInterval();
@@ -97,29 +91,29 @@ export function useTimeline(): UseTimelineReturn {
       }
       return next;
     });
-  }, [totalSteps, stopInterval]);
+  }, [stepCount, stopInterval]);
 
   const prevStep = useCallback((): void => {
-    setCurrentStep((prev) => Math.max(0, prev - 1));
+    setIndex((prev) => Math.max(0, prev - 1));
   }, []);
 
   const firstStep = useCallback((): void => {
-    setCurrentStep(0);
+    setIndex(0);
   }, []);
 
   const lastStep = useCallback((): void => {
-    setCurrentStep(Math.max(0, totalSteps - 1));
-  }, [totalSteps]);
+    setIndex(Math.max(0, stepCount - 1));
+  }, [stepCount]);
 
   const play = useCallback((): void => {
-    if (totalSteps === 0) return;
+    if (stepCount === 0) return;
     if (prefersReducedMotion) {
       // With reduced motion, just go to the last step
       lastStep();
       return;
     }
     setIsPlaying(true);
-  }, [totalSteps, prefersReducedMotion, lastStep]);
+  }, [stepCount, prefersReducedMotion, lastStep]);
 
   const pause = useCallback((): void => {
     setIsPlaying(false);
@@ -128,16 +122,16 @@ export function useTimeline(): UseTimelineReturn {
 
   // Auto-play effect
   useEffect(() => {
-    if (!isPlaying || totalSteps === 0) {
+    if (!isPlaying || stepCount === 0) {
       stopInterval();
       return;
     }
 
     const interval = BASE_INTERVAL_MS / speed;
     intervalRef.current = setInterval(() => {
-      setCurrentStep((prev) => {
+      setIndex((prev) => {
         const next = prev + 1;
-        if (next >= totalSteps) {
+        if (next >= stepCount) {
           setIsPlaying(false);
           return prev;
         }
@@ -146,21 +140,14 @@ export function useTimeline(): UseTimelineReturn {
     }, interval);
 
     return stopInterval;
-  }, [isPlaying, speed, totalSteps, stopInterval]);
+  }, [isPlaying, speed, stepCount, stopInterval]);
 
-  // Stop playing when isPlaying becomes false
-  useEffect(() => {
-    if (!isPlaying) {
-      stopInterval();
-    }
-  }, [isPlaying, stopInterval]);
-
-  const loadSnapshots = useCallback(
-    (newSnapshots: StateSnapshot[]): void => {
+  const loadTrace = useCallback(
+    (trace: Trace): void => {
       stopInterval();
       setIsPlaying(false);
-      setSnapshots(newSnapshots);
-      setCurrentStep(0);
+      setSteps(trace.steps);
+      setIndex(0);
     },
     [stopInterval]
   );
@@ -168,15 +155,15 @@ export function useTimeline(): UseTimelineReturn {
   const clear = useCallback((): void => {
     stopInterval();
     setIsPlaying(false);
-    setSnapshots([]);
-    setCurrentStep(0);
+    setSteps(NO_STEPS);
+    setIndex(0);
   }, [stopInterval]);
 
   return {
+    steps,
+    index,
+    stepCount,
     currentStep,
-    totalSteps,
-    currentSnapshot,
-    previousSnapshot,
     goToStep,
     nextStep,
     prevStep,
@@ -187,8 +174,7 @@ export function useTimeline(): UseTimelineReturn {
     isPlaying,
     speed,
     setSpeed,
-    loadSnapshots,
+    loadTrace,
     clear,
-    hasData,
   };
 }

@@ -15,7 +15,7 @@ export const examples: Example[] = [
     label: 'Event Loop Demo',
     description: 'Async execution order with setTimeout and Promises',
     language: 'javascript',
-    suggestedLens: 'event-loop',
+    suggestedLens: 'none',
     code: `// Event Loop Demo
 // Watch how tasks are scheduled in the event loop
 
@@ -41,7 +41,7 @@ console.log("1.5 — Synchronous (still main script)");
     label: 'Binary Search Tree',
     description: 'BST insertion and in-order traversal',
     language: 'javascript',
-    suggestedLens: 'data-structure',
+    suggestedLens: 'stack-heap',
     code: `// Binary Search Tree
 class TreeNode {
   constructor(val) {
@@ -81,7 +81,7 @@ console.log("In-order:", inorder(root));
     label: 'Promise Chain',
     description: 'Promise chaining with error handling',
     language: 'typescript',
-    suggestedLens: 'event-loop',
+    suggestedLens: 'none',
     code: `// Promise Chain with Error Handling
 
 function fetchUser(id: number): Promise<{ name: string; age: number }> {
@@ -118,7 +118,7 @@ fetchUser(1)
     label: 'Bubble Sort',
     description: 'Step-by-step bubble sort visualization',
     language: 'javascript',
-    suggestedLens: 'data-structure',
+    suggestedLens: 'stack-heap',
     code: `// Bubble Sort — step by step
 const arr = [64, 34, 25, 12, 22, 11, 90];
 console.log("Initial:", [...arr]);
@@ -144,7 +144,7 @@ console.log("Sorted:", arr);
     label: 'Closures & Scope',
     description: 'How closures capture variables',
     language: 'javascript',
-    suggestedLens: 'heap-stack',
+    suggestedLens: 'stack-heap',
     code: `// Closures & Scope
 function makeCounter(start) {
   let count = start;
@@ -176,7 +176,7 @@ console.log("Counter 2:", counter2.getCount());
     label: 'Python Collections',
     description: 'Lists, dicts, and comprehensions',
     language: 'python',
-    suggestedLens: 'data-structure',
+    suggestedLens: 'stack-heap',
     code: `# Python Collections
 # Lists, dictionaries, and comprehensions
 
@@ -210,7 +210,7 @@ for row in matrix:
     label: 'Linked List',
     description: 'Singly linked list with insertion and traversal',
     language: 'javascript',
-    suggestedLens: 'data-structure',
+    suggestedLens: 'stack-heap',
     code: `// Singly Linked List
 class ListNode {
   constructor(val) {

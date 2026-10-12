@@ -5,11 +5,9 @@ import {
   type PyodideInstance,
   type PyodideLoadingState,
 } from '../services/pyodide-loader';
-import type { ConsoleEntry, ConsoleEntryType, StateSnapshot } from '../types';
-import {
-  wrapPythonCodeWithTrace,
-  parsePythonSnapshots,
-} from '../instrumentation/PythonInstrumenter';
+import type { ConsoleEntry, ConsoleEntryType } from '../types';
+import type { Trace } from '../tracer';
+import { wrapPythonCodeWithTrace, parsePythonSteps } from '../instrumentation/PythonInstrumenter';
 import { isTextContent, enforceEntryLimit, MAX_CONSOLE_ENTRIES } from '../utils/sanitize';
 
 /** Maximum allowed code length (50 KB) */
@@ -24,7 +22,8 @@ const MIN_EXECUTION_INTERVAL_MS = 1_000;
 /** Result returned directly from run functions for immediate use by the caller */
 export interface PyodideExecuteResult {
   error: string | null;
-  snapshots: StateSnapshot[];
+  /** The trace of a traced run, otherwise null */
+  trace: Trace | null;
 }
 
 interface UsePyodideReturn {
@@ -46,10 +45,6 @@ interface UsePyodideReturn {
   error: string | null;
   /** Pre-load Pyodide (e.g., on hover) */
   preload: () => void;
-  /** Timeline snapshots from the last instrumented execution */
-  snapshots: StateSnapshot[];
-  /** Clear the snapshots */
-  clearSnapshots: () => void;
 }
 
 /**
@@ -64,16 +59,11 @@ export function usePyodide(): UsePyodideReturn {
   const [entries, setEntries] = useState<ConsoleEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const instanceRef = useRef<PyodideInstance | null>(null);
-  const [snapshots, setSnapshots] = useState<StateSnapshot[]>([]);
   const lastExecutionRef = useRef<number>(0);
 
   const clearEntries = useCallback((): void => {
     setEntries([]);
     setError(null);
-  }, []);
-
-  const clearSnapshots = useCallback((): void => {
-    setSnapshots([]);
   }, []);
 
   const ensureLoaded = useCallback(async (): Promise<PyodideInstance> => {
@@ -117,14 +107,14 @@ export function usePyodide(): UsePyodideReturn {
             },
           ])
         );
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Input validation: reject binary content
       if (!isTextContent(code)) {
         const msg = 'Code contains binary content and cannot be executed';
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Rate limiting: max 1 execution per second
@@ -132,7 +122,7 @@ export function usePyodide(): UsePyodideReturn {
       if (now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS) {
         const msg = 'Please wait before running again';
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
       lastExecutionRef.current = now;
 
@@ -208,7 +198,7 @@ del _mod_name, _BlockedModule
         await Promise.race([pyodide.runPythonAsync(code), timeoutPromise]);
 
         setEntries((prev) => enforceEntryLimit([...prev, ...newEntries]));
-        return { error: null, snapshots: [] };
+        return { error: null, trace: null };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown Python execution error';
         setError(message);
@@ -223,7 +213,7 @@ del _mod_name, _BlockedModule
             },
           ])
         );
-        return { error: message, snapshots: [] };
+        return { error: message, trace: null };
       } finally {
         setIsRunning(false);
       }
@@ -237,14 +227,14 @@ del _mod_name, _BlockedModule
       if (code.length > MAX_CODE_LENGTH) {
         const msg = `Code exceeds maximum length (${MAX_CODE_LENGTH / 1024} KB)`;
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Input validation: reject binary content
       if (!isTextContent(code)) {
         const msg = 'Code contains binary content and cannot be executed';
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
 
       // Rate limiting: max 1 execution per second
@@ -252,13 +242,12 @@ del _mod_name, _BlockedModule
       if (now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS) {
         const msg = 'Please wait before running again';
         setError(msg);
-        return { error: msg, snapshots: [] };
+        return { error: msg, trace: null };
       }
       lastExecutionRef.current = now;
 
       setIsRunning(true);
       setError(null);
-      setSnapshots([]);
 
       try {
         const pyodide = await ensureLoaded();
@@ -325,16 +314,12 @@ del _mod_name, _BlockedModule
 
         await Promise.race([pyodide.runPythonAsync(instrumentedCode), timeoutPromise]);
 
-        // Retrieve the snapshots from the Python global
+        // Retrieve what the trace function recorded from the Python global
         const resultJson = pyodide.globals.get('_instrumentation_result') as string;
-        let resultSnapshots: StateSnapshot[] = [];
-        if (resultJson) {
-          resultSnapshots = parsePythonSnapshots(resultJson);
-          setSnapshots(resultSnapshots);
-        }
+        const steps = resultJson ? parsePythonSteps(resultJson) : [];
 
         setEntries((prev) => enforceEntryLimit([...prev, ...newEntries]));
-        return { error: null, snapshots: resultSnapshots };
+        return { error: null, trace: { steps, outcome: 'completed' } };
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown Python execution error';
         setError(message);
@@ -349,7 +334,7 @@ del _mod_name, _BlockedModule
             },
           ])
         );
-        return { error: message, snapshots: [] };
+        return { error: message, trace: null };
       } finally {
         setIsRunning(false);
       }
@@ -367,7 +352,5 @@ del _mod_name, _BlockedModule
     clearEntries,
     error,
     preload,
-    snapshots,
-    clearSnapshots,
   };
 }

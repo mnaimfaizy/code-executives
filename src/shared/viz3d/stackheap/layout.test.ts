@@ -4,7 +4,17 @@ import { getReferences, type HeapKind, type StackFrame } from '../../snapshot';
 import type { Box3 } from '../../components/viz/viewerCamera';
 import type { PlacedSnapshot } from '../../components/viz/stackheap/types';
 import { boundsOf } from '../frameShot';
-import { entityBox, frameBox, layoutFor, layoutOf, refArc } from './layout';
+import {
+  FRAME_ROW_SLOTS,
+  FRAME_SLOT_LINES,
+  FRAME_SLOT_LINES_DEEP,
+  entityBox,
+  frameBox,
+  frameLabelPlan,
+  layoutFor,
+  layoutOf,
+  refArc,
+} from './layout';
 
 const contains = ([omin, omax]: Box3, [imin, imax]: Box3) =>
   [0, 1, 2].every((i) => imin[i] >= omin[i] - 1e-9 && imax[i] <= omax[i] + 1e-9);
@@ -92,6 +102,14 @@ describe('stack-and-heap layout', () => {
     expect(layout.shots.heap.boxes).toEqual([layout.objects]);
   });
 
+  it('widens the columns of a two-column floor once it has a third row', () => {
+    // Three rows lower the zoom: at the story's pitch two labels in a row would meet.
+    expect(layoutOf({ cols: 2, rows: 3 }, 1).pitch.x).toBe(
+      layoutOf({ cols: 3, rows: 3 }, 1).pitch.x
+    );
+    expect(layoutOf({ cols: 2, rows: 2 }, 5).pitch).toEqual({ x: 3.6, z: 3.6 });
+  });
+
   it('keeps a 3×3 heap with 5 frames apart and inside the overview shot', () => {
     const layout = layoutFor(big);
     const frames = big.frames.map((_, i) => frameBox(i));
@@ -111,6 +129,55 @@ describe('stack-and-heap layout', () => {
     }
     for (const box of frames) expect(contains(layout.shots.stack.boxes[0], box)).toBe(true);
     for (const box of entities) expect(contains(layout.shots.heap.boxes[0], box)).toBe(true);
+  });
+
+  describe('frameLabelPlan', () => {
+    it('keeps the one-row label for every frame of the Stack ↔ Heap story', () => {
+      for (const beat of STORY_BEATS)
+        beat.frames.forEach((f, i) => {
+          expect(f.slots.length, `${beat.id} ${f.id}`).toBeLessThanOrEqual(FRAME_ROW_SLOTS);
+          expect(frameLabelPlan(i, beat.frames.length, f.slots.length)).toEqual({
+            stacked: false,
+            cut: false,
+          });
+        });
+    });
+
+    it('lists the slots of the bottom frame downward and of the top frame upward', () => {
+      expect(frameLabelPlan(0, 1, 3)).toEqual({
+        stacked: true,
+        grow: 'down',
+        slots: [0, 1, 2],
+        more: 0,
+      });
+      expect(frameLabelPlan(2, 3, 6)).toMatchObject({ stacked: true, grow: 'up', more: 0 });
+      // Between them a label has one pitch of height: one line, cut.
+      expect(frameLabelPlan(1, 3, 6)).toEqual({ stacked: false, cut: true });
+    });
+
+    it('caps the list, the "+N more" line included', () => {
+      for (const slotCount of [7, 10, 20]) {
+        const plan = frameLabelPlan(0, 5, slotCount);
+        if (!plan.stacked) throw new Error('expected a stacked label');
+        expect(plan.slots).toEqual([0, 1, 2, 3, 4]);
+        expect(plan.slots.length + 1).toBe(FRAME_SLOT_LINES);
+        expect(plan.more).toBe(slotCount - 5);
+      }
+      expect(frameLabelPlan(0, 5, FRAME_SLOT_LINES)).toMatchObject({ more: 0 });
+    });
+
+    it('gives the top frame of a deep stack fewer lines', () => {
+      const plan = frameLabelPlan(4, 5, 10);
+      if (!plan.stacked) throw new Error('expected a stacked label');
+      expect(plan.grow).toBe('up');
+      expect(plan.slots.length + 1).toBe(FRAME_SLOT_LINES_DEEP);
+      expect(plan.more).toBe(10 - plan.slots.length);
+    });
+
+    it('never leaves a focused slot out of a capped list', () => {
+      const plan = frameLabelPlan(0, 1, 10, (i) => i === 9 || i === 1);
+      expect(plan).toMatchObject({ slots: [0, 1, 2, 3, 9], more: 5 });
+    });
   });
 
   describe('refArc', () => {

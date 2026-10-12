@@ -1,35 +1,29 @@
 import { describe, it, expect } from 'vitest';
-import { mapSnapshotLines } from './useSandbox';
-import type { StateSnapshot } from '../types';
+import { mapTraceLines } from './useSandbox';
+import { traceSync } from '../tracer';
 
-function makeSnapshot(line: number, frameLines: number[]): StateSnapshot {
-  return {
-    step: 0,
-    line,
-    timestamp: 0,
-    callStack: frameLines.map((frameLine) => ({ functionName: 'f', line: frameLine })),
-    variables: [],
-    heapObjects: [],
-    microtaskQueue: [],
-    macrotaskQueue: [],
-    consoleOutput: [],
-  };
-}
+describe('mapTraceLines', () => {
+  it('maps the line of each step and of the error', () => {
+    const trace = traceSync('const a = 1;\nnull.x;');
+    expect(trace.outcome).toBe('error');
+    const mapped = mapTraceLines(trace, (line) => line + 10);
 
-describe('mapSnapshotLines', () => {
-  it('maps the line of each step and of each call stack frame', () => {
-    const snapshots = [makeSnapshot(2, []), makeSnapshot(5, [4, 9])];
-    const mapped = mapSnapshotLines(snapshots, (line) => line + 10);
-
-    expect(mapped.map((snapshot) => snapshot.line)).toEqual([12, 15]);
-    expect(mapped[1].callStack.map((frame) => frame.line)).toEqual([14, 19]);
+    expect(mapped.steps.map((step) => step.line)).toEqual(
+      trace.steps.map((step) => step.line + 10)
+    );
+    expect(mapped.error).toEqual({ message: trace.error?.message, line: 12 });
+    expect(mapped.outcome).toBe('error');
   });
 
-  it('leaves the snapshots it was given unchanged', () => {
-    const snapshots = [makeSnapshot(2, [1])];
-    mapSnapshotLines(snapshots, () => 99);
+  it('keeps each snapshot and leaves the trace it was given unchanged', () => {
+    const trace = traceSync('const a = [1];\nconst b = a;');
+    const lines = trace.steps.map((step) => step.line);
+    const mapped = mapTraceLines(trace, () => 99);
 
-    expect(snapshots[0].line).toBe(2);
-    expect(snapshots[0].callStack[0].line).toBe(1);
+    expect(trace.steps.map((step) => step.line)).toEqual(lines);
+    expect(mapped.steps.map((step) => step.snapshot)).toEqual(
+      trace.steps.map((step) => step.snapshot)
+    );
+    expect(mapped.error).toBeUndefined();
   });
 });

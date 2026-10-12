@@ -1,6 +1,6 @@
 /**
- * TimelinePlayer — Timeline slider, playback controls, speed selector,
- * variables panel, and call stack panel.
+ * StepControls — Step slider, playback controls, speed selector, and a compact
+ * panel of the current step's snapshot: the top frame's slots and the call stack.
  *
  * Keyboard shortcuts:
  * - Left/Right arrows: step backward/forward
@@ -20,25 +20,24 @@ import {
   Layers,
   Variable,
 } from 'lucide-react';
-import type { StateSnapshot, CapturedVariable, StackFrame } from '../../types';
-import type { PlaybackSpeed } from '../../hooks/useTimeline';
-import { diffSnapshots, formatValue } from '../../instrumentation/StateSnapshot';
+import { slotKey } from '../../../../shared/snapshot';
+import type { Slot, Snapshot, StackFrame } from '../../../../shared/snapshot';
+import type { Step } from '../../tracer';
+import type { PlaybackSpeed } from '../../hooks/useTrace';
 
-interface TimelinePlayerProps {
-  /** Current step index */
-  currentStep: number;
-  /** Total number of steps */
-  totalSteps: number;
-  /** Current snapshot data */
-  currentSnapshot: StateSnapshot | null;
-  /** Previous snapshot (for diff highlighting) */
-  previousSnapshot: StateSnapshot | null;
+interface StepControlsProps {
+  /** Index of the current step */
+  index: number;
+  /** Number of steps in the trace */
+  stepCount: number;
+  /** The current step */
+  step: Step | null;
   /** Whether auto-play is active */
   isPlaying: boolean;
   /** Current playback speed */
   speed: PlaybackSpeed;
   /** Go to a specific step */
-  onGoToStep: (step: number) => void;
+  onGoToStep: (index: number) => void;
   /** Next step */
   onNextStep: () => void;
   /** Previous step */
@@ -53,15 +52,19 @@ interface TimelinePlayerProps {
   onPause: () => void;
   /** Set playback speed */
   onSetSpeed: (speed: PlaybackSpeed) => void;
+  /**
+   * Leave out the top frame and call stack. Set while a lens is drawing the step,
+   * because the lens shows the same frames and needs the height.
+   */
+  compact?: boolean;
 }
 
 const SPEED_OPTIONS: PlaybackSpeed[] = [0.5, 1, 2, 4];
 
-const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
-  currentStep,
-  totalSteps,
-  currentSnapshot,
-  previousSnapshot,
+const StepControls: React.FC<StepControlsProps> = ({
+  index,
+  stepCount,
+  step,
   isPlaying,
   speed,
   onGoToStep,
@@ -72,9 +75,8 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
   onPlay,
   onPause,
   onSetSpeed,
+  compact = false,
 }) => {
-  const diff = currentSnapshot ? diffSnapshots(previousSnapshot, currentSnapshot) : null;
-
   // Keyboard shortcuts (Arrow, Space, Home, End) are handled globally
   // by PlaygroundApp to avoid duplicate listeners that conflict with
   // Monaco editor input.
@@ -86,7 +88,7 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
     [onGoToStep]
   );
 
-  if (totalSteps === 0) {
+  if (stepCount === 0) {
     return (
       <div
         className="flex flex-col items-center justify-center h-full p-4"
@@ -101,7 +103,7 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
 
   return (
     <div className="flex flex-col h-full overflow-hidden" role="region" aria-label="Steps">
-      {/* Timeline slider + controls */}
+      {/* Step slider + controls */}
       <div
         className="px-3 py-2 shrink-0"
         style={{
@@ -115,14 +117,14 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
             className="text-xs font-medium"
             style={{ color: 'var(--pg-text-secondary)', fontFamily: 'var(--pg-font-mono)' }}
           >
-            Step {currentStep + 1} of {totalSteps}
+            Step {index + 1} of {stepCount}
           </span>
-          {currentSnapshot && (
+          {step && (
             <span
               className="text-xs"
               style={{ color: 'var(--pg-text-muted)', fontFamily: 'var(--pg-font-mono)' }}
             >
-              Line {currentSnapshot.line}
+              Line {step.line}
             </span>
           )}
         </div>
@@ -131,23 +133,23 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
         <input
           type="range"
           min={0}
-          max={totalSteps - 1}
-          value={currentStep}
+          max={stepCount - 1}
+          value={index}
           onChange={handleSliderChange}
           className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
           style={{
             accentColor: 'var(--pg-accent-blue)',
             background: 'var(--pg-bg-panel)',
           }}
-          aria-label={`Step ${currentStep + 1} of ${totalSteps}`}
+          aria-label={`Step ${index + 1} of ${stepCount}`}
         />
 
         {/* Playback buttons */}
         <div className="flex items-center justify-center gap-1 mt-1.5">
-          <IconButton onClick={onFirstStep} label="First step" disabled={currentStep === 0}>
+          <IconButton onClick={onFirstStep} label="First step" disabled={index === 0}>
             <SkipBack size={14} />
           </IconButton>
-          <IconButton onClick={onPrevStep} label="Previous step" disabled={currentStep === 0}>
+          <IconButton onClick={onPrevStep} label="Previous step" disabled={index === 0}>
             <ChevronLeft size={14} />
           </IconButton>
           <IconButton
@@ -157,18 +159,10 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
           >
             {isPlaying ? <Pause size={14} /> : <Play size={14} />}
           </IconButton>
-          <IconButton
-            onClick={onNextStep}
-            label="Next step"
-            disabled={currentStep >= totalSteps - 1}
-          >
+          <IconButton onClick={onNextStep} label="Next step" disabled={index >= stepCount - 1}>
             <ChevronRight size={14} />
           </IconButton>
-          <IconButton
-            onClick={onLastStep}
-            label="Last step"
-            disabled={currentStep >= totalSteps - 1}
-          >
+          <IconButton onClick={onLastStep} label="Last step" disabled={index >= stepCount - 1}>
             <SkipForward size={14} />
           </IconButton>
 
@@ -197,18 +191,13 @@ const TimelinePlayer: React.FC<TimelinePlayerProps> = ({
         </div>
       </div>
 
-      {/* Variables and call stack panels */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {/* Variables panel */}
-        <VariablesPanel
-          variables={currentSnapshot?.variables ?? []}
-          changedNames={new Set(diff?.changedVars.map((v) => v.name) ?? [])}
-          addedNames={new Set(diff?.addedVars.map((v) => v.name) ?? [])}
-        />
-
-        {/* Call stack panel */}
-        <CallStackPanel callStack={currentSnapshot?.callStack ?? []} />
-      </div>
+      {/* The step's snapshot: top frame and call stack */}
+      {step && !compact && (
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <TopFramePanel snapshot={step.snapshot} focus={step.focus} />
+          <CallStackPanel frames={step.snapshot.frames} />
+        </div>
+      )}
     </div>
   );
 };
@@ -249,16 +238,26 @@ function IconButton({
   );
 }
 
-/** Panel showing current variable values */
-function VariablesPanel({
-  variables,
-  changedNames,
-  addedNames,
+/** What a slot shows: its value, or an arrow to the entity it references */
+function slotText(slot: Slot, snapshot: Snapshot): string {
+  if (slot.refId === undefined) return slot.value ?? '';
+  const target =
+    snapshot.objects.find((object) => object.id === slot.refId)?.label ??
+    snapshot.frames.find((frame) => frame.id === slot.refId)?.name;
+  return `→ ${target ?? '?'}`;
+}
+
+/** Panel showing the slots of the frame on top of the stack */
+function TopFramePanel({
+  snapshot,
+  focus,
 }: {
-  variables: CapturedVariable[];
-  changedNames: Set<string>;
-  addedNames: Set<string>;
+  snapshot: Snapshot;
+  focus: string[];
 }): React.ReactElement {
+  const frame = snapshot.frames[snapshot.frames.length - 1];
+  const slots = frame?.slots ?? [];
+
   return (
     <div className="px-3 py-2" style={{ borderBottom: '1px solid var(--pg-border)' }}>
       <div className="flex items-center gap-1.5 mb-1.5">
@@ -267,60 +266,47 @@ function VariablesPanel({
           className="text-xs font-semibold uppercase tracking-wider"
           style={{ color: 'var(--pg-text-muted)' }}
         >
-          Variables
+          Top Frame
         </span>
-        <span
-          className="text-xs"
-          style={{ color: 'var(--pg-text-muted)', fontFamily: 'var(--pg-font-mono)' }}
-        >
-          ({variables.length})
-        </span>
+        {frame && (
+          <span
+            className="text-xs"
+            style={{ color: 'var(--pg-text-muted)', fontFamily: 'var(--pg-font-mono)' }}
+          >
+            {frame.name}
+          </span>
+        )}
       </div>
 
-      {variables.length === 0 ? (
+      {slots.length === 0 ? (
         <span className="text-xs" style={{ color: 'var(--pg-text-muted)' }}>
-          No variables in scope
+          No slots in this frame
         </span>
       ) : (
         <div className="space-y-0.5">
-          {variables.map((v) => {
-            const isChanged = changedNames.has(v.name);
-            const isNew = addedNames.has(v.name);
+          {slots.map((slot) => {
+            const isChanged = focus.includes(slotKey(frame.id, slot.name));
 
             return (
               <div
-                key={v.name}
+                key={slot.name}
+                data-changed={isChanged ? 'true' : undefined}
                 className="flex items-start gap-2 text-xs rounded px-1.5 py-0.5"
                 style={{
-                  background: isNew
-                    ? 'rgba(34, 197, 94, 0.1)'
-                    : isChanged
-                      ? 'rgba(59, 130, 246, 0.1)'
-                      : 'transparent',
+                  background: isChanged ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
                   fontFamily: 'var(--pg-font-mono)',
                 }}
               >
                 <span
                   className="shrink-0 font-medium"
                   style={{
-                    color: isNew
-                      ? 'var(--pg-accent-green)'
-                      : isChanged
-                        ? 'var(--pg-accent-blue)'
-                        : 'var(--pg-text-primary)',
+                    color: isChanged ? 'var(--pg-accent-blue)' : 'var(--pg-text-primary)',
                   }}
                 >
-                  {v.name}
+                  {slot.name}
                 </span>
-                <span style={{ color: 'var(--pg-text-muted)' }}>=</span>
                 <span className="break-all" style={{ color: 'var(--pg-text-secondary)' }}>
-                  {formatValue(v.value)}
-                </span>
-                <span
-                  className="shrink-0 ml-auto"
-                  style={{ color: 'var(--pg-text-muted)', fontSize: '10px' }}
-                >
-                  {v.type}
+                  {slotText(slot, snapshot)}
                 </span>
               </div>
             );
@@ -331,8 +317,8 @@ function VariablesPanel({
   );
 }
 
-/** Panel showing the current call stack */
-function CallStackPanel({ callStack }: { callStack: StackFrame[] }): React.ReactElement {
+/** Panel showing the call stack, top frame first */
+function CallStackPanel({ frames }: { frames: StackFrame[] }): React.ReactElement {
   return (
     <div className="px-3 py-2">
       <div className="flex items-center gap-1.5 mb-1.5">
@@ -347,40 +333,27 @@ function CallStackPanel({ callStack }: { callStack: StackFrame[] }): React.React
           className="text-xs"
           style={{ color: 'var(--pg-text-muted)', fontFamily: 'var(--pg-font-mono)' }}
         >
-          ({callStack.length})
+          ({frames.length})
         </span>
       </div>
 
-      {callStack.length === 0 ? (
-        <span className="text-xs" style={{ color: 'var(--pg-text-muted)' }}>
-          (global scope)
-        </span>
-      ) : (
-        <div className="space-y-0.5">
-          {[...callStack].reverse().map((frame, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-2 text-xs rounded px-1.5 py-0.5"
-              style={{
-                background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
-                fontFamily: 'var(--pg-font-mono)',
-              }}
-            >
-              <span
-                className="font-medium"
-                style={{
-                  color: idx === 0 ? 'var(--pg-accent-purple)' : 'var(--pg-text-primary)',
-                }}
-              >
-                {frame.functionName}
-              </span>
-              <span style={{ color: 'var(--pg-text-muted)' }}>:L{frame.line}</span>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="space-y-0.5">
+        {[...frames].reverse().map((frame, idx) => (
+          <div
+            key={frame.id}
+            className="text-xs rounded px-1.5 py-0.5 font-medium"
+            style={{
+              background: idx === 0 ? 'rgba(168, 85, 247, 0.1)' : 'transparent',
+              color: idx === 0 ? 'var(--pg-accent-purple)' : 'var(--pg-text-primary)',
+              fontFamily: 'var(--pg-font-mono)',
+            }}
+          >
+            {frame.name}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-export default TimelinePlayer;
+export default StepControls;
