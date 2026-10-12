@@ -84,7 +84,7 @@ describe('Progress page', () => {
 
     // A quiz milestone says it was not taken, with a link to that module's quiz
     const quiz = row(QUIZ.id);
-    expect(quiz).toHaveTextContent('Not taken yet.');
+    expect(quiz).toHaveTextContent('No completed attempt yet.');
     expect(within(quiz).getByRole('link', { name: /^Take the .+ quiz$/ })).toHaveAttribute(
       'href',
       `/${QUIZ_MODULE}?section=Quiz`
@@ -210,7 +210,7 @@ describe('Progress page', () => {
 
     it('says a quiz was not taken in its module', () => {
       renderPage();
-      expect(screen.getByTestId(`module-${QUIZ_MODULE}`)).toHaveTextContent('Quiz: Not taken yet.');
+      expect(screen.getByTestId(`module-${QUIZ_MODULE}`)).toHaveTextContent('Quiz: No completed attempt yet.');
     });
   });
 
@@ -288,7 +288,7 @@ describe('Progress page', () => {
       expect(screen.getByRole('button', { name: /^Clear my progress/ })).toHaveFocus();
       expect(screen.queryByText(/^Reached/)).toBeNull();
       expect(row(MODULE.id)).toHaveTextContent(`0 of ${MODULE_IDS.length} passed`);
-      expect(row(QUIZ.id)).toHaveTextContent('Not taken yet.');
+      expect(row(QUIZ.id)).toHaveTextContent('No completed attempt yet.');
 
       expect(loadProgress()).toEqual({ [MODULE_IDS[0]]: { code: '// mine' } });
       expect(readStoredProgressRecord()).toEqual(emptyProgressRecord());

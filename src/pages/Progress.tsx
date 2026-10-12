@@ -114,7 +114,7 @@ const MilestoneRow: React.FC<{ milestone: Milestone; status: MilestoneStatus }> 
           <p className="mt-1">
             {status.bestQuiz
               ? `Best score so far: ${status.bestQuiz.scorePercentage}%.`
-              : 'Not taken yet.'}{' '}
+              : 'No completed attempt yet.'}{' '}
             {status.quizHref && (
               <Link to={status.quizHref} className={linkClass}>
                 {quizLinkText(milestone)}
@@ -174,7 +174,7 @@ const ModuleRow: React.FC<{ entry: ModuleProgress }> = ({ entry: module }) => (
             <Day iso={module.bestQuiz.completedAt} />.
           </>
         ) : (
-          'Not taken yet.'
+          'No completed attempt yet.'
         )}{' '}
         {module.quizHref && (
           <Link to={module.quizHref} className={linkClass}>
