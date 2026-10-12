@@ -126,6 +126,15 @@ describe('getReachable', () => {
     expect(getReachable(snapshot)).toEqual(new Set(['fn', 'x']));
   });
 
+  it('reaches from the extra roots when no frame is left', () => {
+    const snapshot: Snapshot = {
+      frames: [],
+      objects: [object('scope', [{ name: 'list', refId: 'list' }]), object('list'), object('lost')],
+      roots: ['scope', 'nothing'],
+    };
+    expect([...getReachable(snapshot)].sort()).toEqual(['list', 'scope']);
+  });
+
   it('ignores a refId that matches nothing', () => {
     const snapshot: Snapshot = {
       frames: [

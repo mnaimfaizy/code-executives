@@ -4,6 +4,8 @@ export type {
   HeapObject,
   HeapState,
   Placed,
+  QueueEntry,
+  QueueSource,
   Reference,
   Slot,
   Snapshot,

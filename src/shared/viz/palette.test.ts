@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { ENTITY_ROLES, vizPalette, type EntityRole, type VizTheme } from './palette';
+import {
+  ENTITY_ROLES as HEAP_AND_STACK_ROLES,
+  QUEUE_ROLES,
+  vizPalette,
+  type EntityRole,
+  type QueueRole,
+  type VizTheme,
+} from './palette';
+
+/** Every role drawn as an entity: the stack and heap ones, and the event loop's entries. */
+const ENTITY_ROLES: readonly (EntityRole | QueueRole)[] = [...HEAP_AND_STACK_ROLES, ...QUEUE_ROLES];
 
 const THEMES: VizTheme[] = ['light', 'dark'];
 
@@ -40,7 +50,7 @@ const GRAPHIC_MIN = 3;
  * change how the stories look), so light asserts today's measured value for them instead.
  * Do not add to this list: a new colour meets the threshold.
  */
-const LIGHT_STROKE_FLOOR: Partial<Record<EntityRole, number>> = {
+const LIGHT_STROKE_FLOOR: Partial<Record<EntityRole | QueueRole, number>> = {
   object: 2.42, // #10b981 on #f8fafc
   array: 2.64, // #0ea5e9 on #f8fafc
 };
@@ -76,13 +86,33 @@ describe('vizPalette', () => {
       }
     });
 
+    it('keeps the queue entries to the threshold, with no pinned exception', () => {
+      for (const role of QUEUE_ROLES) {
+        expect(LIGHT_STROKE_FLOOR[role], role).toBeUndefined();
+        // A card's outline is also read against its own fill.
+        expect(contrast(p[role].stroke, p[role].fill), role).toBeGreaterThanOrEqual(GRAPHIC_MIN);
+        expect(contrast(p.text.secondary, p[role].fill), role).toBeGreaterThanOrEqual(TEXT_MIN);
+        // Focus and the collector's root are amber: no entry may be mistaken for either.
+        for (const key of ['fill', 'stroke', 'solid'] as const) {
+          expect(p[role][key], `${role}.${key}`).not.toBe(p.focus);
+          expect(p[role][key], `${role}.${key}`).not.toBe(p.root);
+        }
+      }
+    });
+
+    it('keeps the region captions readable on the region', () => {
+      expect(contrast(p.region.label, p.region.fill)).toBeGreaterThanOrEqual(TEXT_MIN);
+      expect(contrast(p.region.note, p.region.fill)).toBeGreaterThanOrEqual(TEXT_MIN);
+      expect(p.region.note).not.toBe(p.region.label);
+    });
+
     it('keeps focus visible against the surface', () => {
       const min = theme === 'light' ? LIGHT_FOCUS_FLOOR : GRAPHIC_MIN;
       expect(contrast(p.focus, p.surface)).toBeGreaterThanOrEqual(min);
     });
 
-    it('gives every entity role its own fill and its own solid', () => {
-      for (const key of ['fill', 'solid'] as const) {
+    it('gives every entity role its own fill, its own stroke and its own solid', () => {
+      for (const key of ['fill', 'stroke', 'solid'] as const) {
         const values = ENTITY_ROLES.map((role) => p[role][key]);
         expect(new Set(values).size, key).toBe(values.length);
       }

@@ -15,7 +15,7 @@ export const examples: Example[] = [
     label: 'Event Loop Demo',
     description: 'Async execution order with setTimeout and Promises',
     language: 'javascript',
-    suggestedLens: 'none',
+    suggestedLens: 'stack-queues',
     code: `// Event Loop Demo
 // Watch how tasks are scheduled in the event loop
 
@@ -81,7 +81,7 @@ console.log("In-order:", inorder(root));
     label: 'Promise Chain',
     description: 'Promise chaining with error handling',
     language: 'typescript',
-    suggestedLens: 'none',
+    suggestedLens: 'stack-queues',
     code: `// Promise Chain with Error Handling
 
 function fetchUser(id: number): Promise<{ name: string; age: number }> {

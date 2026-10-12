@@ -534,20 +534,26 @@ console.log('sync end');`;
       'call 7 global',
       'call 7 global > load()',
       'statement 2 global > load()',
+      // `await`: the frame leaves the stack and the rest of `load` joins the microtask queue.
+      'statement 3 global',
       'statement 7 global',
       'statement 8 global',
       'statement 12 global',
-      'statement 3 global > load()',
-      'statement 4 global > load()',
-      'return 5 global > load()',
-      'call 8 global > anonymous()',
-      'statement 9 global > anonymous()',
-      'return 10 global > anonymous()',
+      // The script has ended: the global frame is popped, and what waits finds the stack empty.
+      'return 12 ',
+      'statement 3 load()',
+      'statement 4 load()',
+      'return 5 load()',
+      'call 8 anonymous()',
+      'statement 9 anonymous()',
+      'return 10 anonymous()',
     ]);
-    const resumed = trace.steps.find((step) => step.line === 3)!;
+    const resumed = trace.steps.find(
+      (step) => step.line === 3 && frameNames(step)[0] === 'load()'
+    )!;
     expect(values(follow(resumed, frameOf(resumed, 'load()'), 'user'))).toEqual({ name: "'Ada'" });
     expect(trace.steps.map((step) => step.consoleLength)).toEqual([
-      0, 0, 1, 1, 1, 2, 2, 3, 3, 3, 3, 4,
+      0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 4,
     ]);
   });
 
@@ -566,8 +572,8 @@ risky().then((value) => {
     const trace = run.getTrace();
     expect(trace.outcome).toBe('completed');
     expect(run.console).toEqual(['down', 'done']);
-    expect(frameNames(trace.steps.find((step) => step.line === 5)!)).toEqual(['global', 'risky()']);
-    expect(frameNames(lastStep(trace))).toEqual(['global', "anonymous('done')"]);
+    expect(frameNames(trace.steps.find((step) => step.line === 5)!)).toEqual(['risky()']);
+    expect(frameNames(lastStep(trace))).toEqual(["anonymous('done')"]);
   });
 
   it('ends the trace when a callback the engine runs later throws', async () => {

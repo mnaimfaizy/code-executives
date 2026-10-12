@@ -3,6 +3,7 @@ import type { PlaygroundLanguage, VisualizationLens } from '../../types';
 import type { Step } from '../../tracer';
 
 const StackHeapLens = lazy(() => import('./lenses/StackHeapLens'));
+const StackQueuesLens = lazy(() => import('./lenses/StackQueuesLens'));
 
 interface VisualizationCanvasProps {
   lens: VisualizationLens;
@@ -12,6 +13,8 @@ interface VisualizationCanvasProps {
   index: number;
   /** The language of the run: Python records values only, so its steps have no heap */
   language: PlaygroundLanguage;
+  /** True when the tracer's queue model could not follow the engine for this run */
+  queuesApproximate?: boolean;
 }
 
 const LensLoading: React.FC = () => (
@@ -75,9 +78,10 @@ const VisualizationCanvas: React.FC<VisualizationCanvasProps> = ({
   steps,
   index,
   language,
+  queuesApproximate,
 }) => {
   // Anything but a lens that exists draws nothing, such as the id of a lens that was removed
-  if (lens !== 'stack-heap') {
+  if (lens !== 'stack-heap' && lens !== 'stack-queues') {
     return <NoLensPlaceholder />;
   }
 
@@ -88,7 +92,16 @@ const VisualizationCanvas: React.FC<VisualizationCanvasProps> = ({
   return (
     <div className="h-full w-full">
       <Suspense fallback={<LensLoading />}>
-        <StackHeapLens steps={steps} index={index} heapRecorded={language !== 'python'} />
+        {lens === 'stack-queues' ? (
+          <StackQueuesLens
+            steps={steps}
+            index={index}
+            heapRecorded={language !== 'python'}
+            approximate={queuesApproximate}
+          />
+        ) : (
+          <StackHeapLens steps={steps} index={index} heapRecorded={language !== 'python'} />
+        )}
       </Suspense>
     </div>
   );

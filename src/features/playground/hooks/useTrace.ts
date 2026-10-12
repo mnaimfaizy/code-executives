@@ -17,6 +17,8 @@ interface UseTraceReturn {
   steps: Step[];
   /** Index of the current step */
   index: number;
+  /** True when the tracer's queue model could not follow this run, so the queues are approximate */
+  queuesApproximate: boolean;
   /** Number of steps */
   stepCount: number;
   /** The current step */
@@ -58,6 +60,7 @@ const NO_STEPS: Step[] = [];
 export function useTrace(): UseTraceReturn {
   const [steps, setSteps] = useState<Step[]>(NO_STEPS);
   const [index, setIndex] = useState(0);
+  const [queuesApproximate, setQueuesApproximate] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<PlaybackSpeed>(1);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -147,6 +150,7 @@ export function useTrace(): UseTraceReturn {
       stopInterval();
       setIsPlaying(false);
       setSteps(trace.steps);
+      setQueuesApproximate(trace.queuesApproximate === true);
       setIndex(0);
     },
     [stopInterval]
@@ -156,12 +160,14 @@ export function useTrace(): UseTraceReturn {
     stopInterval();
     setIsPlaying(false);
     setSteps(NO_STEPS);
+    setQueuesApproximate(false);
     setIndex(0);
   }, [stopInterval]);
 
   return {
     steps,
     index,
+    queuesApproximate,
     stepCount,
     currentStep,
     goToStep,

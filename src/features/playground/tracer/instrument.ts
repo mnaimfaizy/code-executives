@@ -5,6 +5,11 @@
  * The program still runs on the browser's own engine (ADR 0004); the calls only report what
  * happens. Each frame and block scope hands the runtime getters, closures that read its
  * variables live, so a snapshot can be taken at any step without copying values around.
+ *
+ * Two things are reshaped so the runtime can model the event loop. The program runs inside a
+ * function whose parameters are the runtime's own timers, `Promise` and clock. And an async
+ * function becomes a plain function that calls an async arrow holding its body, which hands
+ * the runtime the promise the call returns; `length` is 0 for such a function.
  */
 
 import * as acorn from 'acorn';
@@ -14,8 +19,7 @@ import { generate } from 'astring';
 export const TRACER_NAME = '__t';
 
 export type InstrumentResult =
-  | { ok: true; code: string }
-  | { ok: false; error: { message: string; line?: number } };
+  { ok: true; code: string } | { ok: false; error: { message: string; line?: number } };
 
 /**
  * An ESTree node. The rewrite builds and reshapes nodes freely, which the precise acorn types
@@ -34,12 +38,27 @@ interface Context {
   /** The variable holding the innermost scope: a block scope, else the frame. */
   scope: string;
   inFunction: boolean;
+  /** Inside an async function: its `return` values resolve the promise its call returned. */
+  asyncFn?: boolean;
+  /** Inside an async generator: the engine schedules its `yield` where the runtime cannot see. */
+  asyncGen?: boolean;
   className?: string;
   /** A variable name not used before in this program. */
   fresh: () => string;
 }
 
 const T = TRACER_NAME;
+/** The globals a program gets from the runtime, in the order `globals()` returns them. */
+const GLOBALS = [
+  'setTimeout',
+  'setInterval',
+  'clearTimeout',
+  'clearInterval',
+  'queueMicrotask',
+  'Promise',
+  'Date',
+  'performance',
+];
 const SKIP = new Set(['type', 'loc', 'start', 'end']);
 const LOOPS = new Set([
   'ForStatement',
@@ -238,14 +257,46 @@ function transformFunction(node: Node, ctx: Context, name: string, withThis: boo
     ...lexicalNames(statements),
     ...hoistedVars(statements),
   ];
-  const inner: Context = { ...ctx, frame, scope: frame, inFunction: true, className: undefined };
+  const isAsync: boolean = node.async && !node.generator;
+  const promise = isAsync ? ctx.fresh() : '';
+  const inner: Context = {
+    ...ctx,
+    frame,
+    scope: frame,
+    inFunction: true,
+    asyncFn: isAsync,
+    asyncGen: node.async && node.generator,
+    className: undefined,
+  };
   const wrapper = statement(
     `{ let ${frame}; try { ${frame} = ${T}.enter(${JSON.stringify(name)}, ${line}, ` +
-      `${gettersSource(names, withThis)}, ${ctx.scope}, ${shownArguments(node.params)}); }` +
+      `${gettersSource(names, withThis)}, ${ctx.scope}, ${shownArguments(node.params)}` +
+      `${isAsync ? `, ${promise}` : ''}); }` +
       ` catch (__e) { throw ${T}.thrown(__e, ${frame}); } finally { ${T}.leave(${frame}); } }`
   );
   wrapper.body[1].block.body.push(...instrumentList(statements, inner));
-  node.body = block([...directives, ...wrapper.body]);
+  if (!isAsync) {
+    node.body = block([...directives, ...wrapper.body]);
+    return;
+  }
+  // The body moves into an async arrow, which keeps `this`, `arguments` and `super`. The
+  // function around it is no longer async: it returns the arrow's promise, the very one the
+  // engine made, after showing it to the runtime.
+  const isArrow = node.type === 'ArrowFunctionExpression';
+  const args = isArrow ? ctx.fresh() : 'arguments';
+  const returned = statement(`return ${T}.made(${promise}, f(...${args}));`);
+  returned.argument.arguments[1].callee = {
+    type: 'ArrowFunctionExpression',
+    async: true,
+    expression: false,
+    params: node.params,
+    body: block(wrapper.body),
+  };
+  node.async = false;
+  node.params = isArrow
+    ? [{ type: 'RestElement', argument: { type: 'Identifier', name: args } }]
+    : [];
+  node.body = block([...directives, statement(`const ${promise} = ${T}.async();`), returned]);
 }
 
 /** A function expression, wrapped so the runtime learns which scope it was created in. */
@@ -273,10 +324,10 @@ function visitLoop(node: Node, ctx: Context, extra: string[]): Node {
   const turn = statement(`${T}.loop(${lineOf(node)}, ${ctx.frame});`);
   if (node.type === 'ForOfStatement' && node.await) {
     // `for await` waits between turns without an `await` expression to wrap.
-    const waiting = statement(`try {} finally { ${T}.suspend(${ctx.frame}); }`);
+    const waiting = statement(`try {} finally { ${T}.suspend(${ctx.frame}, void 0, true); }`);
     waiting.block.body = inner;
     body.body = [turn, waiting];
-    const right = expression(`${T}.suspend(${ctx.frame}, 0)`);
+    const right = expression(`${T}.suspend(${ctx.frame}, 0, true)`);
     right.arguments[1] = node.right;
     node.right = right;
   } else {
@@ -423,8 +474,17 @@ function visit(node: Node | null | undefined, ctx: Context, hint?: string): Node
       node.argument = visit(node.argument, ctx);
       // `yield*` hands control to another generator: its frame stays, so nothing to tell.
       if (!ctx.inFunction || node.delegate) return node;
-      const leaving = expression(`${T}.suspend(${ctx.frame})`);
-      if (node.argument) leaving.arguments.push(node.argument);
+      let leaving: Node;
+      if (node.type === 'AwaitExpression') {
+        leaving = expression(`${T}.wait(${ctx.frame}, 0)`);
+        leaving.arguments[1] = node.argument;
+      } else if (ctx.asyncGen) {
+        leaving = expression(`${T}.suspend(${ctx.frame}, void 0, true)`);
+        if (node.argument) leaving.arguments[1] = node.argument;
+      } else {
+        leaving = expression(`${T}.suspend(${ctx.frame})`);
+        if (node.argument) leaving.arguments.push(node.argument);
+      }
       node.argument = leaving;
       const back = expression(`${T}.resume(${ctx.frame}, 0)`);
       back.arguments[1] = node;
@@ -435,6 +495,11 @@ function visit(node: Node | null | undefined, ctx: Context, hint?: string): Node
       node.argument = visit(node.argument, ctx);
       // A `return` at the top level ends the program.
       if (!ctx.inFunction) return block([statement(`${T}.done(${ctx.frame});`), node]);
+      if (ctx.asyncFn && node.argument) {
+        const settled = expression(`${T}.ret(${ctx.frame}, 0)`);
+        settled.arguments[1] = node.argument;
+        node.argument = settled;
+      }
       return node;
 
     default:
@@ -450,7 +515,13 @@ function rewrite(program: Node): void {
   const [directives, statements] = splitDirectives(program.body);
   const names = [...lexicalNames(statements), ...hoistedVars(statements)];
   const first = statements.find((node) => !NO_STEP.has(node.type));
-  program.body = [
+  // Two functions: the outer one's parameters replace the globals, and the program is the
+  // body of the inner one, where it may declare those names itself.
+  const shell = statement(
+    `(function (${GLOBALS.join(', ')}) { return (function () {}).call(this); })` +
+      `.apply(this, ${T}.globals());`
+  );
+  shell.expression.callee.object.body.body[0].argument.callee.object.body.body = [
     ...directives,
     statement(
       `const ${frame} = ${T}.start(${first ? lineOf(first) : 1}, ${gettersSource(names)});`
@@ -458,13 +529,14 @@ function rewrite(program: Node): void {
     ...instrumentList(statements, ctx),
     statement(`${T}.done(${frame});`),
   ];
+  program.body = [shell];
 }
 
 const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 /**
  * Instruments the learner's code. The result runs as a script (or a `new Function` body)
- * with the runtime in scope as `__t`. Line numbers reported to the runtime are lines of
+ * with the runtime in scope as `__t`; it takes its timers, `Promise` and clock from the runtime. Line numbers reported to the runtime are lines of
  * `code` itself. A syntax error is reported with its line and nothing is rewritten.
  */
 export function instrument(code: string): InstrumentResult {

@@ -15,6 +15,7 @@ interface LensOption {
 const LENS_OPTIONS: LensOption[] = [
   { value: 'none', label: 'None', icon: '⊘' },
   { value: 'stack-heap', label: 'Stack & Heap', icon: '⬒' },
+  { value: 'stack-queues', label: 'Stack & Queues', icon: '☰' },
 ];
 
 const LensSelector: React.FC<LensSelectorProps> = ({ activeLens, onLensChange }) => {

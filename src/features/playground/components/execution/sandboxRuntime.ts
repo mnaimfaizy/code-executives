@@ -13,6 +13,11 @@
  * builds the tracer, hands it to the instrumented code, and sends the trace back
  * with the report. A trace that has stopped (the step limit, or an error nothing
  * caught) ends the run there, with the steps recorded so far.
+ *
+ * In a traced run the timers are the tracer's own, on a virtual clock: instrumented
+ * code never reaches the wrappers below, and a timer takes no real time. The script
+ * gives the tracer a way to run one turn of its event loop as a task, and the run
+ * is finished once the tracer has no turn left to run.
  */
 export const SANDBOX_RUNTIME_SOURCE = String.raw`
 (function() {
@@ -52,7 +57,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
   var MAX_ENTRIES = 500;
   var MAX_ENTRY_LENGTH = 10240;
 
-  /** The run in progress: { id, timers, done, failed, error, checkQueued, capId, tracer, maxSteps } */
+  /** The run in progress: { id, timers, done, failed, error, checkQueued, capId, tracer, maxSteps, channel } */
   var run = null;
 
   function safeStringify(val) {
@@ -158,6 +163,16 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
       if (kind === 'interval') _clearInterval(id); else _clearTimeout(id);
     });
     r.timers.clear();
+    // The tracer drops its own timers and takes its hooks off Promise.prototype
+    var trace = null;
+    if (r.tracer) {
+      trace = r.tracer.getTrace();
+      r.tracer.dispose();
+    }
+    if (r.channel) {
+      r.channel.port1.close();
+      r.channel = null;
+    }
     if (r !== run) return;
 
     _hostWindow.postMessage({
@@ -165,8 +180,29 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
       runId: r.id,
       error: error,
       entries: entries,
-      trace: r.tracer ? r.tracer.getTrace() : null
+      trace: trace
     }, '*');
+  }
+
+  // Runs one turn of a traced run's event loop as a task of its own. A message is
+  // not held back the way nested timers are (4 ms each), so a run with many timer
+  // turns stays fast.
+  function deferTurn(r) {
+    return function(turn) {
+      if (r.done) return;
+      if (typeof MessageChannel !== 'function') {
+        _setTimeout(turn, 0);
+        return;
+      }
+      if (!r.channel) r.channel = new MessageChannel();
+      r.channel.port1.onmessage = function() { if (!r.done) turn(); };
+      r.channel.port2.postMessage(0);
+    };
+  }
+
+  // True while a traced run's own event loop still has a turn to run
+  function tracerBusy(r) {
+    return !!r.tracer && r.tracer.pending();
   }
 
   // A trace that has stopped ends the run: nothing more can be recorded, and the
@@ -190,18 +226,19 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     return true;
   }
 
-  // Report once no timer is pending. The check runs as a task of its own, so all
-  // promise work queued so far has drained before it looks.
+  // Report once no timer is pending, and a traced run's event loop has settled. The
+  // check runs as a task of its own, so all promise work queued so far has drained
+  // before it looks.
   function settleSoon(r) {
     if (endStoppedTrace(r)) return;
     if (r !== run || r.done || r.checkQueued) return;
     r.checkQueued = true;
     _setTimeout(function() {
       r.checkQueued = false;
-      if (r.done || r.timers.size > 0) return;
+      if (r.done || r.timers.size > 0 || tracerBusy(r)) return;
       // One more turn, so a promise rejection reported after this task still lands
       _setTimeout(function() {
-        if (r.done || r.timers.size > 0) return;
+        if (r.done || r.timers.size > 0 || tracerBusy(r)) return;
         finish(r, r.failed ? 'error' : 'result', r.error || undefined);
       }, 0);
     }, 0);
@@ -267,7 +304,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
 
     var r = {
       id: msg.runId, timers: new Map(), done: false, failed: false, error: null,
-      checkQueued: false, capId: 0, tracer: null, maxSteps: 0
+      checkQueued: false, capId: 0, tracer: null, maxSteps: 0, channel: null
     };
     run = r;
 
@@ -291,7 +328,11 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
       if (msg.tracer) {
         // Each step notes how many Console entries had been printed by then
         var createTracer = new Function('return (' + msg.tracer.runtime + ');')();
-        r.tracer = createTracer(msg.tracer.limits, function() { return entries.length; });
+        r.tracer = createTracer(msg.tracer.limits, function() { return entries.length; }, {
+          defer: deferTurn(r),
+          uncaught: function(err) { uncaught(r, err, 'Uncaught '); },
+          settled: function() { settleSoon(r); }
+        });
         r.maxSteps = msg.tracer.limits.maxSteps;
         fn = new Function(msg.tracer.name, msg.code);
       } else {

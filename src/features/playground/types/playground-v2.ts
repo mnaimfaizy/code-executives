@@ -5,7 +5,7 @@
 export type PlaygroundLanguage = 'javascript' | 'typescript' | 'python';
 
 /** Available visualization lenses */
-export type VisualizationLens = 'stack-heap' | 'none';
+export type VisualizationLens = 'stack-heap' | 'stack-queues' | 'none';
 
 /** Execution lifecycle states */
 export type ExecutionState = 'idle' | 'running' | 'paused' | 'stepping' | 'completed' | 'error';

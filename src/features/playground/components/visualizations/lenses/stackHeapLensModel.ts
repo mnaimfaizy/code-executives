@@ -139,7 +139,7 @@ export function trimFrames(frames: readonly StackFrame[]): TrimmedFrames {
 interface Selection {
   counts: StepCounts;
   /** Null when the step is too large to draw. */
-  drawn: { frames: StackFrame[]; objects: HeapObject[] } | null;
+  drawn: { frames: StackFrame[]; objects: HeapObject[]; roots?: string[] } | null;
   truncated: boolean;
 }
 
@@ -151,7 +151,10 @@ export function selectStep(step: Step, options: LensOptions = {}): Selection {
   const heapRecorded = options.heapRecorded !== false;
   const full = step.snapshot;
   const all = heapRecorded ? full.objects : [];
-  const reachable = getReachable({ frames: full.frames, objects: all });
+  // The roots a run holds without a frame (the global scope once the script has ended, callbacks
+  // waiting in a queue) come along, or everything they hold would be drawn as unreachable.
+  const roots = full.roots ? { roots: full.roots } : {};
+  const reachable = getReachable({ frames: full.frames, objects: all, ...roots });
   const { frames, skipped } = trimFrames(full.frames);
 
   const overLimit = all.length > MAX_DRAWN_OBJECTS;
@@ -189,7 +192,7 @@ export function selectStep(step: Step, options: LensOptions = {}): Selection {
   // reachability out from what they are given, so such an object is handed over as `marked`
   // (found from a root), which they draw as live and never as unreachable.
   if (skipped.length > 0) {
-    const fromDrawn = getReachable({ frames: drawnFrames, objects });
+    const fromDrawn = getReachable({ frames: drawnFrames, objects, ...roots });
     objects = objects.map((o) =>
       o.state === 'live' && reachable.has(o.id) && !fromDrawn.has(o.id)
         ? { ...o, state: 'marked' as const }
@@ -197,7 +200,7 @@ export function selectStep(step: Step, options: LensOptions = {}): Selection {
     );
   }
 
-  return { counts, drawn: { frames: drawnFrames, objects }, truncated: false };
+  return { counts, drawn: { frames: drawnFrames, objects, ...roots }, truncated: false };
 }
 
 // ---- The whole trace ----------------------------------------------------------------------
@@ -248,7 +251,11 @@ export function prepareTrace(steps: readonly Step[], options: LensOptions = {}):
       const cell = cells.get(id);
       if (cell && !kept.has(id) && !taken.has(cellKey(cell))) resting.set(id, cell);
     }
-    const bare = { frames: drawn.frames, objects: drawn.objects };
+    const bare = {
+      frames: drawn.frames,
+      objects: drawn.objects,
+      ...(drawn.roots && { roots: drawn.roots }),
+    };
     let placed = placeSnapshot(bare, { previous: resting, cols });
     if (resting.size > kept.size && gridOf(placed.snapshot.objects).rows > MAX_HEAP_ROWS) {
       placed = placeSnapshot(bare, { previous: kept, cols });
