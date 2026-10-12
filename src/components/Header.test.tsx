@@ -29,4 +29,26 @@ describe('Header', () => {
     expect(within(item).getByText(/\(opens in a new tab\)/)).toBeInTheDocument();
     expect(screen.queryByText('Interactive coding environment')).not.toBeInTheDocument();
   });
+
+  it('links to the progress page in the desktop header and in the mobile menu', async () => {
+    render(
+      <MemoryRouter>
+        <UIProvider>
+          <Header />
+        </UIProvider>
+      </MemoryRouter>
+    );
+
+    // Before the mobile menu is open, the only one is the desktop header's
+    const desktop = screen.getByRole('link', { name: 'Progress' });
+    expect(desktop).toHaveAttribute('href', '/progress');
+    expect(desktop).not.toHaveAttribute('target');
+
+    await userEvent.click(screen.getByRole('button', { name: /menu/i }));
+    const menu = screen.getByLabelText('Mobile navigation menu');
+    expect(within(menu).getByRole('link', { name: 'Progress' })).toHaveAttribute(
+      'href',
+      '/progress'
+    );
+  });
 });

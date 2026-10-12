@@ -17,6 +17,7 @@ import { env } from './core/config/env';
 // Lazy load all pages for better performance
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
+const Progress = lazy(() => import('./pages/Progress'));
 const JavaScriptPage = lazy(() => import('./features/javascript'));
 const RxJSPage = lazy(() => import('./features/rxjs'));
 const GitPage = lazy(() => import('./features/git'));
@@ -98,6 +99,14 @@ const App: React.FC = () => {
                               element={
                                 <SuspenseRoute>
                                   <About />
+                                </SuspenseRoute>
+                              }
+                            />
+                            <Route
+                              path="/progress"
+                              element={
+                                <SuspenseRoute>
+                                  <Progress />
                                 </SuspenseRoute>
                               }
                             />

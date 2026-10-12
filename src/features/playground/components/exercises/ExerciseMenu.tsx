@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useId, useRef, useState } from 'react';
-import { ChevronDown, Target } from 'lucide-react';
+import { ChevronDown, ExternalLink, Target } from 'lucide-react';
 import type { Exercise } from '../../exercises/types';
 import type { ExerciseGroup } from '../../exercises/exercises';
 import PassedMark from './PassedMark';
@@ -128,6 +128,18 @@ const ExerciseMenu: React.FC<ExerciseMenuProps> = ({
               </ul>
             </section>
           ))}
+          {/* What has been passed, and the milestones, are on one page for the whole site */}
+          <a
+            href="/progress"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex w-full items-center gap-1.5 px-3 py-2 text-xs underline underline-offset-2 hover:bg-white/5 focus-visible:bg-white/5"
+            style={{ color: 'var(--pg-accent-blue)' }}
+          >
+            Your progress
+            <ExternalLink size={11} aria-hidden="true" />
+            <span className="sr-only">(opens in a new tab)</span>
+          </a>
         </div>
       )}
     </div>

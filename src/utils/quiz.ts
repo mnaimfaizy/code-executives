@@ -6,7 +6,7 @@ import type {
   QuizResultSummary,
   QuizStoredAnswer,
 } from '../types/quiz';
-import { getSectionPathByLabel } from '../shared/constants/moduleNavigation';
+import { getSectionPathByLabel, learningModuleIds } from '../shared/constants/moduleNavigation';
 import type { LearningModuleId } from '../shared/constants/moduleNavigation';
 
 const quizBankLoaders = import.meta.glob<QuizBankFile>('/quiz-banks/*.quiz.json', {
@@ -103,6 +103,10 @@ export const loadQuizBank = async (moduleId: LearningModuleId): Promise<QuizBank
   const bank = await loader();
   return isQuizBankFile(bank, moduleId) ? bank : null;
 };
+
+/** The modules that have a quiz bank in `quiz-banks/`, in module order. Not every module has one. */
+export const modulesWithQuiz = (): LearningModuleId[] =>
+  learningModuleIds.filter((moduleId) => `/quiz-banks/${moduleId}.quiz.json` in quizBankLoaders);
 
 export const getQuizStorageKeys = (moduleId: LearningModuleId) => ({
   activeAttempt: `${QUIZ_STORAGE_PREFIX}.${moduleId}.active-attempt`,

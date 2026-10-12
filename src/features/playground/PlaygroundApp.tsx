@@ -31,6 +31,7 @@ import {
 } from './utils/playgroundStart';
 import { exercisesByLevel } from './exercises/exercises';
 import { loadProgress, useExerciseProgress } from './exercises/exerciseProgress';
+import { useMilestonesReached } from './exercises/useMilestonesReached';
 import {
   buildWatchCode,
   formatCall,
@@ -232,6 +233,9 @@ const PlaygroundApp: React.FC = () => {
 
   const { saveCode, forgetCode, markPassed, markSolutionSeen, progress } = exerciseProgress;
 
+  // The milestones a pass earns are worked out once the pass is stored, not here
+  const { reached: milestonesReached, notePassed } = useMilestonesReached(progress);
+
   const passedIds = useMemo(
     () => new Set(Object.keys(progress).filter((id) => progress[id].passed)),
     [progress]
@@ -367,10 +371,13 @@ const PlaygroundApp: React.FC = () => {
             sandbox.reportError(`Check ${result.index + 1}, ${call}: ${result.message}`);
           }
         }
-        if (run.passed) markPassed(checkedExercise.id);
+        if (run.passed) {
+          notePassed(checkedExercise.id);
+          markPassed(checkedExercise.id);
+        }
       }
     });
-  }, [exercise, language, checking, code, trace, sandbox, markPassed]);
+  }, [exercise, language, checking, code, trace, sandbox, markPassed, notePassed]);
 
   /** Run `source` plus the one call of `check`, traced, into the lens. The editor is not touched. */
   const watchCall = useCallback(
@@ -724,6 +731,11 @@ const PlaygroundApp: React.FC = () => {
                 groups={EXERCISE_GROUPS}
                 passedIds={passedIds}
                 solutionSeenIds={solutionSeenIds}
+                milestonesReached={
+                  exercise && milestonesReached?.exerciseId === exercise.id
+                    ? milestonesReached.milestones
+                    : undefined
+                }
                 onOpenExercise={handleOpenExercise}
                 run={checksRun}
                 checking={checking}

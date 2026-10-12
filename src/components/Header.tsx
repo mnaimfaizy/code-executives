@@ -158,6 +158,7 @@ const Header: React.FC = () => {
   const primaryNavItems = [
     { label: 'Home', path: '/', icon: null },
     { label: 'About', path: '/about', icon: null },
+    { label: 'Progress', path: '/progress', icon: null },
   ];
 
   // Close dropdown when clicking outside

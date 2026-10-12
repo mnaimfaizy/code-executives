@@ -14,6 +14,7 @@ import { getDefaultTemplate } from './utils/codeTemplates';
 import { sourceOf } from './utils/playgroundStart';
 import { loadProgress, PROGRESS_STORAGE_KEY } from './exercises/exerciseProgress';
 import { traceSync } from './tracer';
+import { milestones, readStoredProgressRecord } from '../../shared/progress';
 
 const mocks = vi.hoisted(() => ({
   execute: vi.fn(),
@@ -277,6 +278,69 @@ describe('PlaygroundApp exercises and links', () => {
         fireEvent.keyDown(window, { key: 'Enter', ctrlKey: true });
       });
       expect(mocks.execute).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('a milestone', () => {
+    /** A module's milestone that Two Sum counts for, from the real catalog */
+    const milestone = milestones().find(
+      (item) => item.moduleId !== undefined && item.exerciseIds?.includes('two-sum')
+    )!;
+    const passed = (ids: string[]): string =>
+      JSON.stringify(Object.fromEntries(ids.map((id) => [id, { passed: true }])));
+    const line = (): HTMLElement => screen.getByTestId('milestones-reached');
+
+    it('is announced in the Task panel when the pass that earns it is made, and not again', async () => {
+      localStorage.setItem(
+        PROGRESS_STORAGE_KEY,
+        passed(milestone.exerciseIds!.filter((id) => id !== 'two-sum'))
+      );
+      window.history.replaceState(null, '', '/playground?exercise=two-sum');
+      const view = render(<PlaygroundApp />);
+      expect(line()).toBeEmptyDOMElement();
+
+      fireEvent.click(screen.getByText('type the solution'));
+      expect(await check()).toHaveTextContent('All 5 checks passed.');
+
+      await waitFor(() =>
+        expect(line()).toHaveTextContent(`Milestone reached: ${milestone.title}`)
+      );
+      expect(
+        within(line()).getByRole('link', { name: new RegExp(`^${milestone.title}`) })
+      ).toHaveAttribute('href', '/progress');
+      expect(readStoredProgressRecord()?.milestones[milestone.id]).toBeDefined();
+
+      // Checking again keeps the line as it is
+      const shown = line().textContent;
+      await check();
+      expect(line().textContent).toBe(shown);
+
+      // A reload shows none, and passing again earns none
+      view.unmount();
+      render(<PlaygroundApp />);
+      expect(line()).toBeEmptyDOMElement();
+      expect(await check()).toHaveTextContent('All 5 checks passed.');
+      expect(line()).toBeEmptyDOMElement();
+    });
+
+    it('is not announced for work done before progress was recorded', async () => {
+      localStorage.setItem(PROGRESS_STORAGE_KEY, passed(milestone.exerciseIds!));
+      open('?exercise=two-sum');
+      // Worked out silently on this first visit
+      expect(readStoredProgressRecord()?.milestones[milestone.id]).toBeDefined();
+      expect(line()).toBeEmptyDOMElement();
+
+      fireEvent.click(screen.getByText('type the solution'));
+      expect(await check()).toHaveTextContent('All 5 checks passed.');
+      expect(line()).toBeEmptyDOMElement();
+    });
+
+    it('links to the progress page from the Exercises menu', () => {
+      open('');
+      fireEvent.click(screen.getByRole('button', { name: /^Exercises/ }));
+      const link = screen.getByRole('link', { name: /^Your progress/ });
+      expect(link).toHaveAttribute('href', '/progress');
+      expect(link).toHaveAttribute('target', '_blank');
     });
   });
 
