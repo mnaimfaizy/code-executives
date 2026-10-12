@@ -1,0 +1,608 @@
+{
+  "moduleId": "database",
+  "moduleTitle": "Database & DBMS",
+  "description": "Scenario-based assessment of database models, DBMS internals, the query processor and storage engine, SQL, indexing, transactions and ACID, the Oracle and PostgreSQL architectures, and the choice between SQL, NoSQL and vector databases.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "database-q01",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A small company keeps its customer records as a well-organized set of files on a shared drive and calls it \"our database\". Two employees edit the same record at the same moment and one change is lost. After a disk fault, nobody can say which edits survived.",
+      "prompt": "What is missing from this setup?",
+      "options": [
+        "More raw data, so that the records can be cross-checked",
+        "A larger disk for the shared drive",
+        "A DBMS: the software layer that manages concurrent access, security and recovery",
+        "A vector index over the files"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A database alone is a passive repository with no ability to enforce security, manage concurrency or recover from failures. The DBMS is the software layer between users and the data that makes concurrent access safe and handles backup and recovery.",
+      "tags": ["dbms", "database-vs-dbms", "concurrency", "recovery"],
+      "references": ["Introduction"]
+    },
+    {
+      "id": "database-q02",
+      "type": "matching",
+      "difficulty": "intermediate",
+      "scenario": "A platform team is choosing a data model for four new workloads.",
+      "prompt": "Match each workload to the database model that suits it best.",
+      "premises": [
+        "A payments ledger whose transfers need strict ACID compliance",
+        "User session data that must be fetched by its ID as fast as possible",
+        "A product catalog in which items have different, nested attributes that change often",
+        "Fraud detection that follows chains of connections between accounts"
+      ],
+      "responses": ["Graph", "Relational (SQL)", "Key-value", "Document"],
+      "correctAnswer": [1, 2, 3, 0],
+      "explanation": "Relational databases fit financial systems that need strict ACID compliance. Key-value stores fit high-speed caching and session management. Document stores hold flexible, schema-less JSON objects, which suits catalogs. Graph databases store nodes and edges, which suits fraud detection and other relationship-heavy work.",
+      "tags": ["database-models", "relational", "key-value", "document", "graph"],
+      "references": ["Database Models"]
+    },
+    {
+      "id": "database-q03",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A MongoDB collection has outgrown one server, so it is split into shards across several servers by a shard key. A developer asks how the application knows which server to ask for a given document.",
+      "prompt": "Which component makes that decision?",
+      "options": [
+        "The mongos router, which consults the config servers",
+        "The application, which must keep its own table of shard locations",
+        "The primary node of a replica set, which forwards every read",
+        "Each secondary node, which broadcasts the query to all shards"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Client applications connect to a mongos query router. It consults the config servers to find which shard holds the requested data and routes the query there, so the application does not need to know where the data lives.",
+      "tags": ["mongodb", "sharding", "mongos", "config-servers"],
+      "references": ["Database Models"]
+    },
+    {
+      "id": "database-q04",
+      "type": "true-false",
+      "difficulty": "intermediate",
+      "scenario": "A MongoDB replica set has one primary and two secondaries. To spread the write load, a developer plans to send half of the application's writes directly to a secondary.",
+      "prompt": "True or false: in a replica set, secondary nodes accept writes alongside the primary.",
+      "options": ["True", "False"],
+      "correctAnswer": 1,
+      "explanation": "In a replica set the primary handles all writes. Secondaries replicate the data and can serve reads, and automatic failover promotes a new primary if the current one fails. Spreading writes across servers is what sharding is for.",
+      "tags": ["mongodb", "replica-set", "primary", "secondary"],
+      "references": ["Database Models"]
+    },
+    {
+      "id": "database-q05",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "After a crash, a database took a long time to come back because it had to replay a very long stretch of transaction log. The operations team wants to shorten recovery after the next crash.",
+      "prompt": "Which background function exists to limit crash recovery time?",
+      "options": [
+        "Process cleanup, which releases the resources of failed user processes",
+        "The checkpoint, which forces all dirty buffers to disk",
+        "The log writer, which writes transaction logs before the data",
+        "Dead tuple cleanup, which reclaims space in tables"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The checkpoint process (CKPT in Oracle, the Checkpointer in PostgreSQL) forces all dirty buffers to disk. That creates a recovery point, so less of the log has to be replayed after a crash.",
+      "tags": ["checkpoint", "crash-recovery", "background-processes", "dirty-buffers"],
+      "references": ["DBMS Architecture", "Storage Engine"]
+    },
+    {
+      "id": "database-q06",
+      "type": "matching",
+      "difficulty": "intermediate",
+      "scenario": "A new engineer is tracing where different behaviors of a database server come from.",
+      "prompt": "Match each behavior to the DBMS component responsible for it.",
+      "premises": [
+        "A query that names a column that does not exist is rejected before any data is read",
+        "Of several possible routes to the data, the index scan is chosen as the cheapest",
+        "A frequently read page is served from RAM instead of from disk",
+        "After a crash, the database state is rebuilt from the Write-Ahead Log"
+      ],
+      "responses": ["Query Optimizer", "Parser", "Recovery Manager", "Buffer Manager"],
+      "correctAnswer": [1, 0, 3, 2],
+      "explanation": "The parser checks SQL syntax and validates the query against the schema. The optimizer compares execution paths and picks the most efficient one. The buffer manager caches frequently used pages in memory. The recovery manager uses the Write-Ahead Log to rebuild state after a crash.",
+      "tags": ["dbms-components", "parser", "optimizer", "buffer-manager", "recovery-manager"],
+      "references": ["DBMS Architecture"]
+    },
+    {
+      "id": "database-q07",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A PostgreSQL report that used to be fast now takes minutes. EXPLAIN (ANALYZE, BUFFERS) shows a join node with rows=1000 in the estimate and actual rows=1,000,000.",
+      "prompt": "What does this output point to, and what is the first thing to do?",
+      "options": [
+        "A syntax problem in the query; rewrite it so that the parser accepts it",
+        "A lock conflict; raise the deadlock timeout",
+        "A cardinality estimation problem; run ANALYZE and consider CREATE STATISTICS for correlated columns",
+        "A durability problem; flush the Write-Ahead Log more often"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A large gap between estimated and actual rows means the optimizer is planning with wrong row counts, which leads to a wrong join order or join method. Refreshing statistics with ANALYZE, and adding extended statistics where columns are correlated, gives the optimizer accurate numbers.",
+      "tags": ["cardinality-estimation", "explain-analyze", "statistics", "query-tuning"],
+      "references": ["Query Processor"]
+    },
+    {
+      "id": "database-q08",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "You are reading four execution plans and want to check that the optimizer's choice of join algorithm makes sense in each case.",
+      "prompt": "Match each situation to the join algorithm that fits it.",
+      "premises": [
+        "A small outer table is joined to a large table that has an index on the join column",
+        "Two large tables are joined on equality and neither has a useful index",
+        "Both inputs already arrive sorted on the join key",
+        "The hash table for the build side no longer fits in work_mem"
+      ],
+      "responses": ["Sort-merge join", "Grace hash join", "Nested loop join", "Hash join"],
+      "correctAnswer": [2, 3, 0, 1],
+      "explanation": "A nested loop works best with a small outer input and an indexed inner table. A hash join suits large equi-joins with no useful index. A sort-merge join is cheap when the inputs are already sorted. When the hash table exceeds work_mem, the hash join falls back to a Grace hash join that partitions to disk.",
+      "tags": ["join-algorithms", "nested-loop", "hash-join", "merge-join", "work-mem"],
+      "references": ["Query Processor"]
+    },
+    {
+      "id": "database-q09",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "The optimizer keeps choosing a bad join order for one query. You suspect that its row count estimates are wrong and list the possible reasons.",
+      "prompt": "Which of these can make the optimizer's row estimates wrong?",
+      "options": [
+        "The table has grown tenfold since statistics were last gathered",
+        "The filter combines two correlated columns, such as city and state, which the optimizer treats as independent",
+        "The execution engine pulls rows through the plan with the iterator model",
+        "A few values account for millions of rows while most values appear only once",
+        "The parser evaluated a constant expression before planning"
+      ],
+      "correctAnswer": [0, 1, 3],
+      "explanation": "Stale statistics, correlated columns and skewed data are the listed causes of bad estimates. The iterator model describes how a chosen plan is executed, and constant folding is a rewrite step; neither changes the row counts the optimizer estimates.",
+      "tags": ["cardinality-estimation", "stale-statistics", "correlated-columns", "skew"],
+      "references": ["Query Processor"]
+    },
+    {
+      "id": "database-q10",
+      "type": "ordering",
+      "difficulty": "intermediate",
+      "scenario": "An application sends SELECT name, salary FROM employees WHERE department = 'Engineering' to the database server.",
+      "prompt": "Arrange the steps the query processor takes, from first to last.",
+      "items": [
+        "The optimizer compares possible plans and picks the cheapest",
+        "The SQL text is split into tokens",
+        "The execution engine pulls rows through the chosen plan",
+        "The grammar of the statement is checked",
+        "The referenced table and columns are checked against the schema"
+      ],
+      "correctAnswer": [
+        "The SQL text is split into tokens",
+        "The grammar of the statement is checked",
+        "The referenced table and columns are checked against the schema",
+        "The optimizer compares possible plans and picks the cheapest",
+        "The execution engine pulls rows through the chosen plan"
+      ],
+      "explanation": "The parser does lexical analysis, then syntax validation, then semantic analysis. Only a valid query reaches the optimizer, which chooses a plan, and the execution engine then runs that plan against storage.",
+      "tags": ["query-processor", "parser", "optimizer", "execution-engine"],
+      "references": ["Query Processor", "DBMS Architecture"]
+    },
+    {
+      "id": "database-q11",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A transaction updates a row and COMMIT returns successfully. One second later the server loses power. The modified data page was still only in memory and had not been written to the data files.",
+      "prompt": "Is the committed change lost?",
+      "options": [
+        "Yes, because the data page never reached disk",
+        "Yes, unless a checkpoint happened to run in that second",
+        "No, because the data page is always written to disk before COMMIT returns",
+        "No, because the log records were flushed before COMMIT returned and recovery replays them"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Under Write-Ahead Logging, every change is logged before it is applied to data pages, and all log records of a transaction are flushed to disk before commit returns. Data pages can be written lazily. After a crash, the REDO phase replays the logged changes, so the committed update is restored.",
+      "tags": ["wal", "durability", "crash-recovery", "redo"],
+      "references": ["Storage Engine", "Transactions & ACID"]
+    },
+    {
+      "id": "database-q12",
+      "type": "ordering",
+      "difficulty": "expert",
+      "scenario": "A database server restarts after a crash and begins recovery with the ARIES protocol.",
+      "prompt": "Arrange the three recovery phases in the order they run.",
+      "items": [
+        "REDO: replay all logged changes, committed or not, to restore the state at the moment of the crash",
+        "UNDO: roll back the changes of transactions that never committed",
+        "Analysis: scan the log forward from the last checkpoint to find dirty pages and in-flight transactions"
+      ],
+      "correctAnswer": [
+        "Analysis: scan the log forward from the last checkpoint to find dirty pages and in-flight transactions",
+        "REDO: replay all logged changes, committed or not, to restore the state at the moment of the crash",
+        "UNDO: roll back the changes of transactions that never committed"
+      ],
+      "explanation": "Analysis works out what was dirty and which transactions were active. REDO then repeats history to rebuild the exact state at the crash. UNDO last removes the effects of uncommitted transactions, writing compensation log records so that recovery is safe to repeat.",
+      "tags": ["aries", "crash-recovery", "redo", "undo", "wal"],
+      "references": ["Storage Engine"]
+    },
+    {
+      "id": "database-q13",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "In PostgreSQL, transaction T1 holds a lock on row A and waits for row B. Transaction T2 holds a lock on row B and waits for row A. Neither can continue.",
+      "prompt": "How does PostgreSQL resolve this?",
+      "options": [
+        "It builds a wait-for graph, finds the cycle and aborts one of the transactions",
+        "It waits until the application closes one of the connections",
+        "It gives both transactions a shared lock on both rows",
+        "It commits both transactions in the order they started"
+      ],
+      "correctAnswer": 0,
+      "explanation": "This circular wait is a deadlock. PostgreSQL builds a wait-for graph after the deadlock timeout (one second by default) and aborts a transaction, the youngest one, to break the cycle. Oracle instead rolls back the statement and raises ORA-00060.",
+      "tags": ["deadlock", "lock-manager", "wait-for-graph", "postgresql"],
+      "references": ["Storage Engine"]
+    },
+    {
+      "id": "database-q14",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A long analytics query and many short updates run against the same table at the same time. Neither side appears to wait for the other, and a colleague asks how that is possible.",
+      "prompt": "Which statements about MVCC explain it correctly?",
+      "options": [
+        "A reader does not block a writer, and a writer does not block a reader",
+        "Oracle keeps old row versions inline in the same table page as the new version",
+        "Each transaction works from a consistent snapshot of the data",
+        "PostgreSQL keeps old and new versions in the heap page, marked with xmin and xmax",
+        "Every read takes a shared lock that writers must wait for"
+      ],
+      "correctAnswer": [0, 2, 3],
+      "explanation": "MVCC keeps several versions of a row so that each transaction sees a consistent snapshot, which is why readers and writers do not block each other. PostgreSQL stores the versions in the heap page with xmin and xmax markers. Oracle keeps the current version in place and moves old versions to the UNDO tablespace.",
+      "tags": ["mvcc", "snapshot", "xmin-xmax", "undo"],
+      "references": ["Storage Engine", "Transactions & ACID"]
+    },
+    {
+      "id": "database-q15",
+      "type": "true-false",
+      "difficulty": "intermediate",
+      "scenario": "Transaction T1 holds a shared (S) lock on a row. Transaction T2 now requests a shared lock on the same row.",
+      "prompt": "True or false: T2 is granted the lock without waiting for T1.",
+      "options": ["True", "False"],
+      "correctAnswer": 0,
+      "explanation": "In the lock compatibility matrix, shared locks are compatible with each other. A request is blocked only when an exclusive lock is involved, whether it is the lock held or the lock requested.",
+      "tags": ["locks", "shared-lock", "exclusive-lock", "compatibility-matrix"],
+      "references": ["Storage Engine"]
+    },
+    {
+      "id": "database-q16",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A report must list only the departments that have at least five employees. A developer writes WHERE COUNT(*) >= 5 after the join and the query fails.",
+      "prompt": "How should the condition be written?",
+      "options": [
+        "Keep it in WHERE, but place it before the JOIN",
+        "Replace it with LIMIT 5",
+        "Move it to a HAVING clause after GROUP BY",
+        "Move it into ORDER BY"
+      ],
+      "correctAnswer": 2,
+      "explanation": "WHERE filters individual rows before they are grouped. HAVING filters the groups that GROUP BY produces, so a condition on an aggregate such as COUNT(*) belongs there.",
+      "tags": ["sql", "group-by", "having", "aggregation"],
+      "references": ["SQL Fundamentals"]
+    },
+    {
+      "id": "database-q17",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A salary report must show every employee on its own row, together with that employee's salary rank inside the department and the difference from the department average.",
+      "prompt": "Which SQL feature produces this without collapsing the rows?",
+      "options": [
+        "GROUP BY department with AVG(salary)",
+        "Window functions such as RANK() OVER (PARTITION BY department ORDER BY salary DESC)",
+        "An INNER JOIN between employees and departments",
+        "A HAVING clause on the salary column"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Window functions compute per-row analytics without GROUP BY. PARTITION BY creates one window per department, and each row keeps its identity. GROUP BY would collapse each department to a single row.",
+      "tags": ["sql", "window-functions", "partition-by", "rank"],
+      "references": ["SQL Fundamentals"]
+    },
+    {
+      "id": "database-q18",
+      "type": "multi-select",
+      "difficulty": "intermediate",
+      "scenario": "A table is created as: employees (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(255) UNIQUE, salary DECIMAL(10,2) CHECK (salary > 0), dept_id INTEGER REFERENCES departments(id), hired_at TIMESTAMP DEFAULT NOW()). An import script then tries several inserts.",
+      "prompt": "Which inserts will the database reject?",
+      "options": [
+        "An insert with salary = 0",
+        "An insert that leaves out hired_at",
+        "A second row with an email that already exists in the table",
+        "An insert that leaves out id",
+        "An insert whose dept_id has no matching row in departments"
+      ],
+      "correctAnswer": [0, 2, 4],
+      "explanation": "The CHECK constraint requires a salary above zero, UNIQUE forbids a repeated email, and the foreign key requires dept_id to exist in departments. Leaving out hired_at is fine because it defaults to NOW(), and leaving out id is fine because SERIAL generates it.",
+      "tags": ["sql", "constraints", "foreign-key", "check", "unique"],
+      "references": ["SQL Fundamentals"]
+    },
+    {
+      "id": "database-q19",
+      "type": "true-false",
+      "difficulty": "intermediate",
+      "scenario": "A developer reorders the clauses of a SELECT statement and says: \"I put the small table first, so the database will read it first.\"",
+      "prompt": "True or false: the way a SQL query is written tells the DBMS which steps to take, and in what order, to fetch the data.",
+      "options": ["True", "False"],
+      "correctAnswer": 1,
+      "explanation": "SQL is declarative: the query states what data is wanted, not how to get it. The query optimizer decides the execution strategy, including which table to read first and which join method to use.",
+      "tags": ["sql", "declarative", "query-optimizer", "execution-plan"],
+      "references": ["SQL Fundamentals", "Indexing & Optimization"]
+    },
+    {
+      "id": "database-q20",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An orders table grows from one million to one billion rows. Lookups by order_id through a B-Tree index take almost the same time as before, and a manager asks why they did not become a thousand times slower.",
+      "prompt": "What explains this?",
+      "options": [
+        "The index keeps every row in memory",
+        "The index hashes each key to a bucket, so the search time is constant",
+        "The database still reads the whole table but compresses it first",
+        "The tree is self-balancing with all leaves at the same depth, so search time grows logarithmically"
+      ],
+      "correctAnswer": 3,
+      "explanation": "A B-Tree is a self-balancing tree whose leaf nodes all sit at the same depth, which gives predictable O(log n) searches. A billion rows need only about 30 comparisons, so a thousandfold increase in rows adds very few steps.",
+      "tags": ["b-tree", "indexing", "logarithmic", "scalability"],
+      "references": ["Indexing & Optimization"]
+    },
+    {
+      "id": "database-q21",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "To speed up login lookups, a team replaces the B-Tree index on users.email with a hash index. Several other queries on the same column are still in use.",
+      "prompt": "Which queries lose index support after the change?",
+      "options": [
+        "WHERE email = 'pat@example.com'",
+        "WHERE email LIKE 'pat%'",
+        "WHERE email BETWEEN 'a' AND 'c'",
+        "ORDER BY email, served without a separate sort step",
+        "The login lookup of one exact email address"
+      ],
+      "correctAnswer": [1, 2, 3],
+      "explanation": "A hash index maps each key to a bucket, which is very fast for exact matches but destroys the sort order. Range queries, prefix searches and ORDER BY all rely on sorted keys, which only the B-Tree keeps.",
+      "tags": ["hash-index", "b-tree", "range-queries", "order-by"],
+      "references": ["Indexing & Optimization"]
+    },
+    {
+      "id": "database-q22",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "Account A holds $1000 and account B holds $500. A transaction that transfers $200 from A to B debits A, and then the system crashes before B is credited and before any commit.",
+      "prompt": "What are the balances after the database recovers?",
+      "options": [
+        "A = $1000 and B = $500",
+        "A = $800 and B = $500",
+        "A = $800 and B = $700",
+        "A = $1000 and B = $700"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Atomicity means all or nothing. The transaction never committed, so recovery undoes all of its writes and the debit is reversed. The total stays at $1500 and no money disappears.",
+      "tags": ["atomicity", "rollback", "crash-recovery", "transactions"],
+      "references": ["Transactions & ACID", "Visualization"]
+    },
+    {
+      "id": "database-q23",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "Transaction T2 reads account A and sees $1000. Transaction T1 then debits $200 from A and commits. T2, which is still open, reads account A a second time.",
+      "prompt": "What does T2 see on the second read under each isolation level?",
+      "options": [
+        "$800 under both Read Committed and Repeatable Read",
+        "$800 under Read Committed, and $1000 under Repeatable Read",
+        "$1000 under Read Committed, and $800 under Repeatable Read",
+        "$1000 under both Read Committed and Repeatable Read"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The isolation level sets how strictly transactions are kept apart. Under Read Committed a new read sees data committed by other transactions in the meantime, so T2 sees $800. Under Repeatable Read T2 keeps seeing the value from its first read, $1000.",
+      "tags": ["isolation-levels", "read-committed", "repeatable-read", "transactions"],
+      "references": ["Visualization", "Transactions & ACID"]
+    },
+    {
+      "id": "database-q24",
+      "type": "matching",
+      "difficulty": "intermediate",
+      "scenario": "During a load test, an engineer notes four behaviors of the database that protected the data.",
+      "prompt": "Match each observed behavior to the ACID property that provides it.",
+      "premises": [
+        "A transfer debited one account, the server crashed before the credit, and after restart the debit was gone",
+        "An insert that would break a foreign key was refused",
+        "While one transaction was midway through an update, another still read the old balance",
+        "A committed order was still there after a power failure and restart"
+      ],
+      "responses": ["Isolation", "Durability", "Consistency", "Atomicity"],
+      "correctAnswer": [3, 2, 0, 1],
+      "explanation": "Atomicity rolls back a transaction that cannot finish. Consistency keeps all constraints satisfied before and after every transaction. Isolation hides uncommitted changes from other transactions. Durability keeps committed changes through any later failure, which the Write-Ahead Log guarantees.",
+      "tags": ["acid", "atomicity", "consistency", "isolation", "durability"],
+      "references": ["Transactions & ACID"]
+    },
+    {
+      "id": "database-q25",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A PostgreSQL table that receives constant updates keeps growing on disk although its row count is stable, and queries against it are getting slower.",
+      "prompt": "What is the most likely cause?",
+      "options": [
+        "The UNDO tablespace is too small",
+        "The WAL segments are stored inside the table file",
+        "Dead tuples from updates are not being cleaned up fast enough by Autovacuum",
+        "The shared pool is full of cached SQL plans"
+      ],
+      "correctAnswer": 2,
+      "explanation": "PostgreSQL stores old and new row versions inline in the same table. Every update leaves a dead tuple behind, and the table bloats unless Autovacuum removes them regularly. UNDO tablespaces and the shared pool are Oracle structures.",
+      "tags": ["postgresql", "table-bloat", "dead-tuples", "autovacuum"],
+      "references": ["Oracle vs PostgreSQL", "Transactions & ACID"]
+    },
+    {
+      "id": "database-q26",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "On Oracle, a report that runs for two hours against a heavily updated table fails with ORA-01555 \"Snapshot too old\".",
+      "prompt": "What happened?",
+      "options": [
+        "The old row versions the query needed were reclaimed from UNDO before the query finished",
+        "Two transactions deadlocked and Oracle rolled back the statement",
+        "The redo log buffer filled up and the commit was refused",
+        "The table accumulated too many dead tuples"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Oracle keeps old row versions in the UNDO tablespace, and long queries rebuild the past state from it. If that UNDO is reclaimed before a long query finishes, the snapshot can no longer be reconstructed and the query fails. This is why UNDO sizing matters for write-heavy workloads.",
+      "tags": ["oracle", "undo", "snapshot-too-old", "mvcc"],
+      "references": ["Oracle vs PostgreSQL"]
+    },
+    {
+      "id": "database-q27",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A DBA who has moved from Oracle to PostgreSQL finds that a query uses a poor plan and looks for the PostgreSQL way to correct it.",
+      "prompt": "Which remedies fit PostgreSQL's approach?",
+      "options": [
+        "Run ANALYZE so that the statistics are current",
+        "Add an optimizer hint to the query to force the index",
+        "Add an index that suits the query",
+        "Pin the plan with a captured plan baseline",
+        "Adjust cost parameters such as random_page_cost"
+      ],
+      "correctAnswer": [0, 2, 4],
+      "explanation": "PostgreSQL does not support optimizer hints by design. Its philosophy is to fix the statistics, not the query: update statistics, add indexes or adjust cost parameters. Hints and plan baselines are Oracle tools.",
+      "tags": ["postgresql", "optimizer", "hints", "statistics", "cost-parameters"],
+      "references": ["Oracle vs PostgreSQL"]
+    },
+    {
+      "id": "database-q28",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "A developer worries that every COMMIT is slow because the database must first write all the modified data blocks to its data files.",
+      "prompt": "True or false: in both Oracle and PostgreSQL, a commit completes only after the modified data pages have been written to the data files.",
+      "options": ["True", "False"],
+      "correctAnswer": 1,
+      "explanation": "At commit, only the log has to reach disk: the redo log in Oracle and the WAL in PostgreSQL. The data blocks may still be dirty in cache and are written lazily by background processes. That is why commit is fast.",
+      "tags": ["commit", "redo-log", "wal", "dirty-pages"],
+      "references": ["Oracle vs PostgreSQL", "Storage Engine"]
+    },
+    {
+      "id": "database-q29",
+      "type": "matching",
+      "difficulty": "expert",
+      "scenario": "A PostgreSQL team is choosing an index for four different access patterns.",
+      "prompt": "Match each access pattern to the index type that suits it.",
+      "premises": [
+        "Searching inside JSONB documents and arrays",
+        "A very large table whose rows are naturally ordered, for example by insertion time",
+        "Case-insensitive lookups written as LOWER(name) = ...",
+        "Queries that only ever touch the rows matching one WHERE condition"
+      ],
+      "responses": ["Partial index", "GIN", "Function-based (expression) index", "BRIN"],
+      "correctAnswer": [1, 3, 2, 0],
+      "explanation": "GIN indexes serve JSONB, full-text search and arrays. BRIN suits very large tables with natural ordering. A function-based index stores the result of an expression such as LOWER(name). A partial index covers only the rows that match a WHERE clause.",
+      "tags": ["postgresql", "gin", "brin", "partial-index", "expression-index"],
+      "references": ["Oracle vs PostgreSQL"]
+    },
+    {
+      "id": "database-q30",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A fleet of sensors writes millions of time-stamped readings per second. The store must keep absorbing writes as more nodes are added, and the team accepts choosing the consistency level per query.",
+      "prompt": "Which kind of database is designed for this workload?",
+      "options": [
+        "A graph database",
+        "A single-node relational database",
+        "A vector database",
+        "A wide-column store such as Cassandra"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Wide-column stores are designed for very high write throughput and scale linearly: adding nodes adds throughput. They suit time-series and event data, and Cassandra offers tunable consistency per query.",
+      "tags": ["wide-column", "cassandra", "time-series", "write-throughput"],
+      "references": ["SQL vs NoSQL vs Vector"]
+    },
+    {
+      "id": "database-q31",
+      "type": "ordering",
+      "difficulty": "intermediate",
+      "scenario": "A support assistant answers questions from the company's own documentation by using Retrieval-Augmented Generation with a vector database.",
+      "prompt": "Arrange the steps of answering one question, from first to last.",
+      "items": [
+        "The vector database runs a nearest-neighbor search",
+        "The LLM generates an answer grounded in the retrieved context",
+        "The user asks a question",
+        "The top-K most relevant document chunks are retrieved",
+        "The question is converted into an embedding vector"
+      ],
+      "correctAnswer": [
+        "The user asks a question",
+        "The question is converted into an embedding vector",
+        "The vector database runs a nearest-neighbor search",
+        "The top-K most relevant document chunks are retrieved",
+        "The LLM generates an answer grounded in the retrieved context"
+      ],
+      "explanation": "The question is embedded the same way the documents were, the vector database finds the closest vectors, the matching chunks are returned, and the LLM writes its answer from that context. The model is not fine-tuned on the documents.",
+      "tags": ["rag", "vector-database", "embeddings", "nearest-neighbor"],
+      "references": ["SQL vs NoSQL vs Vector", "Database Models"]
+    },
+    {
+      "id": "database-q32",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A team plans to use a key-value store such as Redis for user sessions and wants to know what it can and cannot expect from it.",
+      "prompt": "Which statements about key-value stores are accurate?",
+      "options": [
+        "Lookups by key can return in under a millisecond",
+        "The store can filter on fields inside the stored value",
+        "Joins and aggregations are not available",
+        "Entries can expire with a TTL, which suits caching and sessions",
+        "It is the best fit for multi-hop relationship traversals"
+      ],
+      "correctAnswer": [0, 2, 3],
+      "explanation": "A key-value store is a hash map at scale: access is purely by key and very fast, with TTL expiry for caches and sessions. The value is an opaque blob, so there is no querying inside it and there are no joins or aggregations. Relationship traversals belong to graph databases.",
+      "tags": ["key-value", "redis", "ttl", "sessions"],
+      "references": ["SQL vs NoSQL vs Vector"]
+    },
+    {
+      "id": "database-q33",
+      "type": "true-false",
+      "difficulty": "intermediate",
+      "scenario": "A team already runs PostgreSQL for its orders and customers. It now needs semantic search over product descriptions and assumes that this requires a second, separate database product.",
+      "prompt": "True or false: PostgreSQL with the pgvector extension can serve both the SQL queries and the vector similarity search in one database.",
+      "options": ["True", "False"],
+      "correctAnswer": 0,
+      "explanation": "pgvector is a PostgreSQL extension that adds vector search next to ordinary SQL. The decision framework lists PostgreSQL with pgvector as the converged choice when SQL and vector search are needed in one database.",
+      "tags": ["pgvector", "postgresql", "vector-search", "polyglot-persistence"],
+      "references": ["SQL vs NoSQL vs Vector"]
+    },
+    {
+      "id": "database-q34",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "The ER Diagram Builder starts with three entities. User \"places\" Order with cardinality 1:N, and Order \"contains\" Product with cardinality N:M. You need to explain how the database knows which user placed a given order.",
+      "prompt": "Which attribute records that link, and on which entity does it sit?",
+      "options": [
+        "order_id (FK) on User",
+        "user_id (FK) on Order, referring to the primary key of User",
+        "user_id (PK) on Product",
+        "No attribute is needed for a 1:N relationship"
+      ],
+      "correctAnswer": 1,
+      "explanation": "In the diagram, Order carries user_id marked FK. A foreign key on the many side refers to the primary key on the one side, so each order points to exactly one user while a user can have many orders.",
+      "tags": ["er-diagram", "foreign-key", "primary-key", "cardinality"],
+      "references": ["Visualization", "SQL Fundamentals"]
+    },
+    {
+      "id": "database-q35",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "In the Buffer Manager visualization all eight slots of the pool are occupied and none is pinned. Page P3 is the least recently used page and is marked dirty. You request page P9, which is not in the pool.",
+      "prompt": "What happens?",
+      "options": [
+        "The request fails because the pool is full",
+        "P9 is read from disk on every access and never enters the pool",
+        "The most recently used page is evicted to make room",
+        "P3 is evicted, written to disk first because it is dirty, and P9 is loaded into its slot"
+      ],
+      "correctAnswer": 3,
+      "explanation": "The request is a cache miss. With no empty slot, the buffer manager evicts the unpinned page that was used least recently. A dirty page holds changes that are not yet on disk, so it is written out before its slot is reused.",
+      "tags": ["buffer-manager", "lru", "dirty-page", "cache-miss"],
+      "references": ["Visualization", "Storage Engine"]
+    }
+  ]
+}

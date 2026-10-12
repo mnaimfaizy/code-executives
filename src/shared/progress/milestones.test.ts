@@ -38,16 +38,16 @@ describe('milestones', () => {
   it('has one quiz milestone per module with a quiz bank, in module order', () => {
     const quizzes = milestones().filter((milestone) => milestone.kind === 'quiz');
     expect(quizzes.map((milestone) => milestone.moduleId)).toEqual(modulesWithQuiz());
-    expect(quizzes).toHaveLength(14);
+    expect(quizzes).toHaveLength(16);
     expect(quizzes[0]).toEqual({
       id: 'quiz:javascript',
       kind: 'quiz',
       moduleId: 'javascript',
       title: 'Scored 80% or more on the JavaScript quiz',
     });
-    // Modules without a bank get none
-    expect(modulesWithQuiz()).not.toContain('backend');
-    expect(modulesWithQuiz()).not.toContain('database');
+    // Every module has a bank today;
+    expect(modulesWithQuiz()).toContain('backend');
+    expect(modulesWithQuiz()).toContain('database');
   });
 
   it('gives a module with three exercises a milestone and a module with two none', () => {

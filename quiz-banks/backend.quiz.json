@@ -1,0 +1,619 @@
+{
+  "moduleId": "backend",
+  "moduleTitle": "Backend Architecture",
+  "description": "Scenario-based assessment of backend architecture: architectural patterns and their trade-offs, resilience patterns, CAP and ACID versus BASE, API styles, real-time communication, observability, and the end-to-end lifecycle of a production request.",
+  "version": 1,
+  "timeLimitMinutes": 10,
+  "questionsPerAttempt": 5,
+  "questions": [
+    {
+      "id": "backend-q01",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "Six developers are building the first version of a booking product. One of them proposes splitting it into twelve services from day one so that it will be ready for large scale later.",
+      "prompt": "Which starting architecture fits this team best, and why?",
+      "options": [
+        "Microservices, because every call between modules becomes a network hop that can be scaled",
+        "A monolith, because one codebase with in-process calls is simple to develop, test and deploy for a small team",
+        "Event-driven services, because a message broker removes the need for deployments",
+        "Hexagonal services per feature, because ports and adapters remove operational overhead"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A monolith is simple to develop, test and deploy at first, calls between modules happen in-process with no network overhead, and it suits small teams, MVPs and products with fewer than ten developers. Microservices add network complexity and operational overhead that a team this size does not yet need.",
+      "tags": ["monolith", "team-size", "trade-offs", "mvp"],
+      "references": ["Architecture Patterns"]
+    },
+    {
+      "id": "backend-q02",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A company with several product teams has decided to break its monolith into microservices. The platform lead is listing the infrastructure the organization must have in place before the first services go live.",
+      "prompt": "Which items belong on that list?",
+      "options": [
+        "Service discovery and an API gateway",
+        "One shared database that every service reads and writes",
+        "Distributed tracing across services",
+        "Circuit breakers between services and container orchestration",
+        "A single deployment pipeline that releases all services together"
+      ],
+      "correctAnswer": [0, 2, 3],
+      "explanation": "Microservices need service discovery, an API gateway, distributed tracing, circuit breakers and container orchestration such as Kubernetes. A shared database breaks the database-per-service rule that prevents coupling, and a single pipeline removes the independent deployment that is the main reason to adopt the pattern.",
+      "tags": ["microservices", "infrastructure", "database-per-service", "operations"],
+      "references": ["Architecture Patterns"]
+    },
+    {
+      "id": "backend-q03",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A code review of a layered enterprise application finds that about 80% of requests pass through the Business layer unchanged: each method only forwards its arguments to the Persistence layer and returns the result.",
+      "prompt": "What is this problem called in a layered architecture?",
+      "options": [
+        "A cascading failure",
+        "A partial dependency",
+        "The sink-hole anti-pattern",
+        "Over-fetching"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The sink-hole anti-pattern is a layer that passes data through without adding logic. The layers still cost traversal time and code, but they add no value for those requests.",
+      "tags": ["layered-architecture", "sink-hole", "anti-pattern", "code-review"],
+      "references": ["Architecture Patterns"]
+    },
+    {
+      "id": "backend-q04",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A billing product must switch payment provider from Stripe to PayPal. In the current code the pricing rules call the Stripe SDK directly, so the switch means editing business logic in dozens of places.",
+      "prompt": "Which design would have let the team switch providers without changing any business logic?",
+      "options": [
+        "A hexagonal design: the core defines a PaymentGateway port and each provider is an adapter that implements it",
+        "A layered design in which the Presentation layer calls the payment provider directly",
+        "A monolith in which the provider SDK is imported by every module that needs it",
+        "An event-driven design in which the pricing rules publish Stripe-specific events"
+      ],
+      "correctAnswer": 0,
+      "explanation": "In a hexagonal architecture the core holds only business rules and defines ports (interfaces). Infrastructure adapters implement those ports, and dependencies point inward, so one adapter can replace another without touching the domain logic.",
+      "tags": ["hexagonal", "ports-and-adapters", "dependency-direction", "payments"],
+      "references": ["Architecture Patterns"]
+    },
+    {
+      "id": "backend-q05",
+      "type": "true-false",
+      "difficulty": "intermediate",
+      "scenario": "An Order Service publishes an OrderCreated event to a message broker. Inventory, Shipping and Notification services consume it. The company now wants a Fraud Detection service to react to the same event.",
+      "prompt": "True or false: the Order Service must be changed so that it also sends the event to Fraud Detection.",
+      "options": ["True", "False"],
+      "correctAnswer": 1,
+      "explanation": "In an event-driven architecture producers and consumers do not know about each other. A new consumer subscribes to the existing event through the broker, so adding it requires no change to the producer.",
+      "tags": ["event-driven", "decoupling", "message-broker", "consumers"],
+      "references": ["Architecture Patterns"]
+    },
+    {
+      "id": "backend-q06",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "An architecture review collects one recurring complaint from each of four systems. Each complaint is a known trade-off of the pattern that system uses.",
+      "prompt": "Match each complaint to the architecture pattern whose trade-off it describes.",
+      "premises": [
+        "A memory leak in the reporting module takes the checkout down with it",
+        "Two services briefly disagree about an order's status after it changes",
+        "Saving one simple record needs a new interface, an adapter and injection wiring",
+        "Renaming a database column forces edits in the persistence, business and presentation code"
+      ],
+      "responses": ["Layered (N-tier)", "Monolithic", "Hexagonal", "Event-driven"],
+      "correctAnswer": [1, 3, 2, 0],
+      "explanation": "A monolith shares one process, so one failure can crash everything. Event-driven systems are eventually consistent, so services can be out of sync for a while. Hexagonal designs need more interfaces and boilerplate up front. In a layered design, schema changes cascade through several layers.",
+      "tags": ["trade-offs", "monolith", "event-driven", "hexagonal", "layered-architecture"],
+      "references": ["Architecture Patterns"]
+    },
+    {
+      "id": "backend-q07",
+      "type": "ordering",
+      "difficulty": "intermediate",
+      "scenario": "You are writing an onboarding page that explains how backend systems moved toward more and more abstraction, one paradigm at a time.",
+      "prompt": "Arrange the paradigms from earliest to most recent.",
+      "items": [
+        "Virtualized utility: compute rented from cloud providers",
+        "Hardware-centric: each program written for one specific machine",
+        "Distributed modules: containers and microservices",
+        "Tiered architecture: client, application server and database on the web",
+        "Data-centric: relational tables and SQL separate data from logic"
+      ],
+      "correctAnswer": [
+        "Hardware-centric: each program written for one specific machine",
+        "Data-centric: relational tables and SQL separate data from logic",
+        "Tiered architecture: client, application server and database on the web",
+        "Virtualized utility: compute rented from cloud providers",
+        "Distributed modules: containers and microservices"
+      ],
+      "explanation": "The sequence runs from hardware intimacy in the 1950s and 1960s, through the relational revolution of the 1970s and 1980s, the client-server web of the 1990s and the cloud of the 2000s, to containers and microservices from the 2010s on. Each step moved the backend further from the physical machine.",
+      "tags": ["history", "abstraction", "paradigms", "timeline"],
+      "references": ["Backend Evolution"]
+    },
+    {
+      "id": "backend-q08",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A reporting job is triggered a few dozen times a day and each run finishes in well under a second. The team pays for two virtual machines that sit idle almost all of the time.",
+      "prompt": "Which model from the most recent era removes the cost of those idle servers?",
+      "options": [
+        "A larger mainframe shared through terminals",
+        "A three-tier architecture with a dedicated application server",
+        "Virtual machines rented by the hour",
+        "Serverless functions, billed only for the time the code runs"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Serverless computing, introduced with AWS Lambda in 2014, runs code only for the milliseconds it needs and bills per execution time, so there are no idle servers. Hourly virtual machines still cost money while they wait.",
+      "tags": ["serverless", "cost", "cloud", "idle-capacity"],
+      "references": ["Backend Evolution"]
+    },
+    {
+      "id": "backend-q09",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A circuit breaker in front of a payment service tripped a few seconds ago. Its timeout has just elapsed, so it lets one probe request through. The payment service is still down and the probe fails.",
+      "prompt": "What does the breaker do next?",
+      "options": [
+        "It closes, because the timeout has already elapsed",
+        "It stays half-open and lets every request through until one succeeds",
+        "It opens again and rejects requests until the next timeout",
+        "It resets its failure count and waits for three more failures"
+      ],
+      "correctAnswer": 2,
+      "explanation": "In the half-open state a single test request checks whether the downstream service has recovered. A success closes the breaker; a failure re-opens it, so callers keep getting an immediate rejection while the service recovers.",
+      "tags": ["circuit-breaker", "half-open", "state-machine", "recovery"],
+      "references": ["Resilience Patterns", "Visualization"]
+    },
+    {
+      "id": "backend-q10",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "A downstream inventory service fails for a short time and then recovers. A circuit breaker sits between the order service and the inventory service.",
+      "prompt": "Arrange what the breaker goes through, from the healthy start to full recovery.",
+      "items": [
+        "The timeout elapses and the breaker becomes half-open",
+        "Closed: requests pass through while failures are counted",
+        "A single test request succeeds and the breaker closes",
+        "Open: requests are rejected immediately without calling the inventory service",
+        "Failures reach the threshold and the breaker trips"
+      ],
+      "correctAnswer": [
+        "Closed: requests pass through while failures are counted",
+        "Failures reach the threshold and the breaker trips",
+        "Open: requests are rejected immediately without calling the inventory service",
+        "The timeout elapses and the breaker becomes half-open",
+        "A single test request succeeds and the breaker closes"
+      ],
+      "explanation": "A breaker starts closed, trips to open when failures reach its threshold, rejects calls while open, moves to half-open after a timeout, and closes again only when a probe request succeeds.",
+      "tags": ["circuit-breaker", "state-machine", "threshold", "half-open"],
+      "references": ["Resilience Patterns", "Visualization"]
+    },
+    {
+      "id": "backend-q11",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "During an outage review, an engineer asks why a single slow database took down services that never query it, and what a circuit breaker would have changed.",
+      "prompt": "Which statements are accurate?",
+      "options": [
+        "A slow dependency can use up all connection pool threads, so its callers time out as well",
+        "While open, the breaker holds requests in a queue until the dependency recovers",
+        "While open, requests are rejected at once, usually with a fallback response",
+        "The breaker retries every failed request until it succeeds",
+        "Rejecting calls gives the failing service time to recover"
+      ],
+      "correctAnswer": [0, 2, 4],
+      "explanation": "Without a breaker, callers pile up waiting on the slow dependency and exhaust their own threads, which spreads the failure. An open breaker fails fast with an immediate rejection or fallback, which protects the callers and gives the downstream service room to recover. It does not queue or retry requests.",
+      "tags": ["circuit-breaker", "cascading-failure", "fail-fast", "connection-pool"],
+      "references": ["Resilience Patterns", "Visualization"]
+    },
+    {
+      "id": "backend-q12",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "An e-commerce order runs as a saga across four services: create order, reserve inventory, process payment, ship package. The order is created and the inventory reserved, then the payment step fails.",
+      "prompt": "What should happen next?",
+      "options": [
+        "The compensating actions run: the inventory is released and the order is cancelled",
+        "One database transaction rolls back all three services at once",
+        "The shipment goes ahead and the payment is collected later",
+        "The saga stops and leaves the inventory reserved until someone fixes it by hand"
+      ],
+      "correctAnswer": 0,
+      "explanation": "A saga splits a distributed transaction into local transactions, each with a compensating action that runs if a later step fails. No single database transaction spans services that each own their own database, so the earlier steps are undone by compensation.",
+      "tags": ["saga", "compensating-action", "distributed-transaction", "microservices"],
+      "references": ["Resilience Patterns"]
+    },
+    {
+      "id": "backend-q13",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "A checkout saga is coordinated by events: each service publishes an event that triggers the next step. When an order gets stuck, nobody can say which step it is in without reading the logs of five services.",
+      "prompt": "Which change addresses this debugging problem most directly?",
+      "options": [
+        "Remove the compensating actions so that there are fewer events to follow",
+        "Place a circuit breaker between each pair of services",
+        "Move every service onto one shared database",
+        "Switch to orchestration, where a central saga coordinator tells each service what to do"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Choreography is decentralized and simpler to start with, but harder to debug. Orchestration adds a central coordinator, which gives one point of control and is easier to reason about.",
+      "tags": ["saga", "orchestration", "choreography", "debugging"],
+      "references": ["Resilience Patterns"]
+    },
+    {
+      "id": "backend-q14",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "Forty services written in four languages all need encrypted service-to-service traffic, retry logic and tracing. The platform team does not want to change or redeploy the code of each service to add them.",
+      "prompt": "Which approach fits?",
+      "options": [
+        "Add a shared library to every service and rebuild each one",
+        "Run a sidecar proxy next to each service to handle these concerns",
+        "Put the retry and encryption logic in a saga coordinator",
+        "Merge the services into one monolith so the logic lives in one place"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A sidecar is a helper process that runs alongside the main service and handles cross-cutting concerns such as TLS, retries, logging and tracing without modifying the service code. Envoy in an Istio service mesh is the example given; in Kubernetes it runs as a second container in the same Pod.",
+      "tags": ["sidecar", "service-mesh", "cross-cutting-concerns", "kubernetes"],
+      "references": ["Resilience Patterns"]
+    },
+    {
+      "id": "backend-q15",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A payment ledger is replicated across two data centers. The network link between them fails. For this system, serving a stale balance could mean real money lost.",
+      "prompt": "How should the store behave during the partition?",
+      "options": [
+        "As an AP system: every node keeps answering, even if the nodes disagree",
+        "As a BASE system: accept all writes and reconcile them later",
+        "As a CP system: block or return an error rather than serve data that may be stale",
+        "It needs no choice, because a relational database is not affected by partitions"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A CP system gives up availability during a partition so that every read returns the latest write. That is the right trade for banking, payments and inventory counts, where stale data is worse than a refused request.",
+      "tags": ["cap-theorem", "cp", "partition", "payments"],
+      "references": ["Database Theory"]
+    },
+    {
+      "id": "backend-q16",
+      "type": "matching",
+      "difficulty": "intermediate",
+      "scenario": "A support team files four incident reports against a database that was supposed to be ACID compliant. Each incident shows one ACID guarantee being broken.",
+      "prompt": "Match each incident to the ACID property that was violated.",
+      "premises": [
+        "A $100 transfer failed midway: the debit stayed applied and the credit never happened",
+        "Two customers bought the last concert ticket at the same moment and both orders were confirmed",
+        "The API returned success, the server lost power a moment later, and the order was gone after restart",
+        "A write left the database in a state that breaks one of its own rules"
+      ],
+      "responses": ["Durability", "Atomicity", "Isolation", "Consistency"],
+      "correctAnswer": [1, 2, 0, 3],
+      "explanation": "Atomicity means all or nothing, so a half-applied transfer breaks it. Isolation keeps concurrent transactions from interfering, so only one buyer should win. Durability means data survives a crash once success is returned. Consistency means the database always moves from one valid state to another.",
+      "tags": ["acid", "atomicity", "isolation", "durability", "consistency"],
+      "references": ["Database Theory"]
+    },
+    {
+      "id": "backend-q17",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A social feed is moving its like counters to a store that follows the BASE philosophy. A product manager wants to know what users may notice.",
+      "prompt": "Which statements describe a BASE system?",
+      "options": [
+        "The system always returns an answer, even if it is slightly out of date",
+        "Stored data can change without new input while nodes synchronize",
+        "Every read returns the most recent write",
+        "It scales mainly by moving to a bigger single machine",
+        "If updates stop, all nodes eventually return the same data"
+      ],
+      "correctAnswer": [0, 1, 4],
+      "explanation": "BASE stands for Basically Available, Soft state and Eventual consistency. It trades immediate consistency for availability and speed, and it scales horizontally by adding machines. Reads that always return the latest write, and vertical scaling, describe ACID.",
+      "tags": ["base", "eventual-consistency", "availability", "scaling"],
+      "references": ["Database Theory"]
+    },
+    {
+      "id": "backend-q18",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "An architect proposes a data store spread over three data centers that will be both fully consistent and fully available, and says the design will simply not worry about network partitions.",
+      "prompt": "True or false: for a distributed store like this, the practical choice is between consistency and availability during a partition, because partitions cannot be ruled out.",
+      "options": ["True", "False"],
+      "correctAnswer": 0,
+      "explanation": "The CAP theorem allows only two of the three guarantees at once. Network partitions are inevitable in a distributed system, so partition tolerance is not optional and the real decision is CP or AP.",
+      "tags": ["cap-theorem", "partition-tolerance", "cp-vs-ap", "distributed-data"],
+      "references": ["Database Theory"]
+    },
+    {
+      "id": "backend-q19",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A mobile screen shows only a user's name. To get it, the app calls GET /api/users/123 and downloads the whole user object, including the address and the order history. On slow networks the screen takes seconds to load.",
+      "prompt": "What is this problem called, and which API style was created to solve it?",
+      "options": [
+        "Statelessness, solved by SOAP",
+        "Tight coupling, solved by RPC",
+        "Over-fetching, solved by GraphQL",
+        "Verbosity, solved by REST"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Downloading more data than the screen needs is over-fetching. GraphQL was developed at Facebook for exactly this case: the client names the fields it wants in a typed query and gets only those back.",
+      "tags": ["graphql", "over-fetching", "rest", "mobile"],
+      "references": ["API Design"]
+    },
+    {
+      "id": "backend-q20",
+      "type": "multi-select",
+      "difficulty": "expert",
+      "scenario": "A team uses gRPC between its internal services and is asked whether the same interface can be opened directly to browser clients and to partners who test with command-line tools.",
+      "prompt": "Which statements about gRPC are accurate?",
+      "options": [
+        "Each message is wrapped in an XML envelope with a header and a body",
+        "Protobuf messages are smaller and faster to serialize than JSON text",
+        "The binary format is not human-readable, so it cannot be tested with plain curl",
+        "Clients choose the response fields per query against a single endpoint",
+        "Browsers need a proxy layer such as gRPC-Web"
+      ],
+      "correctAnswer": [1, 2, 4],
+      "explanation": "gRPC sends binary Protocol Buffers over HTTP/2, which makes messages much smaller and faster to process than JSON. The cost is that the format is not human-readable and browsers need a proxy layer. XML envelopes belong to SOAP and client-chosen fields belong to GraphQL.",
+      "tags": ["grpc", "protobuf", "http2", "browser-support"],
+      "references": ["API Design"]
+    },
+    {
+      "id": "backend-q21",
+      "type": "true-false",
+      "difficulty": "intermediate",
+      "scenario": "A REST API runs on eight instances behind a load balancer. Two consecutive requests from the same client land on different instances.",
+      "prompt": "True or false: because each REST request carries everything needed to process it, either instance can serve either request.",
+      "options": ["True", "False"],
+      "correctAnswer": 0,
+      "explanation": "Statelessness is the key REST constraint: every request must contain everything the server needs, with no server-side session. That is why REST APIs are easy to cache and to scale horizontally.",
+      "tags": ["rest", "statelessness", "horizontal-scaling", "load-balancing"],
+      "references": ["API Design"]
+    },
+    {
+      "id": "backend-q22",
+      "type": "matching",
+      "difficulty": "advanced",
+      "scenario": "An integration team must choose an API style for four different interfaces in the same company.",
+      "prompt": "Match each requirement to the API style that fits it best.",
+      "premises": [
+        "A partner bank requires a machine-readable WSDL contract and built-in message security standards",
+        "A public API should be usable by anyone who knows HTTP verbs, and should cache well",
+        "Each screen of an app needs a different subset of fields from one typed, self-documenting endpoint",
+        "Two internal services exchange large volumes of small binary messages and stream in both directions"
+      ],
+      "responses": ["REST", "gRPC", "SOAP", "GraphQL"],
+      "correctAnswer": [2, 0, 3, 1],
+      "explanation": "SOAP offers strict WSDL contracts and the WS-Security family, which suits formal enterprise integrations. REST uses standard HTTP verbs and is stateless, so it is simple and cacheable for public APIs. GraphQL lets clients pick fields from one typed endpoint. gRPC uses binary Protobuf over HTTP/2 with bidirectional streaming for fast service-to-service calls.",
+      "tags": ["api-styles", "soap", "rest", "graphql", "grpc"],
+      "references": ["API Design"]
+    },
+    {
+      "id": "backend-q23",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "Your backend must learn when a third-party payment provider finishes processing a payment. At the moment a job asks the provider's API every ten seconds for each open payment, and most of those calls return nothing new.",
+      "prompt": "Which mechanism replaces the polling?",
+      "options": [
+        "A WebSocket from each customer's browser to the provider",
+        "Server-Sent Events from your backend to the provider",
+        "A shorter polling interval",
+        "A webhook: register a callback URL and let the provider POST the event to it"
+      ],
+      "correctAnswer": 3,
+      "explanation": "With a webhook the client registers a callback URL and the server sends an HTTP POST to it when an event occurs. It is a server-to-server push, so no polling is needed. Payment notifications are a typical use.",
+      "tags": ["webhooks", "polling", "payments", "server-to-server"],
+      "references": ["Real-Time Communication"]
+    },
+    {
+      "id": "backend-q24",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "A dashboard shows live stock prices. Data flows only from the server to the browser. The team wants to stay on plain HTTP and wants the browser to reconnect by itself after a network drop.",
+      "prompt": "Which option fits these requirements best?",
+      "options": ["Server-Sent Events", "WebSockets", "Webhooks", "A gRPC call from the browser"],
+      "correctAnswer": 0,
+      "explanation": "Server-Sent Events use standard HTTP with the text/event-stream content type, push from server to client only, and have browser reconnection built in. WebSockets also work but add a bidirectional, stateful connection the dashboard does not need. Webhooks are server to server.",
+      "tags": ["sse", "server-push", "auto-reconnect", "live-feed"],
+      "references": ["Real-Time Communication"]
+    },
+    {
+      "id": "backend-q25",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A collaborative document editor chooses WebSockets so that every keystroke reaches the other editors at once. The operations team asks what this choice implies for the infrastructure.",
+      "prompt": "Which statements about WebSockets are accurate?",
+      "options": [
+        "The connection starts as an HTTP handshake and is then upgraded",
+        "Either side can send a message at any time while the connection is open",
+        "Only text data can be sent",
+        "Connections are stateful, which makes load balancing and scaling harder",
+        "The server opens a new HTTP POST to the client for each message"
+      ],
+      "correctAnswer": [0, 1, 3],
+      "explanation": "A WebSocket begins with an HTTP handshake, upgrades to a persistent connection, and lets both sides send freely. Because the connection is long-lived and stateful, connection management and scaling are harder. The text-only limit belongs to Server-Sent Events, and a POST per event describes webhooks.",
+      "tags": ["websockets", "bidirectional", "stateful", "scaling"],
+      "references": ["Real-Time Communication"]
+    },
+    {
+      "id": "backend-q26",
+      "type": "true-false",
+      "difficulty": "advanced",
+      "scenario": "Your webhook endpoint was offline for two minutes during a deployment. Afterwards, some payment.succeeded events from the provider never appear in your system.",
+      "prompt": "True or false: webhooks by themselves guarantee that every event is delivered.",
+      "options": ["True", "False"],
+      "correctAnswer": 1,
+      "explanation": "Webhooks are simple and need no persistent connection, but they are one-directional, require a public endpoint and offer no guaranteed delivery. An event sent while the receiver is down can be lost.",
+      "tags": ["webhooks", "delivery", "reliability", "deployment"],
+      "references": ["Real-Time Communication"]
+    },
+    {
+      "id": "backend-q27",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "You are on call for a system of many services when users start reporting failed checkouts.",
+      "prompt": "Arrange the investigation steps in the order the three pillars are normally used.",
+      "items": [
+        "Follow a failing request's trace across services to find the bottleneck",
+        "Deploy the fix and verify that the metrics return to normal",
+        "An alert fires because the error rate metric has passed 5%",
+        "Search the ERROR-level logs around the time of the alert"
+      ],
+      "correctAnswer": [
+        "An alert fires because the error rate metric has passed 5%",
+        "Search the ERROR-level logs around the time of the alert",
+        "Follow a failing request's trace across services to find the bottleneck",
+        "Deploy the fix and verify that the metrics return to normal"
+      ],
+      "explanation": "Metrics detect that something is wrong, logs show what happened around that time, and traces show where in the chain of services the problem sits. After the fix, the metrics confirm that the system is healthy again.",
+      "tags": ["incident-response", "metrics", "logs", "traces"],
+      "references": ["Observability"]
+    },
+    {
+      "id": "backend-q28",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A team has only logs. Its log storage bill keeps growing and it has no automated alerts. An engineer proposes adding metrics.",
+      "prompt": "Which statements about metrics are accurate?",
+      "options": [
+        "They are numeric time-series, which suits dashboards and automated alerts",
+        "They store the full text of every event together with its message",
+        "They cost less to store than logs because they are pre-aggregated numbers",
+        "They link the spans of one request with a shared trace ID",
+        "The RED method (Rate, Errors, Duration) is a standard way to choose what to measure"
+      ],
+      "correctAnswer": [0, 2, 4],
+      "explanation": "Metrics are numeric measurements collected over time, such as request rates, error percentages and latency percentiles. They are far cheaper to store than verbose log text and drive dashboards and alerts. Full event text is what logs hold, and spans joined by a trace ID are traces.",
+      "tags": ["metrics", "time-series", "alerting", "red-method"],
+      "references": ["Observability"]
+    },
+    {
+      "id": "backend-q29",
+      "type": "matching",
+      "difficulty": "intermediate",
+      "scenario": "Four engineers each bring a different need to the observability team.",
+      "prompt": "Match each need to the signal or tool that answers it.",
+      "premises": [
+        "What exactly did the payment service record just before it crashed at 03:12?",
+        "Has p99 latency been climbing over the last hour, and should someone be paged?",
+        "One checkout request took two seconds: which of the services it touched was slow?",
+        "We want one vendor-neutral SDK that collects and exports all three signals"
+      ],
+      "responses": ["Traces", "OpenTelemetry", "Logs", "Metrics"],
+      "correctAnswer": [2, 3, 0, 1],
+      "explanation": "Logs are timestamped records of discrete events, so they show what happened before a crash. Metrics are numbers over time, which fit latency trends and alerts. Traces follow one request through every service it touches. OpenTelemetry is the vendor-neutral framework for collecting and exporting all three.",
+      "tags": ["logs", "metrics", "traces", "opentelemetry"],
+      "references": ["Observability"]
+    },
+    {
+      "id": "backend-q30",
+      "type": "ordering",
+      "difficulty": "intermediate",
+      "scenario": "A user clicks \"Buy Now\" on shop.example.com. You are asked to explain to a new colleague what happens before the confirmation appears.",
+      "prompt": "Arrange the stages of the request from first to last.",
+      "items": [
+        "The service runs the business logic, checking the cache before the database",
+        "TCP and TLS handshakes establish an encrypted connection",
+        "The JSON response travels back to the client",
+        "DNS resolves the domain name to an IP address",
+        "Non-critical tasks such as the confirmation email are placed on a message queue",
+        "The load balancer and API gateway route, authenticate and rate-limit the request"
+      ],
+      "correctAnswer": [
+        "DNS resolves the domain name to an IP address",
+        "TCP and TLS handshakes establish an encrypted connection",
+        "The load balancer and API gateway route, authenticate and rate-limit the request",
+        "The service runs the business logic, checking the cache before the database",
+        "Non-critical tasks such as the confirmation email are placed on a message queue",
+        "The JSON response travels back to the client"
+      ],
+      "explanation": "The browser first needs an address (DNS) and a secure connection (TCP and TLS). The request then passes the load balancer and API gateway, the service does its work, slow non-critical tasks are queued, and the response returns along the same path.",
+      "tags": ["request-lifecycle", "dns", "tls", "api-gateway", "message-queue"],
+      "references": ["Request Lifecycle"]
+    },
+    {
+      "id": "backend-q31",
+      "type": "single-choice",
+      "difficulty": "intermediate",
+      "scenario": "Each of twelve microservices validates the user's JWT and enforces its own limit of 100 requests per second per user. The checks are duplicated and have started to behave differently from service to service.",
+      "prompt": "Where in the request path do these checks belong?",
+      "options": [
+        "In the DNS resolver",
+        "In the API gateway",
+        "In the message queue workers",
+        "In the database"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The API gateway handles cross-cutting concerns for incoming requests: JWT validation, rate limiting, request transformation and routing to the correct service by URL path. Doing this once at the gateway removes the duplicated checks.",
+      "tags": ["api-gateway", "jwt", "rate-limiting", "cross-cutting-concerns"],
+      "references": ["Request Lifecycle"]
+    },
+    {
+      "id": "backend-q32",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A checkout endpoint takes 2.4 seconds. A trace shows that 2 seconds are spent sending the confirmation email and syncing inventory to the warehouse system before the response is returned.",
+      "prompt": "Which change brings the response time down the most?",
+      "options": [
+        "Add a second load balancer in front of the service",
+        "Run the email and the warehouse sync in a single database transaction",
+        "Cache the DNS answer for longer",
+        "Push the email and the warehouse sync to a message queue and return the response right away"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Non-critical tasks belong on a message queue. Enqueueing takes only a few milliseconds, worker processes do the heavy work in the background, and the user's response returns without waiting for it.",
+      "tags": ["message-queue", "async-processing", "latency", "background-workers"],
+      "references": ["Request Lifecycle"]
+    },
+    {
+      "id": "backend-q33",
+      "type": "multi-select",
+      "difficulty": "advanced",
+      "scenario": "A product page must respond within a 200 ms budget. The team reviews how caching is used along the request path.",
+      "prompt": "Which statements match how the request lifecycle uses caching?",
+      "options": [
+        "The service checks the in-memory cache before querying the primary database",
+        "A cache hit still runs the database query to confirm the value",
+        "After a miss, the result is written back to the cache with a TTL",
+        "DNS answers are also cached at several levels with TTL values",
+        "The cache is consulted only after the database has responded"
+      ],
+      "correctAnswer": [0, 2, 3],
+      "explanation": "The service checks the cache first, and a hit skips the database, which is the slowest step. On a miss the database is queried and the result is written back with a TTL so the next request is fast. DNS answers are cached too, from the browser up to the resolver.",
+      "tags": ["caching", "redis", "ttl", "dns-cache", "latency-budget"],
+      "references": ["Request Lifecycle"]
+    },
+    {
+      "id": "backend-q34",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "In the Circuit Breaker visualization you set the downstream failure rate to 100% and start the simulation. The breaker trips after three failures. You keep watching the live request stream.",
+      "prompt": "What does the stream show from this point on?",
+      "options": [
+        "Requests are rejected immediately while the breaker is open; after the cooldown one test request is tried, it fails, and the breaker opens again",
+        "Requests wait in a queue and all succeed once the cooldown ends",
+        "The breaker closes when the cooldown ends, whether or not the service has recovered",
+        "The failure counter keeps rising while every request is still sent to the downstream service"
+      ],
+      "correctAnswer": 0,
+      "explanation": "An open breaker rejects requests without calling the downstream service. When the cooldown ends it becomes half-open and allows one test request. With the downstream still failing, that request fails and the breaker re-opens, so callers keep getting fast errors instead of hanging.",
+      "tags": ["circuit-breaker", "simulation", "cooldown", "fail-fast"],
+      "references": ["Visualization", "Resilience Patterns"]
+    },
+    {
+      "id": "backend-q35",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "In the Request Lifecycle visualization the \"Buy Now\" request reaches the Database Write step, where the order row is inserted inside a transaction. Suppose one of the table's constraints fails during that insert.",
+      "prompt": "What does the database do?",
+      "options": [
+        "It keeps the part of the order that passed and drops the rest",
+        "It commits the order and reports the failed constraint afterwards",
+        "It rolls back the whole write, so no partial order is stored",
+        "It puts the write on the message queue to be retried later"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The order is written in an ACID transaction. Atomicity means all or nothing, so if any constraint fails the whole write is rolled back and the database is left unchanged.",
+      "tags": ["atomicity", "transaction", "constraints", "request-journey"],
+      "references": ["Visualization", "Database Theory"]
+    }
+  ]
+}
