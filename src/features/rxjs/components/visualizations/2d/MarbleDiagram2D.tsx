@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useId, useState, useRef } from 'react';
 import { Play, Pause, RotateCcw, Download, Settings } from 'lucide-react';
+import { useReducedMotion } from '../../../../../shared/hooks';
 
 interface MarbleData {
   id: string;
@@ -30,7 +31,6 @@ interface MarbleDiagram2DProps {
   width?: number;
   height?: number;
   className?: string;
-  onMarbleClick?: (marble: MarbleData) => void;
   onOperatorSelect?: (operator: string) => void;
   showGrid?: boolean;
   timeScale?: number;
@@ -90,12 +90,15 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
   width = 800,
   height = 400,
   className = '',
-  onMarbleClick,
   onOperatorSelect,
   showGrid = true,
   timeScale = 5000,
 }) => {
-  const [isPlaying, setIsPlaying] = useState(autoPlay);
+  const prefersReducedMotion = useReducedMotion();
+  // null until the learner presses Play, Pause or Reset: until then the diagram
+  // plays by itself only if motion is welcome.
+  const [playChoice, setPlayChoice] = useState<boolean | null>(null);
+  const isPlaying = playChoice ?? (autoPlay && !prefersReducedMotion);
   const [currentTime, setCurrentTime] = useState(0);
   const [selectedOperator, setSelectedOperator] = useState<OperatorConfig | null>(null);
   const [streams] = useState(initialStreams);
@@ -104,6 +107,13 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
   const [currentShowGrid, setCurrentShowGrid] = useState(showGrid);
   const intervalRef = useRef<number | null>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const gridId = useId();
+  const speedId = useId();
+
+  // With reduced motion and nothing played yet, draw the finished diagram
+  // instead of a timeline that waits at 0.
+  const isStill = prefersReducedMotion && playChoice === null;
+  const shownTime = isStill ? timeScale : currentTime;
 
   const streamHeight = 80;
   const timelineStart = 100;
@@ -144,12 +154,12 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
   }, [isPlaying, currentAnimationSpeed, timeScale]);
 
   const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
+    setPlayChoice(!isPlaying);
   };
 
   const handleReset = () => {
     setCurrentTime(0);
-    setIsPlaying(false);
+    setPlayChoice(false);
   };
 
   const handleOperatorSelect = (operator: OperatorConfig) => {
@@ -158,12 +168,6 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
       onOperatorSelect(operator.name);
     }
     setCurrentTime(0);
-  };
-
-  const handleMarbleClick = (marble: MarbleData) => {
-    if (onMarbleClick) {
-      onMarbleClick(marble);
-    }
   };
 
   const getTimelinePosition = (time: number) => {
@@ -199,35 +203,48 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
         {/* Controls */}
         <div className="flex items-center space-x-2">
           <button
+            type="button"
             onClick={() => setShowSettings(!showSettings)}
+            aria-label="Visualization settings"
+            aria-expanded={showSettings}
             className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
               showSettings
                 ? 'bg-gray-600 text-white'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-600'
             }`}
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
+            type="button"
             onClick={exportDiagram}
+            aria-label="Download diagram as SVG"
             className="flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4" aria-hidden="true" />
           </button>
 
           <button
+            type="button"
             onClick={handlePlayPause}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
             className="flex items-center justify-center w-10 h-10 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+            {isPlaying ? (
+              <Pause className="w-4 h-4" aria-hidden="true" />
+            ) : (
+              <Play className="w-4 h-4 ml-0.5" aria-hidden="true" />
+            )}
           </button>
 
           <button
+            type="button"
             onClick={handleReset}
+            aria-label="Reset"
             className="flex items-center justify-center w-10 h-10 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition-colors"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -236,7 +253,9 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={() => setSelectedOperator(null)}
+            aria-pressed={!selectedOperator}
             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
               !selectedOperator
                 ? 'bg-gray-800 border-gray-800 text-white'
@@ -248,7 +267,9 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
           {availableOperators.map((operator) => (
             <button
               key={operator.name}
+              type="button"
               onClick={() => handleOperatorSelect(operator)}
+              aria-pressed={selectedOperator?.name === operator.name}
               className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                 selectedOperator?.name === operator.name
                   ? 'bg-purple-600 border-purple-600 text-white'
@@ -266,28 +287,39 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
 
       {/* Visualization */}
       <div className="relative">
-        <svg ref={svgRef} width={width} height={height} className="overflow-visible">
+        <svg
+          ref={svgRef}
+          width={width}
+          height={height}
+          className="overflow-visible"
+          role="img"
+          aria-label="Marble diagram of the input stream and the stream the selected operator produces"
+        >
           {/* Grid */}
           {currentShowGrid && (
-            <defs>
-              <pattern id="grid" width="50" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 50 0 L 0 0 0 20" fill="none" stroke="#f3f4f6" strokeWidth="1" />
-              </pattern>
-              <rect width="100%" height="100%" fill="url(#grid)" />
-            </defs>
+            <>
+              <defs>
+                <pattern id={gridId} width="50" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 50 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill={`url(#${gridId})`} />
+            </>
           )}
 
           {/* Time Progress Indicator */}
-          <line
-            x1={getTimelinePosition(currentTime)}
-            y1={20}
-            x2={getTimelinePosition(currentTime)}
-            y2={height - 20}
-            stroke="#ef4444"
-            strokeWidth="2"
-            strokeDasharray="4,4"
-            opacity="0.8"
-          />
+          {!isStill && (
+            <line
+              x1={getTimelinePosition(currentTime)}
+              y1={20}
+              x2={getTimelinePosition(currentTime)}
+              y2={height - 20}
+              stroke="#ef4444"
+              strokeWidth="2"
+              strokeDasharray="4,4"
+              opacity="0.8"
+            />
+          )}
 
           {/* Stream Timelines */}
           {allStreams.map((stream, streamIndex) => {
@@ -338,7 +370,7 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
                 {/* Marbles */}
                 {stream.marbles.map((marble) => {
                   const marbleX = getTimelinePosition(marble.time);
-                  const isVisible = currentTime >= marble.time;
+                  const isVisible = shownTime >= marble.time;
                   const marbleColor =
                     marble.type === 'complete'
                       ? '#10b981'
@@ -356,8 +388,6 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
                         stroke="white"
                         strokeWidth="2"
                         opacity={isVisible ? 1 : 0.3}
-                        className="cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => handleMarbleClick(marble)}
                       />
 
                       {/* Marble value */}
@@ -378,7 +408,7 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
                       </text>
 
                       {/* Marble animation */}
-                      {isVisible && (
+                      {isVisible && !prefersReducedMotion && (
                         <circle
                           cx={marbleX}
                           cy={yPos}
@@ -456,10 +486,11 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
           <h4 className="font-semibold text-gray-900 mb-3">Visualization Settings</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor={speedId} className="block text-sm font-medium text-gray-700 mb-1">
                 Animation Speed
               </label>
               <input
+                id={speedId}
                 type="range"
                 min="0.5"
                 max="3"
@@ -490,7 +521,6 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
         <h4 className="font-semibold text-blue-900 mb-2">How to Use</h4>
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• Click operators to see how they transform the input stream</li>
-          <li>• Click marbles to inspect their values</li>
           <li>• Use play/pause controls to control the animation</li>
           <li>• Export the diagram as SVG for documentation</li>
         </ul>

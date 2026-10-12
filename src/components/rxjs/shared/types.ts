@@ -1,4 +1,4 @@
-// Core types for RxJS visualization components
+// Core types for the RxJS marble diagram tool
 
 export interface MarbleEvent {
   id: string;
@@ -17,64 +17,31 @@ export interface MarbleStream {
   hasError: boolean;
 }
 
+export type OperatorName = 'map' | 'filter' | 'take' | 'skip' | 'distinctUntilChanged';
+
+/** One entry of an operator's fixed list of choices. */
+export interface OperatorChoice {
+  id: string;
+  label: string;
+}
+
 export interface OperatorConfig {
-  name: string;
+  name: OperatorName;
   displayName: string;
   description: string;
-  example: string;
-  category: 'creation' | 'transformation' | 'filtering' | 'combination' | 'utility';
-  parameters?: OperatorParameter[];
+  category: 'transformation' | 'filtering';
+  /** A fixed list to pick from (map, filter). The first entry is the default. */
+  choices?: { label: string; options: OperatorChoice[] };
+  /** A whole number of values (take, skip). */
+  count?: { label: string; defaultValue: number };
 }
 
-export interface OperatorParameter {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'function';
-  defaultValue: string | number | boolean;
-  description: string;
-  required: boolean;
-}
-
-export interface MarbleDiagramState {
-  sourceStream: MarbleStream;
-  operators: AppliedOperator[];
-  resultStream: MarbleStream;
-  isPlaying: boolean;
-  currentTime: number;
-  speed: number;
-}
-
+/** An operator the learner has added to the chain. */
 export interface AppliedOperator {
   id: string;
-  config: OperatorConfig;
-  parameters: Record<string, string | number | boolean>;
-  enabled: boolean;
-}
-
-export interface CodeExample {
-  id: string;
-  title: string;
-  description: string;
-  code: string;
-  expectedOutput: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  category: string;
-}
-
-export interface Tutorial {
-  id: string;
-  title: string;
-  description: string;
-  steps: TutorialStep[];
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-}
-
-export interface TutorialStep {
-  id: string;
-  title: string;
-  description: string;
-  code?: string;
-  marbleInput?: string;
-  expectedOutput?: string;
-  explanation: string;
-  hints?: string[];
+  name: OperatorName;
+  /** Id of the picked `OperatorChoice`, for operators with `choices`. */
+  choice?: string;
+  /** For operators with `count`. */
+  count?: number;
 }

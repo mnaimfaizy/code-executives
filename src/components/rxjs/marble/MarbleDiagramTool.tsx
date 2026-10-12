@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import type { MarbleStream, AppliedOperator } from '../shared/types';
-import { createMarbleStream, applyOperatorSimulation, operatorConfigs } from '../shared/utils';
+import React, { useId, useMemo, useRef, useState } from 'react';
+import { X } from 'lucide-react';
+import type { AppliedOperator } from '../shared/types';
+import { createMarbleStream, applyOperators, describeOperator } from '../shared/utils';
+import type { OperatorSettings } from '../shared/utils';
 import { MarbleEditor } from '../visualization/MarbleEditor';
 import { MarbleTimeline } from '../visualization/MarbleTimeline';
 import { OperatorSelector } from '../visualization/OperatorSelector';
@@ -15,6 +17,24 @@ interface MarbleDiagramToolProps {
   className?: string;
 }
 
+const examples: Record<'basic' | 'advanced' | 'error', MarbleDiagramToolState> = {
+  basic: {
+    inputMarbleString: '--1--2--3--|',
+    appliedOperators: [],
+  },
+  advanced: {
+    inputMarbleString: '--a--b--c--d--e--|',
+    appliedOperators: [{ id: 'map-example', name: 'map', choice: 'upperCase' }],
+  },
+  error: {
+    inputMarbleString: '--1--2--#',
+    appliedOperators: [],
+  },
+};
+
+const streamStatus = (stream: { isComplete: boolean; hasError: boolean }): string =>
+  stream.isComplete ? 'Complete' : stream.hasError ? 'Error' : 'Active';
+
 export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
   initialState,
   className = '',
@@ -24,88 +44,44 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
     appliedOperators: [],
     ...initialState,
   });
+  const nextOperatorId = useRef(0);
+  const chainLabelId = useId();
 
-  const [streams, setStreams] = useState<{
-    input: MarbleStream;
-    output: MarbleStream;
-  }>({
-    input: {
-      id: 'input',
-      name: 'Input',
-      events: [],
-      duration: 1000,
-      isComplete: false,
-      hasError: false,
-    },
-    output: {
+  // Both streams are worked out from the state, so the text box, the chain and
+  // the diagram cannot disagree.
+  const streams = useMemo(() => {
+    const input = createMarbleStream('input', 'Input', state.inputMarbleString);
+    const output = {
+      ...applyOperators(input, state.appliedOperators),
       id: 'output',
       name: 'Output',
-      events: [],
-      duration: 1000,
-      isComplete: false,
-      hasError: false,
-    },
-  });
-
-  const updateStreams = useCallback(() => {
-    try {
-      const inputStream = createMarbleStream('input', 'Input', state.inputMarbleString);
-
-      // Apply operators to create output stream
-      let outputStream = inputStream;
-      for (const appliedOp of state.appliedOperators) {
-        if (appliedOp.enabled) {
-          outputStream = applyOperatorSimulation(
-            outputStream,
-            appliedOp.config.name,
-            appliedOp.parameters
-          );
-        }
-      }
-
-      setStreams({ input: inputStream, output: outputStream });
-    } catch (error) {
-      console.error('Error updating streams:', error);
-      // Keep previous valid streams on error
-    }
+    };
+    return { input, output };
   }, [state.inputMarbleString, state.appliedOperators]);
 
-  useEffect(() => {
-    updateStreams();
-  }, [updateStreams]);
+  const clearTool = () => {
+    setState({ inputMarbleString: '', appliedOperators: [] });
+  };
 
-  const clearTool = useCallback(() => {
-    setState({
-      inputMarbleString: '',
-      appliedOperators: [],
-    });
-  }, []);
-
-  const loadExample = useCallback((example: 'basic' | 'advanced' | 'error') => {
-    const examples: Record<string, MarbleDiagramToolState> = {
-      basic: {
-        inputMarbleString: '--1--2--3--|',
-        appliedOperators: [],
-      },
-      advanced: {
-        inputMarbleString: '--a--b--c--d--e--|',
-        appliedOperators: [
-          {
-            id: 'map-example',
-            config: operatorConfigs[0], // map
-            parameters: { transform: 'x => x.toUpperCase()' },
-            enabled: true,
-          },
-        ],
-      },
-      error: {
-        inputMarbleString: '--1--2--#',
-        appliedOperators: [],
-      },
-    };
-
+  const loadExample = (example: keyof typeof examples) => {
     setState(examples[example]);
-  }, []);
+  };
+
+  const addOperator = (operator: OperatorSettings) => {
+    nextOperatorId.current += 1;
+    const id = `${operator.name}-${nextOperatorId.current}`;
+    setState((prev) => ({
+      ...prev,
+      appliedOperators: [...prev.appliedOperators, { ...operator, id }],
+    }));
+  };
+
+  const removeOperator = (id: string) => {
+    setState((prev) => ({
+      ...prev,
+      appliedOperators: prev.appliedOperators.filter((operator) => operator.id !== id),
+    }));
+  };
 
   return (
     <div className={`marble-diagram-tool ${className}`}>
@@ -114,7 +90,7 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Interactive Marble Diagrams</h2>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Write a stream in marble notation, pick an operator and see the stream it produces. The
-          result is simulated: no RxJS code is run.
+          result is worked out from the marbles: no code is run.
         </p>
       </div>
 
@@ -124,26 +100,30 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
           <h3 className="text-xl font-semibold text-gray-800">Marble Diagram Tool</h3>
           <div className="flex gap-2">
             <button
+              type="button"
               onClick={() => loadExample('basic')}
-              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
             >
               Basic Example
             </button>
             <button
+              type="button"
               onClick={() => loadExample('advanced')}
-              className="px-3 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+              className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded hover:bg-green-200"
             >
               Advanced Example
             </button>
             <button
+              type="button"
               onClick={() => loadExample('error')}
-              className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+              className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded hover:bg-red-200"
             >
               Error Handling
             </button>
             <button
+              type="button"
               onClick={clearTool}
-              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+              className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
             >
               Clear
             </button>
@@ -152,13 +132,10 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
 
         {/* Input Section */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Input Stream (Marble Notation)
-          </label>
           <MarbleEditor
-            initialValue={state.inputMarbleString}
-            onStreamChange={(stream) => {
-              setState((prev) => ({ ...prev, inputMarbleString: stream.name }));
+            value={state.inputMarbleString}
+            onChange={(inputMarbleString) => {
+              setState((prev) => ({ ...prev, inputMarbleString }));
             }}
             className="w-full"
           />
@@ -166,16 +143,7 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
 
         {/* Operator Selection */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Operators Chain</label>
-          <OperatorSelector
-            onOperatorAdd={(appliedOperator: AppliedOperator) => {
-              setState((prev) => ({
-                ...prev,
-                appliedOperators: [...prev.appliedOperators, appliedOperator],
-              }));
-            }}
-            className="w-full"
-          />
+          <OperatorSelector onOperatorAdd={addOperator} className="w-full" />
         </div>
 
         {/* Visualization */}
@@ -183,22 +151,36 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
           {/* Input Stream Visualization */}
           <div>
             <h4 className="text-sm font-medium text-gray-700 mb-2">Input Stream</h4>
-            <MarbleTimeline stream={streams.input} className="border rounded p-2" />
+            <MarbleTimeline
+              stream={streams.input}
+              showName={false}
+              className="border rounded p-2"
+            />
           </div>
 
-          {/* Operator Chain Visualization */}
+          {/* Operator Chain */}
           {state.appliedOperators.length > 0 && (
             <div className="px-4 py-2 bg-gray-50 rounded">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span>Operators:</span>
-                {state.appliedOperators.map((op, index) => (
-                  <React.Fragment key={op.id}>
-                    <span className="px-2 py-1 bg-white rounded border text-xs font-mono">
-                      {op.config.name}
-                    </span>
-                    {index < state.appliedOperators.length - 1 && <span>→</span>}
-                  </React.Fragment>
-                ))}
+              <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                <span id={chainLabelId}>Operators:</span>
+                <ol aria-labelledby={chainLabelId} className="flex flex-wrap items-center gap-2">
+                  {state.appliedOperators.map((op, index) => (
+                    <li key={op.id} className="flex items-center gap-2">
+                      {index > 0 && <span aria-hidden="true">→</span>}
+                      <span className="flex items-center gap-1 pl-2 pr-1 py-1 bg-white rounded border text-xs font-mono">
+                        {describeOperator(op)}
+                        <button
+                          type="button"
+                          onClick={() => removeOperator(op.id)}
+                          aria-label={`Remove ${describeOperator(op)}`}
+                          className="p-0.5 rounded text-gray-500 hover:bg-gray-200 hover:text-gray-800"
+                        >
+                          <X className="w-3 h-3" aria-hidden="true" />
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             </div>
           )}
@@ -206,7 +188,11 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
           {/* Output Stream Visualization */}
           <div>
             <h4 className="text-sm font-medium text-gray-700 mb-2">Output Stream</h4>
-            <MarbleTimeline stream={streams.output} className="border rounded p-2" />
+            <MarbleTimeline
+              stream={streams.output}
+              showName={false}
+              className="border rounded p-2"
+            />
           </div>
         </div>
 
@@ -216,23 +202,13 @@ export const MarbleDiagramTool: React.FC<MarbleDiagramToolProps> = ({
             <div className="font-medium text-blue-800 mb-1">Input Stream</div>
             <div className="text-blue-600">{streams.input.events.length} events</div>
             <div className="text-blue-600">Duration: {streams.input.duration}ms</div>
-            <div className="text-blue-600">
-              Status:{' '}
-              {streams.input.isComplete ? 'Complete' : streams.input.hasError ? 'Error' : 'Active'}
-            </div>
+            <div className="text-blue-600">Status: {streamStatus(streams.input)}</div>
           </div>
           <div className="bg-green-50 p-3 rounded">
             <div className="font-medium text-green-800 mb-1">Output Stream</div>
             <div className="text-green-600">{streams.output.events.length} events</div>
             <div className="text-green-600">Duration: {streams.output.duration}ms</div>
-            <div className="text-green-600">
-              Status:{' '}
-              {streams.output.isComplete
-                ? 'Complete'
-                : streams.output.hasError
-                  ? 'Error'
-                  : 'Active'}
-            </div>
+            <div className="text-green-600">Status: {streamStatus(streams.output)}</div>
           </div>
         </div>
       </div>
