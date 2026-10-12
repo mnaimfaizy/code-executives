@@ -1,0 +1,346 @@
+/**
+ * The exercises of the Playground, converted from the problem set of the retired old
+ * playground (ADR 0004, decision 5).
+ *
+ * Every exercise has a reference solution in `exercises.test.ts` that passes all its
+ * checks, and its starter code fails at least one: add both when you add an exercise.
+ */
+
+import type { Exercise, ExerciseLevel } from './types';
+
+export const exercises: Exercise[] = [
+  {
+    id: 'two-sum',
+    title: 'Two Sum',
+    level: 'easy',
+    task: `Write \`twoSum(nums, target)\`. It gets an array of integers and a target, and returns the indices of the two numbers that add up to the target.
+
+Every input has exactly one answer, and one element cannot be used twice. The two indices may be returned in any order.`,
+    starterCode: `function twoSum(nums, target) {
+  // Return the indices of the two numbers that add up to target
+}
+`,
+    entry: 'twoSum',
+    compare: 'any-order',
+    checks: [
+      {
+        args: [[2, 7, 11, 15], 9],
+        expected: [0, 1],
+        explanation: 'nums[0] + nums[1] is 2 + 7 = 9.',
+      },
+      {
+        args: [[3, 2, 4], 6],
+        expected: [1, 2],
+        explanation: 'nums[1] + nums[2] is 2 + 4 = 6. Index 0 cannot be used twice.',
+      },
+      {
+        args: [[3, 3], 6],
+        expected: [0, 1],
+        explanation: 'Two equal numbers at different indices are two elements.',
+      },
+      { args: [[-1, -2, -3, -4, -5], -8], expected: [2, 4], hidden: true },
+      { args: [[0, 4, 3, 0], 0], expected: [0, 3], hidden: true },
+    ],
+    hints: [
+      'For each number, the number it needs is target minus itself.',
+      'Keep the numbers you have already seen in a Map, from value to index.',
+      'Before adding a number to the Map, look up the number it needs. If it is there, you have both indices.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'contains-duplicate',
+    title: 'Contains Duplicate',
+    level: 'easy',
+    task: `Write \`containsDuplicate(nums)\`. It gets an array of integers and returns \`true\` if any value appears at least twice, and \`false\` if every value is distinct.`,
+    starterCode: `function containsDuplicate(nums) {
+  // Return true if a value appears at least twice, otherwise false
+}
+`,
+    entry: 'containsDuplicate',
+    checks: [
+      { args: [[1, 2, 3, 1]], expected: true, explanation: 'The value 1 appears twice.' },
+      { args: [[1, 2, 3, 4]], expected: false, explanation: 'Every value is distinct.' },
+      {
+        args: [[1, 1, 1, 3, 3, 4, 3, 2, 4, 2]],
+        expected: true,
+        explanation: 'Several values appear more than once.',
+      },
+      { args: [[]], expected: false, hidden: true },
+      { args: [[7]], expected: false, hidden: true },
+      { args: [[0, -1, 5, -1]], expected: true, hidden: true },
+    ],
+    hints: [
+      'Keep the values you have already seen in a Set.',
+      'Before adding a value to the Set, check whether it is already there.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'valid-parentheses',
+    title: 'Valid Parentheses',
+    level: 'easy',
+    task: `Write \`isValid(s)\`. It gets a string made only of the characters \`(\`, \`)\`, \`{\`, \`}\`, \`[\` and \`]\`, and returns \`true\` if the string is valid, otherwise \`false\`.
+
+A string is valid when every opening bracket is closed by a bracket of the same type, brackets are closed in the right order, and every closing bracket has an opening bracket before it.`,
+    starterCode: `function isValid(s) {
+  // Return true if every bracket is closed by the right one, in the right order
+}
+`,
+    entry: 'isValid',
+    checks: [
+      { args: ['()'], expected: true, explanation: 'One pair, opened and closed.' },
+      { args: ['()[]{}'], expected: true, explanation: 'Three pairs, one after the other.' },
+      { args: ['(]'], expected: false, explanation: 'A ( cannot be closed by a ].' },
+      {
+        args: ['([)]'],
+        expected: false,
+        explanation: 'The [ is still open when the ) arrives: the order is wrong.',
+      },
+      {
+        args: ['{[]}'],
+        expected: true,
+        explanation: 'The inner pair closes before the outer one.',
+      },
+      { args: ['(('], expected: false, hidden: true },
+      { args: [']'], expected: false, hidden: true },
+    ],
+    hints: [
+      'Keep the opening brackets you have seen on a stack: an array you only push to and pop from.',
+      'A closing bracket must match the bracket on top of the stack. Pop it and compare.',
+      'At the end the stack must be empty: an opening bracket left on it was never closed.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'reverse-linked-list',
+    title: 'Reverse Linked List',
+    level: 'easy',
+    task: `Write \`reverseList(head)\`. It gets the first node of a singly linked list and returns the first node of the reversed list.
+
+A node is a plain object \`{ val, next }\`, where \`next\` is the following node or \`null\` at the end. The list 1 → 2 is passed in as \`{ val: 1, next: { val: 2, next: null } }\`, and an empty list is \`null\`. The checks compare the list you return node by node, so you may reuse the nodes you were given or build new ones.`,
+    starterCode: `// A node is { val, next }; next is the following node, or null at the end.
+function reverseList(head) {
+  // Return the first node of the reversed list
+}
+`,
+    entry: 'reverseList',
+    checks: [
+      {
+        args: [{ val: 1, next: { val: 2, next: { val: 3, next: null } } }],
+        expected: { val: 3, next: { val: 2, next: { val: 1, next: null } } },
+        explanation: '1 → 2 → 3 becomes 3 → 2 → 1.',
+      },
+      {
+        args: [{ val: 1, next: { val: 2, next: null } }],
+        expected: { val: 2, next: { val: 1, next: null } },
+        explanation: '1 → 2 becomes 2 → 1.',
+      },
+      { args: [null], expected: null, explanation: 'An empty list reversed is an empty list.' },
+      { args: [{ val: 7, next: null }], expected: { val: 7, next: null }, hidden: true },
+      {
+        args: [{ val: 5, next: { val: 5, next: { val: 9, next: { val: 0, next: null } } } }],
+        expected: { val: 0, next: { val: 9, next: { val: 5, next: { val: 5, next: null } } } },
+        hidden: true,
+      },
+    ],
+    hints: [
+      'Walk the list once and turn each `next` reference around.',
+      'Use three variables: the previous node, the current node, and the node after it, saved before you overwrite `current.next`.',
+      'When the current node is `null`, the previous node is the new first node.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'maximum-depth-binary-tree',
+    title: 'Maximum Depth of Binary Tree',
+    level: 'easy',
+    task: `Write \`maxDepth(root)\`. It gets the root of a binary tree and returns the tree's maximum depth: the number of nodes on the longest path from the root down to a leaf.
+
+A node is a plain object \`{ val, left, right }\`, where \`left\` and \`right\` are nodes or \`null\`. An empty tree is \`null\` and has depth 0.`,
+    starterCode: `// A node is { val, left, right }; left and right are nodes or null.
+function maxDepth(root) {
+  // Return the number of nodes on the longest path from root to a leaf
+}
+`,
+    entry: 'maxDepth',
+    checks: [
+      {
+        args: [
+          {
+            val: 3,
+            left: { val: 9, left: null, right: null },
+            right: {
+              val: 20,
+              left: { val: 15, left: null, right: null },
+              right: { val: 7, left: null, right: null },
+            },
+          },
+        ],
+        expected: 3,
+        explanation: 'The longest paths are 3 → 20 → 15 and 3 → 20 → 7: three nodes.',
+      },
+      {
+        args: [{ val: 1, left: null, right: { val: 2, left: null, right: null } }],
+        expected: 2,
+        explanation: 'The path 1 → 2 has two nodes.',
+      },
+      { args: [null], expected: 0, explanation: 'An empty tree has no nodes.' },
+      { args: [{ val: 0, left: null, right: null }], expected: 1, hidden: true },
+      {
+        args: [
+          {
+            val: 1,
+            left: {
+              val: 2,
+              left: { val: 3, left: { val: 4, left: null, right: null }, right: null },
+              right: null,
+            },
+            right: null,
+          },
+        ],
+        expected: 4,
+        hidden: true,
+      },
+    ],
+    hints: [
+      'The depth of an empty tree is 0. That is the case that ends the recursion.',
+      'The depth of a node is 1 plus the larger of the depths of its two subtrees.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'implement-queue-using-stacks',
+    title: 'Implement Queue using Stacks',
+    level: 'easy',
+    task: `Complete the class \`MyQueue\`: a first in, first out queue that stores its items in two stacks. \`push(x)\` adds x at the back, \`pop()\` removes the front item and returns it, \`peek()\` returns the front item without removing it, and \`empty()\` returns \`true\` when the queue holds nothing.
+
+Use arrays as the stacks, and only \`push\`, \`pop\`, \`length\` and reading the last item. The checks cannot see how you store the items, so keeping to that rule is up to you.
+
+The checks call \`runQueue(operations)\`, which is already written below the class: it makes one \`MyQueue\`, calls the operations in order and returns the list of what each call returned, with \`null\` for a call that returned nothing. \`pop\` and \`peek\` are never called on an empty queue.`,
+    starterCode: `class MyQueue {
+  constructor() {
+    // Set up the two stacks
+  }
+
+  push(x) {
+    // Add x at the back of the queue
+  }
+
+  pop() {
+    // Remove the front item and return it
+  }
+
+  peek() {
+    // Return the front item without removing it
+  }
+
+  empty() {
+    // Return true when the queue holds nothing
+  }
+}
+
+// The checks call this. Leave it as it is.
+// operations is a list such as [["push", 1], ["peek"], ["pop"], ["empty"]].
+function runQueue(operations) {
+  const queue = new MyQueue();
+  const results = [];
+  for (const [name, ...args] of operations) {
+    const result = queue[name](...args);
+    results.push(result === undefined ? null : result);
+  }
+  return results;
+}
+`,
+    entry: 'runQueue',
+    checks: [
+      {
+        args: [[['push', 1], ['push', 2], ['peek'], ['pop'], ['empty']]],
+        expected: [null, null, 1, 1, false],
+        explanation: '1 was pushed first, so peek and pop both return 1. 2 is still in the queue.',
+      },
+      {
+        args: [[['empty'], ['push', 5], ['empty'], ['pop'], ['empty']]],
+        expected: [true, null, false, 5, true],
+        explanation: 'A new queue is empty, and it is empty again once its only item is popped.',
+      },
+      {
+        args: [[['push', 1], ['push', 2], ['pop'], ['push', 3], ['pop'], ['pop']]],
+        expected: [null, null, 1, null, 2, 3],
+        explanation: 'An item pushed after a pop still leaves after the items pushed before it.',
+      },
+      {
+        args: [
+          [['push', 4], ['peek'], ['peek'], ['push', 6], ['pop'], ['peek'], ['pop'], ['empty']],
+        ],
+        expected: [null, 4, 4, null, 4, 6, 6, true],
+        hidden: true,
+      },
+    ],
+    hints: [
+      'Use one stack for items coming in and one for items going out.',
+      'Popping everything from the in stack and pushing it onto the out stack reverses the order: the oldest item ends up on top.',
+      'Move the items only when the out stack is empty. Moving them at any other time puts newer items above older ones.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'maximum-subarray',
+    title: 'Maximum Subarray',
+    level: 'medium',
+    task: `Write \`maxSubArray(nums)\`. It gets a non-empty array of integers and returns the largest sum that any contiguous run of its elements has. A run holds at least one element.`,
+    starterCode: `function maxSubArray(nums) {
+  // Return the largest sum of a contiguous run of elements
+}
+`,
+    entry: 'maxSubArray',
+    checks: [
+      {
+        args: [[-2, 1, -3, 4, -1, 2, 1, -5, 4]],
+        expected: 6,
+        explanation: 'The run [4, -1, 2, 1] has the largest sum: 6.',
+      },
+      { args: [[1]], expected: 1, explanation: 'The only run is [1].' },
+      {
+        args: [[-1]],
+        expected: -1,
+        explanation: 'A run holds at least one element, so the answer is -1, not 0.',
+      },
+      { args: [[5, 4, -1, 7, 8]], expected: 23, hidden: true },
+      { args: [[-3, -1, -2]], expected: -1, hidden: true },
+    ],
+    hints: [
+      'At each position, work out the best sum of a run that ends exactly there.',
+      'That best sum is either the element alone, or the element added to the best sum that ended one position earlier. Take the larger.',
+      'The answer is the largest of those sums over all positions. Start both from the first element, not from 0.',
+    ],
+    suggestedLens: 'stack-heap',
+  },
+];
+
+const LEVEL_LABELS: Record<ExerciseLevel, string> = {
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard',
+};
+
+const LEVEL_ORDER: ExerciseLevel[] = ['easy', 'medium', 'hard'];
+
+export interface ExerciseGroup {
+  level: ExerciseLevel;
+  label: string;
+  exercises: Exercise[];
+}
+
+/** The exercises grouped by level, easiest first. A level with no exercise is left out. */
+export function exercisesByLevel(list: Exercise[] = exercises): ExerciseGroup[] {
+  return LEVEL_ORDER.map((level) => ({
+    level,
+    label: LEVEL_LABELS[level],
+    exercises: list.filter((exercise) => exercise.level === level),
+  })).filter((group) => group.exercises.length > 0);
+}
+
+export function findExercise(id: string | undefined): Exercise | undefined {
+  return id === undefined ? undefined : exercises.find((exercise) => exercise.id === id);
+}

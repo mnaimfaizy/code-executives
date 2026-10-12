@@ -14,9 +14,11 @@
 4. [How to Add a New Language](#how-to-add-a-new-language)
 5. [How to Modify the Theme](#how-to-modify-the-theme)
 6. [How to Add Examples](#how-to-add-examples)
-7. [Security Considerations](#security-considerations)
-8. [Performance Budget & Monitoring](#performance-budget--monitoring)
-9. [Testing](#testing)
+7. [How to Add an Exercise](#how-to-add-an-exercise)
+8. [Links into the Playground](#links-into-the-playground)
+9. [Security Considerations](#security-considerations)
+10. [Performance Budget & Monitoring](#performance-budget--monitoring)
+11. [Testing](#testing)
 
 ---
 
@@ -75,6 +77,7 @@ src/features/playground/
 ├── PlaygroundEntry.tsx            # Lazy-loaded entry for the /playground route
 ├── PlaygroundApp.tsx              # Root orchestrator
 ├── PlaygroundApp.test.tsx
+├── PlaygroundApp.exercises.test.tsx # Links, exercises and the Task tab, on the real sandbox script
 ├── types/
 │   ├── index.ts                   # Re-exports
 │   └── playground-v2.ts           # Language, lens, execution state, Console entry
@@ -100,8 +103,15 @@ src/features/playground/
 ├── utils/
 │   ├── codeTemplates.ts           # Default starter code per language
 │   ├── examples.ts                # The examples
+│   ├── playgroundLink.ts          # The link contract: ?example=, ?exercise=, ?lens=
+│   ├── playgroundStart.ts         # What a link opens; keeps the address bar in step
 │   └── sanitize.ts                # Output limits
-├── exercises/                     # Tasks with checks and hints
+├── exercises/
+│   ├── types.ts                   # Exercise, check, check result
+│   ├── exercises.ts               # The exercises
+│   ├── runChecks.ts               # Runs the checks; builds the code of a watched check
+│   ├── exerciseProgress.ts        # Passed exercises and last code per viewer (localStorage)
+│   └── sandboxForTests.ts         # Test support: the real sandbox script in the test window
 ├── components/
 │   ├── editor/
 │   │   ├── MonacoEditor.tsx       # Monaco wrapper; highlights the step's line
@@ -115,6 +125,10 @@ src/features/playground/
 │   │   └── ExecutionController.tsx
 │   ├── instrumentation/
 │   │   └── StepControls.tsx       # Step slider, playback, top frame + call stack
+│   ├── exercises/
+│   │   ├── ExerciseMenu.tsx       # The toolbar's Exercises menu, grouped by level
+│   │   ├── TaskPanel.tsx          # The task, the checks with their results, the hints
+│   │   └── ConfirmBar.tsx         # The question asked before the learner's code is replaced
 │   ├── visualizations/
 │   │   ├── VisualizationCanvas.tsx
 │   │   ├── LensSelector.tsx
@@ -124,6 +138,7 @@ src/features/playground/
 │   │   ├── PlaygroundLayout.tsx
 │   │   ├── PlaygroundToolbar.tsx
 │   │   ├── PaneResizer.tsx
+│   │   ├── RightPaneTabs.tsx      # The right pane's two tabs: Task and Console
 │   │   ├── SettingsPanel.tsx
 │   │   └── BackToSiteLink.tsx
 │   └── theme/
@@ -264,7 +279,86 @@ console.log(x);`,
 },
 ```
 
-Examples appear in the toolbar's "Examples" dropdown, filtered by the currently selected language.
+Examples appear in the toolbar's "Examples" dropdown, filtered by the currently selected language. An example can be opened by a link: see [Links into the Playground](#links-into-the-playground).
+
+---
+
+## How to Add an Exercise
+
+An exercise is a task with a goal, checks that pass or fail on the learner's code, and hints (see [CONTEXT.md](../CONTEXT.md)). Exercises are JavaScript only for now. They carry no score, points, streaks or achievements: [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) leaves achievements open.
+
+### The shape
+
+Add an entry to `exercises/exercises.ts` (the type is `Exercise` in `exercises/types.ts`):
+
+```ts
+{
+  id: 'two-sum',                 // Stable; the value of ?exercise= in a link
+  title: 'Two Sum',
+  level: 'easy',                 // 'easy' | 'medium' | 'hard': the group in the Exercises menu
+  task: `Write \`twoSum(nums, target)\`. ...`, // Prose: what to write and the goal.
+                                 // Empty line = new paragraph, backticks = code
+  starterCode: `function twoSum(nums, target) {\n}\n`, // Must fail at least one check
+  entry: 'twoSum',               // The function the checks call, defined at top level
+  compare: 'any-order',          // Only when the task says "in any order" (see below)
+  checks: [
+    { args: [[2, 7, 11, 15], 9], expected: [0, 1], explanation: 'Shown when it fails' },
+    { args: [[0, 4, 3, 0], 0], expected: [0, 3], hidden: true }, // Reports pass or fail only
+  ],
+  hints: ['First hint', 'Second hint'], // Revealed one at a time, in this order
+  suggestedLens: 'stack-heap',
+},
+```
+
+Rules the data must keep:
+
+- **Checks are plain data.** `args` and `expected` are JSON values, because they cross `postMessage` into the sandbox. A list or a tree is passed as nested plain objects (`{ val: 1, next: null }`), and the task must say so. If the thing under test is a class, write a small driver function below it in the starter code, name it as the `entry`, and say in the task what it does (see `implement-queue-using-stacks`).
+- **Comparison is structural and strict**: primitives by value, arrays by position, plain objects by their own keys, no coercion (`undefined` is not `null`, `"1"` is not `1`). Set `compare: 'any-order'` only when the task says the order of the returned list is open; the list is then compared as a collection. A test fails if the task and the flag disagree.
+- **Checks are synchronous.** A check run ends with the script's synchronous part, so an `async` entry function cannot pass.
+- **Keep the inputs small.** A check gets the same 2,000-step budget as a watched run (`CHECK_MAX_STEPS`), so a call that passes can always be watched to its end.
+- **Add a reference solution** to `SOLUTIONS` in `exercises/exercises.test.ts`. The test runs it, and the starter code, through the real sandbox script: the solution must pass every check and the starter code must fail at least one. Solutions are not shipped to the learner.
+
+### How a check runs
+
+`exercises/runChecks.ts` is the runner. For each check, in order:
+
+1. The learner's code gets one line appended that hands the entry function to a hook (`__pgCheck__(typeof entry === "function" ? entry : undefined)`), and the whole is instrumented like a traced run.
+2. The sandbox (`sandboxRuntime.ts`, a run with `msg.check`) passes its own hook in. The hook calls the function with a copy of the check's arguments and compares the result with the expected value **inside the sandbox script's own scope**, then reports `{ status, actual }`. The verdict never passes through the Console, the learner's code cannot read the expected value, and the comparison uses built-ins captured before any learner code ran.
+3. A check run sends no steps back and does not wait for timers.
+
+One run per check gives each check a clean start and a full step budget. The statuses are `pass`, `fail`, `threw`, `missing` (no function with that name), `step-limit`, `not-reached` (a top-level `return`, or the hook was shadowed), `skipped` and `unavailable`. A syntax error is found by the instrumenter before anything runs and is reported once, with its line. A hidden check's result is reduced to pass, fail or skipped before it reaches the panel.
+
+**Endless loops.** An untraced `while (true) {}` never yields, and nothing in the page can stop it: the sandbox iframe cannot be interrupted from outside and is never recreated, so every later run times out until the page is reloaded. Chromium runs the sandboxed iframe in a process of its own, so the page itself stays responsive there (measured: a 3-second busy loop in the sandbox delayed the page's timers by about 30 ms); a browser that runs the iframe on the page's thread freezes with it. Checks therefore always run instrumented, and the tracer's step limit ends the run (`step-limit`). After the first `step-limit` the remaining checks are skipped, because a recursion that never ends takes a second or two to reach the limit (every step snapshots the whole stack).
+
+**Not covered.** Code that sets out to cheat can still pass visible checks by returning their expected values, can take the hook from the function's `arguments`, and could forge a report if it found a way to the host window. Exercises are practice, not an exam: the aim is that honest mistakes (printing instead of returning, a helper with the hook's name) never count as a pass.
+
+### Watching a check
+
+Each visible check has a **Watch** action: it runs the learner's code plus that one call (`buildWatchCode`) as an ordinary traced run and loads the steps into the lens and the step controls. If no lens is on, the exercise's `suggestedLens` is selected. The call sits on a line after the learner's last line, so that step highlights nothing in the editor.
+
+### The UI and what is remembered
+
+- The toolbar's **Exercises** menu (`components/exercises/ExerciseMenu.tsx`) lists the exercises by level.
+- The right pane has two tabs, **Task** and **Console** (`components/layout/RightPaneTabs.tsx`). The Task tab (`components/exercises/TaskPanel.tsx`) shows the task, the checks with their results, and the hints. With no exercise open it lists the exercises. An error a check threw is also written to the Console.
+- Opening an exercise replaces the editor's code. If that code is the learner's own (not the default template, not an example, not another exercise's remembered code), the page asks first (`ConfirmBar.tsx`; never `window.confirm`).
+- `exercises/exerciseProgress.ts` remembers, per viewer in `localStorage` (`pg-exercise-progress`), which exercises were passed and the last code for each. Every read and write is wrapped in try/catch; without storage the same is kept in memory for the visit.
+- Ctrl+Shift+Enter runs the checks.
+
+---
+
+## Links into the Playground
+
+`utils/playgroundLink.ts` is the contract: `parsePlaygroundLink(search)` and `playgroundHref(link)`. It has no imports that run, so a story section can build a link without loading the Playground. A link names things by id and never carries code.
+
+| Parameter  | Effect                                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------------------------- |
+| `exercise` | Opens that exercise (the viewer's last code for it, or its starter code) with the Task tab in front     |
+| `example`  | Loads that example from `utils/examples.ts` and its `suggestedLens`. Ignored when `exercise` is present |
+| `lens`     | `stack-heap`, `stack-queues` or `none`: overrides the suggested lens                                    |
+
+`utils/playgroundStart.ts` resolves the link once, when `PlaygroundApp` mounts. An id nothing answers to falls back to the default template, silently. When the learner opens an exercise or an example from a menu, or leaves an exercise, `replacePlaygroundUrl` keeps the address bar in step with `history.replaceState` (no reload, no history entry), so the page can be shared at any time.
+
+An example with a `story` field (`{ label, href }`) shows a **Read the story** link in the editor's tab bar while it is loaded. The `href` must be a path inside the site.
 
 ---
 
@@ -344,13 +438,15 @@ npm run test:coverage                 # Coverage report
 
 ### Test Architecture
 
-| Category          | Files                                                                                                                                                     |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tracer            | `tracer/*.test.ts` (instrumenting, the runtime as source, traces of the shipped examples)                                                                 |
-| Sandbox script    | `sandboxRuntime.test.ts` runs the real iframe script, traced and untraced: aliasing, timers, the step limit, errors                                       |
-| Unit tests        | `PythonInstrumenter.test.ts`, `useSandbox.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`, `sourceMapLines.test.ts`                                 |
-| Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `StepControls.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx` |
-| Integration tests | `__tests__/integration.test.ts`                                                                                                                           |
+| Category          | Files                                                                                                                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tracer            | `tracer/*.test.ts` (instrumenting, the runtime as source, traces of the shipped examples)                                                                                                                       |
+| Sandbox script    | `sandboxRuntime.test.ts` runs the real iframe script, traced and untraced: aliasing, timers, the step limit, errors                                                                                             |
+| Exercises         | `exercises/exercises.test.ts` (every solution passes, every starter fails), `runChecks.test.ts` (verdicts, endless loops, what cannot fool a check), `exerciseProgress.test.ts`, all on the real sandbox script |
+| Links             | `utils/playgroundLink.test.ts`, `utils/playgroundStart.test.ts`, `PlaygroundApp.exercises.test.tsx`                                                                                                             |
+| Unit tests        | `PythonInstrumenter.test.ts`, `useSandbox.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`, `sourceMapLines.test.ts`                                                                                       |
+| Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `StepControls.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx`                                                       |
+| Integration tests | `__tests__/integration.test.ts`                                                                                                                                                                                 |
 
 ### Mock Strategy
 

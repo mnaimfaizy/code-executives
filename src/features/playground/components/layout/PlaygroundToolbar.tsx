@@ -4,7 +4,10 @@ import BackToSiteLink from './BackToSiteLink';
 import LanguagePicker from '../editor/LanguagePicker';
 import ExecutionController from '../execution/ExecutionController';
 import LensSelector from '../visualizations/LensSelector';
+import ExerciseMenu from '../exercises/ExerciseMenu';
 import { examples, type Example } from '../../utils/examples';
+import type { Exercise } from '../../exercises/types';
+import type { ExerciseGroup } from '../../exercises/exercises';
 import type { PlaygroundLanguage, VisualizationLens, ExecutionState } from '../../types';
 
 interface PlaygroundToolbarProps {
@@ -19,6 +22,13 @@ interface PlaygroundToolbarProps {
   onStop: () => void;
   onReset: () => void;
   onLoadExample: (example: Example) => void;
+  /** The exercises, grouped by level, for the Exercises menu */
+  exerciseGroups: ExerciseGroup[];
+  /** Ids of the exercises this viewer has passed */
+  passedExerciseIds: ReadonlySet<string>;
+  /** The open exercise, if any */
+  activeExerciseId: string | null;
+  onOpenExercise: (exercise: Exercise) => void;
   onOpenSettings: () => void;
 }
 
@@ -34,6 +44,10 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
   onStop,
   onReset,
   onLoadExample,
+  exerciseGroups,
+  passedExerciseIds,
+  activeExerciseId,
+  onOpenExercise,
   onOpenSettings,
 }) => {
   const [exampleMenuOpen, setExampleMenuOpen] = useState(false);
@@ -61,7 +75,7 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
   const languageExamples = examples.filter((s) => s.language === language);
 
   return (
-    // Below 2xl the lens and the examples move to a second row, so the first row
+    // Below 2xl the lens, the examples and the exercises move to a second row, so the first row
     // (with Run at its end) always fits; from 2xl everything is one row.
     <div
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-1.5 shrink-0 2xl:flex-nowrap"
@@ -104,7 +118,7 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
         <span>Trace</span>
       </label>
 
-      {/* Lens and examples: a row of their own below 2xl */}
+      {/* Lens, examples and exercises: a row of their own below 2xl */}
       <div className="order-last flex basis-full items-center gap-3 min-w-0 2xl:order-none 2xl:basis-auto">
         {/* Separator */}
         <div
@@ -237,6 +251,14 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
             </div>
           )}
         </div>
+
+        {/* Exercises menu */}
+        <ExerciseMenu
+          groups={exerciseGroups}
+          passedIds={passedExerciseIds}
+          activeId={activeExerciseId}
+          onOpenExercise={onOpenExercise}
+        />
       </div>
 
       <div className="flex-1" />

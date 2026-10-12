@@ -2,6 +2,7 @@ import { useRef, useCallback, useState } from 'react';
 import type { SandboxFrameHandle } from '../components/execution/SandboxFrame';
 import type { ConsoleEntry } from '../types';
 import type { Trace, TraceLimits } from '../tracer';
+import type { CheckReport, SandboxCheck } from '../exercises/types';
 import { DEFAULT_EXECUTION_TIMEOUT_MS } from '../types/playground-v2';
 import { isTextContent, enforceEntryLimit } from '../utils/sanitize';
 
@@ -28,6 +29,8 @@ export interface SandboxExecuteOptions {
   mapLine?: (line: number) => number;
   /** Set when `code` is instrumented code: the sandbox records a trace within these limits */
   traceLimits?: TraceLimits;
+  /** False for a run a control in the page starts on its own, such as watching a check */
+  rateLimit?: boolean;
 }
 
 /** Give every line a trace carries its place in the learner's source */
@@ -45,6 +48,17 @@ export function mapTraceLines(trace: Trace, mapLine: (line: number) => number): 
 interface UseSandboxReturn {
   /** Execute JavaScript in the sandbox */
   execute: (code: string, options?: SandboxExecuteOptions) => Promise<SandboxExecuteResult>;
+  /**
+   * Run one check of an exercise: `code` is instrumented code that ends by calling the check
+   * hook. Nothing is written to the Console, and the rate limit does not apply, because one
+   * Check action is several runs.
+   */
+  runCheck: (
+    code: string,
+    check: SandboxCheck,
+    traceLimits: TraceLimits,
+    timeout: number
+  ) => Promise<CheckReport>;
   /** Write an error to the Console for a run that never reached the sandbox */
   reportError: (message: string, line?: number) => void;
   /** Terminate current execution */
@@ -72,6 +86,8 @@ export function useSandbox(): UseSandboxReturn {
   const [entries, setEntries] = useState<ConsoleEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const lastExecutionRef = useRef<number>(0);
+  /** Keeps the ids of errors reported in the same millisecond apart */
+  const reportCountRef = useRef(0);
 
   const clearEntries = useCallback((): void => {
     setEntries([]);
@@ -84,7 +100,7 @@ export function useSandbox(): UseSandboxReturn {
       enforceEntryLimit([
         ...prev,
         {
-          id: `${Date.now()}-report`,
+          id: `${Date.now()}-report-${++reportCountRef.current}`,
           type: 'error',
           args: [message],
           timestamp: Date.now(),
@@ -141,7 +157,10 @@ export function useSandbox(): UseSandboxReturn {
 
       // Rate limiting: max 1 execution per second
       const now = Date.now();
-      if (now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS) {
+      if (
+        options?.rateLimit !== false &&
+        now - lastExecutionRef.current < MIN_EXECUTION_INTERVAL_MS
+      ) {
         const msg = 'Please wait before running again';
         setError(msg);
         return { error: msg, trace: null };
@@ -194,6 +213,37 @@ export function useSandbox(): UseSandboxReturn {
     []
   );
 
+  const runCheck = useCallback(
+    async (
+      code: string,
+      check: SandboxCheck,
+      traceLimits: TraceLimits,
+      timeout: number
+    ): Promise<CheckReport> => {
+      const sandbox = sandboxRef.current;
+      if (!sandbox) return { status: 'unavailable', message: 'Sandbox not initialized' };
+      setIsRunning(true);
+      try {
+        const result = await sandbox.execute(code, timeout, traceLimits, check);
+        // No verdict means the sandbox never answered: the host's backstop ended the run
+        return (
+          result.check ?? {
+            status: 'unavailable',
+            message: result.error ?? 'The sandbox did not answer',
+          }
+        );
+      } catch (err) {
+        return {
+          status: 'unavailable',
+          message: err instanceof Error ? err.message : 'Unknown execution error',
+        };
+      } finally {
+        setIsRunning(false);
+      }
+    },
+    []
+  );
+
   const terminate = useCallback((): void => {
     sandboxRef.current?.terminate();
     setIsRunning(false);
@@ -201,6 +251,7 @@ export function useSandbox(): UseSandboxReturn {
 
   return {
     execute,
+    runCheck,
     reportError,
     terminate,
     isRunning,
