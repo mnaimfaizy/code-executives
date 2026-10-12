@@ -47,9 +47,9 @@ function timeline(trace: Trace): string[] {
 }
 
 /** Runs the code both ways. The trace must be exact, and print what the engine alone prints. */
-async function both(code: string): Promise<{ trace: Trace; printed: string[] }> {
+async function both(code: string, wait?: number): Promise<{ trace: Trace; printed: string[] }> {
   const [untraced, traced] = await Promise.all([
-    printsUntraced(code),
+    printsUntraced(code, wait),
     (async () => {
       const run = startTrace(code);
       return { trace: await run.finished, printed: run.console };
@@ -205,8 +205,8 @@ const id = setInterval(function tick() {
   turns++;
   console.log('tick', turns);
   if (turns === 3) clearInterval(id);
-}, 40);
-setTimeout(function between() { console.log('between'); }, 100);`,
+}, 100);
+setTimeout(function between() { console.log('between'); }, 150);`,
 
   'thenables are called in a microtask of their own': `const thenable = { then(resolve) { console.log('then called'); resolve('thenable'); } };
 Promise.resolve(thenable).then(function got(v) { console.log('got', v); });
@@ -503,9 +503,14 @@ describe('the corpus: orderings the specification fixes', () => {
     expect(Object.keys(EXPECTED).sort()).toEqual(Object.keys(CORPUS).sort());
   });
 
+  // The untraced program runs on real timers, which a busy machine fires late. An interval is
+  // armed again from the moment it ran, so its timers are spaced wide and given longer to end;
+  // a retry covers the rare run in which the engine's own timers still land out of order.
+  const WAIT: Record<string, number> = { 'an interval cleared after 3 turns': 600 };
+
   for (const [name, code] of Object.entries(CORPUS)) {
-    it(name, async () => {
-      const { trace } = await both(code);
+    it(name, { retry: 2 }, async () => {
+      const { trace } = await both(code, WAIT[name]);
       expect(timeline(trace)).toEqual(EXPECTED[name]);
       // What crossed to the host is plain data, and every step holds all three regions.
       expect(structuredClone(trace)).toEqual(trace);

@@ -4,9 +4,23 @@
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { exercises, exercisesByLevel, findExercise } from './exercises';
-import { runChecks } from './runChecks';
+import { exerciseCards, exerciseCardsFor } from './catalog';
+import { buildWatchCode, runChecks } from './runChecks';
 import { installSandbox, runCheckInSandbox } from './sandboxForTests';
-import { parsePlaygroundLink } from '../utils/playgroundLink';
+import { traceSync } from '../tracer';
+import { parsePlaygroundLink, playgroundHref } from '../utils/playgroundLink';
+import {
+  getModuleConfigFromPathname,
+  getSectionPathByLabel,
+  getSectionQueryValue,
+} from '../../../shared/constants/moduleNavigation';
+import bigOPageSource from '../../bigo/BigOPage.tsx?raw';
+
+/** The section keys the Big-O page answers to: the cases of its switch. */
+const bigOSectionKeys = [...bigOPageSource.matchAll(/case '([a-z-]+)':/g)].map((match) => match[1]);
+
+/** A solution's steps stay far below the 2,000-step limit, so a learner's own way has room. */
+const SOLUTION_MAX_STEPS = 600;
 
 describe('exercises', () => {
   beforeAll(installSandbox);
@@ -28,6 +42,51 @@ describe('exercises', () => {
     expect(groups.flatMap((group) => group.exercises)).toHaveLength(exercises.length);
   });
 
+  it('finds the section keys of the Big-O page', () => {
+    expect(bigOSectionKeys).toContain('introduction');
+    expect(bigOSectionKeys.length).toBeGreaterThan(5);
+  });
+
+  describe('as cards for a module page', () => {
+    it("lists every exercise in the Playground's order, with a link that opens it", () => {
+      const cards = exerciseCards();
+      expect(cards.map((card) => card.id)).toEqual(exercises.map((exercise) => exercise.id));
+      for (const card of cards) {
+        const exercise = findExercise(card.id)!;
+        expect(card.href).toBe(playgroundHref({ exercise: card.id }));
+        expect(parsePlaygroundLink(card.href.split('?')[1]).exercise).toBe(card.id);
+        expect(card.title).toBe(exercise.title);
+        expect(card.level).toBe(exercise.level);
+        expect(card.summary).toBe(exercise.summary);
+        expect(card.lessons).toEqual(exercise.teaches ?? []);
+      }
+    });
+
+    it('gives a section its exercises, in order, whether it is their first lesson or not', () => {
+      const titles = (href: string): string[] => exerciseCardsFor(href).map((card) => card.title);
+      expect(titles('/datastructures?section=Stacks')).toEqual([
+        'Valid Parentheses',
+        'Implement Queue using Stacks',
+      ]);
+      expect(titles('/datastructures?section=Hash%20Tables')).toEqual([
+        'Two Sum',
+        'Contains Duplicate',
+      ]);
+      expect(titles('/datastructures?section=Binary%20Trees')).toEqual([
+        'Maximum Depth of Binary Tree',
+        'Binary Tree Inorder Traversal',
+      ]);
+      expect(titles('/datastructures?section=Heaps')).toEqual(['Kth Largest Element']);
+      expect(titles('/bigo?section=real-world-applications')).toEqual(['Two Sum']);
+      expect(titles('/datastructures?section=Arrays')).toEqual([]);
+    });
+
+    it('teaches every exercise somewhere, except Maximum Subarray', () => {
+      const untaught = exerciseCards().filter((card) => card.lessons.length === 0);
+      expect(untaught.map((card) => card.id)).toEqual(['maximum-subarray']);
+    });
+  });
+
   describe.each(exercises)('$id', (exercise) => {
     it('states a task, names its entry in the starter code, and has hints and checks', () => {
       expect(exercise.task).toContain(exercise.entry);
@@ -39,6 +98,37 @@ describe('exercises', () => {
       expect(exercise.checks.some((check) => check.hidden)).toBe(true);
       // Order is only ever left open where the task says so
       expect(exercise.task.includes('any order')).toBe(exercise.compare === 'any-order');
+    });
+
+    it('has a summary of one plain sentence, at most 110 characters', () => {
+      const summary = exercise.summary;
+      expect(summary.trim()).toBe(summary);
+      expect(summary.length).toBeGreaterThan(0);
+      expect(summary.length).toBeLessThanOrEqual(110);
+      expect(summary.endsWith('.')).toBe(true);
+      expect(summary.slice(0, -1)).not.toMatch(/\.\s/);
+      expect(summary).not.toContain('`');
+    });
+
+    it('names lessons that are real sections, by their own address', () => {
+      const lessons = exercise.teaches ?? [];
+      // Absent, not empty, when no section teaches the idea
+      if (exercise.teaches) expect(lessons.length).toBeGreaterThan(0);
+      expect(new Set(lessons.map((lesson) => lesson.href)).size).toBe(lessons.length);
+      for (const lesson of lessons) {
+        const pathname = lesson.href.split('?')[0];
+        const config = getModuleConfigFromPathname(pathname);
+        expect(config, lesson.href).not.toBeNull();
+        if (!config) continue;
+        // The label is the module's title, then the sidebar's label of the section
+        const prefix = `${config.title}: `;
+        expect(lesson.label.startsWith(prefix), lesson.label).toBe(true);
+        const sectionLabel = lesson.label.slice(prefix.length);
+        expect(getSectionPathByLabel(config.id, sectionLabel)).toBe(lesson.href);
+        if (config.id === 'bigo') {
+          expect(bigOSectionKeys).toContain(getSectionQueryValue(lesson.href));
+        }
+      }
     });
 
     it('has checks made of plain data', () => {
@@ -68,6 +158,14 @@ describe('exercises', () => {
       if (run.kind !== 'ran') return;
       expect(run.results.map((result) => result.status)).toEqual(exercise.checks.map(() => 'pass'));
       expect(run.passed).toBe(true);
+    });
+
+    it('has a solution that every check can be watched to the end of, in few steps', () => {
+      for (const check of exercise.checks) {
+        const trace = traceSync(buildWatchCode(exercise.solution.code, exercise, check));
+        expect(trace.outcome).toBe('completed');
+        expect(trace.steps.length).toBeLessThanOrEqual(SOLUTION_MAX_STEPS);
+      }
     });
 
     it('fails at least one check with the starter code', async () => {

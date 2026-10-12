@@ -3,6 +3,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 import QueueVisualization from '../visualizations/2d/linear/QueueVisualization';
 import { ArrowRight, Database, Zap, Code } from 'lucide-react';
 
@@ -251,6 +252,7 @@ const Queues: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="datastructures" section="Queues" />
       <CTASection
         title="Ready to Explore More Data Structures?"
         description="Continue your journey through fundamental data structures and algorithms."

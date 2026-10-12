@@ -1,7 +1,7 @@
 import React from 'react';
-import { Check, Circle, Eye, Lightbulb, X } from 'lucide-react';
+import { Check, Circle, ExternalLink, Eye, Lightbulb, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { CheckResult, ChecksRun, Exercise } from '../../exercises/types';
+import type { CheckResult, ChecksRun, Exercise, ExerciseLesson } from '../../exercises/types';
 import type { ExerciseGroup } from '../../exercises/exercises';
 import { describeResult, formatCall, formatValue } from '../../exercises/runChecks';
 import PassedMark from './PassedMark';
@@ -80,6 +80,20 @@ const buttonStyle: React.CSSProperties = {
   border: '1px solid var(--pg-border)',
   background: 'transparent',
 };
+
+/** A link to a section that teaches the exercise. It opens in a new tab, so the code stays. */
+const LessonLink: React.FC<{ lesson: ExerciseLesson; quiet?: boolean }> = ({ lesson, quiet }) => (
+  <a
+    href={lesson.href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="underline underline-offset-2 hover:no-underline"
+    style={{ color: quiet ? 'var(--pg-text-secondary)' : 'var(--pg-accent-blue)' }}
+  >
+    {lesson.label} <ExternalLink size={10} className="inline align-baseline" aria-hidden="true" />
+    <span className="sr-only">(opens in a new tab)</span>
+  </a>
+);
 
 /** What the last Check action found, in one sentence. Announced politely. */
 function summaryOf(run: ChecksRun | null, checking: boolean, total: number): string {
@@ -167,6 +181,7 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
   }
 
   const results = run?.kind === 'ran' ? run.results : [];
+  const [firstLesson, ...otherLessons] = exercise.teaches ?? [];
   const total = exercise.checks.length;
   const summary = summaryOf(run, checking, total);
   const allPassed = run?.kind === 'ran' && run.passed;
@@ -199,6 +214,26 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
           )}
         </span>
       </div>
+
+      {/* Where the idea is taught: the first lesson, then the others quietly */}
+      {firstLesson && (
+        <div className="mb-2 text-xs">
+          <p>
+            Learn this first: <LessonLink lesson={firstLesson} />
+          </p>
+          {otherLessons.length > 0 && (
+            <p className="mt-0.5 text-[11px]" style={{ color: 'var(--pg-text-muted)' }}>
+              Also taught in{' '}
+              {otherLessons.map((lesson, index) => (
+                <React.Fragment key={lesson.href}>
+                  {index > 0 && ', '}
+                  <LessonLink lesson={lesson} quiet />
+                </React.Fragment>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* The task */}
       <div className="mb-3">

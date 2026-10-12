@@ -7,6 +7,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 
 const HashTables: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<'basic' | 'collision'>('basic');
@@ -450,6 +451,7 @@ const HashTables: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="datastructures" section="Hash Tables" />
       <CTASection
         title="Ready to Explore More Data Structures?"
         description="Continue your journey through data structures and algorithms with tree structures and graph algorithms."

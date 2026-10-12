@@ -3,6 +3,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 import SetVisualization from '../visualizations/2d/sets/SetVisualization';
 import { Hash, ArrowRight } from 'lucide-react';
 
@@ -88,6 +89,7 @@ const Sets: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="datastructures" section="Sets" />
       {/* Navigation cards and CTA below visualization */}
       <div className="max-w-4xl mx-auto mt-8">
         <ThemeCard>

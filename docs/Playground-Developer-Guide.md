@@ -109,6 +109,7 @@ src/features/playground/
 ├── exercises/
 │   ├── types.ts                   # Exercise, check, check result
 │   ├── exercises.ts               # The exercises
+│   ├── catalog.ts                 # The exercises as cards for a module page
 │   ├── runChecks.ts               # Runs the checks; builds the code of a watched check
 │   ├── exerciseProgress.ts        # Passed, solution seen and last code per viewer (localStorage)
 │   └── sandboxForTests.ts         # Test support: the real sandbox script in the test window
@@ -300,6 +301,12 @@ Add an entry to `exercises/exercises.ts` (the type is `Exercise` in `exercises/t
   id: 'two-sum',                 // Stable; the value of ?exercise= in a link
   title: 'Two Sum',
   level: 'easy',                 // 'easy' | 'medium' | 'hard': the group in the Exercises menu
+  summary: 'Find the two numbers in an array that add up to a target, and return their indices.',
+                                 // One plain sentence, at most 110 characters: the task
+  teaches: [                     // The sections that teach it, the main one first. Leave it
+                                 // out when no section does
+    { label: 'Data Structures: Hash Tables', href: '/datastructures?section=Hash%20Tables' },
+  ],
   task: `Write \`twoSum(nums, target)\`. ...`, // Prose: what to write and the goal.
                                  // Empty line = new paragraph, backticks = code
   starterCode: `function twoSum(nums, target) {\n}\n`, // Must fail at least one check
@@ -324,6 +331,9 @@ Rules the data must keep:
 - **Comparison is structural and strict**: primitives by value, arrays by position, plain objects by their own keys, no coercion (`undefined` is not `null`, `"1"` is not `1`). Set `compare: 'any-order'` only when the task says the order of the returned list is open; the list is then compared as a collection. A test fails if the task and the flag disagree.
 - **Checks are synchronous.** A check run ends with the script's synchronous part, so an `async` entry function cannot pass.
 - **Keep the inputs small.** A check gets the same 2,000-step budget as a watched run (`CHECK_MAX_STEPS`), so a call that passes can always be watched to its end.
+- **The solution leaves room.** A test traces the solution on every check and fails above 600 steps, so a learner's slower but correct way (a full sort where a heap would do) still ends inside the budget.
+- **The summary says the task, not the technique**: one plain sentence of at most 110 characters, with no code in it. Module pages show it in their lists of exercises.
+- **`teaches` names real sections.** A lesson's `label` is the module's title, a colon, and the section's sidebar label (`Data Structures: Hash Tables`), because the Playground shows it outside the module's own page. Its `href` is the section's address exactly as `src/shared/constants/moduleNavigation.ts` has it (Big-O uses slugs: `/bigo?section=real-world-applications`). The first lesson is the Task panel's "Learn this first" link, the others follow as "Also taught in", and every listed section shows the exercise at its end. Leave `teaches` out when no section teaches the idea (`maximum-subarray`); nothing is shown then. A test resolves every `href` against the navigation data.
 - **Every exercise needs a solution and an explanation**, in its `solution`. `solution.code` is the whole code as it would stand in the editor (for a class exercise it includes the driver function), because the learner can load it there and watch it run. `solution.explanation` is two to four plain sentences for a learner on the idea: why it works and what it costs. Explain any term of art where it appears ("a Set, a collection that holds each value at most once"); backticks mark code, as in the task. `exercises/exercises.test.ts` runs the solution, and the starter code, through the real sandbox script: the solution must pass every check, the starter code must fail at least one, and the explanation must be two to four sentences.
 
 ### How a check runs
@@ -360,6 +370,8 @@ Both are disabled while the language is not JavaScript.
 - The toolbar's **Exercises** menu (`components/exercises/ExerciseMenu.tsx`) lists the exercises by level.
 - The right pane has two tabs, **Task** and **Console** (`components/layout/RightPaneTabs.tsx`). The Task tab (`components/exercises/TaskPanel.tsx`) shows the task, the checks with their results, the hints, and the solution when asked. With no exercise open it lists the exercises. An error a check threw is also written to the Console.
 - Opening an exercise replaces the editor's code. If that code is the learner's own (not the default template, not an example, not another exercise's remembered code), the page asks first (`ConfirmBar.tsx`; never `window.confirm`).
+- Under the title, the Task panel links to the exercise's first lesson ("Learn this first") and lists the others ("Also taught in"). The links open in a new tab, so the learner's code stays where it is.
+- A module page lists exercises through `exercises/catalog.ts` and imports nothing else of the Playground's: `exerciseCards()` is every exercise as a card (title, level, summary, the link that opens it, its lessons), and `exerciseCardsFor(lessonHref)` is the cards of one section, in the Playground's order.
 - `exercises/exerciseProgress.ts` remembers, per viewer in `localStorage` (`pg-exercise-progress`), which exercises were passed, which solutions were seen (`solutionSeen`), and the last code for each. Every read and write is wrapped in try/catch; without storage the same is kept in memory for the visit.
 - An exercise that was passed and whose solution was seen is marked "Passed, solution seen" in the menu and in the Task panel (`components/exercises/PassedMark.tsx`). It is a plain fact for the learner: nothing is scored, withheld or taken away. The menu reads the seen ids from `SolutionSeenContext`, because the toolbar sits between it and the Playground's state.
 - Ctrl+Shift+Enter runs the checks.

@@ -5,7 +5,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import CTASection from '../../../../components/shared/CTASection';
-import { createNavCardClass, getSectionTheme } from '../../../../utils/theme';
+import { getSectionTheme } from '../../../../utils/theme';
 
 const Introduction: React.FC = () => {
   const theme = getSectionTheme('datastructures');
@@ -279,19 +279,12 @@ const Introduction: React.FC = () => {
             colorScheme={theme.secondary}
             onClick={() => navigateToSection('Complexity Analysis')}
           />
-          <a
-            href="/playground"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${createNavCardClass(theme.accent)} block w-full text-left group`}
-          >
-            <h4 className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
-              Playground
-            </h4>
-            <p className="text-xs text-gray-600 mt-1">
-              Run your own code and step through it (opens in a new tab)
-            </p>
-          </a>
+          <NavigationCard
+            title="Practice Problems"
+            description="Exercises to solve in the Playground, each with checks"
+            colorScheme={theme.accent}
+            onClick={() => navigateToSection('Practice Problems')}
+          />
         </div>
       </ThemeCard>
 

@@ -3,6 +3,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 import StackVisualization from '../visualizations/2d/linear/StackVisualization';
 import { Layers, ArrowRight, Code } from 'lucide-react';
 
@@ -221,6 +222,7 @@ const Stacks: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="datastructures" section="Stacks" />
       <CTASection
         title="Ready to Explore More Data Structures?"
         description="Continue your journey through fundamental data structures and algorithms."

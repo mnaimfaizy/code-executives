@@ -7,13 +7,34 @@
  * one: write both when you add an exercise.
  */
 
-import type { Exercise, ExerciseLevel } from './types';
+import type { Exercise, ExerciseLesson, ExerciseLevel } from './types';
+
+/**
+ * A lesson's label names its module, because the Playground shows it outside the module's
+ * own page. The part after the colon is the sidebar's label, and the address is the section's
+ * own (`moduleNavigation.ts`): `exercises.test.ts` checks both.
+ */
+const dataStructures = (section: string): ExerciseLesson => ({
+  label: `Data Structures: ${section}`,
+  href: `/datastructures?section=${encodeURIComponent(section)}`,
+});
+
+/** Big-O addresses its sections by slug. */
+const bigO = (section: string, slug: string): ExerciseLesson => ({
+  label: `Big-O Notation: ${section}`,
+  href: `/bigo?section=${slug}`,
+});
 
 export const exercises: Exercise[] = [
   {
     id: 'two-sum',
     title: 'Two Sum',
     level: 'easy',
+    summary: 'Find the two numbers in an array that add up to a target, and return their indices.',
+    teaches: [
+      dataStructures('Hash Tables'),
+      bigO('Real-World Applications', 'real-world-applications'),
+    ],
     task: `Write \`twoSum(nums, target)\`. It gets an array of integers and a target, and returns the indices of the two numbers that add up to the target.
 
 Every input has exactly one answer, and one element cannot be used twice. The two indices may be returned in any order.`,
@@ -67,6 +88,8 @@ Every input has exactly one answer, and one element cannot be used twice. The tw
     id: 'contains-duplicate',
     title: 'Contains Duplicate',
     level: 'easy',
+    summary: 'Say whether any value appears more than once in an array.',
+    teaches: [dataStructures('Sets'), dataStructures('Hash Tables')],
     task: `Write \`containsDuplicate(nums)\`. It gets an array of integers and returns \`true\` if any value appears at least twice, and \`false\` if every value is distinct.`,
     starterCode: `function containsDuplicate(nums) {
   // Return true if a value appears at least twice, otherwise false
@@ -108,6 +131,9 @@ Every input has exactly one answer, and one element cannot be used twice. The tw
     id: 'valid-parentheses',
     title: 'Valid Parentheses',
     level: 'easy',
+    summary:
+      'Decide whether every bracket in a string is closed by the right one, in the right order.',
+    teaches: [dataStructures('Stacks')],
     task: `Write \`isValid(s)\`. It gets a string made only of the characters \`(\`, \`)\`, \`{\`, \`}\`, \`[\` and \`]\`, and returns \`true\` if the string is valid, otherwise \`false\`.
 
 A string is valid when every opening bracket is closed by a bracket of the same type, brackets are closed in the right order, and every closing bracket has an opening bracket before it.`,
@@ -161,6 +187,8 @@ A string is valid when every opening bracket is closed by a bracket of the same 
     id: 'reverse-linked-list',
     title: 'Reverse Linked List',
     level: 'easy',
+    summary: 'Reverse a singly linked list and return its new first node.',
+    teaches: [dataStructures('Linked Lists')],
     task: `Write \`reverseList(head)\`. It gets the first node of a singly linked list and returns the first node of the reversed list.
 
 A node is a plain object \`{ val, next }\`, where \`next\` is the following node or \`null\` at the end. The list 1 → 2 is passed in as \`{ val: 1, next: { val: 2, next: null } }\`, and an empty list is \`null\`. The checks compare the list you return node by node, so you may reuse the nodes you were given or build new ones.`,
@@ -217,6 +245,8 @@ function reverseList(head) {
     id: 'maximum-depth-binary-tree',
     title: 'Maximum Depth of Binary Tree',
     level: 'easy',
+    summary: "Count the nodes on the longest path from a binary tree's root down to a leaf.",
+    teaches: [dataStructures('Binary Trees')],
     task: `Write \`maxDepth(root)\`. It gets the root of a binary tree and returns the tree's maximum depth: the number of nodes on the longest path from the root down to a leaf.
 
 A node is a plain object \`{ val, left, right }\`, where \`left\` and \`right\` are nodes or \`null\`. An empty tree is \`null\` and has depth 0.`,
@@ -285,6 +315,8 @@ function maxDepth(root) {
     id: 'implement-queue-using-stacks',
     title: 'Implement Queue using Stacks',
     level: 'easy',
+    summary: 'Build a first in, first out queue that keeps its items in two stacks.',
+    teaches: [dataStructures('Queues'), dataStructures('Stacks')],
     task: `Complete the class \`MyQueue\`: a first in, first out queue that stores its items in two stacks. \`push(x)\` adds x at the back, \`pop()\` removes the front item and returns it, \`peek()\` returns the front item without removing it, and \`empty()\` returns \`true\` when the queue holds nothing.
 
 Use arrays as the stacks, and only \`push\`, \`pop\`, \`length\` and reading the last item. The checks cannot see how you store the items, so keeping to that rule is up to you.
@@ -405,9 +437,154 @@ function runQueue(operations) {
     suggestedLens: 'stack-heap',
   },
   {
+    id: 'binary-tree-inorder-traversal',
+    title: 'Binary Tree Inorder Traversal',
+    level: 'medium',
+    summary:
+      "List a binary tree's values in inorder: left subtree, then the node, then the right subtree.",
+    teaches: [dataStructures('Binary Trees')],
+    task: `Write \`inorderTraversal(root)\`. It gets the root of a binary tree and returns an array of the values of its nodes in inorder: for every node, first all the values of its left subtree, then the node's own value, then all the values of its right subtree.
+
+A node is a plain object \`{ val, left, right }\`, where \`left\` and \`right\` are nodes or \`null\`. An empty tree is \`null\`, and its result is an empty array.`,
+    starterCode: `// A node is { val, left, right }; left and right are nodes or null.
+function inorderTraversal(root) {
+  // Return the values: left subtree, then the node, then the right subtree
+}
+`,
+    entry: 'inorderTraversal',
+    checks: [
+      {
+        args: [
+          {
+            val: 1,
+            left: null,
+            right: { val: 2, left: { val: 3, left: null, right: null }, right: null },
+          },
+        ],
+        expected: [1, 3, 2],
+        explanation:
+          '1 has no left subtree, so it comes first. Its right subtree is 2 with a left child 3, and 3 comes before 2.',
+      },
+      {
+        args: [
+          {
+            val: 2,
+            left: { val: 1, left: null, right: null },
+            right: { val: 3, left: null, right: null },
+          },
+        ],
+        expected: [1, 2, 3],
+        explanation: 'The left child 1, then the root 2, then the right child 3.',
+      },
+      { args: [null], expected: [], explanation: 'An empty tree has no values.' },
+      { args: [{ val: 5, left: null, right: null }], expected: [5], hidden: true },
+      {
+        args: [
+          {
+            val: 3,
+            left: { val: 2, left: { val: 1, left: null, right: null }, right: null },
+            right: null,
+          },
+        ],
+        expected: [1, 2, 3],
+        hidden: true,
+      },
+      {
+        args: [
+          {
+            val: 8,
+            left: {
+              val: 4,
+              left: { val: 9, left: null, right: null },
+              right: { val: 6, left: { val: 5, left: null, right: null }, right: null },
+            },
+            right: { val: 2, left: null, right: { val: 7, left: null, right: null } },
+          },
+        ],
+        expected: [9, 4, 5, 6, 8, 2, 7],
+        hidden: true,
+      },
+    ],
+    hints: [
+      'A subtree is a tree, so a function that handles one node can call itself on `node.left` and on `node.right`. An empty subtree (`null`) adds nothing.',
+      'Collect the values in one array. For each node: handle the left subtree, push `node.val`, then handle the right subtree. Only the place of the push decides the order.',
+      'Without recursion, keep the nodes you still owe a visit on a stack: go left as far as you can, pushing each node, then pop one, take its value and continue with its right child.',
+    ],
+    solution: {
+      code: `// A node is { val, left, right }; left and right are nodes or null.
+function inorderTraversal(root) {
+  const values = [];
+
+  function visit(node) {
+    if (node === null) return;
+    visit(node.left);
+    values.push(node.val);
+    visit(node.right);
+  }
+
+  visit(root);
+  return values;
+}
+`,
+      explanation:
+        "A subtree is itself a tree, so `visit` can call itself on each child (that is recursion), and an empty subtree ends the calls. The value is pushed between the two calls, so everything in a node's left subtree is already in the array and everything in its right subtree comes after: moving that one line is all that separates inorder from the other orders. Every node is visited once. The cost to watch is the call stack: each call waits for the calls below it, so as many frames as the tree is deep are open at the same time.",
+    },
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'kth-largest-element',
+    title: 'Kth Largest Element',
+    level: 'medium',
+    summary:
+      'Return the kth largest value of an array, where a repeated value counts every time it appears.',
+    teaches: [dataStructures('Heaps')],
+    task: `Write \`findKthLargest(nums, k)\`. It gets a non-empty array of integers and a number \`k\`, and returns the kth largest value: the value at position k when the array is ordered from largest to smallest, counting from 1.
+
+A repeated value counts once for each time it appears: in \`[5, 5, 4]\` the 2nd largest is 5, not 4. \`k\` is at least 1 and at most the length of the array.`,
+    starterCode: `function findKthLargest(nums, k) {
+  // Return the kth largest value of nums
+}
+`,
+    entry: 'findKthLargest',
+    checks: [
+      {
+        args: [[3, 2, 1, 5, 6, 4], 2],
+        expected: 5,
+        explanation: 'From largest to smallest the array is 6, 5, 4, 3, 2, 1. The 2nd value is 5.',
+      },
+      {
+        args: [[3, 2, 3, 1, 2, 4, 5, 5, 6], 4],
+        expected: 4,
+        explanation:
+          'From largest to smallest the array is 6, 5, 5, 4, 3, 3, 2, 2, 1. Both 5s count, so the 4th value is 4.',
+      },
+      { args: [[1], 1], expected: 1, explanation: 'The only value is the largest.' },
+      { args: [[10, 9, 100, 2], 1], expected: 100, hidden: true },
+      { args: [[-1, -5, -3], 3], expected: -5, hidden: true },
+      { args: [[7, 7, 7], 2], expected: 7, hidden: true },
+    ],
+    hints: [
+      'If the array were ordered from largest to smallest, the answer would be at index `k - 1`.',
+      'Called with no argument, `sort()` compares numbers as text, so 100 comes before 9. Pass it a function that compares two numbers: `(a, b) => b - a` puts the larger first.',
+      'To do less work than a full sort, keep only the k largest values seen so far. The smallest of those k is the answer, and a min-heap is the structure that hands back its smallest value cheaply.',
+    ],
+    solution: {
+      code: `function findKthLargest(nums, k) {
+  // A copy, so the caller's array keeps its order
+  const sorted = [...nums].sort((a, b) => b - a);
+  return sorted[k - 1];
+}
+`,
+      explanation:
+        'Order a copy of the array from largest to smallest, and the kth largest value sits at index `k - 1`; repeated values each keep their own place, so they are counted as the task asks. `sort` needs the function `(a, b) => b - a`, because without one it compares numbers as text. Sorting orders every value, although only one position is needed, and that work grows a little faster than the length of the array. A min-heap, a tree that always has its smallest value at the top, does less: keep just the k largest values seen so far in it, drop the top whenever it holds more than k, and the top at the end is the answer.',
+    },
+    suggestedLens: 'stack-heap',
+  },
+  {
     id: 'maximum-subarray',
     title: 'Maximum Subarray',
     level: 'medium',
+    summary: "Find the largest sum that any contiguous run of an array's elements has.",
     task: `Write \`maxSubArray(nums)\`. It gets a non-empty array of integers and returns the largest sum that any contiguous run of its elements has. A run holds at least one element.`,
     starterCode: `function maxSubArray(nums) {
   // Return the largest sum of a contiguous run of elements

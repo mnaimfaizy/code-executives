@@ -3,6 +3,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 import BinaryTreeVisualization from '../visualizations/2d/tree/BinaryTreeVisualization';
 import { TreePine, Code, BookOpen, Zap, ArrowRight } from 'lucide-react';
 
@@ -259,6 +260,7 @@ const BinaryTrees: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="datastructures" section="Binary Trees" />
       <CTASection
         title="Ready to Master Advanced Trees?"
         description="Build on your binary tree knowledge with specialized tree structures designed for specific use cases."

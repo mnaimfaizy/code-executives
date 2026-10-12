@@ -4,6 +4,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 
 interface ApplicationExample {
   category: string;
@@ -638,6 +639,7 @@ const RealWorldApplications: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="bigo" section="Real-World Applications" />
       <CTASection
         title="Ready to Test Your Knowledge?"
         description="Challenge yourself with interactive coding problems and Big-O analysis exercises."
