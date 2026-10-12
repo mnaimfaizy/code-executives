@@ -4,7 +4,9 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import CTASection from '../../../../components/shared/CTASection';
-import { createNavCardClass } from '../../../../utils/theme';
+import PracticeInPlaygroundLink from '../../../../shared/components/practice/PracticeInPlaygroundLink';
+import { exerciseCards } from '../../../playground/exercises/catalog';
+import { openBigOSection } from '../../utils/sectionNavigation';
 import { AlgorithmComparer, PerformanceProfiler } from '../visualizations/2d/interactive';
 import {
   TeleporterMetaphor,
@@ -14,6 +16,7 @@ import {
 
 const Introduction: React.FC = () => {
   const [activeDemo, setActiveDemo] = useState<'comparer' | 'profiler' | 'metaphor'>('comparer');
+  const twoSum = exerciseCards().find((exercise) => exercise.id === 'two-sum');
 
   // Hero content with title, description, and stats
   const heroContent = (
@@ -152,7 +155,7 @@ const Introduction: React.FC = () => {
             title="Core Concepts"
             description="Master the fundamental principles of algorithmic complexity analysis."
             colorScheme="blue"
-            onClick={() => console.log('Navigate to Core Concepts')}
+            onClick={() => openBigOSection('Core Concepts')}
           />
         </ThemeCard>
 
@@ -161,7 +164,7 @@ const Introduction: React.FC = () => {
             title="Common Complexities"
             description="Explore the seven essential complexity classes with interactive metaphors."
             colorScheme="green"
-            onClick={() => console.log('Navigate to Common Complexities')}
+            onClick={() => openBigOSection('Common Complexities')}
           />
         </ThemeCard>
 
@@ -170,7 +173,7 @@ const Introduction: React.FC = () => {
             title="Algorithm Analysis"
             description="Learn systematic techniques for analyzing code complexity."
             colorScheme="purple"
-            onClick={() => console.log('Navigate to Algorithm Analysis')}
+            onClick={() => openBigOSection('Algorithm Analysis')}
           />
         </ThemeCard>
 
@@ -179,16 +182,16 @@ const Introduction: React.FC = () => {
             title="Real-World Applications"
             description="See how complexity analysis applies to production software systems."
             colorScheme="orange"
-            onClick={() => console.log('Navigate to Real-World Applications')}
+            onClick={() => openBigOSection('Real-World Applications')}
           />
         </ThemeCard>
 
         <ThemeCard>
           <NavigationCard
-            title="Advanced Topics"
+            title="Advanced Concepts"
             description="Dive into amortized analysis, NP-completeness, and optimization techniques."
             colorScheme="red"
-            onClick={() => console.log('Navigate to Advanced Topics')}
+            onClick={() => openBigOSection('Advanced Concepts')}
           />
         </ThemeCard>
 
@@ -197,25 +200,18 @@ const Introduction: React.FC = () => {
             title="Practice Challenges"
             description="Test your understanding with interactive coding challenges and optimizations."
             colorScheme="indigo"
-            onClick={() => console.log('Navigate to Practice Challenges')}
+            onClick={() => openBigOSection('Practice Challenges')}
           />
         </ThemeCard>
 
-        <ThemeCard>
-          <a
-            href="/playground"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${createNavCardClass('purple')} block w-full text-left group`}
-          >
-            <h4 className="font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
-              Playground
-            </h4>
-            <p className="text-xs text-gray-600 mt-1">
-              Run your own code and step through it, one line at a time. Opens in a new tab.
-            </p>
-          </a>
-        </ThemeCard>
+        {twoSum && (
+          <ThemeCard>
+            <div className="rounded-lg border border-purple-200 bg-purple-50 p-4">
+              <PracticeInPlaygroundLink title={twoSum.title} href={twoSum.href} />
+              {twoSum.summary && <p className="text-xs text-gray-600 mt-1">{twoSum.summary}</p>}
+            </div>
+          </ThemeCard>
+        )}
       </div>
 
       {/* Why Big-O Matters */}
@@ -329,7 +325,7 @@ const Introduction: React.FC = () => {
         title="Ready to Master Algorithmic Complexity?"
         description="Dive deeper into Big-O notation and transform how you think about algorithm performance."
         buttonText="Start Learning"
-        onButtonClick={() => console.log('Start Big-O learning journey')}
+        onButtonClick={() => openBigOSection('Core Concepts')}
         colorScheme="blue"
       />
     </>

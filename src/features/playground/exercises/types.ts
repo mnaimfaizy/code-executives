@@ -36,11 +36,33 @@ export interface ExerciseSolution {
   explanation: string;
 }
 
+/** A section of a module that teaches what an exercise practices. */
+export interface ExerciseLesson {
+  /**
+   * The section's name with its module's, e.g. `Data Structures: Hash Tables`: the Playground
+   * shows it outside the module's own page.
+   */
+  label: string;
+  /** The section's address, e.g. `/datastructures?section=Hash%20Tables`. */
+  href: string;
+}
+
 export interface Exercise {
   /** Stable, and the value of `?exercise=` in a link. Lower-case letters, digits and hyphens. */
   id: string;
   title: string;
   level: ExerciseLevel;
+  /**
+   * The task in one plain sentence of at most 110 characters, for a list of exercises on a
+   * module page. It says what to do, not which technique does it.
+   */
+  summary: string;
+  /**
+   * The sections that teach what this exercise practices. The first is the "Learn this first"
+   * link in the Playground; every one of them lists the exercise at its end. Absent when no
+   * section teaches the idea.
+   */
+  teaches?: ExerciseLesson[];
   /**
    * What to write and the goal, as prose. Paragraphs are separated by an empty line and
    * `backticks` mark code. Anything a check relies on is stated here: how a list or a tree

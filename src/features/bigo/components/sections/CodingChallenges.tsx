@@ -7,6 +7,7 @@ import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import StatsGrid from '../../../../components/shared/StatsGrid';
 import CTASection from '../../../../components/shared/CTASection';
+import { openBigOSection } from '../../utils/sectionNavigation';
 
 interface Challenge {
   id: string;
@@ -642,7 +643,7 @@ function merge(left, right) {
             title="Core Concepts"
             description="Review fundamental Big-O notation and complexity classes."
             colorScheme="blue"
-            onClick={() => console.log('Navigate to Core Concepts')}
+            onClick={() => openBigOSection('Core Concepts')}
           />
         </ThemeCard>
 
@@ -651,7 +652,7 @@ function merge(left, right) {
             title="Advanced Topics"
             description="Explore amortized analysis and NP-completeness."
             colorScheme="emerald"
-            onClick={() => console.log('Navigate to Advanced Topics')}
+            onClick={() => openBigOSection('Advanced Concepts')}
           />
         </ThemeCard>
 
@@ -660,7 +661,7 @@ function merge(left, right) {
             title="Case Studies"
             description="See Big-O analysis in real-world production systems."
             colorScheme="purple"
-            onClick={() => console.log('Navigate to Case Studies')}
+            onClick={() => openBigOSection('Real-World Applications')}
           />
         </ThemeCard>
 

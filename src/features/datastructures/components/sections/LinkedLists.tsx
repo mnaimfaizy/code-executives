@@ -2,6 +2,7 @@ import React from 'react';
 import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 import LinkedListVisualization from '../visualizations/2d/linear/LinkedListVisualization';
 import { ArrowRight, Database, Zap, Code } from 'lucide-react';
 
@@ -234,6 +235,7 @@ const LinkedLists: React.FC = () => {
   return (
     <>
       <SectionLayout section="datastructures" hero={heroContent} mainContent={mainContent} />
+      <SectionPractice moduleId="datastructures" section="Linked Lists" />
       <CTASection
         title="Ready to Explore More Data Structures?"
         description="Continue your journey through fundamental data structures and algorithms."

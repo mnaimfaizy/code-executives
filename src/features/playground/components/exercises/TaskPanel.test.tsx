@@ -70,6 +70,39 @@ describe('TaskPanel', () => {
     expect(screen.getByText(/in any order\./)).toBeInTheDocument();
   });
 
+  it('links to the lesson to learn first, in a new tab, and lists the others quietly', () => {
+    renderPanel();
+    const [first, second] = twoSum.teaches!;
+    const paragraph = screen.getByText(/^Learn this first:/);
+    const link = within(paragraph).getByRole('link');
+    expect(link).toHaveAccessibleName(`${first.label} (opens in a new tab)`);
+    expect(link).toHaveAttribute('href', '/datastructures?section=Hash%20Tables');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    // Near the title: before the task's text
+    const task = screen.getByText('twoSum(nums, target)');
+    expect(link.compareDocumentPosition(task) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    const also = within(screen.getByText(/^Also taught in/)).getByRole('link');
+    expect(also).toHaveAccessibleName(`${second.label} (opens in a new tab)`);
+    expect(also).toHaveAttribute('href', '/bigo?section=real-world-applications');
+    expect(also).toHaveAttribute('target', '_blank');
+    expect(also).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('shows only the first lesson when there is one, and nothing when no section teaches it', () => {
+    const one = exercises.find((exercise) => exercise.id === 'valid-parentheses')!;
+    const { update } = renderPanel({ exercise: one });
+    expect(screen.getAllByRole('link')).toHaveLength(1);
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/datastructures?section=Stacks');
+    expect(screen.queryByText(/^Also taught in/)).toBeNull();
+
+    update({ exercise: exercises.find((exercise) => exercise.id === 'maximum-subarray')! });
+    expect(screen.queryByText(/^Learn this first/)).toBeNull();
+    expect(screen.queryByText(/^Also taught in/)).toBeNull();
+    expect(screen.queryByRole('link')).toBeNull();
+  });
+
   it('lists every check before any ran: visible ones with their call and expected value, hidden ones by number only', () => {
     renderPanel();
     const items = screen.getAllByRole('listitem');

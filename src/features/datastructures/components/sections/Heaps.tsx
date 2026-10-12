@@ -3,6 +3,7 @@ import SectionLayout from '../../../../components/shared/SectionLayout';
 import ThemeCard from '../../../../components/shared/ThemeCard';
 import NavigationCard from '../../../../components/shared/NavigationCard';
 import CTASection from '../../../../components/shared/CTASection';
+import SectionPractice from '../../../../shared/components/practice/SectionPractice';
 import HeapVisualization from '../visualizations/2d/tree/HeapVisualization';
 import { Layers, TrendingUp, BookOpen, Zap, ArrowUp, ArrowDown } from 'lucide-react';
 
@@ -351,6 +352,7 @@ const Heaps: React.FC = () => {
         mainContent={mainContent}
         sidebar={sidebarContent}
       />
+      <SectionPractice moduleId="datastructures" section="Heaps" />
       <CTASection
         title="Master Advanced Tree Structures"
         description="Explore B-Trees and other specialized tree structures used in databases and file systems."
