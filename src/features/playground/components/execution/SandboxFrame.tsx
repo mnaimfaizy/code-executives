@@ -1,6 +1,7 @@
 import { useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import type { ConsoleEntry, ConsoleEntryType } from '../../types';
 import { runtimeSource, TRACER_NAME, type Trace, type TraceLimits } from '../../tracer';
+import type { CheckReport, SandboxCheck } from '../../exercises/types';
 import { SANDBOX_RUNTIME_SOURCE } from './sandboxRuntime';
 
 /** What the sandbox needs to record a trace: the tracer runtime as source, and its limits */
@@ -20,6 +21,8 @@ type HostToSandbox =
       timeout: number;
       runId: number;
       tracer?: SandboxTracer;
+      /** An exercise's check: the sandbox calls the entry function and compares */
+      check?: SandboxCheck;
     }
   | { type: 'cancel' };
 
@@ -38,6 +41,7 @@ interface SandboxToHost {
   entries?: RawConsoleEntry[];
   error?: string;
   trace?: Trace | null;
+  check?: CheckReport;
 }
 
 /**
@@ -70,14 +74,20 @@ export interface SandboxExecutionResult {
   error?: string;
   /** The trace of a traced run */
   trace?: Trace;
+  /** The verdict of a run that carried a check */
+  check?: CheckReport;
 }
 
 export interface SandboxFrameHandle {
-  /** With `traceLimits`, `code` is instrumented code and the result carries its trace */
+  /**
+   * With `traceLimits`, `code` is instrumented code and the result carries its trace.
+   * With `check`, `code` ends by calling the check hook and the result carries the verdict.
+   */
   execute: (
     code: string,
     timeout: number,
-    traceLimits?: TraceLimits
+    traceLimits?: TraceLimits,
+    check?: SandboxCheck
   ) => Promise<SandboxExecutionResult>;
   terminate: () => void;
 }
@@ -121,6 +131,7 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
             entries: parseEntries(data.entries),
             error: data.type === 'error' ? data.error : undefined,
             trace: data.trace ?? undefined,
+            check: data.check,
           });
           pendingRef.current = null;
         }
@@ -154,7 +165,12 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
   }, []);
 
   const execute = useCallback(
-    (code: string, timeout: number, traceLimits?: TraceLimits): Promise<SandboxExecutionResult> => {
+    (
+      code: string,
+      timeout: number,
+      traceLimits?: TraceLimits,
+      check?: SandboxCheck
+    ): Promise<SandboxExecutionResult> => {
       // Terminate any pending execution
       if (pendingRef.current) terminate();
 
@@ -198,6 +214,7 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
           ...(traceLimits
             ? { tracer: { runtime: runtimeSource, name: TRACER_NAME, limits: traceLimits } }
             : {}),
+          ...(check ? { check } : {}),
         };
 
         iframe.contentWindow.postMessage(msg, '*');

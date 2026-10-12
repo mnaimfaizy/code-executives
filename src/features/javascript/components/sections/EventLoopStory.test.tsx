@@ -185,13 +185,14 @@ describe('EventLoopStory', () => {
     }
   });
 
-  it('links to the Playground in a new tab without promising the code is there', () => {
+  it('opens its own program in the Playground, with its lens, in a new tab', () => {
     render(<EventLoopStory />);
     const link = screen.getByRole('link', { name: /Try it in the Playground/ });
-    expect(link).toHaveAttribute('href', '/playground');
+    expect(link).toHaveAttribute('href', '/playground?example=event-loop-story&lens=stack-queues');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(link.closest('p')).toHaveTextContent(/paste this program there/);
+    expect(link.closest('p')).toHaveTextContent(/opens there with the Stack & Queues lens chosen/);
+    expect(link.closest('p')).not.toHaveTextContent(/paste/);
   });
 
   it('keeps the beat, the Console and the prediction when switching to 3D and back', async () => {

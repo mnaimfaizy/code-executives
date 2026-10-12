@@ -7,6 +7,7 @@ import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
 import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
 import StoryCodePanel from '../../../../shared/components/viz/StoryCodePanel';
 import StoryControls from '../../../../shared/components/viz/StoryControls';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
 import { useStoryPlayback } from '../../../../shared/components/viz/useStoryPlayback';
 import StackHeap2D from '../visualizations/2d/StackHeap2D';
 import { STORY_CODE, STORY_BEATS } from '../../utils/stackHeapStory';
@@ -111,6 +112,13 @@ const StackHeapStory: React.FC = () => {
             fullscreen={view === '2d' ? viewer.fullscreen : undefined}
           />
         </div>
+      </div>
+
+      <div className="mt-3">
+        <TryInPlaygroundLink example="stack-heap-story" lens="stack-heap">
+          this program opens there with the Stack &amp; Heap lens chosen. Run it, then delete line
+          9 or line 11, and see which objects a root can still reach.
+        </TryInPlaygroundLink>
       </div>
     </div>
   );

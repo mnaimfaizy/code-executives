@@ -18,6 +18,13 @@
  * code never reaches the wrappers below, and a timer takes no real time. The script
  * gives the tracer a way to run one turn of its event loop as a task, and the run
  * is finished once the tracer has no turn left to run.
+ *
+ * A run with a check (an exercise) gets one more argument, the check hook. The code
+ * the host sends ends by handing the entry function to the hook; the hook calls it
+ * once with the check's arguments and compares what it returns with the expected
+ * value, here, in this script's own scope. The verdict travels in the report, never
+ * through the Console, and the learner's code cannot read the expected value. Such a
+ * run ends with its synchronous part: a check does not wait for timers or promises.
  */
 export const SANDBOX_RUNTIME_SOURCE = String.raw`
 (function() {
@@ -57,7 +64,18 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
   var MAX_ENTRIES = 500;
   var MAX_ENTRY_LENGTH = 10240;
 
-  /** The run in progress: { id, timers, done, failed, error, checkQueued, capId, tracer, maxSteps, channel } */
+  // Taken before any learner code runs, so a check does not compare with replaced built-ins
+  var _isArray = Array.isArray;
+  var _keys = Object.keys;
+  var _hasOwn = Object.prototype.hasOwnProperty;
+  var _toString = Object.prototype.toString;
+  var _stringify = JSON.stringify;
+  var _parse = JSON.parse;
+
+  /**
+   * The run in progress: { id, timers, done, failed, error, checkQueued, capId, tracer,
+   * maxSteps, channel, check, checkResult }
+   */
   var run = null;
 
   function safeStringify(val) {
@@ -155,6 +173,114 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     entries.push({ type: 'error', args: [prefix + message], line: line });
   }
 
+  // ---- Exercise checks ----
+
+  // Structural equality: primitives by value (NaN equals NaN), arrays by position,
+  // plain objects by their own keys. The expected value is plain data without cycles,
+  // and the walk follows it, so it ends even when the actual value has a cycle.
+  function sameValue(actual, expected) {
+    if (actual === expected) return true;
+    if (typeof actual === 'number' && typeof expected === 'number') {
+      return actual !== actual && expected !== expected;
+    }
+    if (!actual || !expected || typeof actual !== 'object' || typeof expected !== 'object') return false;
+    var i;
+    if (_isArray(expected)) {
+      if (!_isArray(actual) || actual.length !== expected.length) return false;
+      for (i = 0; i < expected.length; i++) {
+        if (!sameValue(actual[i], expected[i])) return false;
+      }
+      return true;
+    }
+    if (_isArray(actual) || _toString.call(actual) !== '[object Object]') return false;
+    var keys = _keys(expected);
+    if (_keys(actual).length !== keys.length) return false;
+    for (i = 0; i < keys.length; i++) {
+      if (!_hasOwn.call(actual, keys[i])) return false;
+      if (!sameValue(actual[keys[i]], expected[keys[i]])) return false;
+    }
+    return true;
+  }
+
+  // For an exercise whose task says "any order": the same items, each as many times
+  function sameInAnyOrder(actual, expected) {
+    if (!_isArray(actual) || !_isArray(expected) || actual.length !== expected.length) return false;
+    var used = [];
+    for (var i = 0; i < expected.length; i++) {
+      var found = false;
+      for (var j = 0; j < actual.length && !found; j++) {
+        if (!used[j] && sameValue(actual[j], expected[i])) { used[j] = true; found = true; }
+      }
+      if (!found) return false;
+    }
+    return true;
+  }
+
+  // What the learner's function returned, on one line, for the task panel
+  function showValue(val) {
+    if (val === undefined) return 'undefined';
+    if (typeof val === 'function') return 'function ' + (val.name || '(anonymous)');
+    if (typeof val === 'number' && (val !== val || val === Infinity || val === -Infinity)) return String(val);
+    if (typeof val === 'symbol') return val.toString();
+    if (typeof val === 'bigint') return val.toString() + 'n';
+    if (val && typeof val === 'object' && !_isArray(val)) {
+      var tag = _toString.call(val).slice(8, -1);
+      if (tag !== 'Object') return tag;
+    }
+    try {
+      var seen = new WeakSet();
+      var shown = _stringify(val, function(key, value) {
+        if (typeof value === 'object' && value !== null) {
+          if (seen.has(value)) return '[Circular]';
+          seen.add(value);
+        }
+        if (value === undefined) return '[undefined]';
+        if (typeof value === 'function') return '[function]';
+        if (typeof value === 'bigint') return value.toString() + 'n';
+        return value;
+      });
+      return truncate(String(shown));
+    } catch (e) {
+      return String(val);
+    }
+  }
+
+  // The hook a check run's code calls with the entry function. Only its first call counts.
+  function checkHook(r) {
+    return function(entry) {
+      if (r.checkResult || r.done) return;
+      if (typeof entry !== 'function') {
+        r.checkResult = { status: 'missing' };
+        return;
+      }
+      var actual;
+      try {
+        // A copy of its own, so nothing the function does to its arguments outlives the call
+        actual = entry.apply(undefined, _parse(_stringify(r.check.args)));
+      } catch (err) {
+        if (r.tracer && r.tracer.stopped(err)) {
+          // The step limit ended the call: the signal goes on and ends the run
+          r.checkResult = { status: 'step-limit' };
+          throw err;
+        }
+        r.checkResult = { status: 'threw', message: describeError(err) };
+        return;
+      }
+      var pass = r.check.anyOrder
+        ? sameInAnyOrder(actual, r.check.expected)
+        : sameValue(actual, r.check.expected);
+      r.checkResult = { status: pass ? 'pass' : 'fail', actual: showValue(actual) };
+    };
+  }
+
+  // The verdict of a check run, also when the code never reached the hook
+  function checkReport(r, trace) {
+    if (r.checkResult) return r.checkResult;
+    if (trace && trace.outcome === 'step-limit') return { status: 'step-limit' };
+    if (r.error) return { status: 'threw', message: r.error, beforeCall: true };
+    return { status: 'not-reached' };
+  }
+
   function finish(r, type, error) {
     if (r.done) return;
     r.done = true;
@@ -180,7 +306,9 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
       runId: r.id,
       error: error,
       entries: entries,
-      trace: trace
+      // A check run's steps are not shown: the learner watches a check as a run of its own
+      trace: r.check ? null : trace,
+      check: r.check ? checkReport(r, trace) : undefined
     }, '*');
   }
 
@@ -298,13 +426,17 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
       finish(previous);
     }
     if (msg.type !== 'execute') return;
+    // A listener the learner's code left behind in an earlier run does not see this
+    // message, which may carry a check's expected value
+    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
 
     entries = [];
     installConsole();
 
     var r = {
       id: msg.runId, timers: new Map(), done: false, failed: false, error: null,
-      checkQueued: false, capId: 0, tracer: null, maxSteps: 0, channel: null
+      checkQueued: false, capId: 0, tracer: null, maxSteps: 0, channel: null,
+      check: msg.check || null, checkResult: null
     };
     run = r;
 
@@ -334,22 +466,30 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
           settled: function() { settleSoon(r); }
         });
         r.maxSteps = msg.tracer.limits.maxSteps;
-        fn = new Function(msg.tracer.name, msg.code);
+        fn = r.check
+          ? new Function(msg.tracer.name, msg.check.hook, msg.code)
+          : new Function(msg.tracer.name, msg.code);
       } else {
-        fn = new Function(msg.code);
+        fn = r.check ? new Function('__untraced', msg.check.hook, msg.code) : new Function(msg.code);
       }
     } catch (err) {
       // The code did not parse, so nothing ran
       var parseError = describeError(err);
+      r.error = parseError;
       entries.push({ type: 'error', args: [parseError] });
       finish(r, 'error', parseError);
       return;
     }
 
     try {
-      fn(r.tracer);
+      if (r.check) fn(r.tracer, checkHook(r)); else fn(r.tracer);
     } catch (err) {
       uncaught(r, err, 'Uncaught ');
+    }
+    if (r.check) {
+      // The verdict is in: timers and promises the code left behind are dropped
+      finish(r, r.failed ? 'error' : 'result', r.error || undefined);
+      return;
     }
     settleSoon(r);
   });

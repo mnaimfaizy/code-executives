@@ -1,4 +1,8 @@
 import type { PlaygroundLanguage, VisualizationLens } from '../types';
+// Only the stories' code is imported, from their beat models (pure data): an example that is a
+// story's program is that program, so the two cannot drift apart.
+import { STORY_CODE as EVENT_LOOP_STORY_CODE } from '../../javascript/utils/eventLoopStory';
+import { STORY_CODE as STACK_HEAP_STORY_CODE } from '../../javascript/utils/stackHeapStory';
 
 export interface Example {
   id: string;
@@ -7,9 +11,35 @@ export interface Example {
   language: PlaygroundLanguage;
   suggestedLens: VisualizationLens;
   code: string;
+  /** The story this example is the program of, and the section that tells it. */
+  story?: { label: string; href: string };
 }
 
 export const examples: Example[] = [
+  {
+    id: 'stack-heap-story',
+    label: 'Story: Stack ↔ Heap',
+    description: 'The program from the Stack ↔ Heap story: who keeps an object alive?',
+    language: 'javascript',
+    suggestedLens: 'stack-heap',
+    code: STACK_HEAP_STORY_CODE,
+    story: {
+      label: 'Stack ↔ Heap: who keeps an object alive?',
+      href: '/javascript?section=Memory%20Heap%20%26%20Objects',
+    },
+  },
+  {
+    id: 'event-loop-story',
+    label: 'Story: The Event Loop',
+    description: 'The program from the Event Loop story: which callback runs next?',
+    language: 'javascript',
+    suggestedLens: 'stack-queues',
+    code: EVENT_LOOP_STORY_CODE,
+    story: {
+      label: 'The Event Loop: what runs next?',
+      href: '/javascript?section=Event%20Loop%20%26%20Coordination',
+    },
+  },
   {
     id: 'event-loop-demo',
     label: 'Event Loop Demo',

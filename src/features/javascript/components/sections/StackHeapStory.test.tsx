@@ -88,6 +88,15 @@ describe('StackHeapStory', () => {
     expect(screen.getByText(/^Beat 3 \//)).toBeInTheDocument();
   });
 
+  it('opens its own program in the Playground, with its lens, in a new tab', () => {
+    render(<StackHeapStory />);
+    const link = screen.getByRole('link', { name: /Try it in the Playground/ });
+    expect(link).toHaveAttribute('href', '/playground?example=stack-heap-story&lens=stack-heap');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(link.closest('p')).toHaveTextContent(/opens there with the Stack & Heap lens chosen/);
+  });
+
   it('falls back to 2D when WebGL is unavailable', async () => {
     webgl.available = false;
     window.localStorage.setItem('code-executives.stack-heap-story.view', '3d');

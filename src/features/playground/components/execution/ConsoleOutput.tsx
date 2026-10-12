@@ -5,6 +5,8 @@ import type { ConsoleEntry } from '../../types';
 interface ConsoleOutputProps {
   entries: ConsoleEntry[];
   onClear: () => void;
+  /** False when the pane's tab row already names the Console and holds its clear button */
+  showHeader?: boolean;
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -21,7 +23,7 @@ const TYPE_PREFIXES: Record<string, string> = {
   info: 'ℹ ',
 };
 
-const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear }) => {
+const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear, showHeader = true }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to latest entry
@@ -35,30 +37,32 @@ const ConsoleOutput: React.FC<ConsoleOutputProps> = ({ entries, onClear }) => {
   return (
     <div className="flex flex-col h-full">
       {/* Console header */}
-      <div
-        className="flex items-center justify-between px-3 shrink-0"
-        style={{
-          height: '32px',
-          borderBottom: '1px solid var(--pg-border)',
-          background: 'var(--pg-bg-surface)',
-        }}
-      >
-        <span
-          className="text-xs font-medium"
-          style={{ color: 'var(--pg-text-secondary)', fontFamily: 'var(--pg-font-mono)' }}
+      {showHeader && (
+        <div
+          className="flex items-center justify-between px-3 shrink-0"
+          style={{
+            height: '32px',
+            borderBottom: '1px solid var(--pg-border)',
+            background: 'var(--pg-bg-surface)',
+          }}
         >
-          Console
-        </span>
-        <button
-          onClick={onClear}
-          className="p-1 rounded hover:bg-white/10 transition-colors"
-          style={{ color: 'var(--pg-text-muted)' }}
-          aria-label="Clear console"
-          title="Clear console (Ctrl+L)"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
-      </div>
+          <span
+            className="text-xs font-medium"
+            style={{ color: 'var(--pg-text-secondary)', fontFamily: 'var(--pg-font-mono)' }}
+          >
+            Console
+          </span>
+          <button
+            onClick={onClear}
+            className="p-1 rounded hover:bg-white/10 transition-colors"
+            style={{ color: 'var(--pg-text-muted)' }}
+            aria-label="Clear console"
+            title="Clear console (Ctrl+L)"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Console entries */}
       <div

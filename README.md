@@ -45,6 +45,7 @@ There is one Playground, at `/playground` (`src/features/playground/`). It is wh
 - **Console**: What the code printed, in order
 - **Lenses**: Stack & Heap, drawn with the same 2D/3D views the stories use
 - **Examples**: Prebuilt code per language, each with a suggested lens
+- **Exercises**: Tasks with a goal, checks that run on the learner's code, and hints; any check can be watched step by step in the lens
 
 ### 🧠 **Timed Module Quizzes**
 
@@ -406,8 +407,10 @@ A run is recorded as a trace: each step holds the same snapshot a story's beat h
 - **Console**: What the code printed, capped at 500 entries of at most 10 KB each, HTML-escaped before rendering
 - **Lenses**: Stack & Heap. The Event Loop lens returns in a later change
 - **Examples**: Prebuilt code per language, each with a suggested lens
+- **Exercises**: Tasks with a goal, checks and hints, in the Exercises menu and the Task tab. Check runs the learner's function against each check in the sandbox (an endless loop ends at the step limit instead of freezing the page), and Watch steps through one check's call in the lens. Passed exercises and the last code per exercise are remembered in the browser; there are no scores
+- **Links**: `/playground?exercise=<id>`, `?example=<id>` and `&lens=<lens>` open an exercise or an example directly, and the address follows what the learner opens
 - **Dark theme**: The Playground is the site's only dark page; its styles are scoped under `data-theme="playground"`
-- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for the structure, tracer, lenses, languages and examples
+- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for the structure, tracer, lenses, languages, examples, exercises and links
 
 ## 🛠️ Development
 

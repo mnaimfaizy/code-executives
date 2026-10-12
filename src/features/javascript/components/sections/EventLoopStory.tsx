@@ -1,5 +1,4 @@
 import React, { lazy, useRef, useState } from 'react';
-import { ExternalLink } from 'lucide-react';
 import { useReducedMotion, useStoryViewer } from '../../../../shared/hooks';
 import { useViewChoice } from '../../../../shared/hooks/useViewChoice';
 import ViewToggle from '../../../../shared/components/viz/ViewToggle';
@@ -8,6 +7,7 @@ import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
 import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
 import StoryCodePanel from '../../../../shared/components/viz/StoryCodePanel';
 import StoryControls from '../../../../shared/components/viz/StoryControls';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
 import { useStoryPlayback } from '../../../../shared/components/viz/useStoryPlayback';
 import EventLoopStory2D from '../visualizations/2d/EventLoopStory2D';
 import { STORY_BEATS, STORY_CODE, running } from '../../utils/eventLoopStory';
@@ -221,20 +221,10 @@ const EventLoopStory: React.FC = () => {
           </div>
         </div>
 
-        <p className="text-sm text-slate-700">
-          <a
-            href="/playground"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
-          >
-            Try it in the Playground
-            <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-            <span className="sr-only">(opens in a new tab)</span>
-          </a>
-          : paste this program there, pick the Stack &amp; Queues lens, then swap lines 8 and 9 or
-          raise the delay and see what moves.
-        </p>
+        <TryInPlaygroundLink example="event-loop-story" lens="stack-queues">
+          this program opens there with the Stack &amp; Queues lens chosen. Run it, then swap lines
+          8 and 9 or raise the timer&apos;s delay, and see what moves.
+        </TryInPlaygroundLink>
       </div>
     </div>
   );

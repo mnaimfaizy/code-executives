@@ -22,10 +22,16 @@ interface UsePlaygroundStateReturn {
 /**
  * Central state hook for the Playground.
  * Manages language, code content, and execution state.
+ * `initial` is what a link opened the Playground with; it is read once.
  */
-export function usePlaygroundState(): UsePlaygroundStateReturn {
-  const [language, setLanguageInternal] = useState<PlaygroundLanguage>('javascript');
-  const [code, setCode] = useState<string>(getDefaultTemplate('javascript'));
+export function usePlaygroundState(initial?: {
+  language: PlaygroundLanguage;
+  code: string;
+}): UsePlaygroundStateReturn {
+  const [language, setLanguageInternal] = useState<PlaygroundLanguage>(
+    initial?.language ?? 'javascript'
+  );
+  const [code, setCode] = useState<string>(initial?.code ?? getDefaultTemplate('javascript'));
   const [executionState, setExecutionState] = useState<ExecutionState>('idle');
 
   // Track if the user has modified code from the template
