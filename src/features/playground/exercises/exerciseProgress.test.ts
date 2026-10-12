@@ -35,6 +35,34 @@ describe('exercise progress', () => {
     expect(loadProgress()).toEqual(result.current.progress);
   });
 
+  it('reads storage again when another tab changed it, so old marks are not written back', () => {
+    const { result } = renderHook(() => useExerciseProgress());
+    act(() => {
+      result.current.saveCode('two-sum', '// mine');
+      result.current.markPassed('two-sum');
+    });
+
+    // Another tab cleared the marks and kept the code, as the progress page does
+    act(() => {
+      saveProgress({ 'two-sum': { code: '// mine' } });
+      window.dispatchEvent(new StorageEvent('storage', { key: PROGRESS_STORAGE_KEY }));
+    });
+    expect(result.current.progress).toEqual({ 'two-sum': { code: '// mine' } });
+
+    act(() => result.current.saveCode('two-sum', '// more'));
+    expect(loadProgress()).toEqual({ 'two-sum': { code: '// more' } });
+  });
+
+  it('ignores a change to another key in storage', () => {
+    const { result } = renderHook(() => useExerciseProgress());
+    act(() => result.current.markPassed('two-sum'));
+    const before = result.current.progress;
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'something-else' }));
+    });
+    expect(result.current.progress).toBe(before);
+  });
+
   it('forgets the code of an exercise but not that it was passed', () => {
     const { result } = renderHook(() => useExerciseProgress());
     act(() => {

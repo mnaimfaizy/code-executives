@@ -8,7 +8,7 @@
  * nothing away.
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface ExerciseRecord {
   /** True once every check passed at least once. */
@@ -74,6 +74,18 @@ interface UseExerciseProgressReturn {
 /** The viewer's progress, held in state and mirrored to `localStorage`. */
 export function useExerciseProgress(): UseExerciseProgressReturn {
   const [progress, setProgress] = useState<ExerciseProgress>(loadProgress);
+
+  // Another tab changed what is stored (a pass, or the learner clearing their progress):
+  // read it again, so the next write here does not put the old marks back
+  useEffect(() => {
+    const handle = (event: StorageEvent): void => {
+      // A null key is the whole storage being cleared
+      if (event.key !== null && event.key !== PROGRESS_STORAGE_KEY) return;
+      setProgress(loadProgress());
+    };
+    window.addEventListener('storage', handle);
+    return () => window.removeEventListener('storage', handle);
+  }, []);
 
   const update = useCallback((id: string, change: (record: ExerciseRecord) => ExerciseRecord) => {
     setProgress((previous) => {

@@ -17,6 +17,8 @@ interface TaskPanelProps {
   passedIds: ReadonlySet<string>;
   /** Ids of the exercises whose solution this viewer has seen. */
   solutionSeenIds: ReadonlySet<string>;
+  /** The milestones the last pass of this exercise earned, if any (ADR 0005). */
+  milestonesReached?: ReadonlyArray<{ id: string; title: string }>;
   onOpenExercise: (exercise: Exercise) => void;
   /** The result of the last Check action on this exercise. */
   run: ChecksRun | null;
@@ -117,6 +119,7 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
   groups,
   passedIds,
   solutionSeenIds,
+  milestonesReached = [],
   onOpenExercise,
   run,
   checking,
@@ -291,6 +294,26 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
             The code has changed since these results. Check again to update them.
           </p>
         )}
+      </div>
+
+      {/* A milestone the pass earned: one quiet line, announced politely, no motion */}
+      <div aria-live="polite" data-testid="milestones-reached" className="text-xs">
+        {milestonesReached.map((milestone) => (
+          <p key={milestone.id} className="mb-2">
+            Milestone reached:{' '}
+            <a
+              href="/progress"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:no-underline"
+              style={{ color: 'var(--pg-accent-blue)' }}
+            >
+              {milestone.title}{' '}
+              <ExternalLink size={10} className="inline align-baseline" aria-hidden="true" />
+              <span className="sr-only">(opens your progress in a new tab)</span>
+            </a>
+          </p>
+        ))}
       </div>
 
       {/* The checks */}

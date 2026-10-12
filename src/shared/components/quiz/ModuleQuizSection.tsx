@@ -64,6 +64,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
     remainingSeconds,
     recentResults,
     latestResult,
+    milestonesReached,
     startAttempt,
     restartAttempt,
     submitAttempt,
@@ -536,7 +537,27 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
     <SectionLayout
       section={moduleConfig.theme}
       hero={hero}
-      mainContent={activeAttempt ? renderActiveQuestion() : renderIntro()}
+      mainContent={
+        <>
+          {/* A milestone the result earned: one quiet line, announced politely, no motion.
+              The region is there before the result is, so the line is announced. */}
+          <div aria-live="polite" data-testid="milestones-reached">
+            {!activeAttempt &&
+              milestonesReached.map((milestone) => (
+                <p key={milestone.id} className="mb-4 text-sm text-gray-700">
+                  Milestone reached:{' '}
+                  <Link
+                    to="/progress"
+                    className="font-semibold text-gray-900 underline underline-offset-2 hover:text-gray-700"
+                  >
+                    {milestone.title}
+                  </Link>
+                </p>
+              ))}
+          </div>
+          {activeAttempt ? renderActiveQuestion() : renderIntro()}
+        </>
+      }
       sidebar={renderSidebarContent()}
     />
   );

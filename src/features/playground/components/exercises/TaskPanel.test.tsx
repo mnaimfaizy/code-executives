@@ -478,6 +478,43 @@ describe('TaskPanel', () => {
     });
   });
 
+  describe('a milestone reached', () => {
+    const milestone = {
+      id: 'exercises:datastructures',
+      title: 'Passed every Data Structures exercise',
+    };
+
+    it('is one quiet line that links to the progress page, in a polite live region', () => {
+      renderPanel({ milestonesReached: [milestone] });
+      const region = screen.getByTestId('milestones-reached');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toHaveTextContent('Milestone reached: Passed every Data Structures exercise');
+      const link = within(region).getByRole('link', {
+        name: /^Passed every Data Structures exercise/,
+      });
+      expect(link).toHaveAttribute('href', '/progress');
+      expect(link).toHaveAttribute('target', '_blank');
+      expect(link).toHaveAccessibleName(/opens your progress in a new tab/);
+      expect(within(region).getAllByText(/Milestone reached/)).toHaveLength(1);
+      // No motion
+      expect(region.innerHTML).not.toMatch(/animate|transition/);
+    });
+
+    it('is announced: the region is there, empty, before a milestone is reached', () => {
+      const { update } = renderPanel();
+      const region = screen.getByTestId('milestones-reached');
+      expect(region).toBeEmptyDOMElement();
+      update({ milestonesReached: [milestone] });
+      expect(screen.getByTestId('milestones-reached')).toBe(region);
+      expect(region).toHaveTextContent('Milestone reached');
+    });
+
+    it('is not shown in the list of exercises', () => {
+      renderPanel({ exercise: null, milestonesReached: [milestone] });
+      expect(screen.queryByText(/Milestone reached/)).toBeNull();
+    });
+  });
+
   it('lists the exercises by level when none is open, marking the passed ones', () => {
     const { props } = renderPanel({ exercise: null, passedIds: new Set(['two-sum']) });
     expect(screen.getByRole('heading', { name: 'Exercises' })).toBeInTheDocument();

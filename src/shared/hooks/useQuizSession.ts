@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { LearningModuleId } from '../constants/moduleNavigation';
 import type {
   QuizAttemptState,
@@ -16,6 +16,7 @@ import {
   isQuizAnswerComplete,
   loadQuizBank,
 } from '../../utils/quiz';
+import { onProgressChange, recordQuizResult, type Milestone } from '../progress';
 
 interface UseQuizSessionResult {
   bank: QuizBankFile | null;
@@ -29,6 +30,11 @@ interface UseQuizSessionResult {
   remainingSeconds: number;
   recentResults: QuizResultSummary[];
   latestResult: QuizResultSummary | null;
+  /**
+   * The milestones the latest result earned when it was produced in this visit (ADR 0005).
+   * Empty for a result read back from storage, so a reload does not announce it again.
+   */
+  milestonesReached: Milestone[];
   startAttempt: () => void;
   restartAttempt: () => void;
   submitAttempt: () => void;
@@ -64,23 +70,54 @@ export const useQuizSession = (moduleId: LearningModuleId): UseQuizSessionResult
 
   const questionMap = useMemo(() => (bank ? createQuestionMap(bank) : {}), [bank]);
 
+  const [earned, setEarned] = useState<{ attemptId: string; milestones: Milestone[] } | null>(
+    null
+  );
+  /** The attempt whose result was last taken in: a result is recorded once, whoever asks twice */
+  const recordedAttemptId = useRef<string | null>(null);
+
+  /**
+   * Takes in the result of an attempt that has just ended: into this quiz's history, then into
+   * the learner's progress. Once per attempt. The history is stored before progress is told,
+   * because telling it makes every listener read storage again, this hook included.
+   */
+  const takeInResult = useCallback(
+    (result: QuizResultSummary, previousResults: QuizResultSummary[]) => {
+      if (recordedAttemptId.current === result.attemptId) {
+        return;
+      }
+      recordedAttemptId.current = result.attemptId;
+
+      const nextResults = [
+        result,
+        ...previousResults.filter((item) => item.attemptId !== result.attemptId),
+      ].slice(0, QUIZ_HISTORY_LIMIT);
+      try {
+        localStorage.setItem(storageKeys.results, JSON.stringify(nextResults));
+      } catch {
+        // Unavailable or full: this visit still has it in memory
+      }
+      setRecentResults(nextResults);
+
+      const update = recordQuizResult(result);
+      setEarned(
+        update.earned.length > 0 ? { attemptId: result.attemptId, milestones: update.earned } : null
+      );
+    },
+    [storageKeys.results]
+  );
+
   const finalizeAttempt = useCallback(
     (status: 'completed' | 'timed-out') => {
       if (!bank || !activeAttempt) {
         return;
       }
 
-      const result = buildQuizResult(bank, activeAttempt, status);
-      setRecentResults((previousResults) =>
-        [result, ...previousResults.filter((item) => item.attemptId !== result.attemptId)].slice(
-          0,
-          QUIZ_HISTORY_LIMIT
-        )
-      );
+      takeInResult(buildQuizResult(bank, activeAttempt, status), recentResults);
       setActiveAttempt(null);
       setRemainingSeconds(bank.timeLimitMinutes * 60);
     },
-    [activeAttempt, bank]
+    [activeAttempt, bank, recentResults, takeInResult]
   );
 
   useEffect(() => {
@@ -138,13 +175,8 @@ export const useQuizSession = (moduleId: LearningModuleId): UseQuizSessionResult
     ) {
       const expiresAt = new Date(storedAttempt.expiresAt).getTime();
       if (expiresAt <= Date.now()) {
-        const timedOutResult = buildQuizResult(bank, storedAttempt, 'timed-out');
-        setRecentResults(
-          [timedOutResult, ...initialResults.filter((item) => item.attemptId !== timedOutResult.attemptId)].slice(
-            0,
-            QUIZ_HISTORY_LIMIT
-          )
-        );
+        setRecentResults(initialResults);
+        takeInResult(buildQuizResult(bank, storedAttempt, 'timed-out'), initialResults);
         localStorage.removeItem(storageKeys.activeAttempt);
         setActiveAttempt(null);
       } else {
@@ -158,7 +190,25 @@ export const useQuizSession = (moduleId: LearningModuleId): UseQuizSessionResult
     }
 
     setHasHydrated(true);
-  }, [bank, questionMap, storageKeys.activeAttempt, storageKeys.results]);
+  }, [bank, questionMap, storageKeys.activeAttempt, storageKeys.results, takeInResult]);
+
+  // Progress changed, here or in another tab: the learner may have cleared it, which removes
+  // the stored results. Read them again, so the copy held here is not written back.
+  useEffect(() => {
+    if (!hasHydrated) {
+      return;
+    }
+
+    return onProgressChange(() => {
+      const stored = safeParse<QuizResultSummary[]>(localStorage.getItem(storageKeys.results));
+      const storedResults = Array.isArray(stored) ? stored : [];
+      setRecentResults((previousResults) =>
+        JSON.stringify(previousResults) === JSON.stringify(storedResults)
+          ? previousResults
+          : storedResults
+      );
+    });
+  }, [hasHydrated, storageKeys.results]);
 
   useEffect(() => {
     if (!hasHydrated) {
@@ -327,6 +377,8 @@ export const useQuizSession = (moduleId: LearningModuleId): UseQuizSessionResult
     remainingSeconds,
     recentResults,
     latestResult: recentResults[0] ?? null,
+    milestonesReached:
+      earned && recentResults[0]?.attemptId === earned.attemptId ? earned.milestones : [],
     startAttempt,
     restartAttempt,
     submitAttempt,
