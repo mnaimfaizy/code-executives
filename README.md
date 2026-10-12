@@ -1,503 +1,150 @@
-# 🚀 Code Executives: Interactive Programming Education Platform
+# Code Executives
 
-**Code Executives** is a comprehensive, interactive web application designed to teach programming concepts through immersive visualizations and hands-on learning experiences. Built with modern web technologies, it transforms complex technical topics into engaging, visual learning journeys.
+Code Executives is a website that teaches programming by showing, step by step, what code and tools do to state you can't see: stack frames, heap objects, queues, commits and refs. It is a static React 19 + Vite + TypeScript single-page application with no server and no accounts.
 
-**🌐 Live Website**: [https://codexecutives.com](https://codexecutives.com)
+Live site: [https://codexecutives.com](https://codexecutives.com)
 
-**✨ Now featuring 15 complete learning modules with 96+ interactive visualizations, root-level scenario quiz banks for every module, shared timed quizzes with local progress tracking, and a Playground where learners run their own code and step through what it did.**
+## Run it
 
-> **📌 Repository Maintainers**: See [REPOSITORY-ABOUT-QUICK-REFERENCE.md](./docs/REPOSITORY-ABOUT-QUICK-REFERENCE.md) for GitHub repository About section configuration (description, website, and topics).
-
-## 🌟 Features
-
-### 📚 **Interactive Learning Modules**
-
-- **Next.js Mastery**: Complete App Router tutorial with 24 interactive visualizations
-- **Git Mastery**: Complete Git tutorial with 7 interactive 2D visualizations
-- **JavaScript Engine**: Deep dive into V8 runtime, memory management, and execution flow
-- **RxJS Reactive Programming**: Observable streams and reactive patterns
-- **Data Structures**: Comprehensive guide to fundamental data structures with interactive visualizations
-- **Big-O Notation**: Complete algorithmic complexity analysis with 10+ interactive tools and metaphors
-- **Python Programming**: Complete Python tutorial covering philosophy, execution model, memory management, and concurrency
-- **AI Fundamentals**: Machine learning concepts from scratch — neural networks, gradient descent, embeddings, and RAG pipelines
-- **Node.js Ecosystem**: Deep dive into Event Loop, V8 memory, Streams, Clustering, module systems, package managers, frameworks, and runtime wars (Node vs Deno vs Bun)
-- **DevOps & Cloud Computing**: CI/CD pipelines, cloud service models (IaaS/PaaS/SaaS/FaaS), container orchestration with Kubernetes, Infrastructure as Code, observability, and modern DevOps roles
-- **Auth & Security**: Modern authentication and authorization — OAuth 2.0, OIDC, PKCE, WebAuthn/Passkeys, Zero Trust, BFF Pattern, and AI agent authentication
-- **Backend Architecture**: Architecture patterns (Monolithic, Layered, Microservices, Event-Driven, Hexagonal), resilience patterns (Circuit Breaker, Sidecar, Saga), API design (REST, GraphQL, gRPC), CAP theorem, ACID vs BASE, real-time communication, observability, and the complete request lifecycle
-- **Shared Timed Module Quizzes**: Every learning module ends with a 5-question, 10-minute scenario quiz backed by a root-level JSON bank and localStorage result history
-- **Playground**: One standalone page (`/playground`) with a code editor, a step-by-step trace of the run, and a console
-
-### 🎮 **Interactive Visualizations**
-
-- **2D SVG Models**: Smooth animations explaining complex concepts (30+ components)
-- **Algorithm Animations**: Step-by-step execution of sorting, searching, and traversal algorithms
-- **Data Structure Demos**: Interactive models for arrays, trees, graphs, and hash tables
-- **Real-time Interactions**: Click, drag, and explore concepts dynamically
-- **Step-by-Step Guidance**: Progressive learning with animated tutorials
-- **Debug Visualizations**: Live data structure state during code execution
-
-### 🎯 **Playground**
-
-There is one Playground, at `/playground` (`src/features/playground/`). It is where a learner runs their own code and steps through the trace of that run. See [Playground (in progress)](#-playground-in-progress) below for details.
-
-- **Editor**: Monaco, with JavaScript, TypeScript and Python selectable
-- **Trace**: The run is recorded as steps; step controls show the line, the call stack and the variables at each step
-- **Console**: What the code printed, in order
-- **Lenses**: Stack & Heap, drawn with the same 2D/3D views the stories use
-- **Examples**: Prebuilt code per language, each with a suggested lens
-- **Exercises**: Tasks with a goal, checks that run on the learner's code, and hints; any check can be watched step by step in the lens
-
-### 🧠 **Timed Module Quizzes**
-
-- **Shared Quiz Runtime**: One reusable quiz system powers every learning module while preserving module-specific styling and references
-- **Root-Level Quiz Banks**: Each module has a dedicated JSON file in `quiz-banks/{module}.quiz.json`
-- **Scenario-Based Questions**: Every bank contains 30+ harder prompts with single-choice, multi-select, true/false, ordering, and matching formats
-- **10-Minute Timer**: Each run samples 5 questions and persists the active attempt across refreshes
-- **Local Progress History**: Scores, tiers, and recent attempts are stored in localStorage on the learner's machine
-- **Wrong-Answer References**: Review mode links learners back to the exact module sections that support the missed concept
-- **Authoring Workflow**: The workspace agent `.github/agents/module-quiz-generator.agent.md` maintains quiz banks without duplicating questions or answer sets
-
-### 🎨 **Modern User Experience**
-
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
-- **Dark/Light Themes**: Adaptive UI for comfortable learning
-- **Professional UI**: Clean, modern interface built with Tailwind CSS
-- **Fast Performance**: Optimized with Vite for instant feedback
-
-## 🏗️ Architecture Overview
-
-### **Frontend Stack**
-
-- **Framework**: React 19 with TypeScript for type safety
-- **Build Tool**: Vite for fast development and optimized builds
-- **Styling**: Tailwind CSS 4.x for utility-first styling
-- **Routing**: React Router for seamless navigation
-- **Icons**: Lucide React for consistent iconography
-- **Code Editor**: Monaco Editor (`@monaco-editor/react`) for the Playground
-- **AST Tooling**: Acorn + Astring for JS/TS instrumentation
-- **Python Runtime**: Pyodide (WASM) for in-browser Python execution
-
-### **Visualization Technologies**
-
-- **2D Graphics**: SVG-based interactive diagrams
-- **Animations**: CSS transitions and JavaScript-driven animations
-- **Interactivity**: Mouse/touch events with real-time feedback
-
-## 📁 Project Structure
-
-```
-quiz-banks/              # Root-level module quiz banks named {module}.quiz.json
-src/
-├── components/           # Reusable UI components
-│   ├── models2d/        # 2D visualization components
-│   │   ├── nextjs/      # Next.js tutorial visualizations (24 components)
-│   │   ├── git/         # Git tutorial visualizations
-│   │   ├── javascript/  # JavaScript engine visualizations
-│   │   ├── rxjs/        # RxJS reactive programming visualizations
-│   │   ├── datastructures/ # Data structure visualizations
-│   │   │   ├── hash/    # HashTable visualization
-│   │   ├── bigo/        # Big-O notation visualizations (10+ components)
-│   │   └── python/      # Python programming visualizations
-│   └── shared/          # Shared UI components
-├── features/
-│   └── playground/      # The Playground (standalone /playground route)
-├── pages/               # Main application pages
-│   ├── NextjsPage.tsx   # Next.js tutorial page
-│   ├── GitPage.tsx      # Git tutorial page
-│   ├── JavaScriptPage.tsx
-│   ├── RxJSPage.tsx
-│   ├── DataStructuresPage.tsx # Data structures module
-│   ├── BigOPage.tsx     # Big-O notation module
-│   └── PythonPage.tsx   # Python programming module
-├── sections/            # Educational content sections
-│   ├── nextjs/          # Next.js learning modules (7 sections)
-│   ├── git/            # Git learning modules
-│   ├── javascript/     # JavaScript concepts
-│   ├── rxjs/           # RxJS tutorials
-│   ├── datastructures/ # Data structure concepts
-│   ├── bigo/           # Big-O notation concepts (7 sections)
-│   └── python/         # Python programming concepts (5 sections)
-├── hooks/              # Custom React hooks
-├── shared/
-│   ├── components/
-│   │   └── quiz/       # Shared timed quiz UI and answer renderers
-│   ├── constants/
-│   │   └── moduleNavigation.ts # Shared module navigation and reference metadata
-│   └── hooks/
-│       └── useQuizSession.ts # Timed quiz session and localStorage persistence
-├── types/              # TypeScript type definitions
-│   ├── nextjs.ts       # Next.js type definitions
-│   ├── datastructures.ts # Data structures type definitions
-│   ├── bigo.ts         # Big-O notation type definitions
-│   ├── python.ts       # Python programming type definitions
-│   └── quiz.ts         # Shared quiz schema and result types
-├── utils/              # Utility functions
-│   ├── instrument.ts   # Code instrumentation for debugging
-│   ├── memoryMonitor.ts # Performance monitoring
-│   ├── quiz.ts         # Quiz loading, scoring, and answer utilities
-│   └── theme.ts        # Theme and styling utilities
-```
-
-### Quiz Bank Naming
-
-- `quiz-banks/javascript.quiz.json`
-- `quiz-banks/rxjs.quiz.json`
-- `quiz-banks/git.quiz.json`
-- `quiz-banks/datastructures.quiz.json`
-- `quiz-banks/react.quiz.json`
-- `quiz-banks/nextjs.quiz.json`
-- `quiz-banks/bigo.quiz.json`
-- `quiz-banks/python.quiz.json`
-- `quiz-banks/systemdesign.quiz.json`
-- `quiz-banks/typescript.quiz.json`
-- `quiz-banks/ai.quiz.json`
-- `quiz-banks/nodejs.quiz.json`
-- `quiz-banks/devops.quiz.json`
-- `quiz-banks/auth.quiz.json`
-
-See `docs/Quiz-System-Guide.md` for the JSON schema, localStorage behavior, and the quiz-bank authoring workflow.
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Node.js** 18+ (LTS recommended)
-- **npm** or **yarn** package manager
-- Modern web browser with ES2020+ support
-
-### Installation
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd code-executives
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Start development server**
-
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-4. **Open in browser**
-   Navigate to `http://localhost:5173`
-
-### Building for Production
+Requirements: Node.js `^22.22.2 || ^24.15.0 || >=26.0.0` and npm (the repository pins `npm@10.9.3`; npm is the only supported package manager).
 
 ```bash
-npm run build
-# or
-yarn build
+git clone https://github.com/mnaimfaizy/code-executives.git
+cd code-executives
+npm ci
+npm run dev
 ```
 
-The built application will be in the `dist/` directory.
+Vite prints the local address, `http://localhost:5173` by default.
 
-### 🌐 Deploying to cPanel (Apache)
+| Script                                         | What it does                                           |
+| ---------------------------------------------- | ------------------------------------------------------ |
+| `npm run dev`                                  | Development server                                     |
+| `npm run build`                                | Type-check (`tsc -b`) and build to `dist/`             |
+| `npm run preview`                              | Serve the built `dist/` locally                        |
+| `npm run lint` / `npm run lint:fix`            | ESLint                                                 |
+| `npm run format`                               | Prettier                                               |
+| `npm run test` / `npm run test:run`            | Vitest, watching or once                               |
+| `npm run test:coverage`                        | Vitest with coverage                                   |
+| `npm run agents:sync` / `npm run agents:check` | Generate, or verify, the per-tool copies of `.agents/` |
+| `npm run check:3d-chunk`                       | Check that three.js stays out of the entry bundle      |
 
-Code Executives is a **Single Page Application (SPA)** that uses client-side routing via React Router. When deployed on a traditional Apache/cPanel host, you need to tell Apache to serve `index.html` for every URL so that React Router can handle navigation. Without this step, directly visiting any URL (e.g. `https://codexecutives.com/javascript`) will return a **404 error** because Apache looks for a physical file at that path.
+Before reporting a code change done, run all four checks:
 
-**This repository already includes the required `.htaccess` file** (`public/.htaccess`) which Vite automatically copies to `dist/` on every build.
-
-#### Step-by-step cPanel deployment
-
-1. **Build the application**
-
-   ```bash
-   npm run build
-   ```
-
-   The `dist/` folder now contains the complete production bundle, including the `.htaccess` file.
-
-2. **Upload `dist/` contents to your public_html directory**
-
-   Using cPanel's File Manager or FTP, upload **all files and folders** inside `dist/` (not the folder itself) to your domain's `public_html` directory (or the sub-directory you are deploying to).
-
-   > ⚠️ Make sure to upload hidden files as well — the `.htaccess` file starts with a dot and can be invisible in some FTP clients. Enable "Show Hidden Files" in cPanel File Manager.
-
-3. **Verify `mod_rewrite` is enabled**
-
-   The `.htaccess` relies on Apache's `mod_rewrite` module. Most cPanel hosts have this enabled by default. If you still see 404 errors after uploading, contact your host to confirm `mod_rewrite` is active.
-
-4. **Test direct URL access**
-
-   Open your browser and navigate directly to a deep URL such as `https://yourdomain.com/javascript` or `https://yourdomain.com/git`. The page should load correctly via React Router.
-
-#### How the `.htaccess` works
-
-```apache
-Options -MultiViews
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ index.html [QSA,L]
+```bash
+npx tsc -b && npm run lint && npm run test:run && npm run build
 ```
 
-- Requests for **real files** (JS/CSS chunks, images, fonts) are served directly.
-- All other requests are **internally rewritten** to `index.html`, letting React Router decide what to render.
+## What is on the site
 
-> **No Node.js server is required.** The application is a fully static bundle that works with any web server capable of serving static files.
+The words below are the site's own; [CONTEXT.md](CONTEXT.md) defines them.
 
-## 🎓 Learning Modules
-
-### 📚 **Git Tutorial (Complete)**
-
-Master Git version control with interactive visualizations:
-
-- **Repository Architecture**: Understanding Git's internal structure
-- **Three-Tree Model**: Working directory, staging area, and commit history
-- **Object Model**: Blobs, trees, commits, and references
-- **Core Workflow**: Add, commit, push, pull operations
-- **Branching & Merging**: Feature branches and merge strategies
-- **Collaboration**: Remote repositories and team workflows
-- **History Management**: Rebase, reset, and advanced Git operations
-
-### ⚡ **JavaScript Engine**
-
-Deep dive into how JavaScript actually works:
-
-- **V8 Runtime**: Chrome's JavaScript engine internals
-- **Call Stack**: Function execution and stack frames
-- **Memory Heap**: Object allocation and garbage collection
-- **Event Loop**: Asynchronous execution and task queues
-- **Memory Management**: Leak detection and optimization
+### Modules
 
-### 🔄 **RxJS Reactive Programming**
-
-Master reactive programming patterns:
-
-- **Observables**: Data streams and subscription patterns
-- **Operators**: Transform, filter, and combine streams
-- **Error Handling**: Robust error management strategies
-- **Real-world Examples**: Practical applications and use cases
-
-### 🏗️ **Data Structures (Complete)**
+Sixteen modules, each at its own route, with its sections chosen by `?section=<Label>`:
 
-Comprehensive guide to fundamental data structures with interactive visualizations:
-
-- **Linear Structures**: Arrays, linked lists, stacks, and queues
-- **Hash Tables**: Hash functions, collision resolution, and performance analysis
-- **Tree Structures**: Binary trees, BSTs, AVL trees, red-black trees, heaps, and B-trees
-- **Graph Structures**: Graph representations, BFS/DFS traversals, and shortest path algorithms
-- **Practice Problems**: LeetCode-style coding challenges with step-by-step solutions
-- **Real-world Applications**: Industry use cases from social media to database systems
-- **Performance Analysis**: Big O notation, complexity comparisons, and optimization strategies
-
-### ⚛️ **Next.js Mastery (Complete)**
-
-Complete App Router tutorial with 24 interactive visualizations covering modern Next.js development:
-
-- **App Router Fundamentals**: File-system routing, nested layouts, and shared UI patterns
-- **Rendering Strategies**: SSR, SSG, CSR, ISR with performance comparisons and Core Web Vitals
-- **Server & Client Components**: Component composition, hydration flow, and code splitting
-- **Data Fetching & Mutations**: Server Actions, caching strategies, and request memoization
-- **Middleware & Route Handlers**: Request processing pipeline, edge runtime, and API routes
-- **Performance Optimization**: Bundle analysis, image optimization, and caching strategies
-- **Interactive Visualizations**: 24+ components including flow diagrams, performance dashboards, and a component composition explorer
-- **Real-world Patterns**: Progressive enhancement, error boundaries, and production best practices
-
-### 📊 **Big-O Notation Mastery (Complete)**
-
-Complete algorithmic complexity analysis module with 10+ interactive tools and educational metaphors:
-
-- **Core Concepts**: Understanding time and space complexity with intuitive visualizations
-- **Common Complexities**: Interactive exploration of O(1), O(log n), O(n), O(n log n), O(n²), O(2^n), O(n!) complexities
-- **Algorithm Analysis**: Step-by-step complexity analysis with code visualization and performance profiling
-- **Real-World Applications**: Complexity landscape showing algorithms in complexity space with industry case studies
-- **Advanced Topics**: Amortized analysis, complexity hierarchies, and optimization techniques
-- **Practice Challenges**: Interactive coding challenges with Big-O analysis and performance comparisons
-- **Interactive Metaphors**: 10+ visual metaphors including teleporter, librarian, conveyor belt, turtle, population explosion, and combinatorial explosion
-- **Algorithm Comparison**: Side-by-side performance analysis with real-time execution simulation
-- **Performance Profiling**: Code analyzer and optimization coach with complexity recommendations
-
-### 🐍 **Python Programming Mastery (Complete)**
-
-Complete Python tutorial covering the fundamental concepts that make Python unique, from philosophy to practical implementation:
-
-- **Python Philosophy**: The Zen of Python (PEP 20) with 19 guiding principles, interactive principle exploration, and Pythonic vs non-Pythonic code comparisons
-- **Execution Model**: Interactive 3-phase execution flow (Source → Bytecode → PVM) with step-by-step compilation visualization and bytecode examples
-- **Memory Management**: Interactive reference counting demo and cyclic garbage collection visualization showing object lifecycle and memory allocation strategies
-- **Global Interpreter Lock**: Interactive threading demo showing GIL behavior, thread blocking, and alternatives like multiprocessing and asyncio
-- **Advanced Concepts**: Generators, decorators, metaclasses, and context managers with interactive visualizations
-- **2D Visualizations**: Execution flow diagrams, memory models, GIL threading demonstrations, and decorator patterns
-- **3D Visualizations**: Python VM internals, memory profiler, and call graph representations
-- **Performance Analysis**: GIL impact, memory optimization, and concurrency alternatives
-- **Real-world Applications**: Best practices for CPU-bound vs I/O-bound tasks, memory profiling, and optimization techniques
-
-### 🤖 **AI Fundamentals (Complete)**
+| Module                         | Route             |
+| ------------------------------ | ----------------- |
+| JavaScript                     | `/javascript`     |
+| RxJS                           | `/rxjs`           |
+| Git                            | `/git`            |
+| Data Structures                | `/datastructures` |
+| React                          | `/react`          |
+| Next.js                        | `/nextjs`         |
+| Big-O Notation                 | `/bigo`           |
+| Python                         | `/python`         |
+| System Design                  | `/systemdesign`   |
+| TypeScript                     | `/typescript`     |
+| AI Fundamentals                | `/ai`             |
+| Node.js                        | `/nodejs`         |
+| DevOps                         | `/devops`         |
+| Authentication & Authorization | `/auth`           |
+| Backend Architecture           | `/backend`        |
+| Database & DBMS                | `/database`       |
 
-Master machine learning concepts from the ground up with interactive visualizations and beginner-friendly explanations:
-
-- **Introduction to AI/ML**: Core concepts, history, and the difference between AI, ML, and deep learning — with ELI10 analogies
-- **ML Lifecycle**: End-to-end machine learning pipeline from data collection to model deployment
-- **Feature Engineering**: Transforming raw data into meaningful inputs — normalization, encoding, and selection
-- **Neural Networks**: How neurons, layers, and activation functions work — interactive forward pass visualization
-- **Loss Functions**: Understanding MSE, cross-entropy, and how models measure their own mistakes
-- **Gradient Descent**: Intuitive step-by-step visualization of how models learn by minimizing loss
-- **Backpropagation**: Chain rule demystified — interactive gradient flow through a neural network
-- **Generalization**: Overfitting, underfitting, bias-variance tradeoff, and regularization techniques
-- **Training vs Inference**: The distinction between learning and prediction, with batch/online learning modes
-- **Word Embeddings**: Turning text into vectors — Word2Vec, cosine similarity, and semantic relationships
-- **RAG Pipeline**: Retrieval-Augmented Generation — grounding LLMs with external knowledge stores
-- **Beginner Friendly**: Every section includes ELI10 boxes, real-world analogies, and key takeaways
-- **11 Interactive Sections**: Progressive visualizations guiding learners from zero ML knowledge to RAG pipelines
-
-### ☁️ **DevOps & Cloud Computing (Complete)**
-
-Comprehensive DevOps and cloud computing module with 6 interactive visualizations covering the entire DevOps lifecycle:
-
-- **Introduction**: DevOps history, genesis timeline (2007-2011), the infinite DevOps loop, and Netflix case study
-- **CI/CD Pipeline**: Interactive pipeline simulation with 7 stages, terminal logs, deployment strategies (blue-green, canary, rolling)
-- **Cloud Service Models**: Interactive IaaS/PaaS/SaaS/FaaS comparison with pizza analogy, NIST characteristics, and management burden visualization
-- **Cloud Architecture**: SVG diagrams for monolith, microservices, serverless, and load-balanced patterns with trade-off analysis
-- **Container Orchestration**: Kubernetes pod simulator with auto-scaling, Docker fundamentals, container vs VM comparison
-- **Infrastructure as Code**: Terraform/Ansible/Docker code examples, declarative vs imperative approaches, GitOps workflow, and drift detection
-- **Modern Dev Roles**: Frontend cloud developer, backend serverless developer, DevOps/platform engineer, SRE roles, DevSecOps practices, and career paths
-- **Observability**: Three pillars (metrics, logs, traces) with interactive exploration, alerting best practices, incident management, DORA metrics, and future trends
-
-### 🏛️ **Backend Architecture (Complete)**
-
-Comprehensive backend architecture module with 6+ interactive visualizations covering the full backend stack:
-
-- **Backend Evolution**: Interactive timeline from 1950s hardware intimacy to modern containers and microservices
-- **Architecture Patterns**: Interactive comparison of Monolithic, Layered, Microservices, Event-Driven, and Hexagonal architectures with animated diagrams
-- **Resilience Patterns**: Circuit Breaker state machine simulation, Sidecar pattern visualization, and Saga pattern with compensating actions
-- **Database Theory**: Interactive CAP Theorem triangle with CP/AP toggle, ACID vs BASE tabbed comparison, and property deep-dives
-- **API Design**: REST vs GraphQL vs gRPC comparison with real-world analogies, code examples, and API evolution timeline
-- **Real-Time Communication**: Webhooks, WebSockets, and Server-Sent Events with data flow visualizations and comparison matrix
-- **Observability**: Three pillars (Logs, Metrics, Traces) with interactive triangle diagram, tool recommendations, and incident response workflow
-- **Request Lifecycle**: Animated "Buy Now" journey through DNS → TCP/TLS → Load Balancer → API Gateway → Cache → Database → Message Queue → Response with latency budgets
-
-### 🗄️ **Database & DBMS (Complete)**
-
-Comprehensive database internals module with 7 interactive visualizations covering relational and NoSQL database architecture:
-
-- **Introduction**: Data vs Database vs DBMS, learning journey overview, stats grid, and module navigation
-- **Database Models**: Interactive comparison of 5 paradigms (Relational, Document, Key-Value, Graph, Vector) with Database Taxonomy visualization
-- **DBMS Architecture**: Query Processor + Storage Engine pillars, Oracle vs PostgreSQL background processes comparison
-- **Query Processor**: Parser → Rewriter → Cost-Based Optimizer → Execution Engine pipeline with animated SQL lifecycle visualization
-- **Storage Engine**: Buffer Manager, Access Methods (B-Tree, Hash), Lock Manager, Recovery Manager with interactive buffer cache simulation
-- **SQL Fundamentals**: Interactive CRUD examples with category tabs, Window Functions, SQL vs NoSQL comparison
-- **Indexing & Optimization**: Interactive B-Tree insertion/search visualization, B-Tree vs Hash index comparison, query optimizer GPS analogy
-- **Transactions & ACID**: Atomicity, Consistency, Isolation, Durability with concurrent transaction demo (success & crash scenarios)
-- **Oracle vs PostgreSQL**: SGA vs shared_buffers, process models, MVCC Undo/Redo vs dead tuples, commit flow comparison with interactive MVCC visualization
-- **Visualization Hub**: 7 interactive visualizations — Database Taxonomy, Query Lifecycle, B-Tree Index, Buffer Manager, ACID Transactions, MVCC Comparison, ER Diagram Builder
-
-### 🎯 **Playground (in progress)**
+The RxJS module has a marble diagram tool: the learner writes a stream as marbles, picks an operator and sees the stream it produces. It does not run the learner's code.
 
-The Playground is the one place where a learner runs their own code and watches what it does. It is a standalone page at `/playground`, with its own layout (no Header/Footer/Sidebar), and lives in `src/features/playground/`. No module has a playground of its own.
+### Stories and scenarios
 
-A run is recorded as a trace: each step holds the same snapshot a story's beat holds, so the lenses draw it with the 2D/3D views the stories use, as decided in [ADR 0004](docs/adr/0004-playground-traces-share-the-snapshot.md). JavaScript and TypeScript record the stack and the heap, with references; Python records values only for now.
+New visualizations are **stories**: one concept told as a sequence of **beats**, drawn literally (frames, objects, commits, refs) and never as an everyday metaphor. The beat model is pure data with tests. A 2D SVG view draws it by default, and an optional 3D view draws the same beat, so switching views keeps the beat. The 3D renderer (three.js with react-three-fiber) is loaded only when a learner chooses 3D, and the story falls back to 2D without WebGL. See [ADR 0001](docs/adr/0001-optional-3d-with-one-step-model.md) and the [3D Visualization Standard](docs/3D-Visualization-Standard.md).
 
-- **Editor**: Monaco, with JavaScript, TypeScript and Python selectable
-- **Running code**: Everything runs in the browser. JavaScript and TypeScript go to a sandboxed iframe (`sandbox="allow-scripts"`, a CSP with `default-src 'none'`, network APIs blocked); Python goes to Pyodide (WASM). A run times out after 10 seconds
-- **Trace**: The code is instrumented before it runs (Acorn/Astring for JavaScript, `sys.settrace` for Python) so that the run is recorded as a trace: one step per statement, with the line and a snapshot of the stack and, for JavaScript and TypeScript, the heap. A trace stops at 2,000 steps, which also ends an infinite loop
-- **Step controls**: Move forward and backward through the steps or play them; Left/Right arrows step, Space plays or pauses, Home/End jump to the first or last step
-- **Console**: What the code printed, capped at 500 entries of at most 10 KB each, HTML-escaped before rendering
-- **Lenses**: Stack & Heap. The Event Loop lens returns in a later change
-- **Examples**: Prebuilt code per language, each with a suggested lens
-- **Exercises**: Tasks with a goal, checks and hints, in the Exercises menu and the Task tab. Check runs the learner's function against each check in the sandbox (an endless loop ends at the step limit instead of freezing the page), and Watch steps through one check's call in the lens. Passed exercises and the last code per exercise are remembered in the browser; there are no scores
-- **Links**: `/playground?exercise=<id>`, `?example=<id>` and `&lens=<lens>` open an exercise or an example directly, and the address follows what the learner opens
-- **Dark theme**: The Playground is the site's only dark page; its styles are scoped under `data-theme="playground"`
-- **Developer Guide**: See `docs/Playground-Developer-Guide.md` for the structure, tracer, lenses, languages, examples, exercises and links
+A **scenario** is a story that follows a whole workplace workflow, with a cast, a timeline, a transcript and up to two choice points whose paths never rejoin ([ADR 0003](docs/adr/0003-scenarios-with-choice-points.md)). Scenarios live in a module's Visualization page and are linked with `?scenario=<id>`.
 
-## 🛠️ Development
+Stories exist today in the JavaScript and Git modules, and Git has the first scenario; their approved specs are in [docs/stories/](docs/stories/README.md). Most other visualizations predate the beat model: they are 2D SVG components and stay as they are until migrated one by one.
 
-### **Available Scripts**
+### Playground
 
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build production-ready bundle
-- `npm run preview` - Preview production build locally
-- `npm run lint` - Run ESLint code quality checks
-- `npm run type-check` - Run TypeScript type checking
+There is exactly one Playground, at `/playground`. It is where a learner runs their own code and watches what it does to state ([ADR 0004](docs/adr/0004-playground-traces-share-the-snapshot.md)). It has its own layout and is the site's only dark page.
 
-### **Code Quality**
+- **Trace.** The learner's JavaScript is instrumented and run on the browser's own engine inside a sandboxed iframe. The run is recorded as a trace: one **step** per statement, each holding the line that ran and a snapshot in the same shape a story's beat holds. TypeScript runs through the same tracer with its types stripped. A step limit ends an endless loop and keeps the steps recorded so far.
+- **Lenses.** A lens chooses which part of a snapshot is drawn: Stack & Heap or Stack & Queues. Both are drawn with the views the stories use, in 2D or 3D. The queues are the tracer's model of the specification, not the engine's own queues.
+- **Console.** What the code printed, in order.
+- **Examples.** Prebuilt code to load and watch, each with a suggested lens and no goal.
+- **Exercises.** Tasks with a goal, checks that pass or fail on the learner's code, hints and a solution. A check can be watched step by step in a lens.
+- **Python.** Python can be selected and runs in Pyodide, loaded from a CDN on first use. It records values only: its snapshots have frames and no heap objects.
+- **Links.** `?example=<id>`, `?exercise=<id>` and `&lens=<lens>` open the Playground on an example or an exercise.
 
-The project maintains high code quality through:
+A trace is recorded, not authored, so it is never presented as a story: it has no captions and never shows a garbage-collection sweep. [docs/Playground-Developer-Guide.md](docs/Playground-Developer-Guide.md) covers the tracer, the sandbox, examples and exercises.
 
-- **TypeScript**: Static type checking for safer development
-- **ESLint**: Code linting with React and TypeScript rules
-- **Prettier**: Consistent code formatting (recommended)
-- **Modular Architecture**: Clean separation of concerns
+### Quizzes
 
-### **Adding New Modules**
+A module's quiz draws its questions from a bank in `quiz-banks/<moduleId>.quiz.json`. The existing banks set 5 questions and a 10-minute limit per attempt. Question formats are single choice, multi-select, true/false, ordering and matching, and a wrong answer links back to the module sections that cover it. Results are stored in the browser. See [docs/Quiz-System-Guide.md](docs/Quiz-System-Guide.md) for the schema and the authoring workflow.
 
-To add a new learning module (following the Next.js, Data Structures, and Big-O Notation module patterns):
+### Progress
 
-1. **Create implementation plan** in `docs/[Module-Name]-Implementation-Plan.md`
-2. **Define TypeScript interfaces** in `src/types/[module-name].ts`
-3. **Create section components** in `src/sections/[module-name]/`
-4. **Add 2D visualizations** in `src/components/models2d/[module-name]/`
-5. **Create page component** in `src/pages/[ModuleName]Page.tsx`
-6. **Create custom hooks** in `src/hooks/use[ModuleName].ts`
-7. **Update theme colors** in `src/utils/theme.ts`
-8. **Update navigation** in `src/components/Header.tsx` and `src/components/Sidebar.tsx`
-9. **Add routing** in `src/App.tsx`
-10. **Update README.md** with module information
+The Progress page at `/progress` shows what a learner has done that a check proved: exercises passed and quiz results ([ADR 0005](docs/adr/0005-progress-and-milestones-not-gamification.md)). A **milestone** is a named point in that record, earned once and kept:
 
-## 🤝 Contributing
+- one per module that has at least three exercises, for passing all of them, and one for passing every exercise;
+- one per module quiz, for a completed attempt that scores 80% or more.
 
-We welcome contributions! This project is designed to be educational and community-driven.
+There are no points, levels, streaks or leaderboards. Progress is kept in the learner's browser only (`localStorage`), and the page has one control to clear it.
 
-### **Getting Started**
+## Repository layout
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes following the existing patterns
-4. Test your changes thoroughly
-5. Commit with descriptive messages
-6. Push to your branch and create a Pull Request
+```
+src/
+  App.tsx              Routes; every page is lazy-loaded
+  pages/               Home, About, Progress
+  features/<module>/   One folder per module, plus playground/
+  shared/              Code used across modules: components, hooks, snapshot,
+                       2D and 3D view helpers (viz, viz3d), progress, quiz UI
+  components/          Header, Footer, Sidebar
+  utils/, types/       Theme, quiz loading and scoring, shared types
+quiz-banks/            <moduleId>.quiz.json, one bank per module quiz
+docs/
+  adr/                 Architecture decisions
+  stories/             Approved story and scenario specs
+  RESEARCH/            Source material the modules' content must agree with
+.agents/               Agent definitions and skills (edited only here; ADR 0002)
+.github/workflows/     CI
+public/                Static files, including .htaccess
+```
 
-### **Contribution Guidelines**
+A module folder holds its page (`<Module>Page.tsx`), `components/sections/`, usually `components/visualizations/` and, for stories, beat models in `utils/<storyId>Story.ts`. Tests sit next to the code as `*.test.ts(x)`.
 
-- Follow the existing code style and architecture
-- Add TypeScript types for all new code
-- Include interactive visualizations where applicable
-- Write descriptive commit messages
-- Update documentation for new features
+## Build and deployment
 
-## 📄 License
+`npm run build` writes a fully static bundle to `dist/`; no Node.js server is needed to serve it.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+The app uses client-side routing, so the web server must answer every path that is not a real file with `index.html`. For Apache hosts (including cPanel) the repository ships [public/.htaccess](public/.htaccess), which Vite copies into `dist/`; it needs `mod_rewrite`. Upload the contents of `dist/`, including the hidden `.htaccess`, to the web root. On any other static host, configure the same fallback.
 
-## 🙏 Acknowledgments
+The repository contains no deployment workflow. CI ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs on pushes and pull requests to `main` and `develop`.
 
-- **Next.js Team** for the incredible App Router and modern React framework
-- **React** team for the amazing framework ecosystem
-- **Vite** for lightning-fast development experience
-- **Tailwind CSS** for utility-first styling approach
-- **Monaco Editor** for the code editor in the Playground
-- **Vercel** for hosting and deployment platform
-- **Open Source Community** for the tools and libraries that make this possible
+## Contributing
 
-## 📞 Support
+[AGENTS.md](AGENTS.md) holds the repository's rules for people and coding agents alike: dependencies, visualizations, the Playground, navigation and quiz banks. [CONTEXT.md](CONTEXT.md) is the glossary, and [docs/adr/](docs/adr/) records the decisions and their reasons. Read those first, then:
 
-- 📧 **Issues**: Report bugs or request features via GitHub Issues
-- 💬 **Discussions**: Join community discussions for questions and ideas
-- 📖 **Documentation**: Comprehensive docs available in the `/docs` directory
-- 🎓 **Learning Modules**: 16 complete interactive modules with 103+ visualizations
-- 🎯 **Playground**: Run your own JavaScript, TypeScript or Python and step through the trace at `/playground`
+1. Create a branch.
+2. Make the change, with tests next to the code.
+3. Run the four checks above.
+4. Open a pull request.
 
----
+Dependency changes need the owner's approval. Report security issues as described in [SECURITY.md](SECURITY.md), not in a public issue.
 
-**Built with ❤️ for developers, by developers**
+## Acknowledgments
 
-_Transform your understanding of programming concepts through interactive visualization and hands-on learning. Master modern web development with our comprehensive Next.js, Git, JavaScript, RxJS, Data Structures, Big-O Notation, Python Programming, and AI Fundamentals modules. Run your own code in the Playground and step through what it did._
+Built with [React](https://react.dev), [Vite](https://vite.dev), [TypeScript](https://www.typescriptlang.org), [Tailwind CSS](https://tailwindcss.com), [React Router](https://reactrouter.com), [Monaco Editor](https://microsoft.github.io/monaco-editor/), [three.js](https://threejs.org) with [react-three-fiber](https://r3f.docs.pmnd.rs), [Acorn](https://github.com/acornjs/acorn), [Astring](https://github.com/davidbonnet/astring), [Lucide](https://lucide.dev) and [Vitest](https://vitest.dev). Python in the Playground runs on [Pyodide](https://pyodide.org).
 
-## Visualization Architecture
+## License
 
-All visualizations use SVG-based 2D components organized under each feature module:
-
-- Each feature's visualizations live in `src/features/[module]/components/visualizations/2d/`
-- 2D components use React with SVG animations and CSS transitions
-- Interactive controls (play/pause/step/reset) are built into each visualization component
+[MIT](LICENSE). Copyright (c) 2025 Mohammad Naim Faizy.
