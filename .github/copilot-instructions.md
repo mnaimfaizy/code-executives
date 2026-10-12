@@ -25,6 +25,13 @@ workflow are in [AGENTS.md](../AGENTS.md); architecture decisions are in [docs/a
 - A trace is never presented as a story: no authored captions, and no garbage-collection sweep, because a run cannot observe one.
 - JavaScript first; other languages emit the same snapshot.
 
+### Progress
+- Progress is the learner's plain record; a milestone is earned on top of it ([ADR 0005](../docs/adr/0005-progress-and-milestones-not-gamification.md)). It belongs to the whole site, on one page at `/progress`. No module gets a progress or achievements section of its own.
+- A milestone is earned only from what a check proves: exercises passed and quiz results. Never from reading, playing a story or using a feature.
+- No points, levels, streaks or leaderboards, and nothing that depends on a clock or a calendar. No milestone for a module as a whole.
+- Seeing a solution takes nothing away. A milestone is stored when earned and never taken back.
+- Say "progress" and "milestone", not "achievement" or "gamification".
+
 ### Code
 - Icon props are typed `LucideIcon`: R3F's global JSX types make a bare `React.ElementType` reject `className`.
 - Light mode only, except the Playground, which is dark ([ADR 0004](../docs/adr/0004-playground-traces-share-the-snapshot.md)). Tailwind v4 can't see class names built at runtime (`bg-${color}-50`): write classes out literally or map them through a fixed object.

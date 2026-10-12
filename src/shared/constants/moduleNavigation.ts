@@ -329,7 +329,6 @@ const baseModuleNavigationSections: Record<string, SidebarItem[]> = {
     { label: 'Algorithm Analysis', path: '/bigo?section=algorithm-analysis' },
     { label: 'Advanced Concepts', path: '/bigo?section=advanced-concepts' },
     { label: 'Practice Challenges', path: '/bigo?section=practice-challenges' },
-    { label: 'Gamification Hub', path: '/bigo?section=gamification-hub' },
     { label: 'Real-World Applications', path: '/bigo?section=real-world-applications' },
   ],
   '/python': [

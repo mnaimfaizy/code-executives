@@ -350,8 +350,7 @@
         "common-complexities"
       ],
       "references": [
-        "Common Complexities",
-        "Gamification Hub"
+        "Common Complexities"
       ]
     },
     {
@@ -675,7 +674,7 @@
       ],
       "references": [
         "Algorithm Analysis",
-        "Gamification Hub"
+        "Core Concepts"
       ]
     },
     {
@@ -817,7 +816,7 @@
       "id": "bigo-q31",
       "type": "single-choice",
       "difficulty": "expert",
-      "scenario": "The gamification hub shows algorithm X with O(n^2) time beating algorithm Y with O(n log n) on today's benchmark at n = 1000.",
+      "scenario": "A benchmark you run on your own machine shows algorithm X with O(n^2) time beating algorithm Y with O(n log n) at n = 1000.",
       "prompt": "Which conclusion is most defensible?",
       "options": [
         "X is asymptotically better because it wins on the current benchmark",
@@ -829,12 +828,12 @@
       "explanation": "Current benchmark wins do not override asymptotic growth. An O(n^2) algorithm can beat O(n log n) at small n, but the lower-growth algorithm is usually the safer long-run scaling choice.",
       "tags": [
         "benchmarking",
-        "gamification",
+        "small-inputs",
         "scaling-decisions"
       ],
       "references": [
-        "Gamification Hub",
-        "Real-World Applications"
+        "Real-World Applications",
+        "Core Concepts"
       ]
     }
   ]

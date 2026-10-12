@@ -5,7 +5,6 @@ import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
 import Introduction from './components/sections/Introduction';
 import AdvancedConcepts from './components/sections/AdvancedConcepts';
 import CodingChallenges from './components/sections/CodingChallenges';
-import GamificationHub from './components/sections/GamificationHub';
 import CoreConcepts from './components/sections/CoreConcepts';
 import CommonComplexities from './components/sections/CommonComplexities';
 import AlgorithmAnalysis from './components/sections/AlgorithmAnalysis';
@@ -48,8 +47,6 @@ const BigOPage: React.FC = () => {
         return <AdvancedTopics />;
       case 'practice-challenges':
         return <CodingChallenges />;
-      case 'gamification-hub':
-        return <GamificationHub />;
       case 'quiz':
         return <Quiz />;
       default:

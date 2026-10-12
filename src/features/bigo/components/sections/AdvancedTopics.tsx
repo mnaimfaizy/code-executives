@@ -823,7 +823,7 @@ const AdvancedTopics: React.FC = () => {
       {selectedTopic === 'optimization' && renderOptimizationWorkshop()}
 
       {/* Navigation */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ThemeCard>
           <NavigationCard
             title="Real-World Applications"
@@ -839,15 +839,6 @@ const AdvancedTopics: React.FC = () => {
             description="Test your advanced Big-O knowledge with complex coding challenges and optimization problems."
             colorScheme="blue"
             onClick={() => (window.location.href = '/bigo?section=practice-challenges')}
-          />
-        </ThemeCard>
-
-        <ThemeCard>
-          <NavigationCard
-            title="Gamification Hub"
-            description="Earn achievements and compete with other developers in complexity analysis challenges."
-            colorScheme="purple"
-            onClick={() => (window.location.href = '/bigo?section=gamification-hub')}
           />
         </ThemeCard>
       </div>

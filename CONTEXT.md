@@ -110,6 +110,16 @@ _Avoid_: Snippet, template, scenario, demo
 A task in the Playground with a goal, checks that pass or fail on the learner's code, and hints.
 _Avoid_: Problem, challenge, kata, test
 
+## Progress
+
+**Progress**:
+The record of what one learner has done that a check proved: exercises passed and quiz results. It is kept in the learner's browser and belongs to the whole site, not to one module.
+_Avoid_: Score, stats, profile, gamification
+
+**Milestone**:
+A named point in a learner's progress, earned once by passing a set of exercises or by a quiz result, and kept from then on.
+_Avoid_: Achievement, badge, trophy, level
+
 ## Modules
 
 **Marble diagram tool**:

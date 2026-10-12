@@ -291,16 +291,6 @@ export interface QuizQuestion {
   topics: string[];
 }
 
-export interface PracticeProfile {
-  userId?: string;
-  completedSections: string[];
-  currentProgress: Record<string, number>;
-  achievements: string[];
-  timeSpent: Record<string, number>;
-  problemsSolved: number;
-  favoriteDataStructures: string[];
-}
-
 // Configuration types
 export interface DataStructureConfig {
   maxElements: number;

@@ -336,14 +336,6 @@ function merge(left, right) {
     setScore((prev) => prev + newScore);
     if (timeCorrect && spaceCorrect) {
       setStreak((prev) => prev + 1);
-      // Achievement check: Streak Warrior
-      if (streak + 1 >= 10) {
-        console.log('Achievement unlocked: Streak Warrior!');
-      }
-      // Achievement check: First Correct
-      if (score === 0 && newScore > 0) {
-        console.log('Achievement unlocked: First Steps!');
-      }
     } else {
       setStreak(0);
     }
@@ -637,7 +629,7 @@ function merge(left, right) {
       </div>
 
       {/* Navigation */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <ThemeCard>
           <NavigationCard
             title="Core Concepts"
@@ -662,15 +654,6 @@ function merge(left, right) {
             description="See Big-O analysis in real-world production systems."
             colorScheme="purple"
             onClick={() => openBigOSection('Real-World Applications')}
-          />
-        </ThemeCard>
-
-        <ThemeCard>
-          <NavigationCard
-            title="Achievement Center"
-            description="View your progress, unlock achievements, and compete on leaderboards."
-            colorScheme="orange"
-            onClick={() => (window.location.href = '/bigo?section=gamification-hub')}
           />
         </ThemeCard>
       </div>
