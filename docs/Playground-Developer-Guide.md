@@ -110,7 +110,7 @@ src/features/playground/
 │   ├── types.ts                   # Exercise, check, check result
 │   ├── exercises.ts               # The exercises
 │   ├── runChecks.ts               # Runs the checks; builds the code of a watched check
-│   ├── exerciseProgress.ts        # Passed exercises and last code per viewer (localStorage)
+│   ├── exerciseProgress.ts        # Passed, solution seen and last code per viewer (localStorage)
 │   └── sandboxForTests.ts         # Test support: the real sandbox script in the test window
 ├── components/
 │   ├── editor/
@@ -128,6 +128,10 @@ src/features/playground/
 │   ├── exercises/
 │   │   ├── ExerciseMenu.tsx       # The toolbar's Exercises menu, grouped by level
 │   │   ├── TaskPanel.tsx          # The task, the checks with their results, the hints
+│   │   ├── SolutionSection.tsx    # The solution: the question, the explanation, the code, Load and Watch
+│   │   ├── PassedMark.tsx         # "Passed", and "solution seen" beside it
+│   │   ├── Prose.tsx              # Task, hint and explanation text: paragraphs and `code`
+│   │   ├── solutionSeenContext.ts # Seen-solution ids for the Exercises menu
 │   │   └── ConfirmBar.tsx         # The question asked before the learner's code is replaced
 │   ├── visualizations/
 │   │   ├── VisualizationCanvas.tsx
@@ -285,7 +289,7 @@ Examples appear in the toolbar's "Examples" dropdown, filtered by the currently 
 
 ## How to Add an Exercise
 
-An exercise is a task with a goal, checks that pass or fail on the learner's code, and hints (see [CONTEXT.md](../CONTEXT.md)). Exercises are JavaScript only for now. They carry no score, points, streaks or achievements: [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) leaves achievements open.
+An exercise is a task with a goal, checks that pass or fail on the learner's code, hints, and a solution the learner can ask to see (see [CONTEXT.md](../CONTEXT.md)). Exercises are JavaScript only for now. They carry no score, points, streaks or achievements: [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) leaves achievements open.
 
 ### The shape
 
@@ -306,6 +310,10 @@ Add an entry to `exercises/exercises.ts` (the type is `Exercise` in `exercises/t
     { args: [[0, 4, 3, 0], 0], expected: [0, 3], hidden: true }, // Reports pass or fail only
   ],
   hints: ['First hint', 'Second hint'], // Revealed one at a time, in this order
+  solution: {
+    code: `function twoSum(nums, target) { ... }\n`, // Complete code; passes every check
+    explanation: 'Walk the array once and keep ...',  // Two to four plain sentences
+  },
   suggestedLens: 'stack-heap',
 },
 ```
@@ -316,7 +324,7 @@ Rules the data must keep:
 - **Comparison is structural and strict**: primitives by value, arrays by position, plain objects by their own keys, no coercion (`undefined` is not `null`, `"1"` is not `1`). Set `compare: 'any-order'` only when the task says the order of the returned list is open; the list is then compared as a collection. A test fails if the task and the flag disagree.
 - **Checks are synchronous.** A check run ends with the script's synchronous part, so an `async` entry function cannot pass.
 - **Keep the inputs small.** A check gets the same 2,000-step budget as a watched run (`CHECK_MAX_STEPS`), so a call that passes can always be watched to its end.
-- **Add a reference solution** to `SOLUTIONS` in `exercises/exercises.test.ts`. The test runs it, and the starter code, through the real sandbox script: the solution must pass every check and the starter code must fail at least one. Solutions are not shipped to the learner.
+- **Every exercise needs a solution and an explanation**, in its `solution`. `solution.code` is the whole code as it would stand in the editor (for a class exercise it includes the driver function), because the learner can load it there and watch it run. `solution.explanation` is two to four plain sentences for a learner on the idea: why it works and what it costs. Explain any term of art where it appears ("a Set, a collection that holds each value at most once"); backticks mark code, as in the task. `exercises/exercises.test.ts` runs the solution, and the starter code, through the real sandbox script: the solution must pass every check, the starter code must fail at least one, and the explanation must be two to four sentences.
 
 ### How a check runs
 
@@ -336,12 +344,24 @@ One run per check gives each check a clean start and a full step budget. The sta
 
 Each visible check has a **Watch** action: it runs the learner's code plus that one call (`buildWatchCode`) as an ordinary traced run and loads the steps into the lens and the step controls. If no lens is on, the exercise's `suggestedLens` is selected. The call sits on a line after the learner's last line, so that step highlights nothing in the editor.
 
+### The solution
+
+After the hints the Task panel offers **Show solution** (`components/exercises/SolutionSection.tsx`). It is available at any time, and it asks once, in the page, before anything is shown ("See the solution? You can still solve it yourself first."); while hints are unrevealed the question says how many are left. A viewer who has seen an exercise's solution before is not asked again for it.
+
+Shown, the section holds the explanation, the code read-only with a copy button, and two actions:
+
+- **Load into the editor** replaces the editor's code with `solution.code`. If the editor holds anything but the starter code, the page asks first with the same `ConfirmBar` that guards Start over. The learner's code is never replaced without that answer.
+- **Watch it run** traces `solution.code` plus the call of the first visible check (`buildWatchCode`, the path a check's Watch uses) into the lens. The editor keeps the learner's code. The steps' lines are lines of the solution, so the editor highlights nothing and the Task panel marks the current line in the solution's code instead.
+
+Both are disabled while the language is not JavaScript.
+
 ### The UI and what is remembered
 
 - The toolbar's **Exercises** menu (`components/exercises/ExerciseMenu.tsx`) lists the exercises by level.
-- The right pane has two tabs, **Task** and **Console** (`components/layout/RightPaneTabs.tsx`). The Task tab (`components/exercises/TaskPanel.tsx`) shows the task, the checks with their results, and the hints. With no exercise open it lists the exercises. An error a check threw is also written to the Console.
+- The right pane has two tabs, **Task** and **Console** (`components/layout/RightPaneTabs.tsx`). The Task tab (`components/exercises/TaskPanel.tsx`) shows the task, the checks with their results, the hints, and the solution when asked. With no exercise open it lists the exercises. An error a check threw is also written to the Console.
 - Opening an exercise replaces the editor's code. If that code is the learner's own (not the default template, not an example, not another exercise's remembered code), the page asks first (`ConfirmBar.tsx`; never `window.confirm`).
-- `exercises/exerciseProgress.ts` remembers, per viewer in `localStorage` (`pg-exercise-progress`), which exercises were passed and the last code for each. Every read and write is wrapped in try/catch; without storage the same is kept in memory for the visit.
+- `exercises/exerciseProgress.ts` remembers, per viewer in `localStorage` (`pg-exercise-progress`), which exercises were passed, which solutions were seen (`solutionSeen`), and the last code for each. Every read and write is wrapped in try/catch; without storage the same is kept in memory for the visit.
+- An exercise that was passed and whose solution was seen is marked "Passed, solution seen" in the menu and in the Task panel (`components/exercises/PassedMark.tsx`). It is a plain fact for the learner: nothing is scored, withheld or taken away. The menu reads the seen ids from `SolutionSeenContext`, because the toolbar sits between it and the Playground's state.
 - Ctrl+Shift+Enter runs the checks.
 
 ---
@@ -442,7 +462,7 @@ npm run test:coverage                 # Coverage report
 | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tracer            | `tracer/*.test.ts` (instrumenting, the runtime as source, traces of the shipped examples)                                                                                                                       |
 | Sandbox script    | `sandboxRuntime.test.ts` runs the real iframe script, traced and untraced: aliasing, timers, the step limit, errors                                                                                             |
-| Exercises         | `exercises/exercises.test.ts` (every solution passes, every starter fails), `runChecks.test.ts` (verdicts, endless loops, what cannot fool a check), `exerciseProgress.test.ts`, all on the real sandbox script |
+| Exercises         | `exercises/exercises.test.ts` (every solution passes and has an explanation, every starter fails), `components/exercises/TaskPanel.test.tsx` (the panel and the solution's reveal flow), `runChecks.test.ts` (verdicts, endless loops, what cannot fool a check), `exerciseProgress.test.ts`, all on the real sandbox script |
 | Links             | `utils/playgroundLink.test.ts`, `utils/playgroundStart.test.ts`, `PlaygroundApp.exercises.test.tsx`                                                                                                             |
 | Unit tests        | `PythonInstrumenter.test.ts`, `useSandbox.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`, `sourceMapLines.test.ts`                                                                                       |
 | Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `StepControls.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx`                                                       |

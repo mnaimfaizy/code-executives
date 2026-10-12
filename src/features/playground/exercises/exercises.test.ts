@@ -1,5 +1,5 @@
 /**
- * The proof that the exercise data is right: every exercise's reference solution passes
+ * The proof that the exercise data is right: every exercise's solution passes
  * all its checks, and its starter code fails at least one, through the real sandbox script.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
@@ -7,103 +7,6 @@ import { exercises, exercisesByLevel, findExercise } from './exercises';
 import { runChecks } from './runChecks';
 import { installSandbox, runCheckInSandbox } from './sandboxForTests';
 import { parsePlaygroundLink } from '../utils/playgroundLink';
-
-/** One reference solution per exercise id. Not shipped to the learner. */
-const SOLUTIONS: Record<string, string> = {
-  'two-sum': `function twoSum(nums, target) {
-  const seen = new Map();
-  for (let i = 0; i < nums.length; i++) {
-    const needed = target - nums[i];
-    if (seen.has(needed)) return [seen.get(needed), i];
-    seen.set(nums[i], i);
-  }
-  return [];
-}`,
-  'contains-duplicate': `function containsDuplicate(nums) {
-  const seen = new Set();
-  for (const value of nums) {
-    if (seen.has(value)) return true;
-    seen.add(value);
-  }
-  return false;
-}`,
-  'valid-parentheses': `function isValid(s) {
-  const stack = [];
-  const opening = { ')': '(', '}': '{', ']': '[' };
-  for (const char of s) {
-    if (char in opening) {
-      if (stack.pop() !== opening[char]) return false;
-    } else {
-      stack.push(char);
-    }
-  }
-  return stack.length === 0;
-}`,
-  'reverse-linked-list': `function reverseList(head) {
-  let previous = null;
-  let current = head;
-  while (current !== null) {
-    const next = current.next;
-    current.next = previous;
-    previous = current;
-    current = next;
-  }
-  return previous;
-}`,
-  'maximum-depth-binary-tree': `function maxDepth(root) {
-  if (root === null) return 0;
-  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
-}`,
-  'implement-queue-using-stacks': `class MyQueue {
-  constructor() {
-    this.incoming = [];
-    this.outgoing = [];
-  }
-
-  push(x) {
-    this.incoming.push(x);
-  }
-
-  move() {
-    if (this.outgoing.length === 0) {
-      while (this.incoming.length > 0) this.outgoing.push(this.incoming.pop());
-    }
-  }
-
-  pop() {
-    this.move();
-    return this.outgoing.pop();
-  }
-
-  peek() {
-    this.move();
-    return this.outgoing[this.outgoing.length - 1];
-  }
-
-  empty() {
-    return this.incoming.length === 0 && this.outgoing.length === 0;
-  }
-}
-
-function runQueue(operations) {
-  const queue = new MyQueue();
-  const results = [];
-  for (const [name, ...args] of operations) {
-    const result = queue[name](...args);
-    results.push(result === undefined ? null : result);
-  }
-  return results;
-}`,
-  'maximum-subarray': `function maxSubArray(nums) {
-  let best = nums[0];
-  let endingHere = nums[0];
-  for (let i = 1; i < nums.length; i++) {
-    endingHere = Math.max(nums[i], endingHere + nums[i]);
-    best = Math.max(best, endingHere);
-  }
-  return best;
-}`,
-};
 
 describe('exercises', () => {
   beforeAll(installSandbox);
@@ -123,10 +26,6 @@ describe('exercises', () => {
     const groups = exercisesByLevel();
     expect(groups.map((group) => group.label)).toEqual(['Easy', 'Medium']);
     expect(groups.flatMap((group) => group.exercises)).toHaveLength(exercises.length);
-  });
-
-  it('have a reference solution each, and no solution without an exercise', () => {
-    expect(Object.keys(SOLUTIONS).sort()).toEqual(exercises.map((exercise) => exercise.id).sort());
   });
 
   describe.each(exercises)('$id', (exercise) => {
@@ -149,8 +48,22 @@ describe('exercises', () => {
       }
     });
 
-    it('passes every check with the reference solution', async () => {
-      const run = await runChecks(exercise, SOLUTIONS[exercise.id], runCheckInSandbox);
+    it('has a solution with an explanation of two to four sentences', () => {
+      const { code, explanation } = exercise.solution;
+      expect(code.trim()).not.toBe('');
+      expect(code).toContain(exercise.entry);
+      expect(code).not.toBe(exercise.starterCode);
+      expect(explanation.trim()).not.toBe('');
+      // Prose for the Task panel, in one paragraph
+      expect(explanation).not.toContain('\n');
+      // A sentence ends with a full stop followed by a space or by the end
+      const sentences = explanation.split(/\.(?:\s+|$)/).filter((part) => part.trim() !== '');
+      expect(sentences.length).toBeGreaterThanOrEqual(2);
+      expect(sentences.length).toBeLessThanOrEqual(4);
+    });
+
+    it('passes every check with its solution', async () => {
+      const run = await runChecks(exercise, exercise.solution.code, runCheckInSandbox);
       expect(run.kind).toBe('ran');
       if (run.kind !== 'ran') return;
       expect(run.results.map((result) => result.status)).toEqual(exercise.checks.map(() => 'pass'));

@@ -1,7 +1,9 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
-import { Check, ChevronDown, Target } from 'lucide-react';
+import React, { useContext, useEffect, useId, useRef, useState } from 'react';
+import { ChevronDown, Target } from 'lucide-react';
 import type { Exercise } from '../../exercises/types';
 import type { ExerciseGroup } from '../../exercises/exercises';
+import PassedMark from './PassedMark';
+import { SolutionSeenContext } from './solutionSeenContext';
 
 interface ExerciseMenuProps {
   /** The exercises, grouped by level. */
@@ -25,6 +27,7 @@ const ExerciseMenu: React.FC<ExerciseMenuProps> = ({
   onOpenExercise,
 }) => {
   const [open, setOpen] = useState(false);
+  const solutionSeenIds = useContext(SolutionSeenContext);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listId = useId();
@@ -113,13 +116,10 @@ const ExerciseMenu: React.FC<ExerciseMenuProps> = ({
                           )}
                         </span>
                         {passedIds.has(exercise.id) && (
-                          <span
-                            className="inline-flex items-center gap-1 shrink-0 text-[10px]"
-                            style={{ color: 'var(--pg-accent-green)' }}
-                          >
-                            <Check size={11} aria-hidden="true" />
-                            Passed
-                          </span>
+                          <PassedMark
+                            label="Passed"
+                            solutionSeen={solutionSeenIds.has(exercise.id)}
+                          />
                         )}
                       </button>
                     </li>

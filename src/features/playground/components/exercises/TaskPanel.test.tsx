@@ -1,6 +1,6 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, within, fireEvent, act } from '@testing-library/react';
 import TaskPanel from './TaskPanel';
 import { exercises, exercisesByLevel } from '../../exercises/exercises';
 import type { ChecksRun } from '../../exercises/types';
@@ -14,6 +14,7 @@ const baseProps = (): Props => ({
   exercise: twoSum,
   groups,
   passedIds: new Set<string>(),
+  solutionSeenIds: new Set<string>(),
   onOpenExercise: vi.fn(),
   run: null,
   checking: false,
@@ -25,6 +26,11 @@ const baseProps = (): Props => ({
   watchedIndex: null,
   onStartOver: vi.fn(),
   onLeave: vi.fn(),
+  onRevealSolution: vi.fn(),
+  onLoadSolution: vi.fn(),
+  onWatchSolution: vi.fn(),
+  watchingSolution: false,
+  solutionInEditor: false,
 });
 
 interface Rendered {
@@ -68,6 +74,9 @@ describe('TaskPanel', () => {
     renderPanel();
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(twoSum.checks.length);
+    // Nothing of the solution is in the page before the learner asks for it
+    expect(document.body.textContent).not.toContain('seen.set(nums[i], i)');
+    expect(document.body.textContent).not.toContain(twoSum.solution.explanation);
     expect(within(items[0]).getByText('twoSum([2, 7, 11, 15], 9)')).toBeInTheDocument();
     expect(within(items[0]).getByText('[0, 1]')).toBeInTheDocument();
     expect(within(items[0]).getByText('(in any order)')).toBeInTheDocument();
@@ -222,7 +231,7 @@ describe('TaskPanel', () => {
 
     update({ hintsShown: 3 });
     expect(screen.getByText(twoSum.hints[2])).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /hint/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /hint$|hint \(/ })).toBeNull();
     expect(screen.getByText('All 3 hints are shown.')).toBeInTheDocument();
   });
 
@@ -239,6 +248,201 @@ describe('TaskPanel', () => {
     expect(screen.getByText('Exercises run JavaScript.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Check' })).toBeDisabled();
     expect(screen.getAllByRole('button', { name: /^Watch check/ })[0]).toBeDisabled();
+  });
+
+  describe('the solution', () => {
+    const showButton = (): HTMLElement => screen.getByRole('button', { name: 'Show solution' });
+    const codeBlock = (): HTMLElement =>
+      screen.getByRole('group', { name: 'Solution code, read-only' });
+
+    afterEach(() => {
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    });
+
+    it('is offered after the hints, and asks in the page before it is shown', () => {
+      const confirm = vi.spyOn(window, 'confirm');
+      const { props } = renderPanel();
+      const hint = screen.getByRole('button', { name: /^Show a hint/ });
+      expect(
+        hint.compareDocumentPosition(showButton()) & Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
+
+      fireEvent.click(showButton());
+      const question = screen.getByRole('group', { name: /^See the solution\?/ });
+      expect(question).toHaveTextContent(
+        'See the solution? You can still solve it yourself first.'
+      );
+      expect(within(question).getByRole('button', { name: 'Show' })).toBeInTheDocument();
+      // The safe answer has the focus
+      expect(within(question).getByRole('button', { name: 'Not yet' })).toHaveFocus();
+      expect(confirm).not.toHaveBeenCalled();
+      expect(props.onRevealSolution).not.toHaveBeenCalled();
+      expect(screen.queryByText(twoSum.solution.explanation)).toBeNull();
+      confirm.mockRestore();
+    });
+
+    it('stays hidden on Not yet and on Escape, and the focus returns to the button', () => {
+      const { props } = renderPanel();
+      fireEvent.click(showButton());
+      fireEvent.click(screen.getByRole('button', { name: 'Not yet' }));
+      expect(screen.queryByText(twoSum.solution.explanation)).toBeNull();
+      expect(showButton()).toHaveFocus();
+
+      fireEvent.click(showButton());
+      fireEvent.keyDown(screen.getByRole('button', { name: 'Not yet' }), { key: 'Escape' });
+      expect(screen.queryByRole('group', { name: /^See the solution\?/ })).toBeNull();
+      expect(showButton()).toHaveFocus();
+      expect(props.onRevealSolution).not.toHaveBeenCalled();
+    });
+
+    it('says how many hints are left, when some are', () => {
+      const { update } = renderPanel();
+      fireEvent.click(showButton());
+      expect(screen.getByRole('group', { name: /^See the solution\?/ })).toHaveTextContent(
+        'There are 3 hints you have not looked at yet.'
+      );
+      update({ hintsShown: 2 });
+      expect(screen.getByRole('group', { name: /^See the solution\?/ })).toHaveTextContent(
+        'There is 1 hint you have not looked at yet.'
+      );
+      update({ hintsShown: 3 });
+      expect(screen.getByRole('group', { name: /^See the solution\?/ }).textContent).not.toMatch(
+        /hint/
+      );
+    });
+
+    it('shows the explanation and the code read-only once confirmed, and says so politely', () => {
+      const { props } = renderPanel();
+      fireEvent.click(showButton());
+      fireEvent.click(screen.getByRole('button', { name: 'Show' }));
+
+      expect(props.onRevealSolution).toHaveBeenCalledTimes(1);
+      expect(screen.getByText(/^Walk the array once/)).toBeInTheDocument();
+      expect(codeBlock().tagName).toBe('PRE');
+      expect(codeBlock().textContent).toBe(twoSum.solution.code);
+      // Scrollable with the keyboard, and nothing in it can be edited
+      expect(codeBlock()).toHaveAttribute('tabindex', '0');
+      expect(codeBlock().querySelector('textarea, input, [contenteditable]')).toBeNull();
+      expect(screen.getByRole('heading', { name: 'Solution' })).toHaveFocus();
+      const announced = screen.getByText('The solution is shown.');
+      expect(announced).toHaveAttribute('aria-live', 'polite');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Hide solution' }));
+      expect(screen.queryByText(/^Walk the array once/)).toBeNull();
+      expect(screen.getByText('The solution is hidden.')).toBeInTheDocument();
+      expect(showButton()).toHaveFocus();
+    });
+
+    it('opens without the question for a viewer who has seen it before', () => {
+      const { props } = renderPanel({ solutionSeenIds: new Set(['two-sum']) });
+      fireEvent.click(showButton());
+      expect(screen.queryByRole('group', { name: /^See the solution\?/ })).toBeNull();
+      expect(codeBlock()).toBeInTheDocument();
+      expect(props.onRevealSolution).not.toHaveBeenCalled();
+    });
+
+    it('copies the code from a named button and confirms politely', async () => {
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+      vi.useFakeTimers();
+      renderPanel({ solutionSeenIds: new Set(['two-sum']) });
+      fireEvent.click(showButton());
+
+      const copy = screen.getByRole('button', { name: 'Copy the solution code' });
+      await act(async () => {
+        fireEvent.click(copy);
+      });
+      expect(writeText).toHaveBeenCalledWith(twoSum.solution.code);
+      const notice = screen.getByText('Copied the solution.');
+      expect(notice.closest('[aria-live]')).toHaveAttribute('aria-live', 'polite');
+      expect(copy).toHaveAccessibleName('Copy the solution code');
+      expect(copy).toHaveTextContent('Copied');
+
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
+      expect(screen.queryByText('Copied the solution.')).toBeNull();
+      expect(copy).toHaveTextContent('Copy');
+    });
+
+    it('says so when the clipboard is not available', async () => {
+      vi.stubGlobal('navigator', { ...navigator, clipboard: undefined });
+      renderPanel({ solutionSeenIds: new Set(['two-sum']) });
+      fireEvent.click(showButton());
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Copy the solution code' }));
+      });
+      expect(screen.getByText(/^Could not copy\./)).toBeInTheDocument();
+      // The code is selected, so the learner's own copy shortcut works
+      expect(window.getSelection()?.toString()).toBe(twoSum.solution.code);
+    });
+
+    it('hands loading and watching to the Playground, and shows where the lens is', () => {
+      const { props, update } = renderPanel({ solutionSeenIds: new Set(['two-sum']) });
+      fireEvent.click(showButton());
+      fireEvent.click(screen.getByRole('button', { name: 'Load into the editor' }));
+      expect(props.onLoadSolution).toHaveBeenCalledTimes(1);
+      const watch = screen.getByRole('button', { name: 'Watch it run' });
+      expect(watch).toHaveAttribute('aria-pressed', 'false');
+      fireEvent.click(watch);
+      expect(props.onWatchSolution).toHaveBeenCalledTimes(1);
+
+      update({ watchingSolution: true, solutionLine: 4 });
+      expect(screen.getByRole('button', { name: 'Watch it run' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(
+        screen.getByText(
+          /The solution’s steps are in the lens\. The editor still holds your code\./
+        )
+      ).toBeInTheDocument();
+      const current = codeBlock().querySelectorAll('[data-current="true"]');
+      expect(current).toHaveLength(1);
+      expect(current[0].textContent).toBe('    const needed = target - nums[i];\n');
+
+      // The call the watch appends is past the solution's last line: nothing is marked
+      update({ watchingSolution: true, solutionLine: 99 });
+      expect(codeBlock().querySelector('[data-current="true"]')).toBeNull();
+
+      update({ solutionInEditor: true });
+      expect(screen.getByText('The solution is in the editor.')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Load into the editor' })).toBeDisabled();
+    });
+
+    it('cannot be loaded or run in another language', () => {
+      renderPanel({
+        solutionSeenIds: new Set(['two-sum']),
+        blockedReason: 'Exercises run JavaScript.',
+      });
+      fireEvent.click(showButton());
+      expect(screen.getByRole('button', { name: 'Load into the editor' })).toBeDisabled();
+      expect(screen.getByRole('button', { name: 'Watch it run' })).toBeDisabled();
+    });
+
+    it('is marked as seen beside "passed" only when both are true', () => {
+      const { update } = renderPanel({ solutionSeenIds: new Set(['two-sum']) });
+      expect(screen.queryByText('solution seen')).toBeNull();
+      update({ passedIds: new Set(['two-sum']) });
+      expect(screen.getByText('Passed before,')).toBeInTheDocument();
+      expect(screen.getByText('solution seen')).toBeInTheDocument();
+      update({ passedIds: new Set(['two-sum']), solutionSeenIds: new Set<string>() });
+      expect(screen.getByText('Passed before')).toBeInTheDocument();
+      expect(screen.queryByText('solution seen')).toBeNull();
+    });
+
+    it('is marked in the list of exercises too', () => {
+      renderPanel({
+        exercise: null,
+        passedIds: new Set(['two-sum', 'valid-parentheses']),
+        solutionSeenIds: new Set(['two-sum', 'maximum-subarray']),
+      });
+      expect(
+        screen.getByRole('button', { name: /Two Sum.*Passed.*solution seen/ })
+      ).toBeInTheDocument();
+      expect(screen.getAllByText('solution seen')).toHaveLength(1);
+    });
   });
 
   it('lists the exercises by level when none is open, marking the passed ones', () => {

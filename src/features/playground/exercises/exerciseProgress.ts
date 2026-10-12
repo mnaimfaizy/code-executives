@@ -1,9 +1,11 @@
 /**
- * What one viewer has done with the exercises: which they passed, and their last code for
- * each. Kept in `localStorage` as a convenience; every read and write may fail (a private
+ * What one viewer has done with the exercises: which they passed, which solutions they have
+ * seen, and their last code for each. Kept in `localStorage` as a convenience; every read and write may fail (a private
  * window, blocked site data), and the Playground works the same without it for one visit.
  *
  * Nothing here is a score: no points, streaks or achievements (ADR 0004 leaves those open).
+ * That a solution was seen is recorded so the page can say so beside "passed"; it takes
+ * nothing away.
  */
 
 import { useCallback, useState } from 'react';
@@ -11,6 +13,8 @@ import { useCallback, useState } from 'react';
 export interface ExerciseRecord {
   /** True once every check passed at least once. */
   passed?: true;
+  /** True once the learner asked for the solution and it was shown. */
+  solutionSeen?: true;
   /** The learner's last code for this exercise. */
   code?: string;
 }
@@ -31,9 +35,14 @@ export function loadProgress(): ExerciseProgress {
     const progress: ExerciseProgress = {};
     for (const [id, value] of Object.entries(parsed as Record<string, unknown>)) {
       if (!value || typeof value !== 'object') continue;
-      const { passed, code } = value as { passed?: unknown; code?: unknown };
+      const { passed, solutionSeen, code } = value as {
+        passed?: unknown;
+        solutionSeen?: unknown;
+        code?: unknown;
+      };
       const record: ExerciseRecord = {};
       if (passed === true) record.passed = true;
+      if (solutionSeen === true) record.solutionSeen = true;
       if (typeof code === 'string' && code.length <= MAX_CODE_LENGTH) record.code = code;
       progress[id] = record;
     }
@@ -59,6 +68,7 @@ interface UseExerciseProgressReturn {
   /** Forget the learner's code for an exercise, so it opens with its starter code again. */
   forgetCode: (id: string) => void;
   markPassed: (id: string) => void;
+  markSolutionSeen: (id: string) => void;
 }
 
 /** The viewer's progress, held in state and mirrored to `localStorage`. */
@@ -83,7 +93,12 @@ export function useExerciseProgress(): UseExerciseProgressReturn {
 
   const forgetCode = useCallback(
     (id: string): void => {
-      update(id, (record) => (record.passed ? { passed: true } : {}));
+      // Only the code is forgotten: what was passed and what was seen stay true
+      update(id, (record) => {
+        const kept = { ...record };
+        delete kept.code;
+        return kept;
+      });
     },
     [update]
   );
@@ -95,5 +110,12 @@ export function useExerciseProgress(): UseExerciseProgressReturn {
     [update]
   );
 
-  return { progress, saveCode, forgetCode, markPassed };
+  const markSolutionSeen = useCallback(
+    (id: string): void => {
+      update(id, (record) => (record.solutionSeen ? record : { ...record, solutionSeen: true }));
+    },
+    [update]
+  );
+
+  return { progress, saveCode, forgetCode, markPassed, markSolutionSeen };
 }

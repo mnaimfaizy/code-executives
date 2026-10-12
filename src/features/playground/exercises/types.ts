@@ -25,6 +25,17 @@ export interface ExerciseCheck {
   hidden?: boolean;
 }
 
+/** A reference solution, shown to the learner when they ask for it. */
+export interface ExerciseSolution {
+  /** Complete code for the editor: it passes every check of its exercise. */
+  code: string;
+  /**
+   * The idea, in two to four plain sentences for a learner: why it works and what it costs.
+   * `backticks` mark code, and any term of art is explained where it appears.
+   */
+  explanation: string;
+}
+
 export interface Exercise {
   /** Stable, and the value of `?exercise=` in a link. Lower-case letters, digits and hyphens. */
   id: string;
@@ -43,6 +54,8 @@ export interface Exercise {
   checks: ExerciseCheck[];
   /** Revealed one at a time, in this order. */
   hints: string[];
+  /** Shown only after the learner asks for it and confirms. */
+  solution: ExerciseSolution;
   /** The lens selected when the exercise opens, and when a check is watched with no lens on. */
   suggestedLens: VisualizationLens;
   /**

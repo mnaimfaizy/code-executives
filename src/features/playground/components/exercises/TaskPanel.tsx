@@ -4,6 +4,9 @@ import type { LucideIcon } from 'lucide-react';
 import type { CheckResult, ChecksRun, Exercise } from '../../exercises/types';
 import type { ExerciseGroup } from '../../exercises/exercises';
 import { describeResult, formatCall, formatValue } from '../../exercises/runChecks';
+import PassedMark from './PassedMark';
+import Prose from './Prose';
+import SolutionSection from './SolutionSection';
 
 interface TaskPanelProps {
   /** The open exercise, or null in free play. */
@@ -12,6 +15,8 @@ interface TaskPanelProps {
   groups: ExerciseGroup[];
   /** Ids of the exercises this viewer has passed. */
   passedIds: ReadonlySet<string>;
+  /** Ids of the exercises whose solution this viewer has seen. */
+  solutionSeenIds: ReadonlySet<string>;
   onOpenExercise: (exercise: Exercise) => void;
   /** The result of the last Check action on this exercise. */
   run: ChecksRun | null;
@@ -31,6 +36,18 @@ interface TaskPanelProps {
   watchedIndex: number | null;
   onStartOver: () => void;
   onLeave: () => void;
+  /** The learner asked for the solution and confirmed. */
+  onRevealSolution: () => void;
+  /** Put the solution in the editor, asking first when the learner has edits. */
+  onLoadSolution: () => void;
+  /** Trace the solution on the first visible check into the lens. The editor keeps its code. */
+  onWatchSolution: () => void;
+  /** The lens shows the solution's steps now. */
+  watchingSolution: boolean;
+  /** The line of the solution the current step ran, while its steps are in the lens. */
+  solutionLine?: number;
+  /** The editor holds the solution's code. */
+  solutionInEditor: boolean;
 }
 
 const LEVEL_LABELS: Record<Exercise['level'], string> = {
@@ -40,33 +57,6 @@ const LEVEL_LABELS: Record<Exercise['level'], string> = {
 };
 
 const mono: React.CSSProperties = { fontFamily: 'var(--pg-font-mono)' };
-
-/** Prose with `backticks` for code and an empty line between paragraphs. */
-const Prose: React.FC<{ text: string }> = ({ text }) => (
-  <>
-    {text.split(/\n\s*\n/).map((paragraph, index) => (
-      <p key={index} className="text-xs leading-relaxed mb-2 last:mb-0">
-        {paragraph.split('`').map((part, at) =>
-          at % 2 === 1 ? (
-            <code
-              key={at}
-              className="px-1 py-0.5 rounded text-[11px]"
-              style={{
-                ...mono,
-                background: 'var(--pg-bg-tertiary)',
-                color: 'var(--pg-text-primary)',
-              }}
-            >
-              {part}
-            </code>
-          ) : (
-            <React.Fragment key={at}>{part}</React.Fragment>
-          )
-        )}
-      </p>
-    ))}
-  </>
-);
 
 interface Verdict {
   label: string;
@@ -112,6 +102,7 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
   exercise,
   groups,
   passedIds,
+  solutionSeenIds,
   onOpenExercise,
   run,
   checking,
@@ -124,6 +115,12 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
   watchedIndex,
   onStartOver,
   onLeave,
+  onRevealSolution,
+  onLoadSolution,
+  onWatchSolution,
+  watchingSolution,
+  solutionLine,
+  solutionInEditor,
 }) => {
   if (!exercise) {
     return (
@@ -157,13 +154,7 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
                   >
                     <span>{item.title}</span>
                     {passedIds.has(item.id) && (
-                      <span
-                        className="inline-flex items-center gap-1 text-[10px]"
-                        style={{ color: 'var(--pg-accent-green)' }}
-                      >
-                        <Check size={11} aria-hidden="true" />
-                        Passed
-                      </span>
+                      <PassedMark label="Passed" solutionSeen={solutionSeenIds.has(item.id)} />
                     )}
                   </button>
                 </li>
@@ -201,15 +192,12 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
         >
           {LEVEL_LABELS[exercise.level]}
         </span>
-        {passedIds.has(exercise.id) && (
-          <span
-            className="inline-flex items-center gap-1 text-[10px]"
-            style={{ color: 'var(--pg-accent-green)' }}
-          >
-            <Check size={11} aria-hidden="true" />
-            Passed before
-          </span>
-        )}
+        {/* Announced when a pass or a seen solution is first recorded */}
+        <span aria-live="polite">
+          {passedIds.has(exercise.id) && (
+            <PassedMark label="Passed before" solutionSeen={solutionSeenIds.has(exercise.id)} />
+          )}
+        </span>
       </div>
 
       {/* The task */}
@@ -378,7 +366,10 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
                   style={{
                     ...buttonStyle,
                     ...(watched
-                      ? { borderColor: 'var(--pg-accent-blue)', color: 'var(--pg-accent-blue)' }
+                      ? {
+                          border: '1px solid var(--pg-accent-blue)',
+                          color: 'var(--pg-accent-blue)',
+                        }
                       : {}),
                   }}
                   title="Run this call on your code and step through it in the lens"
@@ -443,6 +434,21 @@ const TaskPanel: React.FC<TaskPanelProps> = ({
           All {exercise.hints.length} hints are shown.
         </p>
       )}
+
+      {/* The solution, after the hints */}
+      <SolutionSection
+        key={exercise.id}
+        exercise={exercise}
+        hintsLeft={hintsLeft}
+        seen={solutionSeenIds.has(exercise.id)}
+        onReveal={onRevealSolution}
+        onLoad={onLoadSolution}
+        onWatch={onWatchSolution}
+        watching={watchingSolution}
+        line={solutionLine}
+        inEditor={solutionInEditor}
+        blocked={blockedReason !== undefined}
+      />
     </div>
   );
 };

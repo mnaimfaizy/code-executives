@@ -2,8 +2,9 @@
  * The exercises of the Playground, converted from the problem set of the retired old
  * playground (ADR 0004, decision 5).
  *
- * Every exercise has a reference solution in `exercises.test.ts` that passes all its
- * checks, and its starter code fails at least one: add both when you add an exercise.
+ * Every exercise carries a reference solution with an explanation. `exercises.test.ts`
+ * proves that the solution passes all its checks and that the starter code fails at least
+ * one: write both when you add an exercise.
  */
 
 import type { Exercise, ExerciseLevel } from './types';
@@ -46,6 +47,20 @@ Every input has exactly one answer, and one element cannot be used twice. The tw
       'Keep the numbers you have already seen in a Map, from value to index.',
       'Before adding a number to the Map, look up the number it needs. If it is there, you have both indices.',
     ],
+    solution: {
+      code: `function twoSum(nums, target) {
+  const seen = new Map();
+  for (let i = 0; i < nums.length; i++) {
+    const needed = target - nums[i];
+    if (seen.has(needed)) return [seen.get(needed), i];
+    seen.set(nums[i], i);
+  }
+  return [];
+}
+`,
+      explanation:
+        'Walk the array once and keep every number already passed in a Map, a lookup table from a value to the index it was found at. For each number, the partner it needs is the target minus itself, and asking the Map for that partner takes one step however many numbers it holds. Because a number is stored only after its partner was looked up, one element is never used twice. The cost is one pass over the array, plus memory for the Map, which can grow to hold nearly every number.',
+    },
     suggestedLens: 'stack-heap',
   },
   {
@@ -74,6 +89,19 @@ Every input has exactly one answer, and one element cannot be used twice. The tw
       'Keep the values you have already seen in a Set.',
       'Before adding a value to the Set, check whether it is already there.',
     ],
+    solution: {
+      code: `function containsDuplicate(nums) {
+  const seen = new Set();
+  for (const value of nums) {
+    if (seen.has(value)) return true;
+    seen.add(value);
+  }
+  return false;
+}
+`,
+      explanation:
+        'Keep the values already passed in a Set, a collection that holds each value at most once and can say in one step whether it holds a given value. A value that is already in the Set when you reach it has appeared before, so the answer is true right away. If the loop ends without that happening, every value was distinct. The cost is one pass over the array, plus memory for the Set, which holds every value when there is no duplicate.',
+    },
     suggestedLens: 'stack-heap',
   },
   {
@@ -110,6 +138,23 @@ A string is valid when every opening bracket is closed by a bracket of the same 
       'A closing bracket must match the bracket on top of the stack. Pop it and compare.',
       'At the end the stack must be empty: an opening bracket left on it was never closed.',
     ],
+    solution: {
+      code: `function isValid(s) {
+  const stack = [];
+  const opening = { ')': '(', '}': '{', ']': '[' };
+  for (const char of s) {
+    if (char in opening) {
+      if (stack.pop() !== opening[char]) return false;
+    } else {
+      stack.push(char);
+    }
+  }
+  return stack.length === 0;
+}
+`,
+      explanation:
+        'The bracket opened last must be the one closed first, and a stack gives exactly that order: an array you only push onto and pop from, so the last item in is the first out. Every opening bracket is pushed, and every closing bracket pops the top of the stack and must find its own opening bracket there. At the end the stack must be empty, or some bracket was never closed. The cost is one pass over the string, plus memory for the stack, which holds the whole string when it is all opening brackets.',
+    },
     suggestedLens: 'stack-heap',
   },
   {
@@ -149,6 +194,23 @@ function reverseList(head) {
       'Use three variables: the previous node, the current node, and the node after it, saved before you overwrite `current.next`.',
       'When the current node is `null`, the previous node is the new first node.',
     ],
+    solution: {
+      code: `// A node is { val, next }; next is the following node, or null at the end.
+function reverseList(head) {
+  let previous = null;
+  let current = head;
+  while (current !== null) {
+    const next = current.next;
+    current.next = previous;
+    previous = current;
+    current = next;
+  }
+  return previous;
+}
+`,
+      explanation:
+        "Walk the list once and turn each node's `next` reference around so that it leads to the node before it. Overwriting `current.next` would lose the rest of the list, so the following node is saved in a variable first. When the walk runs off the end, `previous` holds the old last node, which is the first node of the reversed list. The cost is one pass and three variables, whatever the length of the list; no new node is made, so the list you were given is itself changed.",
+    },
     suggestedLens: 'stack-heap',
   },
   {
@@ -207,6 +269,16 @@ function maxDepth(root) {
       'The depth of an empty tree is 0. That is the case that ends the recursion.',
       'The depth of a node is 1 plus the larger of the depths of its two subtrees.',
     ],
+    solution: {
+      code: `// A node is { val, left, right }; left and right are nodes or null.
+function maxDepth(root) {
+  if (root === null) return 0;
+  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+}
+`,
+      explanation:
+        'The depth of a tree is 1 for its root plus the depth of its deeper subtree, and a subtree is a tree, so the function can call itself on each child (that is recursion). An empty tree has depth 0, and that case is what stops the calls. Every node is visited once. The cost to watch is the call stack: each call waits for the calls below it, so as many frames as the tree is deep are open at the same time.',
+    },
     suggestedLens: 'stack-heap',
   },
   {
@@ -282,6 +354,54 @@ function runQueue(operations) {
       'Popping everything from the in stack and pushing it onto the out stack reverses the order: the oldest item ends up on top.',
       'Move the items only when the out stack is empty. Moving them at any other time puts newer items above older ones.',
     ],
+    solution: {
+      code: `class MyQueue {
+  constructor() {
+    this.incoming = [];
+    this.outgoing = [];
+  }
+
+  push(x) {
+    this.incoming.push(x);
+  }
+
+  // Refill the outgoing stack, only when it is empty
+  move() {
+    if (this.outgoing.length === 0) {
+      while (this.incoming.length > 0) this.outgoing.push(this.incoming.pop());
+    }
+  }
+
+  pop() {
+    this.move();
+    return this.outgoing.pop();
+  }
+
+  peek() {
+    this.move();
+    return this.outgoing[this.outgoing.length - 1];
+  }
+
+  empty() {
+    return this.incoming.length === 0 && this.outgoing.length === 0;
+  }
+}
+
+// The checks call this. Leave it as it is.
+// operations is a list such as [["push", 1], ["peek"], ["pop"], ["empty"]].
+function runQueue(operations) {
+  const queue = new MyQueue();
+  const results = [];
+  for (const [name, ...args] of operations) {
+    const result = queue[name](...args);
+    results.push(result === undefined ? null : result);
+  }
+  return results;
+}
+`,
+      explanation:
+        'A stack hands items back newest first, and pouring one stack into another reverses that order, so the oldest item ends up on top, which is what a queue must hand out. New items go onto the incoming stack, and `pop` and `peek` read from the outgoing stack. The items are poured across only when the outgoing stack is empty, because pouring earlier would put newer items above older ones. One `pop` can be slow when it has to pour, but each item is moved only once in its life, so over many calls the work per call stays small.',
+    },
     suggestedLens: 'stack-heap',
   },
   {
@@ -314,6 +434,20 @@ function runQueue(operations) {
       'That best sum is either the element alone, or the element added to the best sum that ended one position earlier. Take the larger.',
       'The answer is the largest of those sums over all positions. Start both from the first element, not from 0.',
     ],
+    solution: {
+      code: `function maxSubArray(nums) {
+  let best = nums[0];
+  let endingHere = nums[0];
+  for (let i = 1; i < nums.length; i++) {
+    endingHere = Math.max(nums[i], endingHere + nums[i]);
+    best = Math.max(best, endingHere);
+  }
+  return best;
+}
+`,
+      explanation:
+        'For each position, keep the best sum of a run that ends exactly there. That run either continues the best run that ended one position earlier or starts fresh at this element, whichever is larger: a negative sum carried along only makes things worse, so it is dropped. The answer is the largest of those sums, and both variables start from the first element, so an array of only negative numbers still gives its largest element and not 0. The cost is one pass and two numbers, with no extra memory.',
+    },
     suggestedLens: 'stack-heap',
   },
 ];

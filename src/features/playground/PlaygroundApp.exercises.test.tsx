@@ -321,6 +321,153 @@ describe('PlaygroundApp exercises and links', () => {
     });
   });
 
+  describe('the solution', () => {
+    const reveal = (): void => {
+      fireEvent.click(screen.getByRole('button', { name: 'Show solution' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Show' }));
+    };
+    const solutionCode = (): string =>
+      screen.getByRole('group', { name: 'Solution code, read-only' }).textContent ?? '';
+
+    it('is shown after the question, and that it was seen is remembered', () => {
+      open('?exercise=two-sum');
+      expect(loadProgress()['two-sum']).toBeUndefined();
+      fireEvent.click(screen.getByRole('button', { name: 'Show solution' }));
+      expect(loadProgress()['two-sum']).toBeUndefined();
+      fireEvent.click(screen.getByRole('button', { name: 'Show' }));
+
+      expect(solutionCode()).toBe(twoSum.solution.code);
+      expect(loadProgress()['two-sum']).toEqual({ solutionSeen: true });
+      // Showing it changes nothing in the editor
+      expect(editorCode()).toBe(twoSum.starterCode);
+    });
+
+    it('still works for the visit when storage is unavailable', () => {
+      const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+        throw new Error('blocked');
+      });
+      const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('blocked');
+      });
+      open('?exercise=two-sum');
+      reveal();
+      expect(solutionCode()).toBe(twoSum.solution.code);
+      // Remembered in memory: hidden and shown again, it does not ask twice
+      fireEvent.click(screen.getByRole('button', { name: 'Hide solution' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Show solution' }));
+      expect(solutionCode()).toBe(twoSum.solution.code);
+      getItem.mockRestore();
+      setItem.mockRestore();
+    });
+
+    it('is traced into the lens by Watch it run, and the editor keeps the learner’s code', async () => {
+      const first = twoSum.checks.find((item) => !item.hidden)!;
+      const trace = traceSync(`${twoSum.solution.code}\ntwoSum([2, 7, 11, 15], 9);`);
+      mocks.execute.mockResolvedValue({ error: null, trace });
+      open('?exercise=two-sum&lens=none');
+      fireEvent.click(screen.getByText('type my own code'));
+      reveal();
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: 'Watch it run' }));
+      });
+
+      const [code, options] = mocks.execute.mock.calls[0];
+      // The solution ran, with the first visible check's call, traced
+      expect(code).toContain('__t.step(');
+      expect(code).toContain('seen.set(');
+      expect(code).not.toContain('mine');
+      expect(first.args).toEqual([[2, 7, 11, 15], 9]);
+      expect(code).toMatch(/twoSum[\s\S]*\[2, 7, 11, 15\], 9/);
+      expect(options.rateLimit).toBe(false);
+      expect(lens()).toBe('stack-heap');
+      expect(Number(screen.getByTestId('mock-visualization').getAttribute('data-steps'))).toBe(
+        trace.steps.length
+      );
+      expect(trace.steps.length).toBeGreaterThan(1);
+
+      // The learner's code is where it was, in the editor and in what is remembered
+      expect(editorCode()).toBe('let mine = 1;');
+      expect(loadProgress()['two-sum']?.code).toBe('let mine = 1;');
+      // The steps are lines of the solution: the editor highlights none, the panel marks one
+      expect(screen.getByTestId('mock-editor').getAttribute('data-line')).toBeNull();
+      expect(screen.getByRole('button', { name: 'Watch it run' })).toHaveAttribute(
+        'aria-pressed',
+        'true'
+      );
+      expect(screen.getByText(/The editor still holds your code\./)).toBeInTheDocument();
+      // No check is marked as the watched one
+      expect(screen.getByRole('button', { name: /^Watch check 1/ })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      );
+    });
+
+    it('is loaded into the editor only after the question, when the learner has edits', async () => {
+      const confirm = vi.spyOn(window, 'confirm');
+      open('?exercise=two-sum');
+      fireEvent.click(screen.getByText('type my own code'));
+      reveal();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Load into the editor' }));
+      const dialog = screen.getByRole('alertdialog');
+      expect(dialog).toHaveTextContent('Load the solution of “Two Sum” into the editor?');
+      expect(confirm).not.toHaveBeenCalled();
+      expect(screen.getByRole('button', { name: 'Keep my code' })).toHaveFocus();
+      expect(editorCode()).toBe('let mine = 1;');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Keep my code' }));
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(editorCode()).toBe('let mine = 1;');
+      expect(loadProgress()['two-sum']?.code).toBe('let mine = 1;');
+
+      fireEvent.click(screen.getByRole('button', { name: 'Load into the editor' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Replace my code' }));
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(editorCode()).toBe(twoSum.solution.code);
+      expect(screen.getByText('The solution is in the editor.')).toBeInTheDocument();
+      confirm.mockRestore();
+
+      // It passes, and the pass is marked honestly
+      expect(await check()).toHaveTextContent('All 5 checks passed.');
+      expect(loadProgress()['two-sum']).toEqual({
+        passed: true,
+        solutionSeen: true,
+        code: twoSum.solution.code,
+      });
+      expect(screen.getByText('Passed before,')).toBeInTheDocument();
+      expect(screen.getByText('solution seen')).toBeInTheDocument();
+
+      // The Exercises menu says the same
+      fireEvent.click(screen.getByRole('button', { name: /^Exercises/ }));
+      const list = screen.getByRole('region', { name: 'Easy exercises' });
+      expect(
+        within(list).getByRole('button', { name: /^Two Sum.*Passed.*solution seen/ })
+      ).toBeInTheDocument();
+    });
+
+    it('is loaded without a question when the editor holds only the starter code', () => {
+      open('?exercise=two-sum');
+      reveal();
+      fireEvent.click(screen.getByRole('button', { name: 'Load into the editor' }));
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(editorCode()).toBe(twoSum.solution.code);
+    });
+
+    it('is hidden again when another exercise is opened', () => {
+      open('?exercise=two-sum');
+      reveal();
+      fireEvent.click(screen.getByRole('button', { name: /^Exercises/ }));
+      fireEvent.click(
+        within(screen.getByRole('region', { name: 'Easy exercises' })).getByRole('button', {
+          name: /^Valid Parentheses/,
+        })
+      );
+      expect(screen.queryByRole('group', { name: 'Solution code, read-only' })).toBeNull();
+      expect(screen.getByRole('button', { name: 'Show solution' })).toBeInTheDocument();
+    });
+  });
+
   describe('hints', () => {
     it('are revealed one at a time', () => {
       open('?exercise=two-sum');

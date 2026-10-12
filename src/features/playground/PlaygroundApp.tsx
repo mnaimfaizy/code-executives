@@ -13,6 +13,7 @@ import VisualizationCanvas from './components/visualizations/VisualizationCanvas
 import RightPaneTabs, { type RightPaneTab } from './components/layout/RightPaneTabs';
 import TaskPanel from './components/exercises/TaskPanel';
 import ConfirmBar, { type ConfirmRequest } from './components/exercises/ConfirmBar';
+import { SolutionSeenContext } from './components/exercises/solutionSeenContext';
 import { usePlaygroundState } from './hooks/usePlaygroundState';
 import { useSandbox } from './hooks/useSandbox';
 import { usePyodide } from './hooks/usePyodide';
@@ -37,7 +38,7 @@ import {
   CHECK_TIMEOUT_MS,
   CHECK_TRACE_LIMITS,
 } from './exercises/runChecks';
-import type { ChecksRun, Exercise } from './exercises/types';
+import type { ChecksRun, Exercise, ExerciseCheck } from './exercises/types';
 import type { VisualizationLens } from './types';
 import {
   loadSettings,
@@ -78,7 +79,8 @@ const PlaygroundApp: React.FC = () => {
   const [checkedCode, setCheckedCode] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
   const [hintsShown, setHintsShown] = useState(0);
-  const [watchedIndex, setWatchedIndex] = useState<number | null>(null);
+  /** What the lens shows the steps of: one check on the learner's code, or the solution */
+  const [watched, setWatched] = useState<number | 'solution' | null>(null);
   const exerciseProgress = useExerciseProgress();
   /** The exercise a Check was started for: its results are dropped if another one is open by then */
   const exerciseIdRef = useRef<string | null>(start.exercise?.id ?? null);
@@ -169,7 +171,7 @@ const PlaygroundApp: React.FC = () => {
   const handleRun = useCallback((): void => {
     setExecutionState('running');
     trace.clear();
-    setWatchedIndex(null);
+    setWatched(null);
 
     if (language === 'python') {
       const runFn = instrumentedMode ? pyodide.runPythonInstrumented : pyodide.runPython;
@@ -223,15 +225,20 @@ const PlaygroundApp: React.FC = () => {
     trace.clear();
     setChecksRun(null);
     setCheckedCode(null);
-    setWatchedIndex(null);
+    setWatched(null);
   }, [sandbox, pyodide, trace]);
 
   // ---- Exercises ----
 
-  const { saveCode, forgetCode, markPassed, progress } = exerciseProgress;
+  const { saveCode, forgetCode, markPassed, markSolutionSeen, progress } = exerciseProgress;
 
   const passedIds = useMemo(
     () => new Set(Object.keys(progress).filter((id) => progress[id].passed)),
+    [progress]
+  );
+
+  const solutionSeenIds = useMemo(
+    () => new Set(Object.keys(progress).filter((id) => progress[id].solutionSeen)),
     [progress]
   );
 
@@ -339,7 +346,7 @@ const PlaygroundApp: React.FC = () => {
     setChecking(true);
     setRightTab('task');
     trace.clear();
-    setWatchedIndex(null);
+    setWatched(null);
     runChecks(checkedExercise, checked, (instrumentedCode, check) =>
       sandbox.runCheck(instrumentedCode, check, CHECK_TRACE_LIMITS, CHECK_TIMEOUT_MS)
     ).then((run) => {
@@ -365,20 +372,63 @@ const PlaygroundApp: React.FC = () => {
     });
   }, [exercise, language, checking, code, trace, sandbox, markPassed]);
 
+  /** Run `source` plus the one call of `check`, traced, into the lens. The editor is not touched. */
+  const watchCall = useCallback(
+    (source: string, check: ExerciseCheck, mark: number | 'solution'): void => {
+      if (!exercise) return;
+      setExecutionState('running');
+      trace.clear();
+      setWatched(mark);
+      // The steps need a lens to be drawn in
+      if (activeLens === 'none') setActiveLens(exercise.suggestedLens);
+      runJavaScript(buildWatchCode(source, exercise, check), true, { rateLimit: false });
+    },
+    [exercise, activeLens, trace, setExecutionState, runJavaScript]
+  );
+
   /** Watch one check: run the learner's code plus that one call, traced, into the lens */
   const handleWatch = useCallback(
     (index: number): void => {
       const check = exercise?.checks[index];
-      if (!exercise || !check || check.hidden || language !== 'javascript') return;
-      setExecutionState('running');
-      trace.clear();
-      setWatchedIndex(index);
-      // The steps need a lens to be drawn in
-      if (activeLens === 'none') setActiveLens(exercise.suggestedLens);
-      runJavaScript(buildWatchCode(code, exercise, check), true, { rateLimit: false });
+      if (!check || check.hidden || language !== 'javascript') return;
+      watchCall(code, check, index);
     },
-    [exercise, language, code, activeLens, trace, setExecutionState, runJavaScript]
+    [exercise, language, code, watchCall]
   );
+
+  /** Watch the solution run on the first visible check. The learner's code stays in the editor. */
+  const handleWatchSolution = useCallback((): void => {
+    const check = exercise?.checks.find((item) => !item.hidden);
+    if (!exercise || !check || language !== 'javascript') return;
+    watchCall(exercise.solution.code, check, 'solution');
+  }, [exercise, language, watchCall]);
+
+  /** Put the solution in the editor, asking first when the learner has written something */
+  const handleLoadSolution = useCallback((): void => {
+    // In another language the editor holds code no exercise keeps: Load is disabled there
+    if (!exercise || language !== 'javascript') return;
+    const solution = exercise.solution.code;
+    if (code === solution) return;
+    const load = (): void => {
+      setConfirmRequest(null);
+      setCode(solution);
+      saveCode(exercise.id, solution);
+      // The steps in the lens were of the code that is gone; the check results are marked stale
+      trace.clear();
+      setWatched(null);
+    };
+    if (code !== exercise.starterCode) {
+      setConfirmRequest({
+        title: `Load the solution of “${exercise.title}” into the editor?`,
+        body: 'It replaces the code you wrote for this exercise.',
+        confirmLabel: 'Replace my code',
+        cancelLabel: 'Keep my code',
+        onConfirm: load,
+      });
+    } else {
+      load();
+    }
+  }, [exercise, language, code, setCode, saveCode, trace]);
 
   const handleReset = useCallback((): void => {
     if (exercise && language === 'javascript') {
@@ -506,10 +556,14 @@ const PlaygroundApp: React.FC = () => {
     trace,
   ]);
 
-  // A watched check's call is on a line after the learner's last one: nothing to highlight there
+  // A watched check's call is on a line after the learner's last one: nothing to highlight there.
+  // The solution's steps are lines of the solution, which the Task panel shows, not the editor.
   const stepLine = trace.currentStep?.line;
+  const watchingSolution = watched === 'solution';
   const highlightLine =
-    stepLine !== undefined && stepLine <= code.split('\n').length ? stepLine : undefined;
+    !watchingSolution && stepLine !== undefined && stepLine <= code.split('\n').length
+      ? stepLine
+      : undefined;
 
   const consoleErrors = consoleEntries.filter((entry) => entry.type === 'error').length;
   const inExercise = exercise !== null && language === 'javascript';
@@ -518,24 +572,26 @@ const PlaygroundApp: React.FC = () => {
     <PlaygroundLayout>
       {/* Top toolbar */}
       <div className="relative shrink-0 z-20" ref={settingsContainerRef}>
-        <PlaygroundToolbar
-          language={language}
-          onLanguageChange={setLanguage}
-          activeLens={activeLens}
-          onLensChange={setActiveLens}
-          instrumentedMode={instrumentedMode}
-          onInstrumentedModeChange={setInstrumentedMode}
-          executionState={executionState}
-          onRun={handleRun}
-          onStop={handleStop}
-          onReset={handleReset}
-          onLoadExample={handleLoadExample}
-          exerciseGroups={EXERCISE_GROUPS}
-          passedExerciseIds={passedIds}
-          activeExerciseId={exercise?.id ?? null}
-          onOpenExercise={handleOpenExercise}
-          onOpenSettings={() => setSettingsOpen((prev) => !prev)}
-        />
+        <SolutionSeenContext.Provider value={solutionSeenIds}>
+          <PlaygroundToolbar
+            language={language}
+            onLanguageChange={setLanguage}
+            activeLens={activeLens}
+            onLensChange={setActiveLens}
+            instrumentedMode={instrumentedMode}
+            onInstrumentedModeChange={setInstrumentedMode}
+            executionState={executionState}
+            onRun={handleRun}
+            onStop={handleStop}
+            onReset={handleReset}
+            onLoadExample={handleLoadExample}
+            exerciseGroups={EXERCISE_GROUPS}
+            passedExerciseIds={passedIds}
+            activeExerciseId={exercise?.id ?? null}
+            onOpenExercise={handleOpenExercise}
+            onOpenSettings={() => setSettingsOpen((prev) => !prev)}
+          />
+        </SolutionSeenContext.Provider>
         {settingsOpen && (
           <SettingsPanel
             settings={settings}
@@ -667,6 +723,7 @@ const PlaygroundApp: React.FC = () => {
                 exercise={exercise}
                 groups={EXERCISE_GROUPS}
                 passedIds={passedIds}
+                solutionSeenIds={solutionSeenIds}
                 onOpenExercise={handleOpenExercise}
                 run={checksRun}
                 checking={checking}
@@ -680,9 +737,17 @@ const PlaygroundApp: React.FC = () => {
                 onRevealHint={() => setHintsShown((shown) => shown + 1)}
                 onCheck={handleCheck}
                 onWatch={handleWatch}
-                watchedIndex={watchedIndex}
+                watchedIndex={typeof watched === 'number' ? watched : null}
                 onStartOver={handleStartOver}
                 onLeave={handleLeaveExercise}
+                onRevealSolution={() => {
+                  if (exercise) markSolutionSeen(exercise.id);
+                }}
+                onLoadSolution={handleLoadSolution}
+                onWatchSolution={handleWatchSolution}
+                watchingSolution={watchingSolution}
+                solutionLine={watchingSolution ? stepLine : undefined}
+                solutionInEditor={inExercise && code === exercise.solution.code}
               />
             }
             console={

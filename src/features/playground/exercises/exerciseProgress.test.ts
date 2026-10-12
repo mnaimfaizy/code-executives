@@ -45,6 +45,25 @@ describe('exercise progress', () => {
     expect(result.current.progress['two-sum']).toEqual({ passed: true });
   });
 
+  it('remembers that a solution was seen, apart from passing and across starting over', () => {
+    const { result } = renderHook(() => useExerciseProgress());
+    act(() => {
+      result.current.markSolutionSeen('two-sum');
+    });
+    expect(result.current.progress['two-sum']).toEqual({ solutionSeen: true });
+
+    act(() => {
+      result.current.saveCode('two-sum', 'x');
+      result.current.markPassed('two-sum');
+      result.current.markSolutionSeen('two-sum');
+      result.current.forgetCode('two-sum');
+    });
+    expect(result.current.progress['two-sum']).toEqual({ passed: true, solutionSeen: true });
+    expect(loadProgress()['two-sum']).toEqual({ passed: true, solutionSeen: true });
+    // Nothing is counted or scored
+    expect(Object.keys(loadProgress()['two-sum']).sort()).toEqual(['passed', 'solutionSeen']);
+  });
+
   it('ignores stored data that is not what it wrote', () => {
     localStorage.setItem(PROGRESS_STORAGE_KEY, 'not json');
     expect(loadProgress()).toEqual({});
@@ -52,9 +71,13 @@ describe('exercise progress', () => {
     expect(loadProgress()).toEqual({});
     localStorage.setItem(
       PROGRESS_STORAGE_KEY,
-      JSON.stringify({ a: { passed: 'yes', code: 7 }, b: null, c: { passed: true, score: 100 } })
+      JSON.stringify({
+        a: { passed: 'yes', code: 7, solutionSeen: 1 },
+        b: null,
+        c: { passed: true, score: 100, solutionSeen: true },
+      })
     );
-    expect(loadProgress()).toEqual({ a: {}, c: { passed: true } });
+    expect(loadProgress()).toEqual({ a: {}, c: { passed: true, solutionSeen: true } });
   });
 
   it('works for the visit when storage throws on every read and write', () => {
@@ -71,8 +94,13 @@ describe('exercise progress', () => {
     act(() => {
       result.current.saveCode('two-sum', 'kept in memory');
       result.current.markPassed('two-sum');
+      result.current.markSolutionSeen('two-sum');
     });
-    expect(result.current.progress['two-sum']).toEqual({ code: 'kept in memory', passed: true });
+    expect(result.current.progress['two-sum']).toEqual({
+      code: 'kept in memory',
+      passed: true,
+      solutionSeen: true,
+    });
   });
 
   it('does not remember code too long to run', () => {
