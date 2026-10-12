@@ -15,6 +15,12 @@ import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
 import Editor from '../../../../components/shared/Editor';
 import useRunner from '../../../../hooks/useRunner';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+import {
+  allQueueTypesSample,
+  betweenMacrotasksSample,
+  microtaskStarvationSample,
+} from '../../utils/sectionSamples';
 
 type TaskType = 'script' | 'microtask' | 'macrotask' | 'animation' | 'idle';
 type TaskSource =
@@ -277,23 +283,8 @@ const scenarios = [
     id: 'basic-priority',
     title: 'All Queue Types',
     description: 'See all five queue types fire in priority order in a single tick.',
-    code: `console.log('1 sync start');
-
-// Macrotask
-setTimeout(() => console.log('5 macrotask: setTimeout'), 0);
-
-// Microtasks
-Promise.resolve().then(() => console.log('3 microtask: Promise.then'));
-queueMicrotask(() => console.log('4 microtask: queueMicrotask'));
-
-console.log('2 sync end');
-
-// Output order:
-// 1 sync start
-// 2 sync end
-// 3 microtask: Promise.then
-// 4 microtask: queueMicrotask
-// 5 macrotask: setTimeout`,
+    code: allQueueTypesSample.code,
+    playground: allQueueTypesSample,
     output: [
       '1 sync start',
       '2 sync end',
@@ -308,28 +299,8 @@ console.log('2 sync end');
     id: 'microtask-starvation',
     title: 'Microtask Starvation',
     description: 'Endless microtask chains prevent macrotasks from ever running.',
-    code: `let count = 0;
-
-function scheduleMicrotask() {
-  if (count < 5) {
-    count++;
-    Promise.resolve().then(() => {
-      console.log(\`microtask #\${count}\`);
-      scheduleMicrotask(); // schedules another!
-    });
-  } else {
-    console.log('microtasks done');
-  }
-}
-
-setTimeout(() => console.log('macrotask (never starved here)'), 0);
-scheduleMicrotask();
-
-// Output:
-// microtask #1 through #5 all run
-// microtask #5
-// microtasks done
-// macrotask (never starved here)`,
+    code: microtaskStarvationSample.code,
+    playground: microtaskStarvationSample,
     output: [
       'microtask #1',
       'microtask #2',
@@ -371,21 +342,8 @@ console.log('1 sync: runs first');
     id: 'nested-macrotasks',
     title: 'Microtasks Between Macrotasks',
     description: 'Microtask queue is re-drained after EVERY macrotask.',
-    code: `setTimeout(() => {
-  console.log('macrotask 1');
-  Promise.resolve().then(() => console.log('  micro after macro 1'));
-}, 0);
-
-setTimeout(() => {
-  console.log('macrotask 2');
-  Promise.resolve().then(() => console.log('  micro after macro 2'));
-}, 0);
-
-// Output:
-// macrotask 1
-//   micro after macro 1  ← drained before macrotask 2
-// macrotask 2
-//   micro after macro 2`,
+    code: betweenMacrotasksSample.code,
+    playground: betweenMacrotasksSample,
     output: ['macrotask 1', '  micro after macro 1', 'macrotask 2', '  micro after macro 2'],
     explanation:
       'After macrotask 1 runs, the microtask queue is fully drained before macrotask 2 starts. This is why Promises scheduled inside setTimeout callbacks still run promptly.',
@@ -1118,6 +1076,16 @@ const TaskQueues: React.FC = () => {
             <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
               {scenarios[activeScenario].code}
             </pre>
+            {scenarios[activeScenario].playground && (
+              <div className="mt-3">
+                <TryInPlaygroundLink
+                  example={scenarios[activeScenario].playground.example}
+                  lens={scenarios[activeScenario].playground.lens}
+                >
+                  {scenarios[activeScenario].playground.tryIt}
+                </TryInPlaygroundLink>
+              </div>
+            )}
           </div>
           <div>
             <div className="font-semibold text-gray-800 text-sm mb-3">

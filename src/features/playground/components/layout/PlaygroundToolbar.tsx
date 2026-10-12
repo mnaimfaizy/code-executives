@@ -5,7 +5,7 @@ import LanguagePicker from '../editor/LanguagePicker';
 import ExecutionController from '../execution/ExecutionController';
 import LensSelector from '../visualizations/LensSelector';
 import ExerciseMenu from '../exercises/ExerciseMenu';
-import { examples, type Example } from '../../utils/examples';
+import { examples, labelWithinSource, type Example } from '../../utils/examples';
 import type { Exercise } from '../../exercises/types';
 import type { ExerciseGroup } from '../../exercises/exercises';
 import type { PlaygroundLanguage, VisualizationLens, ExecutionState } from '../../types';
@@ -30,6 +30,32 @@ interface PlaygroundToolbarProps {
   activeExerciseId: string | null;
   onOpenExercise: (exercise: Exercise) => void;
   onOpenSettings: () => void;
+}
+
+interface ExampleGroup {
+  /** Null for the stories' programs, which lead the menu under no heading */
+  heading: string | null;
+  examples: Example[];
+}
+
+/**
+ * The Examples menu in groups, by where each example comes from: the stories' programs first,
+ * then the standalone programs, then each section's samples under that section's label.
+ */
+function groupExamples(list: Example[]): ExampleGroup[] {
+  const stories = list.filter((example) => example.source?.kind === 'story');
+  const standalone = list.filter((example) => !example.source);
+  const sections = new Map<string, Example[]>();
+  for (const example of list) {
+    if (example.source?.kind !== 'section') continue;
+    const heading = `Section: ${example.source.label}`;
+    sections.set(heading, [...(sections.get(heading) ?? []), example]);
+  }
+  return [
+    { heading: null, examples: stories },
+    { heading: 'Programs', examples: standalone },
+    ...[...sections].map(([heading, examples]) => ({ heading, examples })),
+  ].filter((group) => group.examples.length > 0);
 }
 
 const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
@@ -72,7 +98,60 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
     }
   }, []);
 
-  const languageExamples = examples.filter((s) => s.language === language);
+  const exampleGroups = groupExamples(examples.filter((s) => s.language === language));
+  const otherLanguageExamples = examples.filter((s) => s.language !== language);
+
+  const renderHeading = (heading: string): React.ReactNode => (
+    <div
+      className="px-3 py-1.5 text-[10px] uppercase tracking-wider"
+      style={{ color: 'var(--pg-text-muted)', background: 'var(--pg-bg-tertiary)' }}
+      aria-hidden="true"
+    >
+      {heading}
+    </div>
+  );
+
+  const renderOption = (example: Example, otherLanguage = false): React.ReactNode => (
+    <button
+      key={example.id}
+      role="option"
+      aria-selected={false}
+      onClick={() => {
+        onLoadExample(example);
+        setExampleMenuOpen(false);
+      }}
+      className="w-full text-left px-3 py-2 transition-colors duration-100"
+      style={{
+        borderBottom: '1px solid var(--pg-border)',
+        color: otherLanguage ? 'var(--pg-text-muted)' : 'var(--pg-text-primary)',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.background = 'var(--pg-bg-surface-hover)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.background = 'transparent';
+      }}
+    >
+      <div className="flex items-center gap-1.5 text-xs font-medium">
+        {/* Under its section's heading an example goes by its own name */}
+        <span>{labelWithinSource(example)}</span>
+        {otherLanguage && (
+          <span
+            className="px-1 py-0.5 rounded text-[9px]"
+            style={{ background: 'var(--pg-bg-tertiary)' }}
+          >
+            {example.language}
+          </span>
+        )}
+      </div>
+      <div
+        className="text-[10px] mt-0.5"
+        style={otherLanguage ? undefined : { color: 'var(--pg-text-muted)' }}
+      >
+        {example.description}
+      </div>
+    </button>
+  );
 
   return (
     // Below 2xl the lens, the examples and the exercises move to a second row, so the first row
@@ -157,41 +236,26 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
           {exampleMenuOpen && (
             <div
               role="listbox"
-              className="absolute top-full left-0 mt-1 min-w-56 rounded-lg shadow-xl overflow-hidden z-50"
+              aria-label="Examples"
+              className="absolute top-full left-0 mt-1 w-72 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto rounded-lg shadow-xl z-50"
               style={{
                 border: '1px solid var(--pg-border)',
                 background: 'var(--pg-bg-secondary)',
               }}
             >
-              {languageExamples.length > 0 ? (
-                languageExamples.map((example) => (
-                  <button
-                    key={example.id}
-                    role="option"
-                    aria-selected={false}
-                    onClick={() => {
-                      onLoadExample(example);
-                      setExampleMenuOpen(false);
-                    }}
-                    className="w-full text-left px-3 py-2 transition-colors duration-100"
-                    style={{
-                      borderBottom: '1px solid var(--pg-border)',
-                      color: 'var(--pg-text-primary)',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background =
-                        'var(--pg-bg-surface-hover)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'transparent';
-                    }}
-                  >
-                    <div className="text-xs font-medium">{example.label}</div>
-                    <div className="text-[10px] mt-0.5" style={{ color: 'var(--pg-text-muted)' }}>
-                      {example.description}
+              {exampleGroups.length > 0 ? (
+                exampleGroups.map((group) =>
+                  group.heading === null ? (
+                    <React.Fragment key="stories">
+                      {group.examples.map((example) => renderOption(example))}
+                    </React.Fragment>
+                  ) : (
+                    <div key={group.heading} role="group" aria-label={group.heading}>
+                      {renderHeading(group.heading)}
+                      {group.examples.map((example) => renderOption(example))}
                     </div>
-                  </button>
-                ))
+                  )
+                )
               ) : (
                 <div className="px-3 py-3 text-xs" style={{ color: 'var(--pg-text-muted)' }}>
                   No examples for this language yet.
@@ -199,54 +263,11 @@ const PlaygroundToolbar: React.FC<PlaygroundToolbarProps> = ({
               )}
 
               {/* Show other languages' examples as dimmed */}
-              {examples.filter((s) => s.language !== language).length > 0 && (
-                <>
-                  <div
-                    className="px-3 py-1.5 text-[10px] uppercase tracking-wider"
-                    style={{
-                      color: 'var(--pg-text-muted)',
-                      background: 'var(--pg-bg-tertiary)',
-                    }}
-                  >
-                    Other Languages
-                  </div>
-                  {examples
-                    .filter((s) => s.language !== language)
-                    .map((example) => (
-                      <button
-                        key={example.id}
-                        role="option"
-                        aria-selected={false}
-                        onClick={() => {
-                          onLoadExample(example);
-                          setExampleMenuOpen(false);
-                        }}
-                        className="w-full text-left px-3 py-2 transition-colors duration-100"
-                        style={{
-                          borderBottom: '1px solid var(--pg-border)',
-                          color: 'var(--pg-text-muted)',
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.background =
-                            'var(--pg-bg-surface-hover)';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = 'transparent';
-                        }}
-                      >
-                        <div className="flex items-center gap-1.5 text-xs font-medium">
-                          <span>{example.label}</span>
-                          <span
-                            className="px-1 py-0.5 rounded text-[9px]"
-                            style={{ background: 'var(--pg-bg-tertiary)' }}
-                          >
-                            {example.language}
-                          </span>
-                        </div>
-                        <div className="text-[10px] mt-0.5">{example.description}</div>
-                      </button>
-                    ))}
-                </>
+              {otherLanguageExamples.length > 0 && (
+                <div role="group" aria-label="Other Languages">
+                  {renderHeading('Other Languages')}
+                  {otherLanguageExamples.map((example) => renderOption(example, true))}
+                </div>
               )}
             </div>
           )}

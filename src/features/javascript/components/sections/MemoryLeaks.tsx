@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import MemoryLeaks2D from '../visualizations/2d/MemoryLeaks2D';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+import {
+  circularReferencesSolutionSample,
+  clearedTimersSolutionSample,
+} from '../../utils/sectionSamples';
 
 const MemoryLeaks: React.FC = () => {
   const [activeExample, setActiveExample] = useState(0);
@@ -66,27 +71,8 @@ for (let i = 0; i < 1000; i++) {
   refs.push(createCircularReference());
 }
 refs = null; // Objects still not garbage collected!`,
-      solutionCode: `// SOLUTION: Break circular references
-function createCircularReference() {
-  const parent = { name: 'Parent' };
-  const child = { name: 'Child' };
-  
-  parent.child = child;
-  child.parent = parent;
-  
-  // Cleanup function to break cycles
-  const cleanup = () => {
-    parent.child = null;
-    child.parent = null;
-  };
-  
-  return { parent, child, cleanup };
-}
-
-// Proper cleanup
-const { parent, child, cleanup } = createCircularReference();
-// When done:
-cleanup(); // Breaks the cycle for GC`,
+      solutionCode: circularReferencesSolutionSample.code,
+      playground: circularReferencesSolutionSample,
       impact: 'Medium - Objects remain in memory until circular references are broken',
     },
     {
@@ -235,33 +221,8 @@ function startDataPolling() {
 startDataPolling();
 startDataPolling();
 startDataPolling();`,
-      solutionCode: `// SOLUTION: Always clear timers and manage lifecycle
-function startDataPolling() {
-  let largeDataSet = new Array(100000).fill('data');
-  
-  // Store timer IDs for cleanup
-  const intervalId = setInterval(() => {
-    console.log('Data size:', largeDataSet.length);
-    largeDataSet.push(new Date().toISOString());
-  }, 1000);
-  
-  const timeoutId = setTimeout(() => {
-    processData(largeDataSet);
-  }, 5000);
-  
-  // Return cleanup function
-  return () => {
-    clearInterval(intervalId);
-    clearTimeout(timeoutId);
-    largeDataSet = null; // Clear reference
-  };
-}
-
-// Proper usage with cleanup
-const stopPolling = startDataPolling();
-
-// Later, when component unmounts or feature disabled:
-stopPolling(); // Clean up all timers and references`,
+      solutionCode: clearedTimersSolutionSample.code,
+      playground: clearedTimersSolutionSample,
       impact: 'Medium - Timer callbacks and their closures remain in memory indefinitely',
     },
   ];
@@ -485,6 +446,16 @@ stopPolling(); // Clean up all timers and references`,
                 <code>{leakExamples[activeExample].solutionCode}</code>
               </pre>
             </div>
+            {leakExamples[activeExample].playground && (
+              <div className="mt-3">
+                <TryInPlaygroundLink
+                  example={leakExamples[activeExample].playground.example}
+                  lens={leakExamples[activeExample].playground.lens}
+                >
+                  {leakExamples[activeExample].playground.tryIt}
+                </TryInPlaygroundLink>
+              </div>
+            )}
           </div>
         </div>
 

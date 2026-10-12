@@ -14,6 +14,13 @@ import {
   BookOpen,
 } from 'lucide-react';
 import EventLoopStory from './EventLoopStory';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+import {
+  asyncAwaitOrderSample,
+  nestedPromisesSample,
+  promiseVsTimeoutSample,
+  queueMicrotaskSample,
+} from '../../utils/sectionSamples';
 
 // ─── Scenarios for code demonstration ────────────────────────────────────────
 const scenarios = [
@@ -21,22 +28,8 @@ const scenarios = [
     id: 'basic',
     title: 'Promise vs setTimeout',
     description: 'Microtasks always run before the next macrotask.',
-    code: `console.log('1 – sync start');
-
-setTimeout(() => console.log('4 – macrotask'), 0);
-
-Promise.resolve()
-  .then(() => console.log('2 – microtask A'))
-  .then(() => console.log('3 – microtask B'));
-
-console.log('end of sync');
-
-// Output order:
-// 1 – sync start
-// end of sync
-// 2 – microtask A
-// 3 – microtask B
-// 4 – macrotask`,
+    code: promiseVsTimeoutSample.code,
+    playground: promiseVsTimeoutSample,
     output: [
       '1 – sync start',
       'end of sync',
@@ -49,42 +42,16 @@ console.log('end of sync');
     id: 'nested',
     title: 'Nested Promises',
     description: 'Each .then() schedules a new microtask — they all drain before any macrotask.',
-    code: `Promise.resolve()
-  .then(() => {
-    console.log('microtask 1');
-    return Promise.resolve();
-  })
-  .then(() => console.log('microtask 2'))
-  .then(() => console.log('microtask 3'));
-
-setTimeout(() => console.log('macrotask'), 0);
-
-// Output:
-// microtask 1
-// microtask 2
-// microtask 3
-// macrotask`,
+    code: nestedPromisesSample.code,
+    playground: nestedPromisesSample,
     output: ['microtask 1', 'microtask 2', 'microtask 3', 'macrotask'],
   },
   {
     id: 'async-await',
     title: 'async/await Order',
     description: 'await suspends the async function and schedules the rest as a microtask.',
-    code: `async function fetchData() {
-  console.log('A – fetchData start');
-  await Promise.resolve(); // suspends here
-  console.log('C – fetchData resume');
-}
-
-console.log('1 – before call');
-fetchData();
-console.log('B – after call (sync)');
-
-// Output:
-// 1 – before call
-// A – fetchData start
-// B – after call (sync)
-// C – fetchData resume`,
+    code: asyncAwaitOrderSample.code,
+    playground: asyncAwaitOrderSample,
     output: [
       '1 – before call',
       'A – fetchData start',
@@ -97,14 +64,8 @@ console.log('B – after call (sync)');
     title: 'queueMicrotask',
     description:
       'queueMicrotask() and Promise.then() feed the same microtask queue: first in, first out.',
-    code: `queueMicrotask(() => console.log('queueMicrotask'));
-Promise.resolve().then(() => console.log('Promise.then'));
-setTimeout(() => console.log('setTimeout'), 0);
-
-// Output:
-// queueMicrotask
-// Promise.then
-// setTimeout`,
+    code: queueMicrotaskSample.code,
+    playground: queueMicrotaskSample,
     output: ['queueMicrotask', 'Promise.then', 'setTimeout'],
   },
 ];
@@ -391,6 +352,16 @@ const EventLoop: React.FC = () => {
             <pre className="bg-gray-900 text-green-400 rounded-xl p-5 text-xs overflow-x-auto leading-relaxed font-mono">
               {scenario.code}
             </pre>
+            {scenario.playground && (
+              <div className="mt-3">
+                <TryInPlaygroundLink
+                  example={scenario.playground.example}
+                  lens={scenario.playground.lens}
+                >
+                  {scenario.playground.tryIt}
+                </TryInPlaygroundLink>
+              </div>
+            )}
           </div>
 
           {/* Output panel */}

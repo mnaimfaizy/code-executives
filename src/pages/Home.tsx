@@ -671,6 +671,36 @@ const Home: React.FC = () => {
             </div>
           </div>
 
+          {/* Playground — opens in new tab */}
+          <div className="mb-20">
+            <a
+              href="/playground"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 group"
+            >
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                  <Rocket className="w-7 h-7" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                    Playground
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-3">
+                    Run your own JavaScript and watch the stack, the heap and the queues change,
+                    step by step. Or practice with exercises.
+                  </p>
+                  <div className="flex items-center text-indigo-600 text-sm font-semibold group-hover:text-indigo-700">
+                    <span>Open</span>
+                    <span className="sr-only"> (opens in a new tab)</span>
+                    <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+
           {/* Testimonials - Hidden until we have real reviews */}
           {/* <div className="mb-20">
             <div className="text-center mb-12">

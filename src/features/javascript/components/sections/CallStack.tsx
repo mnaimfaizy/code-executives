@@ -24,6 +24,8 @@ import OutputPanel, { type OutputLine } from '../../../../components/shared/Outp
 import InstrumentedSource, { type Segment } from '../../../../components/shared/InstrumentedSource';
 import Editor from '../../../../components/shared/Editor';
 import useRunner from '../../../../hooks/useRunner';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+import { callStackSample } from '../../utils/sectionSamples';
 
 type Instruction = { type: 'push' | 'pop'; label?: string };
 // Using shared OutputLine (kind is a loose string)
@@ -64,25 +66,7 @@ push baz
 pop
 pop`;
 
-const DEFAULT_JS = `// Write JavaScript. We'll instrument function bodies to emit push/pop events.
-function main() {
-  foo();
-  bar();
-}
-
-function foo() {
-  baz();
-}
-
-function bar() {
-  // work
-}
-
-function baz() {
-  // work
-}
-
-main();`;
+const DEFAULT_JS = callStackSample.code;
 
 const CallStack: React.FC = () => {
   // 2D state
@@ -506,6 +490,12 @@ const CallStack: React.FC = () => {
           output={outputPanel}
           canvas={canvas2D}
         />
+      </div>
+
+      <div className="mt-4">
+        <TryInPlaygroundLink example={callStackSample.example} lens={callStackSample.lens}>
+          {callStackSample.tryIt}
+        </TryInPlaygroundLink>
       </div>
     </section>
   );
