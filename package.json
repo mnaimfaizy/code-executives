@@ -28,16 +28,16 @@
     "@react-three/drei": "10.7.9",
     "@react-three/fiber": "9.8.1",
     "@tailwindcss/vite": "4.3.3",
-    "acorn": "8.18.0",
+    "acorn": "8.19.0",
     "astring": "1.9.0",
-    "lucide-react": "1.52.0",
+    "lucide-react": "1.54.0",
     "monaco-editor": "0.57.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-router-dom": "7.18.4",
     "tailwindcss": "4.3.3",
     "three": "0.186.1",
-    "web-vitals": "6.2.2"
+    "web-vitals": "6.2.3"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
