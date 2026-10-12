@@ -78,7 +78,7 @@
       "prompt": "Order the heap-repair steps after removing the root element.",
       "explanation": "The standard extract-min repair moves the last element to the root, shrinks the heap, then repeatedly compares with the smaller child and swaps downward until the heap property holds again.",
       "tags": ["heaps", "extract-min", "ordering", "repair"],
-      "references": ["Heaps", "Practice Problems"],
+      "references": ["Heaps"],
       "items": [
         "Repeat the comparison-and-swap process until the heap property holds",
         "Move the last element into the root position",
@@ -259,7 +259,7 @@
       "prompt": "Order the nodes by the sequence in which BFS dequeues and visits them.",
       "explanation": "BFS visits level by level: first A, then its neighbors B and C, then D and E from the next frontier, and finally F from D.",
       "tags": ["bfs", "graph-traversal", "ordering", "practice"],
-      "references": ["Graph Traversal", "Graph Overview", "Practice Problems"],
+      "references": ["Graph Traversal", "Graph Overview"],
       "items": ["E", "B", "A", "F", "D", "C"],
       "correctAnswer": ["A", "B", "C", "D", "E", "F"]
     },
@@ -429,7 +429,7 @@
       "prompt": "Which technique detects the cycle without extra memory proportional to the list length?",
       "explanation": "Floyd's tortoise-and-hare algorithm uses two pointers moving at different speeds. If a cycle exists, the fast pointer eventually meets the slow pointer without needing a visited set.",
       "tags": ["linked-lists", "cycle-detection", "practice", "pointers"],
-      "references": ["Linked Lists", "Practice Problems"],
+      "references": ["Linked Lists"],
       "options": [
         "Maintain an adjacency matrix",
         "Use Floyd's tortoise-and-hare traversal",
