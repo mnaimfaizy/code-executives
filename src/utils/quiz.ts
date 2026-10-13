@@ -8,21 +8,10 @@ import type {
 } from '../types/quiz';
 import { getSectionPathByLabel, learningModuleIds } from '../shared/constants/moduleNavigation';
 import type { LearningModuleId } from '../shared/constants/moduleNavigation';
-
-const quizBankLoaders = import.meta.glob<QuizBankFile>('/quiz-banks/*.quiz.json', {
-  import: 'default',
-});
+import { hasQuizBank, quizBankLoaders, quizBankPath } from '../shared/constants/quizBanks';
 
 export const QUIZ_STORAGE_PREFIX = 'code-executives.quiz';
 export const QUIZ_HISTORY_LIMIT = 8;
-
-const PERFORMANCE_TIERS = [
-  { minScore: 95, label: 'Executive Strategist' },
-  { minScore: 85, label: 'Systems Thinker' },
-  { minScore: 70, label: 'Scenario Navigator' },
-  { minScore: 50, label: 'Concept Builder' },
-  { minScore: 0, label: 'Needs Another Pass' },
-] as const;
 
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -95,7 +84,7 @@ export const isQuizBankFile = (
 };
 
 export const loadQuizBank = async (moduleId: LearningModuleId): Promise<QuizBankFile | null> => {
-  const loader = quizBankLoaders[`/quiz-banks/${moduleId}.quiz.json`];
+  const loader = quizBankLoaders[quizBankPath(moduleId)];
   if (!loader) {
     return null;
   }
@@ -105,8 +94,7 @@ export const loadQuizBank = async (moduleId: LearningModuleId): Promise<QuizBank
 };
 
 /** The modules that have a quiz bank in `quiz-banks/`, in module order. Not every module has one. */
-export const modulesWithQuiz = (): LearningModuleId[] =>
-  learningModuleIds.filter((moduleId) => `/quiz-banks/${moduleId}.quiz.json` in quizBankLoaders);
+export const modulesWithQuiz = (): LearningModuleId[] => learningModuleIds.filter(hasQuizBank);
 
 export const getQuizStorageKeys = (moduleId: LearningModuleId) => ({
   activeAttempt: `${QUIZ_STORAGE_PREFIX}.${moduleId}.active-attempt`,
@@ -181,9 +169,6 @@ export const formatRemainingTime = (remainingSeconds: number): string => {
   return `${minutes}:${seconds}`;
 };
 
-export const getPerformanceTier = (scorePercentage: number): string =>
-  PERFORMANCE_TIERS.find((tier) => scorePercentage >= tier.minScore)?.label ?? 'Needs Another Pass';
-
 export const sampleQuizQuestionIds = (
   questions: QuizQuestion[],
   questionsPerAttempt: number
@@ -256,9 +241,6 @@ export const buildQuizResult = (
     0,
     Math.round((completedAt.getTime() - startedAt.getTime()) / 1000)
   );
-  const totalAllowedSeconds = bank.timeLimitMinutes * 60;
-  const timeBonusRatio = Math.max(0, (totalAllowedSeconds - elapsedSeconds) / totalAllowedSeconds);
-  const points = Math.round(correctAnswers * 120 + timeBonusRatio * 80);
 
   return {
     attemptId: attempt.id,
@@ -272,8 +254,6 @@ export const buildQuizResult = (
     correctAnswers,
     incorrectAnswers,
     scorePercentage,
-    performanceTier: getPerformanceTier(scorePercentage),
-    points,
     questionOutcomes,
   };
 };

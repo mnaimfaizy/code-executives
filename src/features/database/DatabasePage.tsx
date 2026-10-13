@@ -4,6 +4,7 @@ import { ErrorBoundary } from '../../shared/components/feedback/ErrorBoundary';
 import { LoadingFallback } from '../../shared/components/feedback/LoadingFallback';
 import { SEO } from '../../shared/components/SEO/SEO';
 import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
+import { moduleHasQuiz } from '../../shared/constants/moduleNavigation';
 
 // Lazy load section components for better performance
 import Introduction from './components/sections/Introduction';
@@ -31,7 +32,8 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'Oracle vs PostgreSQL': OracleVsPostgreSQL,
   'SQL vs NoSQL vs Vector': SQLvsNoSQLvsVector,
   Visualization,
-  Quiz,
+  // Only with a quiz bank: without one, ?section=Quiz falls back to Introduction
+  ...(moduleHasQuiz('database') ? { Quiz } : {}),
 };
 
 function useQuery(): URLSearchParams {

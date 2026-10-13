@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import ModuleQuizSection from '../../shared/components/quiz/ModuleQuizSection';
+import { moduleHasQuiz } from '../../shared/constants/moduleNavigation';
 
 // Lazy load section components for better performance
 import Introduction from './components/sections/Introduction';
@@ -28,7 +29,8 @@ const sectionComponents: Record<string, React.ComponentType> = {
   Observability,
   'Request Lifecycle': RequestLifecycle,
   Visualization,
-  Quiz,
+  // Only with a quiz bank: without one, ?section=Quiz falls back to Introduction
+  ...(moduleHasQuiz('backend') ? { Quiz } : {}),
 };
 
 function useQuery(): URLSearchParams {

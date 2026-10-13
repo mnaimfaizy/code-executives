@@ -7,10 +7,10 @@ import {
   Brain,
   Clock3,
   Flag,
+  History,
   Play,
   RefreshCcw,
   Target,
-  Trophy,
   XCircle,
 } from 'lucide-react';
 import SectionLayout from '../../../components/shared/SectionLayout';
@@ -22,7 +22,8 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useQuizSession } from '../../hooks/useQuizSession';
 import { learningModuleConfigs } from '../../constants/moduleNavigation';
 import type { LearningModuleId } from '../../constants/moduleNavigation';
-import type { QuizQuestion } from '../../../types/quiz';
+import type { QuizQuestion, QuizResultSummary } from '../../../types/quiz';
+import { QUIZ_MILESTONE_PERCENTAGE } from '../../progress';
 import {
   formatQuizAnswer,
   formatRemainingTime,
@@ -36,15 +37,11 @@ interface ModuleQuizSectionProps {
   moduleId: LearningModuleId;
 }
 
-const getProgressTone = (scorePercentage: number): string => {
-  if (scorePercentage >= 85) {
-    return 'text-green-700';
-  }
-  if (scorePercentage >= 60) {
-    return 'text-blue-700';
-  }
-  return 'text-rose-700';
-};
+/** What a result says: correct answers out of the total, the percentage, and the time taken. */
+const describeResult = (result: QuizResultSummary): string =>
+  `${result.correctAnswers} of ${result.totalQuestions} correct, ${result.scorePercentage}%, in ${formatRemainingTime(
+    result.elapsedSeconds
+  )}`;
 
 const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
   const moduleConfig = learningModuleConfigs[moduleId];
@@ -156,17 +153,17 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
   const heroStats = [
     {
       value: `${totalBankQuestions}`,
-      label: 'Scenario Bank Size',
+      label: 'Questions In The Bank',
       icon: <Brain className="h-4 w-4" />,
     },
     {
       value: `${bank?.questionsPerAttempt ?? 5}`,
-      label: 'Questions Per Run',
+      label: 'Questions Per Attempt',
       icon: <Target className="h-4 w-4" />,
     },
     {
       value: `${bank?.timeLimitMinutes ?? 10} min`,
-      label: 'Challenge Clock',
+      label: 'Time Limit',
       icon: <Clock3 className="h-4 w-4" />,
     },
   ];
@@ -176,10 +173,10 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
       <ThemeCard className="space-y-5">
         <div className="space-y-3">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">
-            Scenario Challenge
+            Timed Quiz
           </p>
           <h3 className="text-3xl font-bold text-gray-900">
-            Five hard questions. Ten minutes. No filler.
+            {bank?.questionsPerAttempt} questions in {bank?.timeLimitMinutes} minutes
           </h3>
           <p className="text-base leading-7 text-gray-700">{bank?.description}</p>
         </div>
@@ -192,8 +189,12 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
                 Expect scenario-based questions that focus on tradeoffs, debugging choices, and
                 architecture judgment.
               </li>
-              <li>Each run samples a fresh set of five questions from the module bank.</li>
-              <li>Your active attempt resumes after a refresh until the timer expires.</li>
+              <li>
+                Each attempt draws {bank?.questionsPerAttempt} questions from the module's bank.
+              </li>
+              <li>
+                The attempt has a time limit. It resumes after a refresh until the time runs out.
+              </li>
               <li>
                 After grading, every incorrect answer links you back to the relevant module
                 sections.
@@ -201,33 +202,30 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
             </ul>
           </div>
           <div className="rounded-2xl border border-gray-200 bg-white p-5">
-            <h4 className="text-lg font-semibold text-gray-900">Recent Performance</h4>
-            {latestResult ? (
-              <div className="mt-3 space-y-2 text-sm leading-6 text-gray-700">
-                <p>
-                  Latest score:{' '}
-                  <span
-                    className={`font-semibold ${getProgressTone(latestResult.scorePercentage)}`}
-                  >
-                    {latestResult.scorePercentage}%
-                  </span>
-                </p>
-                <p>
-                  Tier:{' '}
+            <h4 className="text-lg font-semibold text-gray-900">Latest Result</h4>
+            <div className="mt-3 space-y-2 text-sm leading-6 text-gray-700">
+              {latestResult ? (
+                <p data-testid="latest-result">
                   <span className="font-semibold text-gray-900">
-                    {latestResult.performanceTier}
+                    {describeResult(latestResult)}
                   </span>
+                  {latestResult.status === 'timed-out' && ' (the time ran out)'}
                 </p>
-                <p>
-                  Points earned:{' '}
-                  <span className="font-semibold text-gray-900">{latestResult.points}</span>
-                </p>
-              </div>
-            ) : (
-              <p className="mt-3 text-sm leading-6 text-gray-600">
-                No attempts yet. Start with a timed run to seed your local progress history.
+              ) : (
+                <p className="text-gray-600">No attempts yet.</p>
+              )}
+              <p data-testid="quiz-milestone-bar">
+                {QUIZ_MILESTONE_PERCENTAGE}% or more on a completed attempt reaches this module's
+                quiz milestone, listed on the{' '}
+                <Link
+                  to="/progress"
+                  className="font-semibold text-gray-900 underline underline-offset-2 hover:text-gray-700"
+                >
+                  Progress page
+                </Link>
+                .
               </p>
-            )}
+            </div>
           </div>
         </div>
 
@@ -238,7 +236,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
             className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-800"
           >
             <Play className="h-4 w-4" />
-            Start Quiz Run
+            Start Quiz
           </button>
           {latestResult && (
             <button
@@ -247,7 +245,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
               className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-5 py-3 text-sm font-semibold text-gray-800 transition-colors hover:bg-gray-50"
             >
               <RefreshCcw className="h-4 w-4" />
-              Roll A New Set
+              Try New Questions
             </button>
           )}
         </div>
@@ -257,7 +255,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
         <ThemeCard className="space-y-4">
           <div className="flex items-center gap-3">
             <XCircle className="h-5 w-5 text-rose-600" />
-            <h4 className="text-xl font-semibold text-gray-900">Last Run Review</h4>
+            <h4 className="text-xl font-semibold text-gray-900">Review Of Your Last Attempt</h4>
           </div>
           <div className="space-y-4">
             {reviewItems.map((item) => (
@@ -314,7 +312,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">
                 Question {currentQuestionIndex + 1} of {totalQuestions}
               </p>
-              <h3 className="mt-2 text-2xl font-bold text-gray-900">Timed Scenario</h3>
+              <h3 className="mt-2 text-2xl font-bold text-gray-900">Timed Question</h3>
             </div>
             <div
               className={`rounded-2xl border px-4 py-3 text-right ${
@@ -392,7 +390,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
         <ThemeCard className="space-y-4">
           <div className="flex items-center gap-3">
             <AlarmClock className="h-5 w-5 text-gray-700" />
-            <h4 className="text-lg font-semibold text-gray-900">Run Tracker</h4>
+            <h4 className="text-lg font-semibold text-gray-900">This Attempt</h4>
           </div>
           <div className="space-y-3 text-sm text-gray-700">
             <div className="flex items-center justify-between">
@@ -408,7 +406,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
               />
             </div>
             <div className="flex items-center justify-between">
-              <span>Clock</span>
+              <span>Time left</span>
               <span className={`font-semibold ${lowTime ? 'text-rose-700' : 'text-gray-900'}`}>
                 {formatRemainingTime(remainingSeconds)}
               </span>
@@ -449,32 +447,32 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
 
         <ThemeCard className="space-y-3">
           <div className="flex items-center gap-3">
-            <Trophy className="h-5 w-5 text-gray-700" />
-            <h4 className="text-lg font-semibold text-gray-900">Local History</h4>
+            <History className="h-5 w-5 text-gray-700" />
+            <h4 className="text-lg font-semibold text-gray-900">Earlier Results</h4>
           </div>
           {recentResults.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="quiz-history">
               {recentResults.slice(0, 4).map((result) => (
                 <div
                   key={result.attemptId}
                   className="rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-gray-900">{result.performanceTier}</span>
+                    <span className="font-semibold text-gray-900">
+                      {result.correctAnswers} of {result.totalQuestions} correct
+                    </span>
                     <span>{result.scorePercentage}%</span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-                    <span>
-                      {result.correctAnswers}/{result.totalQuestions} correct
-                    </span>
-                    <span>{result.points} pts</span>
-                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Time taken: {formatRemainingTime(result.elapsedSeconds)}
+                    {result.status === 'timed-out' && ' (the time ran out)'}
+                  </p>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-sm leading-6 text-gray-600">
-              Results are saved in localStorage once you finish a timed run.
+              Results are kept in this browser once you finish an attempt.
             </p>
           )}
         </ThemeCard>
@@ -488,11 +486,11 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
         <p className="text-sm font-semibold uppercase tracking-[0.24em] text-gray-500">
           End-of-Module Quiz
         </p>
-        <h1 className="text-4xl font-bold text-gray-900">{moduleConfig.title} scenario gauntlet</h1>
+        <h1 className="text-4xl font-bold text-gray-900">{moduleConfig.title} quiz</h1>
         <p className="max-w-3xl text-lg leading-8 text-gray-700">
-          Use the timed quiz to check whether the concepts in this module hold up under
-          production-style pressure. Every run picks five harder questions from a larger bank and
-          records your local progress for the next session.
+          Use the timed quiz to check whether the concepts in this module hold up. Every attempt
+          draws {bank?.questionsPerAttempt ?? 5} questions from a larger bank, and its result is
+          kept in this browser.
         </p>
       </div>
       <StatsGrid stats={heroStats} colorScheme={theme.primary} className="mb-0" />

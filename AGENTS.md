@@ -38,6 +38,7 @@ After editing anything in `.agents/`, run `npm run agents:sync` and commit the g
 - A milestone is earned only from what a check proves: exercises passed and quiz results. Never from reading, playing a story or using a feature.
 - No points, levels, streaks or leaderboards, and nothing that depends on a clock or a calendar. No milestone for a module as a whole.
 - Seeing a solution takes nothing away. A milestone is stored when earned and never taken back.
+- The quiz shows correct answers, a percentage and time taken; no points or tiers.
 - Say "progress" and "milestone", not "achievement" or "gamification".
 
 ### Code
@@ -48,7 +49,7 @@ After editing anything in `.agents/`, run `npm run agents:sync` and commit the g
 
 ### Modules, sections and navigation
 - A section is selected by `?section=<Label>`. The keys of a page's `sectionComponents` must equal the sidebar labels exactly; an unknown label silently falls back to Introduction.
-- Section labels live in **two** places that must change together: `src/components/Sidebar.tsx` (`sidebarSections`, drives the UI) and `src/shared/constants/moduleNavigation.ts` (`baseModuleNavigationSections`, resolves quiz references). The "Quiz" item is appended automatically.
+- Section labels live in **two** places that must change together: `src/components/Sidebar.tsx` (`sidebarSections`, drives the UI) and `src/shared/constants/moduleNavigation.ts` (`baseModuleNavigationSections`, resolves quiz references). The "Quiz" item is appended automatically, only for a module that has a quiz bank.
 - Every module id needs a `theme.colors` entry in `src/utils/theme.ts`, and a new primary colour needs a `colorMap` entry in `Sidebar.tsx`.
 
 ### Quiz banks
