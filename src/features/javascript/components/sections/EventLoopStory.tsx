@@ -77,13 +77,16 @@ const EventLoopStory: React.FC = () => {
       </div>
 
       <div className="flex min-w-0 flex-col gap-3">
-        {/* Viewer: the drawing is four regions wide, so it takes the full width. */}
+        {/*
+          Viewer: the drawing is four regions wide, so it takes the full width at every size,
+          and below xl it gives up its padding too (the drawing has its own margin).
+        */}
         <div
           data-viz-viewer
           data-view={is3D ? '3d' : '2d'}
           onWheel={viewer.onViewerWheel}
           className={`relative overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg ${
-            is3D ? (fullscreen ? 'h-[75vh]' : 'h-[420px] sm:h-[500px]') : 'p-1 sm:p-2'
+            is3D ? (fullscreen ? 'h-[75vh]' : 'h-[420px] sm:h-[500px]') : 'xl:p-2'
           }`}
         >
           {is3D ? (

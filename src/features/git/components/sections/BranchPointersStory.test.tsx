@@ -27,6 +27,7 @@ vi.mock('../visualizations/3d/BranchPointers3D', () => ({
 }));
 
 import BranchPointersStory from './BranchPointersStory';
+import { SPLIT_FROM, STORY_SPLIT, labelPx } from '../../../../shared/components/viz/storyLayout';
 
 const total = STORY_BEATS.length;
 const VIEW_KEY = 'code-executives.branch-pointers-story.view';
@@ -53,6 +54,29 @@ describe('BranchPointersStory', () => {
     await user.click(screen.getByRole('button', { name: 'Previous beat' }));
     expect(screen.getByText(`Beat 1 / ${total}`)).toBeInTheDocument();
     expect(screen.getByRole('img', { name: /A commit points to its parent/ })).toBeInTheDocument();
+  });
+
+  it('puts the code above the picture, and draws 12-unit labels at 10px or more', () => {
+    const { container } = render(<BranchPointersStory />);
+    const viewer = container.querySelector<HTMLElement>('[data-viz-viewer]')!;
+    const column = viewer.parentElement!;
+    const aside = screen.getByLabelText('Story code').closest(`[class="${STORY_SPLIT.aside}"]`)!;
+
+    expect(column.className).toBe(STORY_SPLIT.viewer);
+    expect(column.parentElement!.className).toBe(STORY_SPLIT.row);
+    expect(aside.compareDocumentPosition(column) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    // The viewer box is 500px high with a 1px border.
+    expect(viewer.className).toContain('sm:h-[500px]');
+    const [, , width, height] = screen
+      .getByRole('img', { name: /Branch pointers/ })
+      .getAttribute('viewBox')!
+      .split(' ')
+      .map(Number);
+    const box = { view: { width, height }, inset: 2, height: 498 };
+    for (const page of [1024, 1280, 1440, SPLIT_FROM]) {
+      expect(labelPx(page, box), `${page}`).toBeGreaterThanOrEqual(10);
+    }
   });
 
   it('steps with the arrow keys and reaches the last beat', async () => {

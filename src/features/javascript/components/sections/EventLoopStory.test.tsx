@@ -26,6 +26,7 @@ vi.mock('../visualizations/3d/EventLoop3D', () => ({
 
 import EventLoopStory from './EventLoopStory';
 import { STORY_BEATS, STORY_OUTPUT } from '../../utils/eventLoopStory';
+import { labelPx } from '../../../../shared/components/viz/storyLayout';
 
 const next = () => screen.getByRole('button', { name: 'Next beat' });
 const stepTo = async (user: ReturnType<typeof userEvent.setup>, beat: number) => {
@@ -58,6 +59,39 @@ describe('EventLoopStory', () => {
 
     await user.click(screen.getByRole('button', { name: 'Previous beat' }));
     expect(screen.getByText('Beat 1 / 12')).toBeInTheDocument();
+  });
+
+  it('says how many beats the story has', () => {
+    render(<EventLoopStory />);
+    expect(screen.getByText(new RegExp(`^A ${STORY_BEATS.length}-beat story\\.`))).toBeVisible();
+  });
+
+  it('gives the picture the whole width, above the code, at every page size', () => {
+    const { container } = render(<EventLoopStory />);
+    const viewer = container.querySelector<HTMLElement>('[data-viz-viewer]')!;
+    const code = screen.getByLabelText('Story code');
+
+    expect(viewer.compareDocumentPosition(code) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The viewer is a direct child of a plain column: nothing ever stands beside it.
+    expect(viewer.parentElement!.className).toBe('flex min-w-0 flex-col gap-3');
+    // In 2D the box has a 1px border, no fixed height, and padding (8px a side) only from xl.
+    expect(viewer.className).toContain('xl:p-2');
+    expect(viewer.className).not.toMatch(/(^| )(sm:)?(p|h)-/);
+
+    const [, , width, height] = screen
+      .getByRole('img', { name: /The script starts as one task/ })
+      .getAttribute('viewBox')!
+      .split(' ')
+      .map(Number);
+    const view = { width, height };
+
+    expect(labelPx(1280, { view, inset: 18 })).toBeGreaterThanOrEqual(10);
+    expect(labelPx(1440, { view, inset: 18 })).toBeGreaterThanOrEqual(10);
+    // At 1024 the section is 606px wide and the drawing 818 units: the whole width, with no
+    // padding, gives 8.86px. 10px needs 684px, more than <main> has (704px) once the page and
+    // the section are padded. The picture is not made to scroll for it.
+    expect(width).toBe(818);
+    expect(labelPx(1024, { view, inset: 2 })).toBeCloseTo(8.86, 2);
   });
 
   it('steps with the arrow keys and stops at the last beat', async () => {

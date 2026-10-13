@@ -329,7 +329,7 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
                 fontSize={10}
                 fontWeight={700}
                 textAnchor="end"
-                fill={P.unreachable.stroke}
+                fill={P.text.unreachable}
               >
                 {collected ? 'RECLAIMED' : 'UNMARKED'}
               </text>
