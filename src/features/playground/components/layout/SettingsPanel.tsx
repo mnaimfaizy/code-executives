@@ -95,49 +95,6 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ settings, onChange, onClo
             className="accent-blue-500"
           />
         </label>
-
-        {/* Execution timeout */}
-        <div>
-          <label
-            className="flex items-center justify-between text-xs"
-            style={{ color: 'var(--pg-text-secondary)' }}
-          >
-            <span>Timeout</span>
-            <span className="tabular-nums font-mono" style={{ color: 'var(--pg-text-primary)' }}>
-              {settings.executionTimeoutMs / 1000}s
-            </span>
-          </label>
-          <input
-            type="range"
-            min={1000}
-            max={30000}
-            step={1000}
-            value={settings.executionTimeoutMs}
-            onChange={(e) => update('executionTimeoutMs', Number(e.target.value))}
-            className="w-full mt-1.5 accent-blue-500"
-            aria-label={`Execution timeout: ${settings.executionTimeoutMs / 1000} seconds`}
-          />
-          <div
-            className="flex justify-between text-[10px] mt-0.5"
-            style={{ color: 'var(--pg-text-muted)' }}
-          >
-            <span>1s</span>
-            <span>30s</span>
-          </div>
-        </div>
-
-        {/* Animations */}
-        <label className="flex items-center justify-between cursor-pointer">
-          <span className="text-xs" style={{ color: 'var(--pg-text-secondary)' }}>
-            Animations
-          </span>
-          <input
-            type="checkbox"
-            checked={settings.animationsEnabled}
-            onChange={(e) => update('animationsEnabled', e.target.checked)}
-            className="accent-blue-500"
-          />
-        </label>
       </div>
     </div>
   );

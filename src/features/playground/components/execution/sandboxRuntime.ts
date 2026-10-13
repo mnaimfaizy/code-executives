@@ -19,7 +19,13 @@
  * gives the tracer a way to run one turn of its event loop as a task, and the run
  * is finished once the tracer has no turn left to run.
  *
- * A run with a check (an exercise) gets one more argument, the check hook. The code
+ * A run with Trace off gets a loop guard instead: its code calls one counter at every loop
+ * turn and function entry (tracer/loopGuard.ts). The script supplies the counter. Past the
+ * limit the counter throws, and it throws again at every later counted point and at the
+ * start of every catch and finally block, so the run cannot go on; the script then ends the
+ * run with one plain message in the Console.
+ *
+ * A run with a check (an exercise) is always traced, and gets one more argument, the check hook. The code
  * the host sends ends by handing the entry function to the hook; the hook calls it
  * once with the check's arguments and compares what it returns with the expected
  * value, here, in this script's own scope. The verdict travels in the report, never
@@ -74,7 +80,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
 
   /**
    * The run in progress: { id, timers, done, failed, error, checkQueued, capId, tracer,
-   * maxSteps, channel, check, checkResult }
+   * maxSteps, channel, check, checkResult, guard, stopped }
    */
   var run = null;
 
@@ -155,6 +161,9 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
 
   function uncaught(r, err, prefix) {
     if (r !== run || r.done) return;
+    // The loop guard has stopped the run: its signal, and whatever fails after it, is not
+    // an error of the learner's code
+    if (r.stopped) return;
     var line;
     if (r.tracer) {
       // The tracer's own signal is how it stops a run, and after the first error it
@@ -354,11 +363,45 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     return true;
   }
 
+  // ---- The loop guard of a run with Trace off ----
+
+  // The counter guarded code calls at every loop turn and function entry. Past the limit it
+  // throws, and keeps throwing: the count never goes back, and c() is the first statement of
+  // every catch and finally block.
+  function makeGuard(r, guard) {
+    var count = 0;
+    var signal = null;
+    function counter() {
+      if (++count <= guard.limit) return;
+      if (!signal) {
+        signal = new Error(guard.message);
+        signal.name = 'LoopGuardStop';
+        r.stopped = true;
+        // The code that tripped may be promise work, which reports to nobody: end the run
+        // from a task of its own
+        _setTimeout(function() { endStoppedGuard(r); }, 0);
+      }
+      throw signal;
+    }
+    counter.c = function() { if (signal) throw signal; };
+    return counter;
+  }
+
+  // A run the loop guard stopped ends with one message, whatever the code did with the signal
+  function endStoppedGuard(r) {
+    if (!r.stopped || r !== run || r.done) return false;
+    r.failed = true;
+    r.error = r.guard.message;
+    entries.push({ type: 'error', args: [r.guard.message] });
+    finish(r, 'error', r.guard.message);
+    return true;
+  }
+
   // Report once no timer is pending, and a traced run's event loop has settled. The
   // check runs as a task of its own, so all promise work queued so far has drained
   // before it looks.
   function settleSoon(r) {
-    if (endStoppedTrace(r)) return;
+    if (endStoppedGuard(r) || endStoppedTrace(r)) return;
     if (r !== run || r.done || r.checkQueued) return;
     r.checkQueued = true;
     _setTimeout(function() {
@@ -412,7 +455,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     if (!run || run.done) return;
     uncaught(run, event.reason, 'Uncaught (in promise) ');
     if (event.preventDefault) event.preventDefault();
-    endStoppedTrace(run);
+    if (!endStoppedGuard(run)) endStoppedTrace(run);
   });
 
   window.addEventListener('message', function(event) {
@@ -436,7 +479,7 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     var r = {
       id: msg.runId, timers: new Map(), done: false, failed: false, error: null,
       checkQueued: false, capId: 0, tracer: null, maxSteps: 0, channel: null,
-      check: msg.check || null, checkResult: null
+      check: msg.check || null, checkResult: null, guard: msg.guard || null, stopped: false
     };
     run = r;
 
@@ -469,8 +512,12 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
         fn = r.check
           ? new Function(msg.tracer.name, msg.check.hook, msg.code)
           : new Function(msg.tracer.name, msg.code);
+      } else if (msg.guard) {
+        // Trace off: the code counts its loop turns and calls on the guard
+        fn = new Function(msg.guard.name, msg.code);
       } else {
-        fn = r.check ? new Function('__untraced', msg.check.hook, msg.code) : new Function(msg.code);
+        // Code the guard could not parse runs as it is, so the engine reports its syntax error
+        fn = new Function(msg.code);
       }
     } catch (err) {
       // The code did not parse, so nothing ran
@@ -482,7 +529,14 @@ export const SANDBOX_RUNTIME_SOURCE = String.raw`
     }
 
     try {
-      if (r.check) fn(r.tracer, checkHook(r)); else fn(r.tracer);
+      // A check is always traced (useSandbox.runCheck), so only a traced run has the hook
+      if (r.tracer) {
+        if (r.check) fn(r.tracer, checkHook(r)); else fn(r.tracer);
+      } else if (r.guard) {
+        fn(makeGuard(r, r.guard));
+      } else {
+        fn();
+      }
     } catch (err) {
       uncaught(r, err, 'Uncaught ');
     }

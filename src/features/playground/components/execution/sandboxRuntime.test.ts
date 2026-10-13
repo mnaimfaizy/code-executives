@@ -4,7 +4,14 @@
  * script's messages to the host arrive on the same window.
  */
 import { describe, it, expect, beforeAll, afterEach } from 'vitest';
-import { instrument, resolveTraceLimits, runtimeSource, TRACER_NAME } from '../../tracer';
+import {
+  guardLoops,
+  instrument,
+  loopGuardMessage,
+  resolveTraceLimits,
+  runtimeSource,
+  TRACER_NAME,
+} from '../../tracer';
 import type { Trace } from '../../tracer';
 import { SANDBOX_RUNTIME_SOURCE } from './sandboxRuntime';
 
@@ -22,7 +29,8 @@ let nextRunId = 0;
 function runInSandbox(
   code: string,
   timeout = 2_000,
-  tracer?: object
+  tracer?: object,
+  guard?: object
 ): Promise<Report & { elapsedMs: number }> {
   const runId = ++nextRunId;
   const startedAt = performance.now();
@@ -35,8 +43,15 @@ function runInSandbox(
       resolve({ ...(data as Report), elapsedMs: performance.now() - startedAt });
     };
     window.addEventListener('message', onMessage);
-    window.postMessage({ type: 'execute', code, timeout, runId, tracer }, '*');
+    window.postMessage({ type: 'execute', code, timeout, runId, tracer, guard }, '*');
   });
+}
+
+/** Guard code and run it the way the Playground does with Trace off */
+function runGuarded(code: string, limit?: number): Promise<Report & { elapsedMs: number }> {
+  const guarded = guardLoops(code, limit);
+  if (!guarded.ok) throw new Error(guarded.error.message);
+  return runInSandbox(guarded.code, 2_000, undefined, guarded.guard);
 }
 
 /** Instrument code and run it the way the Playground does with Trace on */
@@ -217,6 +232,131 @@ describe('sandbox runtime', () => {
     await wait(80);
     window.removeEventListener('message', onMessage);
     expect(reports).toEqual([]);
+  });
+
+  describe('a run with Trace off: the loop guard', () => {
+    const stopped = (limit: number): string => loopGuardMessage(limit);
+
+    it('runs code that ends as before, with no trace and no note', async () => {
+      const report = await runGuarded(
+        'let total = 0;\nfor (let i = 0; i < 100; i++) total += i;\nconsole.log(total);'
+      );
+      expect(report.type).toBe('result');
+      expect(report.trace).toBeNull();
+      expect(printed(report)).toEqual(['4950']);
+    });
+
+    it('stops `while (true) {}` at the real limit and says so in plain words', async () => {
+      const report = await runGuarded('console.log("before");\nwhile (true) {}');
+      expect(report.type).toBe('error');
+      expect(report.error).toBe(
+        'Stopped after 1,000,000 loop turns and calls: a loop or recursion probably does ' +
+          'not end. Turn Trace on to watch it step by step.'
+      );
+      expect(report.entries.map((entry) => entry.type)).toEqual(['log', 'error']);
+      expect(printed(report)).toEqual(['before', report.error]);
+      // The run was stopped by the count, long before the 2 s cap
+      expect(report.elapsedMs).toBeLessThan(1_500);
+    });
+
+    it('stops a recursion that a catch keeps alive', async () => {
+      const report = await runGuarded(
+        'let depth = 0;\nfunction dig() { depth++; try { dig(); } catch (e) { dig(); } }\ndig();',
+        5_000
+      );
+      expect(report.type).toBe('error');
+      expect(printed(report)).toEqual([stopped(5_000)]);
+    });
+
+    it('is not swallowed by try/catch, and the code after it does not run', async () => {
+      const report = await runGuarded(
+        'try { while (true) {} } catch (error) { console.log("caught"); }\n' +
+          'console.log("after");\nwhile (true) { try { console.log("again"); } catch (e) {} }',
+        500
+      );
+      expect(report.type).toBe('error');
+      expect(printed(report)).toEqual([stopped(500)]);
+    });
+
+    it('is not replaced by a finally block', async () => {
+      const report = await runGuarded(
+        'function f() { try { while (true) {} } finally { console.log("finally"); return 1; } }\n' +
+          'console.log(f());',
+        500
+      );
+      expect(printed(report)).toEqual([stopped(500)]);
+    });
+
+    it('counts timer callbacks: a loop spread over timers stops too', async () => {
+      const report = await runGuarded(
+        'let n = 0;\nfunction tick() { for (let i = 0; i < 100; i++) n++; setTimeout(tick, 0); }\ntick();',
+        1_000
+      );
+      expect(report.type).toBe('error');
+      expect(printed(report)).toEqual([stopped(1_000)]);
+      expect(report.elapsedMs).toBeLessThan(1_500);
+
+      // The timer chain is gone: a later run is not held up by it
+      const next = await runGuarded('console.log("next")');
+      expect(printed(next)).toEqual(['next']);
+    });
+
+    it('counts code after an await and promise callbacks, with no timer in sight', async () => {
+      // The promise machinery, not the learner's code, takes the signal here: the run
+      // still ends, and with the one message
+      const awaiting = await runGuarded(
+        'async function spin() { while (true) { await null; } }\n' +
+          'spin().then(null, console.log);\nconsole.log("started");',
+        2_000
+      );
+      expect(awaiting.type).toBe('error');
+      expect(awaiting.entries[0].args).toEqual(['started']);
+      expect(awaiting.error).toBe(stopped(2_000));
+      expect(printed(awaiting).filter((line) => line === stopped(2_000))).toHaveLength(1);
+
+      const chaining = await runGuarded(
+        'function again() { return Promise.resolve().then(again); }\n' +
+          'again().then(null, console.log);',
+        2_000
+      );
+      expect(chaining.type).toBe('error');
+      expect(chaining.error).toBe(stopped(2_000));
+    });
+
+    it('still reports an error of the code itself on its own line', async () => {
+      const report = await runGuarded(
+        'let total = 0;\nfor (let i = 0; i < 3; i++)\n  total += i;\nnull.x;\n'
+      );
+      expect(report.type).toBe('error');
+      expect(report.entries[0].args[0]).toMatch(/^Uncaught TypeError: /);
+      expect(report.entries[0].line).toBe(4);
+    });
+
+    it('reports an error thrown in a guarded timer callback on its own line', async () => {
+      const report = await runGuarded(
+        'setTimeout(() => {\n  [1, 2].forEach((n) => n);\n  throw new Error("boom");\n}, 5);'
+      );
+      expect(report.error).toBe('Error: boom');
+      expect(report.entries[0].line).toBe(3);
+    });
+
+    it('runs TypeScript whose types were stripped: the lines are still its own', async () => {
+      // What the TypeScript worker emits for a typed loop: same lines, no types
+      const report = await runGuarded(
+        'function sum(values) {\n  let total = 0;\n  for (const value of values) total += value;\n  return total;\n}\nconsole.log(sum([1, 2, 3]));\nundefinedName;'
+      );
+      expect(report.entries[0].args).toEqual(['6']);
+      expect(report.entries[1].line).toBe(7);
+    });
+
+    it('leaves a syntax error to the engine: unguarded code is reported as before', async () => {
+      const code = 'while (true) {';
+      expect(guardLoops(code).ok).toBe(false);
+      const report = await runInSandbox(code);
+      expect(report.type).toBe('error');
+      expect(report.error).toMatch(/^SyntaxError: /);
+      expect(report.entries).toHaveLength(1);
+    });
   });
 
   describe('a traced run', () => {

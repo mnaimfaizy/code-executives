@@ -28,6 +28,7 @@ vi.mock('../../../../../shared/viz3d/stackheap/StackHeapView3D', () => ({
 }));
 
 import StackHeapLens from './StackHeapLens';
+import { VIEWER_3D_MIN_WIDTH } from '../lensViewer';
 
 const stepsOf = (code: string): Step[] => traceSync(code).steps;
 
@@ -36,8 +37,13 @@ const KEEPING = stepsOf(`const keep = [];
 for (let i = 0; i < 15; i++) {
   keep.push({ i });
 }`);
+/** 25 pushed; a trace records the first 20 slots of the array, so the last step holds 21 objects */
+const KEEPING_25 = stepsOf(`const keep = [];
+for (let i = 0; i < 25; i++) {
+  keep.push({ i });
+}`);
 const CHURN = stepsOf(`let last = null;
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 30; i++) {
   last = { i };
 }`);
 const RECURSION = stepsOf(`function fact(n) {
@@ -143,19 +149,76 @@ describe('StackHeapLens', () => {
   it('hides unreachable objects when the heap would not fit, and says so', () => {
     const { container } = render(<StackHeapLens steps={CHURN} index={CHURN.length - 1} />);
     expect(screen.getByTestId('stack-heap-lens-notes')).toHaveTextContent(
-      '19 unreachable objects hidden'
+      '29 unreachable objects hidden'
     );
     expect(container.querySelectorAll('[data-viz-entity="object"]')).toHaveLength(1);
     expect(container.querySelectorAll('[data-viz-unreachable]')).toHaveLength(0);
   });
 
+  it('draws a step of 16 objects in 2D, on a floor of its own', () => {
+    const { container } = render(<StackHeapLens steps={KEEPING} index={KEEPING.length - 1} />);
+    expect(screen.queryByText('Too large to draw')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('[data-viz-entity="object"]')).toHaveLength(15);
+    expect(container.querySelectorAll('[data-viz-entity="array"]')).toHaveLength(1);
+    // Four columns (340 + 4 × 230 units): wider than the 3×3 floor both views shared
+    expect(drawing().getAttribute('viewBox')).toMatch(/^0 0 1260 /);
+    expect(screen.getByTestId('stack-heap-lens-notes')).toHaveTextContent('');
+  });
+
+  it('shows a step too large for 3D in 2D with a quiet line, and returns to 3D when it fits', async () => {
+    const user = userEvent.setup();
+    const fits = KEEPING.findIndex((step) => step.snapshot.objects.length === 9);
+    const tooLarge = KEEPING.findIndex((step) => step.snapshot.objects.length === 10);
+    const onViewChange = vi.fn();
+    const { container, rerender } = render(
+      <StackHeapLens steps={KEEPING} index={fits} onViewChange={onViewChange} />
+    );
+    const viewer = () => container.querySelector('[data-viz-viewer]');
+    const notes = () => screen.getByTestId('stack-heap-lens-notes');
+
+    await user.click(screen.getByRole('radio', { name: /3d/i }));
+    expect(onViewChange).toHaveBeenCalledWith('3d');
+    expect(await screen.findByTestId('scene-3d')).toHaveAttribute('data-objects', '9');
+    expect(screen.getByTestId('scene-3d')).toHaveAttribute('data-grid', '3x3');
+    expect(viewer()).toHaveAttribute('data-view', '3d');
+    expect(viewer()).toHaveClass(`min-w-[${VIEWER_3D_MIN_WIDTH}px]`);
+    expect(notes()).toHaveTextContent('');
+
+    // One object more: this step is drawn in 2D, and the lens says why in one line
+    rerender(<StackHeapLens steps={KEEPING} index={tooLarge} onViewChange={onViewChange} />);
+    expect(screen.queryByTestId('scene-3d')).not.toBeInTheDocument();
+    expect(viewer()).toHaveAttribute('data-view', '2d');
+    expect(viewer()).not.toHaveClass(`min-w-[${VIEWER_3D_MIN_WIDTH}px]`);
+    expect(drawing()).toHaveAccessibleName(
+      new RegExp(`^Stack and heap\\. Step ${tooLarge + 1} of`)
+    );
+    expect(container.querySelectorAll('[data-viz-entity="object"]')).toHaveLength(9);
+    expect(notes()).toHaveTextContent('This step is too large for 3D, so it is shown in 2D');
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    // The learner's choice is kept: the toggle still says 3D, and so does storage
+    expect(screen.getByRole('radio', { name: /3d/i })).toHaveAttribute('aria-checked', 'true');
+    expect(window.localStorage.getItem('code-executives.playground.stack-heap.view')).toBe('3d');
+    expect(screen.queryByRole('toolbar', { name: 'Viewer controls' })).not.toBeInTheDocument();
+
+    // Back to a step that fits: 3D again, without the line
+    rerender(<StackHeapLens steps={KEEPING} index={fits} onViewChange={onViewChange} />);
+    expect(await screen.findByTestId('scene-3d')).toHaveAttribute('data-objects', '9');
+    expect(notes()).toHaveTextContent('');
+    expect(onViewChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('says nothing about 3D when 2D was chosen', () => {
+    render(<StackHeapLens steps={KEEPING} index={KEEPING.length - 1} />);
+    expect(screen.getByTestId('stack-heap-lens-notes')).not.toHaveTextContent(/3D/);
+  });
+
   it('shows a calm message, in either view, when a step is too large to draw', async () => {
     const user = userEvent.setup();
-    render(<StackHeapLens steps={KEEPING} index={KEEPING.length - 1} />);
+    render(<StackHeapLens steps={KEEPING_25} index={KEEPING_25.length - 1} />);
     expect(screen.getByText('Too large to draw')).toBeInTheDocument();
     expect(
       screen.getByText(
-        /This step holds 16 heap objects, 16 of them reachable\. The lens draws up to 9\./
+        /This step holds 21 heap objects, 21 of them reachable\. The lens draws up to 20\./
       )
     ).toBeInTheDocument();
     expect(screen.queryByRole('img')).not.toBeInTheDocument();

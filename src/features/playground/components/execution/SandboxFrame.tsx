@@ -1,6 +1,12 @@
-import { useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
+import { useRef, useEffect, useImperativeHandle, forwardRef, useCallback, useState } from 'react';
 import type { ConsoleEntry, ConsoleEntryType } from '../../types';
-import { runtimeSource, TRACER_NAME, type Trace, type TraceLimits } from '../../tracer';
+import {
+  runtimeSource,
+  TRACER_NAME,
+  type LoopGuard,
+  type Trace,
+  type TraceLimits,
+} from '../../tracer';
 import type { CheckReport, SandboxCheck } from '../../exercises/types';
 import { SANDBOX_RUNTIME_SOURCE } from './sandboxRuntime';
 
@@ -17,10 +23,11 @@ type HostToSandbox =
   | {
       type: 'execute';
       code: string;
-      nonce: string;
       timeout: number;
       runId: number;
       tracer?: SandboxTracer;
+      /** A run with Trace off: the counter its code calls, and the limit it stops at */
+      guard?: LoopGuard;
       /** An exercise's check: the sandbox calls the entry function and compares */
       check?: SandboxCheck;
     }
@@ -69,6 +76,16 @@ function generateNonce(): string {
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+/** One sandbox iframe. A new `id` makes React discard the element and mount a fresh one. */
+interface Frame {
+  id: number;
+  srcDoc: string;
+}
+
+function newFrame(id: number): Frame {
+  return { id, srcDoc: createSandboxHTML(generateNonce()) };
+}
+
 export interface SandboxExecutionResult {
   entries: ConsoleEntry[];
   error?: string;
@@ -82,18 +99,29 @@ export interface SandboxFrameHandle {
   /**
    * With `traceLimits`, `code` is instrumented code and the result carries its trace.
    * With `check`, `code` ends by calling the check hook and the result carries the verdict.
+   * With `guard`, `code` is guarded code (tracer/loopGuard.ts) and Trace is off.
    */
   execute: (
     code: string,
     timeout: number,
     traceLimits?: TraceLimits,
-    check?: SandboxCheck
+    check?: SandboxCheck,
+    guard?: LoopGuard
   ) => Promise<SandboxExecutionResult>;
+  /**
+   * Ends the run in progress: its promise rejects, and the iframe is discarded and replaced
+   * by a fresh one, so whatever the old one was doing is gone and the next run starts clean.
+   */
   terminate: () => void;
 }
 
 const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [frame, setFrame] = useState<Frame>(() => newFrame(0));
+  /** True once the current iframe's script has said it listens */
+  const readyRef = useRef(false);
+  /** A run asked for before the current iframe was ready; sent when it is */
+  const queuedRef = useRef<HostToSandbox | null>(null);
   const runIdRef = useRef(0);
   const pendingRef = useRef<{
     runId: number;
@@ -101,7 +129,6 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
     reject: (err: Error) => void;
     timeoutId: ReturnType<typeof setTimeout>;
   } | null>(null);
-  const nonceRef = useRef(generateNonce());
 
   const parseEntries = useCallback((rawEntries?: RawConsoleEntry[]): ConsoleEntry[] => {
     if (!rawEntries) return [];
@@ -116,12 +143,21 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
 
   const handleMessage = useCallback(
     (event: MessageEvent): void => {
-      // Only accept messages from our sandbox iframe
+      // Only accept messages from our sandbox iframe. One that was discarded is no longer
+      // `iframeRef.current`, so nothing it still sends is heard.
       const iframe = iframeRef.current;
       if (!iframe || event.source !== iframe.contentWindow) return;
 
       const data = event.data as SandboxToHost;
       if (!data || !data.type) return;
+
+      if (data.type === 'ready') {
+        readyRef.current = true;
+        const queued = queuedRef.current;
+        queuedRef.current = null;
+        if (queued) iframe.contentWindow?.postMessage(queued, '*');
+        return;
+      }
 
       if (data.type === 'result' || data.type === 'error') {
         const pending = pendingRef.current;
@@ -151,32 +187,41 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
     };
   }, [handleMessage]);
 
+  /**
+   * Discard the iframe and mount a fresh one. Removing the element destroys its document,
+   * with its timers, its promise work and everything the code left on its globals.
+   */
+  const recreate = useCallback((): void => {
+    // Until the old element is gone it still exists: tell it to drop the run's timers
+    const cancel: HostToSandbox = { type: 'cancel' };
+    iframeRef.current?.contentWindow?.postMessage(cancel, '*');
+    readyRef.current = false;
+    queuedRef.current = null;
+    setFrame((previous) => newFrame(previous.id + 1));
+  }, []);
+
   const terminate = useCallback((): void => {
     if (pendingRef.current) {
       clearTimeout(pendingRef.current.timeoutId);
       pendingRef.current.reject(new Error('Execution terminated'));
       pendingRef.current = null;
     }
-    // Tell the sandbox to drop the run's pending timers; it reports nothing for it
-    const cancel: HostToSandbox = { type: 'cancel' };
-    iframeRef.current?.contentWindow?.postMessage(cancel, '*');
-    // Recreate the iframe to kill any running code
-    nonceRef.current = generateNonce();
-  }, []);
+    recreate();
+  }, [recreate]);
 
   const execute = useCallback(
     (
       code: string,
       timeout: number,
       traceLimits?: TraceLimits,
-      check?: SandboxCheck
+      check?: SandboxCheck,
+      guard?: LoopGuard
     ): Promise<SandboxExecutionResult> => {
       // Terminate any pending execution
       if (pendingRef.current) terminate();
 
       return new Promise((resolve, reject) => {
-        const iframe = iframeRef.current;
-        if (!iframe?.contentWindow) {
+        if (!iframeRef.current) {
           reject(new Error('Sandbox iframe not available'));
           return;
         }
@@ -184,23 +229,24 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
         const runId = ++runIdRef.current;
 
         const timeoutId = setTimeout(() => {
-          if (pendingRef.current?.runId === runId) {
-            pendingRef.current = null;
-            resolve({
-              entries: [
-                {
-                  id: `${Date.now()}-timeout`,
-                  type: 'error',
-                  args: [`Execution timed out (exceeded ${timeout / 1000}s limit)`],
-                  timestamp: Date.now(),
-                },
-              ],
-              error: `Execution timed out (exceeded ${timeout / 1000}s limit)`,
-            });
-          }
-          // The sandbox ends a run itself at `timeout`. This is the backstop for code
-          // that never yields; the margin covers a background tab, where the browser
-          // only wakes the sandbox's timers once a second.
+          if (pendingRef.current?.runId !== runId) return;
+          pendingRef.current = null;
+          resolve({
+            entries: [
+              {
+                id: `${Date.now()}-timeout`,
+                type: 'error',
+                args: [`Execution timed out (exceeded ${timeout / 1000}s limit)`],
+                timestamp: Date.now(),
+              },
+            ],
+            error: `Execution timed out (exceeded ${timeout / 1000}s limit)`,
+          });
+          // The sandbox ends a run itself at `timeout`. This is the backstop for a sandbox
+          // that did not answer; the margin covers a background tab, where the browser
+          // only wakes the sandbox's timers once a second. A sandbox that did not answer
+          // cannot be trusted with the next run, so it is replaced.
+          recreate();
         }, timeout + 1500);
 
         pendingRef.current = { runId, resolve, reject, timeoutId };
@@ -208,28 +254,32 @@ const SandboxFrame = forwardRef<SandboxFrameHandle>((_props, ref) => {
         const msg: HostToSandbox = {
           type: 'execute',
           code,
-          nonce: nonceRef.current,
           timeout,
           runId,
           ...(traceLimits
             ? { tracer: { runtime: runtimeSource, name: TRACER_NAME, limits: traceLimits } }
             : {}),
+          ...(guard ? { guard } : {}),
           ...(check ? { check } : {}),
         };
 
-        iframe.contentWindow.postMessage(msg, '*');
+        // A fresh iframe takes a moment to load its script: the run waits for it
+        const target = iframeRef.current.contentWindow;
+        if (readyRef.current && target) target.postMessage(msg, '*');
+        else queuedRef.current = msg;
       });
     },
-    [terminate]
+    [terminate, recreate]
   );
 
   useImperativeHandle(ref, () => ({ execute, terminate }), [execute, terminate]);
 
   return (
     <iframe
+      key={frame.id}
       ref={iframeRef}
       sandbox="allow-scripts"
-      srcDoc={createSandboxHTML(nonceRef.current)}
+      srcDoc={frame.srcDoc}
       style={{ display: 'none' }}
       title="Code execution sandbox"
       aria-hidden="true"

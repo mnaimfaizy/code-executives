@@ -1,7 +1,7 @@
 import { useRef, useCallback, useState } from 'react';
 import type { SandboxFrameHandle } from '../components/execution/SandboxFrame';
 import type { ConsoleEntry } from '../types';
-import type { Trace, TraceLimits } from '../tracer';
+import type { LoopGuard, Trace, TraceLimits } from '../tracer';
 import type { CheckReport, SandboxCheck } from '../exercises/types';
 import { DEFAULT_EXECUTION_TIMEOUT_MS } from '../types/playground-v2';
 import { isTextContent, enforceEntryLimit } from '../utils/sanitize';
@@ -29,6 +29,8 @@ export interface SandboxExecuteOptions {
   mapLine?: (line: number) => number;
   /** Set when `code` is instrumented code: the sandbox records a trace within these limits */
   traceLimits?: TraceLimits;
+  /** Set when `code` is guarded code (Trace off): the sandbox stops it at the guard's limit */
+  guard?: LoopGuard;
   /** False for a run a control in the page starts on its own, such as watching a check */
   rateLimit?: boolean;
 }
@@ -174,7 +176,9 @@ export function useSandbox(): UseSandboxReturn {
         const result = await sandbox.execute(
           code,
           DEFAULT_EXECUTION_TIMEOUT_MS,
-          options?.traceLimits
+          options?.traceLimits,
+          undefined,
+          options?.guard
         );
         const mapLine = options?.mapLine;
         const resultEntries = mapLine

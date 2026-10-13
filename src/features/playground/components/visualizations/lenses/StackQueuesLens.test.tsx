@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import type { EventLoopView3DProps } from '../../../../../shared/components/viz/eventloop/types';
 import type { QueueEntry, Snapshot, StackFrame } from '../../../../../shared/snapshot';
 import type { Step } from '../../../tracer';
+import { VIEWER_3D_MIN_WIDTH } from '../lensViewer';
 import { APPROXIMATE_NOTE, MAX_DRAWN_ENTRIES, MODEL_NOTE } from './stackQueuesLensModel';
 
 const webgl = vi.hoisted(() => ({ available: true }));
@@ -224,6 +225,23 @@ describe('StackQueuesLens', () => {
       await user.click(screen.getByRole('radio', { name: /2d/i }));
       expect(screen.queryByTestId('scene-3d')).not.toBeInTheDocument();
       expect(drawing()).toHaveAccessibleName(/Step 7 of 8/);
+    });
+
+    it('says which view the learner picked, with the width its 3D viewer asks for', async () => {
+      const user = userEvent.setup();
+      const onViewChange = vi.fn();
+      const { container } = render(
+        <StackQueuesLens steps={DEMO} index={5} onViewChange={onViewChange} />
+      );
+      await user.click(screen.getByRole('radio', { name: /3d/i }));
+      await screen.findByTestId('scene-3d');
+      expect(onViewChange.mock.calls).toEqual([['3d']]);
+      // The Playground widens the pane to this width; the class is the same number
+      expect(container.querySelector('[data-viz-viewer]')).toHaveClass(
+        `min-w-[${VIEWER_3D_MIN_WIDTH}px]`
+      );
+      await user.click(screen.getByRole('radio', { name: /2d/i }));
+      expect(onViewChange.mock.calls).toEqual([['3d'], ['2d']]);
     });
 
     it('remembers the choice of 3D, and passes what a step leaves out', async () => {

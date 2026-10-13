@@ -9,16 +9,19 @@
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [Directory Structure](#directory-structure)
-3. [How to Add a New Lens](#how-to-add-a-new-lens)
-4. [How to Add a New Language](#how-to-add-a-new-language)
-5. [How to Modify the Theme](#how-to-modify-the-theme)
-6. [How to Add Examples](#how-to-add-examples)
-7. [How to Add an Exercise](#how-to-add-an-exercise)
-8. [Links into the Playground](#links-into-the-playground)
-9. [Security Considerations](#security-considerations)
-10. [Performance Budget & Monitoring](#performance-budget--monitoring)
-11. [Testing](#testing)
+2. [Runs, Stop and Limits](#runs-stop-and-limits)
+3. [Directory Structure](#directory-structure)
+4. [The Lenses](#the-lenses)
+5. [How to Add a New Lens](#how-to-add-a-new-lens)
+6. [How to Add a New Language](#how-to-add-a-new-language)
+7. [How to Modify the Theme](#how-to-modify-the-theme)
+8. [Settings](#settings)
+9. [How to Add Examples](#how-to-add-examples)
+10. [How to Add an Exercise](#how-to-add-an-exercise)
+11. [Links into the Playground](#links-into-the-playground)
+12. [Security Considerations](#security-considerations)
+13. [Performance Budget & Monitoring](#performance-budget--monitoring)
+14. [Testing](#testing)
 
 ---
 
@@ -28,15 +31,16 @@ The Playground is a **standalone feature module** at `src/features/playground/` 
 
 ### Key Design Decisions
 
-| Decision                                        | Rationale                                                                 |
-| ----------------------------------------------- | ------------------------------------------------------------------------- |
-| Standalone layout (`PlaygroundLayout`)          | Full viewport needed for editor + lenses                                  |
-| Dark theme scoped via `data-theme="playground"` | CSS custom properties avoid polluting the light-mode main site            |
-| Sandboxed `<iframe>` for JS/TS execution        | Defense-in-depth: CSP + `sandbox="allow-scripts"` + network API blocking  |
-| Pyodide for Python                              | WASM-based CPython in the browser, lazy-loaded from CDN (~11 MB)          |
-| `acorn` + `astring` for JS instrumentation      | Parse → transform → regenerate; the code runs on the browser's own engine |
-| `sys.settrace()` for Python instrumentation     | CPython's native tracing mechanism, captured via Pyodide FFI              |
-| One snapshot shape, shared with the stories     | A lens draws a step with the same 2D/3D views a story uses (ADR 0004)     |
+| Decision                                        | Rationale                                                                      |
+| ----------------------------------------------- | ------------------------------------------------------------------------------ |
+| Standalone layout (`PlaygroundLayout`)          | Full viewport needed for editor + lenses                                       |
+| Dark theme scoped via `data-theme="playground"` | CSS custom properties avoid polluting the light-mode main site                 |
+| Sandboxed `<iframe>` for JS/TS execution        | Defense-in-depth: CSP + `sandbox="allow-scripts"` + network API blocking       |
+| Pyodide for Python                              | WASM-based CPython in the browser, lazy-loaded from CDN (~11 MB)               |
+| `acorn` + `astring` for JS instrumentation      | Parse → transform → regenerate; the code runs on the browser's own engine      |
+| A loop guard for runs with Trace off            | Counting calls spliced into the learner's own text stop code that does not end |
+| `sys.settrace()` for Python instrumentation     | CPython's native tracing mechanism, captured via Pyodide FFI                   |
+| One snapshot shape, shared with the stories     | A lens draws a step with the same 2D/3D views a story uses (ADR 0004)          |
 
 ### Data Flow
 
@@ -50,12 +54,15 @@ JS / TS code → [tracer/instrument] → instrumented code ─┐
                                               Trace + ConsoleEntry[]
                                                          ↓
                          [useTrace] → StepControls (step by step, editor line)
-                         [Lens]     → VisualizationCanvas → StackHeapLens
+                         [Lens]     → VisualizationCanvas → StackHeapLens | StackQueuesLens
                          [Console]  → ConsoleOutput
 ```
 
+With Trace off the same sandbox runs the code with no tracer: `guardLoops()` (`tracer/loopGuard.ts`) adds counting calls, and the run sends back Console entries and no trace.
+
 - **JavaScript.** With Trace on, `PlaygroundApp` calls `instrument()` and sends the result to the sandbox together with `runtimeSource` (the tracer runtime as a string) and the limits from `resolveTraceLimits()`. The sandbox script builds the tracer, runs the code with it, waits for pending timers, and posts the trace back with its report.
-- **TypeScript.** `services/transpileTypeScript.ts` strips the types first. Its `mapLine` is applied to every step's `line` and to `trace.error.line` (`mapTraceLines` in `useSandbox.ts`).
+- **JavaScript, Trace off.** `PlaygroundApp` calls `guardLoops()` and sends the guarded code with its `guard` (`{ name, limit, message }`). See [Runs, Stop and Limits](#runs-stop-and-limits).
+- **TypeScript.** `services/transpileTypeScript.ts` strips the types first, and the JavaScript it emits takes the same path as JavaScript, traced or guarded. Its `mapLine` is applied to every step's `line`, to `trace.error.line` (`mapTraceLines` in `useSandbox.ts`) and to the line of an uncaught error in the Console.
 - **Python.** `PythonInstrumenter.ts` records a line, the call stack and the running function's locals with `sys.settrace`; `parsePythonSteps` turns that into `Step[]`. Python records values only: its snapshots have frames and no heap objects.
 
 ### How a traced run ends
@@ -67,6 +74,52 @@ JS / TS code → [tracer/instrument] → instrumented code ─┐
 | `error`      | The Console shows the uncaught error with its line; the steps up to it are kept                           |
 
 Code that does not parse, or that the tracer cannot rewrite, never reaches the sandbox: the Console says why there are no steps. It is not run untraced behind the learner's back.
+
+---
+
+## Runs, Stop and Limits
+
+### A run with Trace off: the loop guard
+
+With Trace off the code is not rewritten by the tracer and runs on the sandbox iframe's own thread, so `while (true) {}` would block it for good. `tracer/loopGuard.ts` is a second, much lighter instrumentation that only counts.
+
+- `guardLoops(code)` parses with the same parser as the tracer (`parseLearnerCode` in `instrument.ts`) and **splices text into the learner's own source**: `__g();` at the start of every loop body (`for`, `for…in`, `for…of`, `while`, `do…while`) and of every function body (declarations, expressions, arrows, methods, getters and setters, async and generator functions), and `__g.c();` at the start of every `catch` and `finally` block. A loop or arrow without braces gets them. Nothing is regenerated and no line break is added, so every statement stays on its line and an error still reports the learner's line.
+- The counter's name is `__g`, with underscores added until the code does not contain it.
+- The sandbox script supplies the counter (`makeGuard` in `sandboxRuntime.ts`). All counted points of a run share one count: synchronous code, code after an `await`, timer callbacks and promise callbacks alike. Past `LOOP_GUARD_LIMIT` (1,000,000; an exported constant, not a setting) the counter throws, and it throws again at every later counted point and at the start of every `catch` and `finally`, so the learner's own error handling cannot swallow the stop.
+- The run then ends as an error with one Console entry, `loopGuardMessage()`: "Stopped after 1,000,000 loop turns and calls: a loop or recursion probably does not end. Turn Trace on to watch it step by step." The sandbox ends the run from a task of its own, so it ends even when promise machinery took the signal (`promise.then(null, console.log)`).
+- Code that `guardLoops` cannot parse is sent as it is, without a guard: `new Function` then throws, and the Console shows the engine's own `SyntaxError`, as it did before the guard existed.
+
+**What the guard cannot stop.** It counts only code it rewrote. One call of a built-in that runs long without calling back into the learner's code is not counted (`'x'.repeat(2 ** 29)`, a regular expression that backtracks without end, sorting a huge array with the default comparison), and neither is code made from a string at run time (`eval`, `new Function`, `setTimeout('…')`). A recursion that does not end usually overflows the stack first and is reported as the engine's `RangeError`. A chain of timers is counted, but each turn takes real time, so the 10-second cap below ends it first.
+
+### How long a run may take
+
+`DEFAULT_EXECUTION_TIMEOUT_MS` (`types/playground-v2.ts`) is 10 seconds. It is fixed: there is no setting. At that time the sandbox script ends a run that still has timers pending, with a note in the Console ("Stopped after 10s with 1 timer still pending…"). A check of an exercise gets `CHECK_TIMEOUT_MS`, 5 seconds.
+
+`SandboxFrame` waits 1.5 seconds longer as a backstop. If the sandbox has not answered by then, the run resolves with "Execution timed out", and **the iframe is discarded and replaced**, because a sandbox that did not answer cannot be trusted with the next run.
+
+### Stop
+
+Stop (`terminate()` in `SandboxFrame.tsx`) rejects the pending run and **discards the iframe**: the component keeps a `{ id, srcDoc }` in state and renders `<iframe key={id}>`, so a new id makes React remove the element, which destroys its document with its timers and promise work, and mount a fresh one with a new CSP nonce. A run started while another is pending does the same. A fresh iframe posts `ready` once its script listens; a run asked for before that is held and sent then. Messages are accepted only from the current iframe's window, so nothing a discarded one still sends is heard.
+
+**What Stop cannot interrupt.** Discarding the iframe only happens when the page's own thread gets to run. Chromium runs a sandboxed iframe without `allow-same-origin` in a process of its own, so there the page stays responsive during a synchronous loop and Stop ends it. A browser that runs the iframe on the page's thread freezes with it: the click on Stop is not handled until the loop ends, and neither is the backstop's timer. In those browsers the loop guard (Trace off) and the step limit (Trace on) are what end a loop; code neither of them counts, listed above, can still freeze the page.
+
+Python runs in Pyodide on the page's thread and has no Stop that interrupts it; the Stop button only marks the run as ended.
+
+### Limits
+
+| Limit                                 | Value       | Where                                                 |
+| ------------------------------------- | ----------- | ----------------------------------------------------- |
+| Steps of a trace                      | 2,000       | `DEFAULT_MAX_STEPS`, `tracer/types.ts`                |
+| Loop turns and calls, Trace off       | 1,000,000   | `LOOP_GUARD_LIMIT`, `tracer/loopGuard.ts`             |
+| Run time                              | 10 s        | `DEFAULT_EXECUTION_TIMEOUT_MS`                        |
+| Slots recorded per frame or object    | 20          | `MAX_SLOTS`, `tracer/types.ts`                        |
+| Heap objects recorded per snapshot    | 60          | `MAX_HEAP_OBJECTS`, `tracer/types.ts`                 |
+| Frame boxes drawn                     | 5           | `MAX_DRAWN_FRAMES`, `lenses/stackHeapLensModel.ts`    |
+| Heap objects drawn in 2D              | 20 (5×4)    | `HEAP_LIMITS['2d']`, same file                        |
+| Heap objects drawn in 3D              | 9 (3×3)     | `HEAP_LIMITS['3d']`, same file                        |
+| Queue entries drawn per region        | 6           | `MAX_DRAWN_ENTRIES`, `lenses/stackQueuesLensModel.ts` |
+| Code length                           | 50 KB       | `MAX_CODE_LENGTH`, `hooks/useSandbox.ts`              |
+| Console entries / length of one entry | 500 / 10 KB | `utils/sanitize.ts`, `sandboxRuntime.ts`              |
 
 ---
 
@@ -83,6 +136,7 @@ src/features/playground/
 │   └── playground-v2.ts           # Language, lens, execution state, Console entry
 ├── tracer/                        # The JavaScript tracer (ADR 0004)
 │   ├── instrument.ts              # Rewrites the learner's code (acorn + astring)
+│   ├── loopGuard.ts               # Trace off: counting calls spliced into the learner's text
 │   ├── runtime.ts                 # What instrumented code calls; also exported as source
 │   ├── trace.ts                   # Runs a trace without the sandbox (tests)
 │   ├── types.ts                   # Trace, Step, limits
@@ -93,7 +147,7 @@ src/features/playground/
 │   ├── useSandbox.ts              # JS/TS sandbox execution; maps a trace's lines
 │   ├── usePyodide.ts              # Python/Pyodide execution
 │   ├── useTrace.ts                # The trace held, the current step, auto-play
-│   └── usePaneLayout.ts           # Resizable 3-pane layout
+│   └── usePaneLayout.ts           # Resizable 3-pane layout; widens the lens pane for 3D
 ├── instrumentation/
 │   └── PythonInstrumenter.ts      # Python sys.settrace wrapper → Step[]
 ├── services/
@@ -112,6 +166,7 @@ src/features/playground/
 │   ├── catalog.ts                 # The exercises as cards for a module page
 │   ├── runChecks.ts               # Runs the checks; builds the code of a watched check
 │   ├── exerciseProgress.ts        # Passed, solution seen and last code per viewer (localStorage)
+│   ├── useMilestonesReached.ts    # The milestones a pass has just earned (ADR 0005)
 │   └── sandboxForTests.ts         # Test support: the real sandbox script in the test window
 ├── components/
 │   ├── editor/
@@ -119,7 +174,7 @@ src/features/playground/
 │   │   ├── EditorTabs.tsx         # File tab bar
 │   │   └── LanguagePicker.tsx     # Language dropdown
 │   ├── execution/
-│   │   ├── SandboxFrame.tsx       # Sandboxed iframe for JS/TS
+│   │   ├── SandboxFrame.tsx       # Sandboxed iframe for JS/TS; Stop replaces it
 │   │   ├── sandboxRuntime.ts      # The script that runs inside the iframe
 │   │   ├── ConsoleOutput.tsx      # The Console
 │   │   ├── PythonRunner.tsx       # Pyodide loading indicator
@@ -137,14 +192,19 @@ src/features/playground/
 │   ├── visualizations/
 │   │   ├── VisualizationCanvas.tsx
 │   │   ├── LensSelector.tsx
+│   │   ├── lensViewer.ts          # The least width of a lens's 3D viewer
 │   │   └── lenses/
-│   │       └── StackHeapLens.tsx  # The stack and heap regions of the current step
+│   │       ├── StackHeapLens.tsx        # The stack and heap regions of the current step
+│   │       ├── stackHeapLensModel.ts    # What that lens draws: limits, placement, words
+│   │       ├── StackQueuesLens.tsx      # The stack, the microtask and task queues, the timers
+│   │       └── stackQueuesLensModel.ts  # What that lens draws
 │   ├── layout/
 │   │   ├── PlaygroundLayout.tsx
 │   │   ├── PlaygroundToolbar.tsx
 │   │   ├── PaneResizer.tsx
 │   │   ├── RightPaneTabs.tsx      # The right pane's two tabs: Task and Console
-│   │   ├── SettingsPanel.tsx
+│   │   ├── SettingsPanel.tsx      # Font size and word wrap
+│   │   ├── playgroundSettings.ts  # The settings, their defaults, load and save
 │   │   └── BackToSiteLink.tsx
 │   └── theme/
 │       ├── tokens.ts              # Design tokens
@@ -156,9 +216,40 @@ src/features/playground/
 
 ---
 
+## The Lenses
+
+A lens chooses which regions of a snapshot are drawn. It never brings its own renderer: it draws with the shared 2D and 3D views, so every lens works in both (ADR 0004, `docs/3D-Visualization-Standard.md`). There are two lenses, and "None":
+
+| Lens id        | Toolbar label  | Draws                                                     | Shared views                                                |
+| -------------- | -------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
+| `stack-heap`   | Stack & Heap   | The call stack and the heap, with references              | `StackHeapView2D`, `viz3d/stackheap/StackHeapView3D` (lazy) |
+| `stack-queues` | Stack & Queues | The call stack, the microtask and task queues, the timers | `EventLoopView2D`, `viz3d/eventloop/EventLoopView3D` (lazy) |
+
+The Data Structures and Streams lenses were removed.
+
+### What the Stack & Heap lens draws
+
+A trace has no author, so `lenses/stackHeapLensModel.ts` decides what stays legible.
+
+- **Frames.** At most five frame boxes. A deeper stack is drawn as the global frame, one placeholder ("… N more frames") and the top three frames.
+- **Heap objects.** Each view has its own largest floor (`HEAP_LIMITS`): **20 objects in 2D** (5 columns × 4 rows) and **9 in 3D** (3 × 3, the floor `viz3d/stackheap/layout.ts` is tuned for). `heapFloorFor` gives a run the fewest columns that hold its fullest step: 2, then 3, and in 2D 4 and 5. A step with more objects than the view's limit first hides the unreachable ones, with a note; if it still does not fit, or the tracer cut the heap short, the step is not drawn and the lens shows "Too large to draw" with the number the lens draws up to.
+- **Placement.** `prepareTrace(steps, { view })` prepares the whole trace once per view. An object keeps its cell for as long as it is drawn, and the floor is one size for the whole run. A run in which every step fits 3D is placed the same in both views.
+- **A step too large for 3D.** When the learner has chosen 3D and a step fits the 2D floor but not the 3D one, `viewForStep` draws that step in the 2D view, with one quiet line in the notes: "This step is too large for 3D, so it is shown in 2D". The choice itself is not changed, so the next step that fits is back in 3D.
+- **Arrows in 2D.** On a floor larger than the story's 2×2, a reference between entities that are not neighbours runs along the gutters between columns and the bands above rows (`refPath` in `shared/components/viz/stackheap/heapGeometry.ts`), so it never passes behind an object. On a 2×2 floor every arrow is one curve, as in the Stack ↔ Heap story.
+- **The 2D drawing is never scaled below 0.8** (`MIN_2D_SCALE`); a pane too small for it scrolls.
+- **Middle frames in 3D.** A frame that is neither the bottom nor the top of the stack has one row for its slots. With more than two slots it shows two and "+N more"; the slots the step changed are chosen first, and with more than two of those the first two are shown (`frameLabelPlan` in `viz3d/stackheap/layout.ts`, drawn by `FrameRow.tsx`). The bottom and top frames list their slots one per line.
+
+The Stack & Queues lens has its own limit, six entries per region (`MAX_DRAWN_ENTRIES`), and no heap limit.
+
+### The pane and the 3D view
+
+A lens's 3D viewer is at least 760 × 520 px (`VIEWER_3D_MIN_WIDTH` in `lensViewer.ts`, and the `min-w-[760px]` class in each lens), because its labels are DOM cards of a fixed size. The lens pane is narrower than that by default at common window sizes. When the learner picks 3D with the toggle, the lens calls `onViewChange`, and `PlaygroundApp` measures the pane and calls `widenMiddle` (`hooks/usePaneLayout.ts`): the pane grows to fit the viewer, taking room from the editor and from the Task and Console pane in proportion to what each can spare above its minimum (320 px and 240 px, and the 15% a drag is held to). When the two together cannot spare enough, nothing moves and the pane scrolls as before. This happens only at the moment of switching; afterwards the dividers are the learner's, and a double-click on a divider restores the defaults.
+
+---
+
 ## How to Add a New Lens
 
-A lens chooses which regions of a snapshot are drawn. It never brings its own renderer: it draws with the shared 2D and 3D views, so every lens works in both (ADR 0004, `docs/3D-Visualization-Standard.md`). There is one lens today, Stack & Heap. The Event Loop lens returns once the tracer's queues are drawn; the Data Structures and Streams lenses were removed.
+A new lens follows the two above: it picks regions of the snapshot and hands them to shared views. If it draws heap objects it uses the limits above rather than limits of its own.
 
 1. **Create the lens component** in `components/visualizations/lenses/`. It takes the whole trace and the index of the step to draw, so that entities keep their cells for the whole run:
 
@@ -184,12 +275,12 @@ export default MyLens;
 2. **Add the type** to `types/playground-v2.ts`:
 
 ```ts
-export type VisualizationLens = 'stack-heap' | 'my-lens' | 'none';
+export type VisualizationLens = 'stack-heap' | 'stack-queues' | 'my-lens' | 'none';
 ```
 
-3. **Register the lens** in `VisualizationCanvas.tsx` with `React.lazy`, next to `StackHeapLens`. Anything that is not a known lens id draws the "select a lens" placeholder.
+3. **Register the lens** in `VisualizationCanvas.tsx` with `React.lazy`, next to `StackHeapLens` and `StackQueuesLens`, and pass it `onViewChange` so the pane can widen for its 3D view. Anything that is not a known lens id draws the "select a lens" placeholder.
 
-4. **Update `LensSelector.tsx`** (`LENS_OPTIONS`) to show the new lens in the toolbar.
+4. **Update `LensSelector.tsx`** (`LENS_OPTIONS`) to show the new lens in the toolbar, and `LENSES` in `utils/playgroundLink.ts` so a link can name it.
 
 A trace is never presented as a story: a lens adds no authored captions and never shows a garbage-collection sweep, because a run cannot observe one.
 
@@ -214,8 +305,8 @@ const LANGUAGE_MAP: Record<PlaygroundLanguage, string> = {
 };
 ```
 
-4. **Create an execution hook** (e.g., `useRust.ts`) or extend an existing one. The hook must return:
-   - `execute(code)` → `Promise<{ error, trace }>`, where `trace` is a `Trace` from `tracer/` (or `null` for an untraced run). A new language emits the same snapshot shape; see `parsePythonSteps` for the smallest example.
+4. **Create an execution hook** (e.g., `useRust.ts`) or extend an existing one. `usePyodide.ts` is the model. The hook must return:
+   - a run function (`runPython(code)`, and `runPythonInstrumented(code)` for a traced run) → `Promise<{ error, trace }>`, where `trace` is a `Trace` from `tracer/` (or `null` for an untraced run). A new language emits the same snapshot shape; see `parsePythonSteps` for the smallest example.
    - `entries: ConsoleEntry[]`
    - `clearEntries()`
 
@@ -267,30 +358,44 @@ All playground styling is scoped under `[data-theme="playground"]` via CSS custo
 
 ---
 
+## Settings
+
+The settings panel (`components/layout/SettingsPanel.tsx`) has two settings, both for the editor: **Font Size** (10 to 22 px, default 14) and **Word Wrap** (default off). `components/layout/playgroundSettings.ts` holds the type, the defaults, and `loadSettings` / `saveSettings`, which keep them in `localStorage` under `pg-settings`.
+
+`loadSettings` reads the stored object key by key and takes only a value of the right type, so settings stored by an earlier version still load. That version also stored `executionTimeoutMs` and `animationsEnabled`; nothing ever read them, they were removed, and a stored object that has them loads without them. Add a setting only together with the code that reads it.
+
+The pane layout is not a setting: `usePaneLayout.ts` keeps the two divider positions under `pg-pane-layout-v2`. The 2D / 3D choice of each lens is kept under its own key by `useViewChoice`.
+
+---
+
 ## How to Add Examples
 
-An example is prebuilt code the learner can load and run, with a suggested lens. Edit `utils/examples.ts`:
+An example is prebuilt code the learner can load and run, with a suggested lens. Edit `utils/examples.ts` (the type is `Example`):
 
 ```ts
 {
-  id: 'unique-id',           // Must be unique
+  id: 'unique-id',           // Must be unique; the value of ?example= in a link
   label: 'Display Name',
   description: 'Brief description shown in dropdown',
   language: 'javascript',    // Must be a valid PlaygroundLanguage
-  suggestedLens: 'stack-heap', // Which lens to select: 'stack-heap' or 'none'
+  suggestedLens: 'stack-heap', // 'stack-heap', 'stack-queues' or 'none'
   code: `// Your code here
 const x = 1;
 console.log(x);`,
+  // Only for code the site already shows: where it comes from, and so where its link back leads
+  source: { kind: 'story', label: 'Stack ↔ Heap', href: '/javascript?section=…' },
 },
 ```
 
-Examples appear in the toolbar's "Examples" dropdown, filtered by the currently selected language. An example can be opened by a link: see [Links into the Playground](#links-into-the-playground).
+An example that is a story's program or a section's sample imports that same string from the module's pure data, so the two cannot drift apart; a section's sample becomes an example through `fromSection`.
+
+Examples appear in the toolbar's "Examples" menu: the selected language's examples in groups (the stories' programs, then standalone programs, then each section's samples), and the other languages' examples dimmed below them. An example can be opened by a link: see [Links into the Playground](#links-into-the-playground).
 
 ---
 
 ## How to Add an Exercise
 
-An exercise is a task with a goal, checks that pass or fail on the learner's code, hints, and a solution the learner can ask to see (see [CONTEXT.md](../CONTEXT.md)). Exercises are JavaScript only for now. They carry no score, points, streaks or achievements: [ADR 0004](adr/0004-playground-traces-share-the-snapshot.md) leaves achievements open.
+An exercise is a task with a goal, checks that pass or fail on the learner's code, hints, and a solution the learner can ask to see (see [CONTEXT.md](../CONTEXT.md)). Exercises are JavaScript only for now. They carry no score, points or streaks, and nothing is called an achievement: a passed exercise counts towards milestones ([ADR 0005](adr/0005-progress-and-milestones-not-gamification.md)).
 
 ### The shape
 
@@ -346,7 +451,7 @@ Rules the data must keep:
 
 One run per check gives each check a clean start and a full step budget. The statuses are `pass`, `fail`, `threw`, `missing` (no function with that name), `step-limit`, `not-reached` (a top-level `return`, or the hook was shadowed), `skipped` and `unavailable`. A syntax error is found by the instrumenter before anything runs and is reported once, with its line. A hidden check's result is reduced to pass, fail or skipped before it reaches the panel.
 
-**Endless loops.** An untraced `while (true) {}` never yields, and nothing in the page can stop it: the sandbox iframe cannot be interrupted from outside and is never recreated, so every later run times out until the page is reloaded. Chromium runs the sandboxed iframe in a process of its own, so the page itself stays responsive there (measured: a 3-second busy loop in the sandbox delayed the page's timers by about 30 ms); a browser that runs the iframe on the page's thread freezes with it. Checks therefore always run instrumented, and the tracer's step limit ends the run (`step-limit`). After the first `step-limit` the remaining checks are skipped, because a recursion that never ends takes a second or two to reach the limit (every step snapshots the whole stack).
+**Endless loops.** Checks always run instrumented, so the tracer's step limit ends a loop that does not end (`step-limit`); the loop guard of a run with Trace off plays no part in a check. After the first `step-limit` the remaining checks are skipped, because a recursion that never ends takes a second or two to reach the limit (every step snapshots the whole stack). If the sandbox does not answer a check at all, the host's backstop reports `unavailable` and replaces the iframe (see [Runs, Stop and Limits](#runs-stop-and-limits)).
 
 **Not covered.** Code that sets out to cheat can still pass visible checks by returning their expected values, can take the hook from the function's `arguments`, and could forge a report if it found a way to the host window. Exercises are practice, not an exam: the aim is that honest mistakes (printing instead of returning, a helper with the hook's name) never count as a pass.
 
@@ -390,7 +495,7 @@ Both are disabled while the language is not JavaScript.
 
 `utils/playgroundStart.ts` resolves the link once, when `PlaygroundApp` mounts. An id nothing answers to falls back to the default template, silently. When the learner opens an exercise or an example from a menu, or leaves an exercise, `replacePlaygroundUrl` keeps the address bar in step with `history.replaceState` (no reload, no history entry), so the page can be shared at any time.
 
-An example with a `story` field (`{ label, href }`) shows a **Read the story** link in the editor's tab bar while it is loaded. The `href` must be a path inside the site.
+An example with a `source` (`{ kind, label, href }`) shows a link in the editor's tab bar while it is loaded: **Read the story** for a story's program, **Read the section: …** for a section's sample. The `href` must be a path inside the site.
 
 ---
 
@@ -409,9 +514,9 @@ An example with a `story` field (`{ label, href }`) shows a **Read the story** l
 
 ### Input Validation
 
-- **Code size limit**: 100 KB max (`MAX_CODE_LENGTH` in `useSandbox.ts`).
+- **Code size limit**: 50 KB max (`MAX_CODE_LENGTH` in `useSandbox.ts`).
 - **Binary content detection**: `isTextContent()` rejects non-text input.
-- **Rate limiting**: max 1 execution per second per hook instance.
+- **Rate limiting**: max 1 execution per second per hook instance for a run the learner starts. A run a control in the page starts on its own (watching a check, the checks of an exercise) is not limited.
 
 ### Output Sanitization
 
@@ -425,7 +530,8 @@ An example with a `story` field (`{ label, href }`) shows a **Read the story** l
 - **Never** use `dangerouslySetInnerHTML` with unsanitized console entries.
 - **Never** inject user code directly into iframe `srcdoc` — always use `postMessage`.
 - **Never** add `allow-same-origin` to the sandbox iframe.
-- When adding new network/system APIs, block them in `SandboxFrame.tsx`.
+- When adding new network/system APIs, block them in `sandboxRuntime.ts` (the script the iframe runs).
+- The counter of the loop guard is a function the sandbox script makes per run. Never give guarded code anything else of the script's.
 
 ---
 
@@ -441,8 +547,10 @@ An example with a `story` field (`{ label, href }`) shows a **Read the story** l
 
 ### Optimization Strategies
 
-- **Trace limits** (`tracer/types.ts`): 2,000 steps per run, 20 slots per frame or object, 60 heap objects per snapshot. A step past the heap limit is marked `truncated`.
-- **Lazy lens**: `VisualizationCanvas` loads the lens with `React.lazy`; three.js is only ever imported by a lazy 3D view.
+- **Trace limits** (`tracer/types.ts`): 2,000 steps per run, 20 slots per frame or object, 60 heap objects per snapshot. A step past the heap limit is marked `truncated`. The limits on what a lens draws are in [Runs, Stop and Limits](#limits).
+- **The loop guard is cheap**: one call that increments a number at each loop turn and function entry. It records nothing.
+- **Lazy lens**: `VisualizationCanvas` loads each lens with `React.lazy`; three.js is only ever imported by a lazy 3D view. `node .agents/skills/verify-viz/scripts/check-lazy-chunk.mjs` checks that after a build.
+- **3D only when it is shown**: the trace is prepared for 3D only while 3D is chosen. A step drawn in 2D because it is too large for 3D unmounts the 3D view, and the next step that fits mounts it again.
 - **Adaptive canvas**: `SpaceBackground` adjusts star count based on `navigator.hardwareConcurrency`.
 - **Monaco features disabled**: `codeLens`, `colorDecorators`, `inlayHints`, `lightbulb`, `links`, `renderWhitespace`, `occurrencesHighlight`, `selectionHighlight`.
 - **Lazy loading**: Monaco and Pyodide are loaded on demand, not at page load.
@@ -470,15 +578,19 @@ npm run test:coverage                 # Coverage report
 
 ### Test Architecture
 
-| Category          | Files                                                                                                                                                                                                           |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tracer            | `tracer/*.test.ts` (instrumenting, the runtime as source, traces of the shipped examples)                                                                                                                       |
-| Sandbox script    | `sandboxRuntime.test.ts` runs the real iframe script, traced and untraced: aliasing, timers, the step limit, errors                                                                                             |
+| Category          | Files                                                                                                                                                                                                                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tracer            | `tracer/*.test.ts` (instrumenting, the runtime as source, traces of the shipped examples)                                                                                                                                                                                                                                    |
+| Loop guard        | `tracer/loopGuard.test.ts` (what is counted, lines kept, what `try`/`catch`/`finally` cannot swallow), and the guarded runs in `sandboxRuntime.test.ts`                                                                                                                                                                      |
+| Sandbox script    | `sandboxRuntime.test.ts` runs the real iframe script, traced and with Trace off: aliasing, timers, the step limit, the loop guard, errors                                                                                                                                                                                    |
+| Stop              | `SandboxFrame.test.tsx`: Stop and the timeout backstop replace the iframe, the next run waits for `ready` and goes to the new one                                                                                                                                                                                            |
+| Lenses            | `lenses/*.test.ts(x)`: limits per view, placement, the 2D fallback of a 3D step, arrows of lists and trees (`stackHeapLensArrows.test.ts`); the shared geometry in `src/shared/components/viz/stackheap/heapGeometry.test.ts` and `src/shared/viz3d/stackheap/`                                                              |
+| Layout, settings  | `hooks/usePaneLayout.test.ts` (widening for 3D), `components/layout/playgroundSettings.test.ts` (old stored settings load)                                                                                                                                                                                                   |
 | Exercises         | `exercises/exercises.test.ts` (every solution passes and has an explanation, every starter fails), `components/exercises/TaskPanel.test.tsx` (the panel and the solution's reveal flow), `runChecks.test.ts` (verdicts, endless loops, what cannot fool a check), `exerciseProgress.test.ts`, all on the real sandbox script |
-| Links             | `utils/playgroundLink.test.ts`, `utils/playgroundStart.test.ts`, `PlaygroundApp.exercises.test.tsx`                                                                                                             |
-| Unit tests        | `PythonInstrumenter.test.ts`, `useSandbox.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`, `sourceMapLines.test.ts`                                                                                       |
-| Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `StepControls.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx`                                                       |
-| Integration tests | `__tests__/integration.test.ts`                                                                                                                                                                                 |
+| Links             | `utils/playgroundLink.test.ts`, `utils/playgroundStart.test.ts`, `PlaygroundApp.exercises.test.tsx`                                                                                                                                                                                                                          |
+| Unit tests        | `PythonInstrumenter.test.ts`, `useSandbox.test.ts`, `sanitize.test.ts`, `codeTemplates.test.ts`, `sourceMapLines.test.ts`                                                                                                                                                                                                    |
+| Component tests   | `MonacoEditor.test.tsx`, `SandboxFrame.test.tsx`, `ConsoleOutput.test.tsx`, `StepControls.test.tsx`, `SpaceBackground.test.tsx`, `PlaygroundApp.test.tsx`                                                                                                                                                                    |
+| Integration tests | `__tests__/integration.test.ts`                                                                                                                                                                                                                                                                                              |
 
 ### Mock Strategy
 

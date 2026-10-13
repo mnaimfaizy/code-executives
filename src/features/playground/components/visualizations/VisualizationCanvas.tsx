@@ -15,6 +15,8 @@ interface VisualizationCanvasProps {
   language: PlaygroundLanguage;
   /** True when the tracer's queue model could not follow the engine for this run */
   queuesApproximate?: boolean;
+  /** Called when the learner picks 2D or 3D in a lens */
+  onViewChange?: (view: '2d' | '3d') => void;
 }
 
 const LensLoading: React.FC = () => (
@@ -79,6 +81,7 @@ const VisualizationCanvas: React.FC<VisualizationCanvasProps> = ({
   index,
   language,
   queuesApproximate,
+  onViewChange,
 }) => {
   // Anything but a lens that exists draws nothing, such as the id of a lens that was removed
   if (lens !== 'stack-heap' && lens !== 'stack-queues') {
@@ -98,9 +101,15 @@ const VisualizationCanvas: React.FC<VisualizationCanvasProps> = ({
             index={index}
             heapRecorded={language !== 'python'}
             approximate={queuesApproximate}
+            onViewChange={onViewChange}
           />
         ) : (
-          <StackHeapLens steps={steps} index={index} heapRecorded={language !== 'python'} />
+          <StackHeapLens
+            steps={steps}
+            index={index}
+            heapRecorded={language !== 'python'}
+            onViewChange={onViewChange}
+          />
         )}
       </Suspense>
     </div>

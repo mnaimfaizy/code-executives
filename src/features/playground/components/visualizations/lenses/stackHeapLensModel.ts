@@ -35,24 +35,52 @@ export const TOP_FRAMES = 3;
  * what the 3D view frames beside a full heap without its labels meeting.
  */
 export const MAX_DRAWN_FRAMES = TOP_FRAMES + 2;
-/** The widest heap floor. A fourth column makes the 2D drawing wider than most panes. */
-export const MAX_HEAP_COLS = 3;
-/** Rows of the heap floor that stay legible in both views. */
-export const MAX_HEAP_ROWS = 3;
-/** The most heap objects a step draws: a full `MAX_HEAP_COLS` × `MAX_HEAP_ROWS` floor. */
-export const MAX_DRAWN_OBJECTS = MAX_HEAP_COLS * MAX_HEAP_ROWS;
+/** The view a trace is prepared for. Each view has its own largest heap floor. */
+export type LensView = '2d' | '3d';
+
+/** The largest heap floor a view draws, and so the most heap objects of one step. */
+export interface HeapLimit {
+  cols: number;
+  rows: number;
+  objects: number;
+}
 
 /**
- * Columns of the floor for a run whose fullest step draws `mostDrawn` objects. A run that fits
- * two columns keeps them (the Stack ↔ Heap story's own floor, and narrow enough for a side
- * pane); only a fuller run takes the third.
+ * The 3D scene is tuned for a 3×3 floor (`shared/viz3d/stackheap/layout.ts`): its labels are
+ * DOM cards of a fixed size, so a larger floor cannot simply be framed from further away. The
+ * 2D drawing grows with its columns and rows and scrolls in a small pane, so it takes 5×4.
  */
-export const heapColsFor = (mostDrawn: number) =>
-  mostDrawn <= 2 * MAX_HEAP_ROWS ? 2 : MAX_HEAP_COLS;
+export const HEAP_LIMITS: Record<LensView, HeapLimit> = {
+  '2d': { cols: 5, rows: 4, objects: 20 },
+  '3d': { cols: 3, rows: 3, objects: 9 },
+};
+export const MAX_DRAWN_OBJECTS_2D = HEAP_LIMITS['2d'].objects;
+export const MAX_DRAWN_OBJECTS_3D = HEAP_LIMITS['3d'].objects;
 
 /**
- * The 2D drawing is never scaled below this: its 12px text stays near 10px, and a full floor
- * (about 1030 × 700 units) still fits a pane of about 820 × 560. A smaller pane scrolls.
+ * The floor for a run whose fullest step draws `mostDrawn` objects: the fewest columns that
+ * hold them. A run that fits two columns keeps them (the Stack ↔ Heap story's own floor, and
+ * narrow enough for a side pane), and a floor of up to three columns has three rows in either
+ * view, so a run both views can draw is placed the same in both. Only 2D goes on to a fourth
+ * and a fifth column, which have the fourth row.
+ */
+export function heapFloorFor(mostDrawn: number, view: LensView = '2d'): HeapGrid {
+  const limit = HEAP_LIMITS[view];
+  for (let cols = 2; cols < limit.cols; cols++) {
+    const rows = Math.min(limit.rows, cols <= 3 ? 3 : 4);
+    if (mostDrawn <= cols * rows) return { cols, rows };
+  }
+  return { cols: limit.cols, rows: limit.rows };
+}
+
+/** Columns of the floor for a run whose fullest step draws `mostDrawn` objects. */
+export const heapColsFor = (mostDrawn: number, view: LensView = '2d') =>
+  heapFloorFor(mostDrawn, view).cols;
+
+/**
+ * The 2D drawing is never scaled below this: its 12px text stays near 10px. A 3×3 floor
+ * (about 1030 × 700 units) still fits a pane of about 820 × 560; a smaller pane, or the full
+ * 5×4 floor (about 1490 × 860 units), scrolls.
  */
 export const MIN_2D_SCALE = 0.8;
 
@@ -93,6 +121,8 @@ export type LensStep = {
       status: 'too-large';
       /** True when the tracer itself stopped recording objects on this step. */
       truncated: boolean;
+      /** The most objects the view this step was prepared for draws. */
+      limit: number;
     }
 );
 
@@ -106,6 +136,8 @@ export interface LensTrace {
 export interface LensOptions {
   /** False when the run could not record heap objects: only frames are drawn. */
   heapRecorded?: boolean;
+  /** The view the steps are prepared for: it decides how many objects fit. Default `2d`. */
+  view?: LensView;
 }
 
 // ---- Frames -------------------------------------------------------------------------------
@@ -149,6 +181,7 @@ interface Selection {
  */
 export function selectStep(step: Step, options: LensOptions = {}): Selection {
   const heapRecorded = options.heapRecorded !== false;
+  const maxObjects = HEAP_LIMITS[options.view ?? '2d'].objects;
   const full = step.snapshot;
   const all = heapRecorded ? full.objects : [];
   // The roots a run holds without a frame (the global scope once the script has ended, callbacks
@@ -157,7 +190,7 @@ export function selectStep(step: Step, options: LensOptions = {}): Selection {
   const reachable = getReachable({ frames: full.frames, objects: all, ...roots });
   const { frames, skipped } = trimFrames(full.frames);
 
-  const overLimit = all.length > MAX_DRAWN_OBJECTS;
+  const overLimit = all.length > maxObjects;
   const kept = overLimit ? all.filter((o) => reachable.has(o.id)) : all;
   const counts: StepCounts = {
     frames: full.frames.length,
@@ -168,7 +201,7 @@ export function selectStep(step: Step, options: LensOptions = {}): Selection {
   };
 
   const truncated = heapRecorded && step.truncated;
-  if (truncated || kept.length > MAX_DRAWN_OBJECTS) {
+  if (truncated || kept.length > maxObjects) {
     return { counts: { ...counts, unreachableHidden: 0 }, drawn: null, truncated };
   }
 
@@ -223,12 +256,18 @@ export function prepareTrace(steps: readonly Step[], options: LensOptions = {}):
   const out: LensStep[] = [];
   const drawnObjects: PlacedObject[] = [];
 
+  const view = options.view ?? '2d';
+  const limit = HEAP_LIMITS[view].objects;
   const selections = steps.map((step) => selectStep(step, options));
-  const cols = heapColsFor(Math.max(0, ...selections.map((s) => s.drawn?.objects.length ?? 0)));
+  const floor = heapFloorFor(
+    Math.max(0, ...selections.map((s) => s.drawn?.objects.length ?? 0)),
+    view
+  );
+  const cols = floor.cols;
 
   for (const { counts, drawn, truncated } of selections) {
     if (!drawn) {
-      out.push({ status: 'too-large', counts, truncated });
+      out.push({ status: 'too-large', counts, truncated, limit });
       continue;
     }
 
@@ -257,7 +296,7 @@ export function prepareTrace(steps: readonly Step[], options: LensOptions = {}):
       ...(drawn.roots && { roots: drawn.roots }),
     };
     let placed = placeSnapshot(bare, { previous: resting, cols });
-    if (resting.size > kept.size && gridOf(placed.snapshot.objects).rows > MAX_HEAP_ROWS) {
+    if (resting.size > kept.size && gridOf(placed.snapshot.objects).rows > floor.rows) {
       placed = placeSnapshot(bare, { previous: kept, cols });
     }
 
@@ -293,10 +332,29 @@ export function notesFor(lens: LensStep, options: LensOptions = {}): string[] {
 /** The calm message shown in place of a drawing that would be unreadable. */
 export function tooLargeMessage(lens: LensStep): string {
   const { objects, reachable } = lens.counts;
+  const limit = lens.status === 'too-large' ? lens.limit : MAX_DRAWN_OBJECTS_2D;
   if (lens.status === 'too-large' && lens.truncated) {
-    return `This step holds more than ${objects} heap objects, more than a trace records. The lens draws up to ${MAX_DRAWN_OBJECTS}.`;
+    return `This step holds more than ${objects} heap objects, more than a trace records. The lens draws up to ${limit}.`;
   }
-  return `This step holds ${plural(objects, 'heap object')}, ${reachable} of them reachable. The lens draws up to ${MAX_DRAWN_OBJECTS}.`;
+  return `This step holds ${plural(objects, 'heap object')}, ${reachable} of them reachable. The lens draws up to ${limit}.`;
+}
+
+/** The quiet line under the lens when a step the learner chose to see in 3D is drawn in 2D. */
+export const SHOWN_IN_2D_NOTE = 'This step is too large for 3D, so it is shown in 2D';
+
+/**
+ * Which view draws a step when the learner has chosen `chosen`. A step that fits the 2D floor
+ * but not the 3D one is drawn in 2D; the choice itself is not changed, so the next step that
+ * fits is back in 3D. `in3D` is the step as prepared for 3D, and is only needed for that choice.
+ */
+export function viewForStep(
+  chosen: LensView,
+  in2D: LensStep,
+  in3D: LensStep | undefined
+): { view: LensView; fellBack: boolean } {
+  if (chosen === '2d') return { view: '2d', fellBack: false };
+  if (in3D?.status === 'drawn') return { view: '3d', fellBack: false };
+  return { view: '2d', fellBack: in2D.status === 'drawn' };
 }
 
 /** What a focus key names, in words: an entity, or a slot of one. */

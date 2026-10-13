@@ -1,160 +1,11 @@
 import React from 'react';
-import {
-  getReachable,
-  getReferences,
-  gridOf,
-  type HeapGrid,
-  slotKey,
-  type HeapObject,
-  type Placed,
-  type Reference,
-} from '../../../snapshot';
+import { getReachable, getReferences, type HeapObject } from '../../../snapshot';
 import { useReducedMotion } from '../../../hooks/useReducedMotion';
 import { vizPalette, type EntityColors } from '../../../viz/palette';
 import { SlotLines, StackFrames, StackPanel } from './StackFrames2D';
-import {
-  FRAME_HEADER,
-  MONO,
-  STACK_CSS,
-  STACK_PAD_BOTTOM,
-  STACK_PAD_TOP,
-  boxHeight,
-  clip,
-  slotY,
-  stackBoxes,
-  stackHeight as heightOfStack,
-  type Box,
-} from './stackGeometry';
-import type { PlacedSnapshot, StackHeapViewProps } from './types';
-
-/*
- * Geometry. A 2×2 heap with a short stack is the 800×480 drawing of the Stack ↔ Heap story;
- * more columns widen the viewBox, more rows, taller objects or more frames make it taller.
- */
-const HEAP_X = 310;
-const CELL_X0 = 340;
-const CELL_DX = 230;
-const CELL_Y0 = 78;
-/** The least a heap row takes; a row holding a taller object grows to fit it. */
-const CELL_DY = 190;
-/** Clear space kept under the tallest object of a row. */
-const ROW_CLEARANCE = 40;
-const OBJ_W = 180;
-
-/** What the heap needs around its rows: 78 above the first, 22 under the last. */
-const HEAP_PAD_Y = 100;
-
-type PlacedObject = Placed<HeapObject>;
-
-interface Layout {
-  width: number;
-  height: number;
-  frames: Map<string, Box>;
-  objects: Map<string, Box>;
-}
-
-/** The one place positions are decided, so an entity keeps its place from snapshot to snapshot. */
-function layout(snapshot: PlacedSnapshot, minGrid?: HeapGrid): Layout {
-  const grid = gridOf(snapshot.objects, minGrid);
-
-  const rowPitch = Array.from({ length: grid.rows }, () => CELL_DY);
-  for (const o of snapshot.objects) {
-    rowPitch[o.cell.row] = Math.max(rowPitch[o.cell.row], boxHeight(o.slots) + ROW_CLEARANCE);
-  }
-  const rowY: number[] = [];
-  let nextRowY = CELL_Y0;
-  for (const pitch of rowPitch) {
-    rowY.push(nextRowY);
-    nextRowY += pitch;
-  }
-
-  const stackHeight = heightOfStack(snapshot.frames);
-  const width = CELL_X0 + grid.cols * CELL_DX;
-  const height = Math.max(
-    HEAP_PAD_Y + rowPitch.reduce((sum, pitch) => sum + pitch, 0),
-    STACK_PAD_TOP + stackHeight + STACK_PAD_BOTTOM
-  );
-
-  const frames = stackBoxes(snapshot.frames, height);
-
-  const objects = new Map<string, Box>();
-  for (const o of snapshot.objects) {
-    objects.set(o.id, {
-      x: CELL_X0 + o.cell.col * CELL_DX,
-      y: rowY[o.cell.row],
-      w: OBJ_W,
-      h: boxHeight(o.slots),
-    });
-  }
-
-  return { width, height, frames, objects };
-}
-
-/** The arrow for a reference, or null when its source or its target is not in the drawing. */
-function refPath(ref: Reference, snapshot: PlacedSnapshot, at: Layout): string | null {
-  const fromFrame = ref.fromKind === 'frame';
-  const owner = fromFrame
-    ? snapshot.frames.find((f) => f.id === ref.fromOwner)
-    : snapshot.objects.find((o) => o.id === ref.fromOwner);
-  const ownerBox = fromFrame ? at.frames.get(ref.fromOwner) : at.objects.get(ref.fromOwner);
-  if (!owner || !ownerBox) return null;
-
-  const idx = owner.slots.findIndex((s) => slotKey(owner.id, s.name) === ref.from);
-  if (idx < 0) return null;
-  const sy = slotY(ownerBox, idx);
-  const right = ownerBox.x + ownerBox.w;
-
-  const targetObj = snapshot.objects.find((o) => o.id === ref.to);
-  const target = targetObj ? at.objects.get(ref.to) : undefined;
-
-  if (!targetObj || !target) {
-    // Not a heap object: a frame whose scope is still on the stack, or nothing at all.
-    const frame = at.frames.get(ref.to);
-    if (!frame) return null;
-    const fx = frame.x + frame.w;
-    const fy = frame.y + FRAME_HEADER / 2;
-    if (fromFrame) {
-      // Frame to frame: a bracket in the gutter between the stack and the heap.
-      return `M ${right} ${sy} C ${right + 50} ${sy}, ${fx + 50} ${fy}, ${fx} ${fy}`;
-    }
-    // Heap back to the stack: leave from the left edge.
-    const dx = Math.max(40, (ownerBox.x - fx) / 2);
-    return `M ${ownerBox.x} ${sy} C ${ownerBox.x - dx} ${sy}, ${fx + dx} ${fy}, ${fx} ${fy}`;
-  }
-
-  const ty = target.y + FRAME_HEADER / 2;
-
-  if (!fromFrame) {
-    const src = owner as PlacedObject;
-    const dCol = targetObj.cell.col - src.cell.col;
-    const dRow = targetObj.cell.row - src.cell.row;
-    const sx = ownerBox.x + ownerBox.w / 2;
-    const tx = target.x + target.w / 2;
-    if (src.id === targetObj.id) {
-      // An object that points at itself: a loop off its right edge.
-      return `M ${right} ${sy} C ${right + 46} ${sy}, ${right + 46} ${ty}, ${right} ${ty}`;
-    }
-    if (dCol <= 0 && dRow > 0) {
-      // Down-left: leave from the bottom, enter from the top.
-      const sby = ownerBox.y + ownerBox.h;
-      return `M ${sx} ${sby} C ${sx} ${sby + 50}, ${tx} ${target.y - 50}, ${tx} ${target.y}`;
-    }
-    if (dCol <= 0 && dRow < 0) {
-      // Up-left: leave from the top, enter from the bottom.
-      const tby = target.y + target.h;
-      return `M ${sx} ${ownerBox.y} C ${sx} ${ownerBox.y - 50}, ${tx} ${tby + 50}, ${tx} ${tby}`;
-    }
-    if (dCol < 0) {
-      // Straight left along a row: leave from the left edge, enter the right edge.
-      const tRight = target.x + target.w;
-      const dx = Math.max(40, (ownerBox.x - tRight) / 2);
-      return `M ${ownerBox.x} ${sy} C ${ownerBox.x - dx} ${sy}, ${tRight + dx} ${ty}, ${tRight} ${ty}`;
-    }
-  }
-  const tx = target.x;
-  const dx = Math.max(40, (tx - right) / 2);
-  return `M ${right} ${sy} C ${right + dx} ${sy}, ${tx - dx} ${ty}, ${tx} ${ty}`;
-}
+import { MONO, STACK_CSS, clip, slotY } from './stackGeometry';
+import { HEAP_X, layout2D, refPath } from './heapGeometry';
+import type { StackHeapViewProps } from './types';
 
 /** How each heap kind is outlined; colour alone never carries the difference. */
 const KIND_RX: Record<HeapObject['kind'], number> = {
@@ -182,7 +33,7 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
 }) => {
   const reducedMotion = useReducedMotion();
   const P = vizPalette[theme];
-  const at = layout(snapshot, grid);
+  const at = layout2D(snapshot, grid);
   const refs = getReferences(snapshot);
   const reachable = markUnreachable ? getReachable(snapshot) : null;
   const marking = gcPhase === 'mark';

@@ -99,7 +99,12 @@ vi.mock('./hooks/useSandbox', () => ({
 }));
 
 vi.mock('./hooks/usePaneLayout', () => ({
-  usePaneLayout: () => ({ dividers: [0.3, 0.78], setDivider: vi.fn(), resetDividers: vi.fn() }),
+  usePaneLayout: () => ({
+    dividers: [0.3, 0.78],
+    setDivider: vi.fn(),
+    widenMiddle: vi.fn(),
+    resetDividers: vi.fn(),
+  }),
 }));
 
 vi.mock('./components/layout/SettingsPanel', () => ({ __esModule: true, default: () => null }));
@@ -109,8 +114,6 @@ vi.mock('./components/layout/playgroundSettings', () => ({
   loadSettings: () => ({
     fontSize: 14,
     wordWrap: true,
-    executionTimeoutMs: 10_000,
-    animationsEnabled: true,
   }),
   saveSettings: vi.fn(),
 }));

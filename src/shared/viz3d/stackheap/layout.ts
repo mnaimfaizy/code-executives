@@ -201,9 +201,21 @@ export const FRAME_SLOT_LINES_DEEP = 4;
 
 export type FrameLabelPlan =
   | {
+      /** Every slot on the one row. */
       stacked: false;
-      /** More slots than a row holds, but no room to stack: one line, cut at a fixed width. */
-      cut: boolean;
+      cut: false;
+    }
+  | {
+      /**
+       * More slots than a row holds, but no room to stack: the row holds `FRAME_ROW_SLOTS`
+       * of them and ends with `+N more`. The card is no taller than the one-row card.
+       */
+      stacked: false;
+      cut: true;
+      /** Indexes of the slots shown, in frame order. */
+      slots: number[];
+      /** Slots left out, named by the final `+N more`. */
+      more: number;
     }
   | {
       stacked: true;
@@ -221,8 +233,9 @@ export type FrameLabelPlan =
  * Frame labels sit a fixed pitch apart, so only the ends of the stack have room to list slots
  * one per line: the bottom frame (the global frame of a trace) grows downward over its plinth,
  * and the top frame, the one that is running, grows upward. A frame between them stays on one
- * line. When the list is capped, a focused slot takes the place of an unfocused one, so what a
- * step changed is never the part left out.
+ * row: it shows `FRAME_ROW_SLOTS` slots and counts the rest. When slots are left out, the
+ * focused ones are chosen first, so what a step changed is shown for as far as the room goes;
+ * a middle frame with more focused slots than its row holds shows the first of them.
  */
 export function frameLabelPlan(
   index: number,
@@ -232,10 +245,15 @@ export function frameLabelPlan(
 ): FrameLabelPlan {
   if (slotCount <= FRAME_ROW_SLOTS) return { stacked: false, cut: false };
   const bottom = index === 0;
-  if (!bottom && index < frameCount - 1) return { stacked: false, cut: true };
+  const all = Array.from({ length: slotCount }, (_, i) => i);
+  if (!bottom && index < frameCount - 1) {
+    // Focused slots first, then the others, each in frame order; shown in frame order
+    const chosen = [...all.filter(isFocused), ...all.filter((i) => !isFocused(i))];
+    const slots = chosen.slice(0, FRAME_ROW_SLOTS).sort((a, b) => a - b);
+    return { stacked: false, cut: true, slots, more: slotCount - slots.length };
+  }
 
   const lines = bottom || frameCount <= MIN_STACK_DEPTH ? FRAME_SLOT_LINES : FRAME_SLOT_LINES_DEEP;
-  const all = Array.from({ length: slotCount }, (_, i) => i);
   if (slotCount <= lines)
     return { stacked: true, grow: bottom ? 'down' : 'up', slots: all, more: 0 };
 

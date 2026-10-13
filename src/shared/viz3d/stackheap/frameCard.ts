@@ -42,6 +42,9 @@ export const FRAME_CARD = {
 /** A stacked card leans further from the heap: its right edge stays over the slab's front. */
 export const STACKED_FRAME_LEAN = '-75%';
 
-/** Lines a stacked frame label adds to the one-row label (which has one line of slots). */
+/**
+ * Lines a stacked frame label adds to the one-row label (which has one line of slots). A cut
+ * label adds none: its two slots and `+N more` share that one line.
+ */
 export const extraLines = (plan: FrameLabelPlan) =>
   plan.stacked ? plan.slots.length + (plan.more > 0 ? 1 : 0) - 1 : 0;
