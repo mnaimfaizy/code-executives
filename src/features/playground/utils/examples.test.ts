@@ -22,6 +22,11 @@ describe('examples', () => {
     }
   });
 
+  it('no longer hold the Event Loop Demo, which repeated the story and the sections’ samples', () => {
+    expect(byId('event-loop-demo')).toBeUndefined();
+    expect(examples.some((example) => example.label === 'Event Loop Demo')).toBe(false);
+  });
+
   it('list the stories’ programs first, named as such', () => {
     expect(examples.slice(0, 2).map((example) => example.id)).toEqual([
       'stack-heap-story',

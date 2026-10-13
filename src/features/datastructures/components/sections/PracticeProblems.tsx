@@ -42,7 +42,7 @@ const PracticeProblems: React.FC = () => {
           <h2 id={`practice-level-${group.level}`} className="text-xl font-bold text-gray-900 mb-3">
             {group.heading}
           </h2>
-          <ExerciseList exercises={group.exercises} showLessons />
+          <ExerciseList exercises={group.exercises} showLessons moduleId="datastructures" />
         </section>
       ))}
     </div>

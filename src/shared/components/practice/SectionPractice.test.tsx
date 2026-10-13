@@ -30,7 +30,14 @@ describe('SectionPractice', () => {
         level: 'easy',
         summary: 'Decide whether every bracket is closed in the right order.',
         href: '/playground?exercise=valid-parentheses',
-        lessons: [{ label: 'Stacks', href: '/datastructures?section=Stacks' }],
+        lessons: [
+          {
+            moduleId: 'datastructures',
+            section: 'Stacks',
+            label: 'Data Structures: Stacks',
+            href: '/datastructures?section=Stacks',
+          },
+        ],
       },
     ]);
     render(<SectionPractice moduleId="datastructures" section="Stacks" />);

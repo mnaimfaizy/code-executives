@@ -1,10 +1,13 @@
 /**
- * The code of the JavaScript sections' samples that also open in the Playground, moved here
- * character for character from the sections that show them. A section and the Playground both
- * read these constants, so the two cannot drift apart. Pure data: nothing here runs.
+ * The code of the JavaScript sections' samples that also open in the Playground. A section and
+ * the Playground both read these constants, so the two cannot drift apart. Pure data: nothing
+ * here runs.
+ *
+ * A comment in a sample is read in both places, so it says only what is true of the code
+ * itself: nothing about the page around it, a framework, or what a tool does with the code.
  */
 
-export const CALL_STACK_CODE = `// Write JavaScript. We'll instrument function bodies to emit push/pop events.
+export const CALL_STACK_CODE = `// main calls foo, foo calls baz, and then main calls bar.
 function main() {
   foo();
   bar();
@@ -15,11 +18,11 @@ function foo() {
 }
 
 function bar() {
-  // work
+  // calls nothing, so it returns at once
 }
 
 function baz() {
-  // work
+  // calls nothing, so it returns at once
 }
 
 main();`;
@@ -118,7 +121,10 @@ setTimeout(() => console.log('macrotask (never starved here)'), 0);
 scheduleMicrotask();
 
 // Output:
-// microtask #1 through #5 all run
+// microtask #1
+// microtask #2
+// microtask #3
+// microtask #4
 // microtask #5
 // microtasks done
 // macrotask (never starved here)`;
@@ -154,7 +160,7 @@ console.log('sync: end');
 // micro: promise   ← microtask runs first
 // macro: timeout   ← macrotask runs last`;
 
-export const CIRCULAR_REFERENCES_SOLUTION_CODE = `// SOLUTION: Break circular references
+export const CIRCULAR_REFERENCES_SOLUTION_CODE = `// Two objects that refer to each other, and a function that ends both references
 function createCircularReference() {
   const parent = { name: 'Parent' };
   const child = { name: 'Child' };
@@ -162,21 +168,21 @@ function createCircularReference() {
   parent.child = child;
   child.parent = parent;
   
-  // Cleanup function to break cycles
+  // Sets both references to null, which breaks the cycle
   const cleanup = () => {
     parent.child = null;
     child.parent = null;
   };
-  
+
   return { parent, child, cleanup };
 }
 
-// Proper cleanup
+// Here parent.child and child.parent form a cycle
 const { parent, child, cleanup } = createCircularReference();
-// When done:
-cleanup(); // Breaks the cycle for GC`;
+// After this call, neither object refers to the other
+cleanup();`;
 
-export const CLEARED_TIMERS_SOLUTION_CODE = `// SOLUTION: Always clear timers and manage lifecycle
+export const CLEARED_TIMERS_SOLUTION_CODE = `// An interval and a timeout that use an array, and a function that clears both
 function startDataPolling() {
   let largeDataSet = new Array(100000).fill('data');
   
@@ -198,8 +204,8 @@ function startDataPolling() {
   };
 }
 
-// Proper usage with cleanup
+// Start both timers and keep the function that stops them
 const stopPolling = startDataPolling();
 
-// Later, when component unmounts or feature disabled:
-stopPolling(); // Clean up all timers and references`;
+// Clear both timers and drop the array, here before either timer has fired
+stopPolling();`;

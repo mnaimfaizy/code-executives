@@ -15,6 +15,10 @@ import { type Speed } from '../../../../components/shared/RunnerToolbar';
 import OutputPanel, { type OutputLine } from '../../../../components/shared/OutputPanel';
 import Editor from '../../../../components/shared/Editor';
 import useRunner from '../../../../hooks/useRunner';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+
+/** The section that holds the Stack ↔ Heap story (a test holds it equal to the sidebar's path). */
+const STACK_HEAP_STORY_HREF = '/javascript?section=Memory%20Heap%20%26%20Objects';
 
 type GCPhase = 'mark' | 'sweep' | 'compact' | 'idle';
 type ObjectState = 'reachable' | 'unreachable' | 'collected';
@@ -636,6 +640,28 @@ const GarbageCollection: React.FC = () => {
           output={outputPanel}
           canvas={canvas2D}
         />
+      </div>
+
+      {/* From the theory to the story and the Playground */}
+      <div
+        className="mt-4 bg-white rounded-xl border border-gray-200 p-5 space-y-2"
+        data-testid="stack-heap-bridge"
+      >
+        <h3 className="text-base font-semibold text-gray-900">Watch reachability decide</h3>
+        <p className="text-sm text-slate-700">
+          <a
+            href={STACK_HEAP_STORY_HREF}
+            className="font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+          >
+            See it step by step
+          </a>
+          : the Stack ↔ Heap story in Memory Heap &amp; Objects follows one short program until
+          nothing can reach its objects, then shows the mark and the sweep that reclaim them.
+        </p>
+        <TryInPlaygroundLink example="stack-heap-story" lens="stack-heap">
+          the story&apos;s program opens there with the Stack &amp; Heap lens chosen. A run in the
+          Playground marks objects that nothing can reach, but cannot show them being collected.
+        </TryInPlaygroundLink>
       </div>
     </section>
   );

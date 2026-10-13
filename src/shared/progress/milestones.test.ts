@@ -13,7 +13,13 @@ const exercise = (id: string, ...lessonHrefs: string[]): ProgressExercise => ({
   id,
   title: `Title of ${id}`,
   href: `/playground?exercise=${id}`,
-  lessons: lessonHrefs.map((href) => ({ label: href, href })),
+  // A milestone reads only a lesson's address; the other parts are filled in to complete the type
+  lessons: lessonHrefs.map((href) => ({
+    moduleId: 'datastructures',
+    section: href,
+    label: href,
+    href,
+  })),
 });
 
 const sources = (

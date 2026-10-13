@@ -7,23 +7,52 @@
  * one: write both when you add an exercise.
  */
 
+import {
+  learningModuleConfigs,
+  type LearningModuleId,
+} from '../../../shared/constants/moduleNavigation';
 import type { Exercise, ExerciseLesson, ExerciseLevel } from './types';
 
 /**
- * A lesson's label names its module, because the Playground shows it outside the module's
- * own page. The part after the colon is the sidebar's label, and the address is the section's
- * own (`moduleNavigation.ts`): `exercises.test.ts` checks both.
+ * A lesson keeps its module and its section apart, and a full label that names both: the
+ * Playground shows a lesson outside the module's own page, where the section's name alone
+ * would not say where it leads. `section` is the sidebar's label and the address is the
+ * section's own (`moduleNavigation.ts`): `exercises.test.ts` checks both.
  */
-const dataStructures = (section: string): ExerciseLesson => ({
-  label: `Data Structures: ${section}`,
-  href: `/datastructures?section=${encodeURIComponent(section)}`,
+const lesson = (moduleId: LearningModuleId, section: string, href: string): ExerciseLesson => ({
+  moduleId,
+  section,
+  label: `${learningModuleConfigs[moduleId].title}: ${section}`,
+  href,
 });
 
+const dataStructures = (section: string): ExerciseLesson =>
+  lesson('datastructures', section, `/datastructures?section=${encodeURIComponent(section)}`);
+
 /** Big-O addresses its sections by slug. */
-const bigO = (section: string, slug: string): ExerciseLesson => ({
-  label: `Big-O Notation: ${section}`,
-  href: `/bigo?section=${slug}`,
-});
+const bigO = (section: string, slug: string): ExerciseLesson =>
+  lesson('bigo', section, `/bigo?section=${slug}`);
+
+/**
+ * The two finished functions the Linked List Cycle exercise gives the learner. A check's
+ * arguments are plain values and a list with a cycle is not one, so the checks call
+ * `hasCycleIn`, which builds the list and hands it to the learner's `hasCycle`.
+ */
+const CYCLE_GIVEN_CODE = `// The checks call hasCycleIn. Leave it and listWithCycle as they are.
+// listWithCycle builds a list from values. When pos is 0 or more, the last node's
+// next is the node at index pos, which makes a cycle. When pos is -1, it stays null.
+function listWithCycle(values, pos) {
+  const nodes = [];
+  for (const val of values) nodes.push({ val, next: null });
+  for (let i = 0; i + 1 < nodes.length; i++) nodes[i].next = nodes[i + 1];
+  if (pos >= 0 && nodes.length > 0) nodes[nodes.length - 1].next = nodes[pos];
+  return nodes.length > 0 ? nodes[0] : null;
+}
+
+function hasCycleIn(values, pos) {
+  return hasCycle(listWithCycle(values, pos));
+}
+`;
 
 export const exercises: Exercise[] = [
   {
@@ -624,6 +653,76 @@ A repeated value counts once for each time it appears: in \`[5, 5, 4]\` the 2nd 
 `,
       explanation:
         'For each position, keep the best sum of a run that ends exactly there. That run either continues the best run that ended one position earlier or starts fresh at this element, whichever is larger: a negative sum carried along only makes things worse, so it is dropped. The answer is the largest of those sums, and both variables start from the first element, so an array of only negative numbers still gives its largest element and not 0. The cost is one pass and two numbers, with no extra memory.',
+    },
+    suggestedLens: 'stack-heap',
+  },
+  {
+    id: 'linked-list-cycle',
+    title: 'Linked List Cycle',
+    level: 'medium',
+    summary: 'Say whether following the next references of a linked list ever leads back to a node.',
+    teaches: [dataStructures('Linked Lists')],
+    task: `Write \`hasCycle(head)\`. It gets the first node of a singly linked list and returns \`true\` if the list has a cycle, otherwise \`false\`. A list has a cycle when following \`next\` from the first node never reaches \`null\`, because some node's \`next\` leads back to a node that was already passed.
+
+A node is a plain object \`{ val, next }\`, where \`next\` is the following node or \`null\` at the end. An empty list is \`null\`. Leave the list as it is: do not change a node.
+
+Two functions are already written below yours. Leave them as they are. \`listWithCycle(values, pos)\` builds a list from an array of values and makes the last node's \`next\` the node at index \`pos\`; when \`pos\` is -1 it leaves that \`next\` as \`null\`. \`hasCycleIn(values, pos)\` builds that list and returns what your \`hasCycle\` returns for it.
+
+The checks call \`hasCycleIn\`, because a list with a cycle cannot be written out as a plain value.`,
+    starterCode: `// A node is { val, next }; next is the following node, or null at the end.
+function hasCycle(head) {
+  // Return true if following next from head never reaches null
+}
+
+${CYCLE_GIVEN_CODE}`,
+    entry: 'hasCycleIn',
+    checks: [
+      {
+        args: [[3, 2, 0, -4], 1],
+        expected: true,
+        explanation:
+          "The last node's next is the node at index 1: 3 → 2 → 0 → -4, then back to 2. The cycle starts in the middle.",
+      },
+      {
+        args: [[1, 2], 0],
+        expected: true,
+        explanation: "The last node's next is the first node: 1 → 2, then back to 1.",
+      },
+      {
+        args: [[1, 2, 3], -1],
+        expected: false,
+        explanation: '1 → 2 → 3 ends at null, so there is no cycle.',
+      },
+      {
+        args: [[1], 0],
+        expected: true,
+        explanation: "The only node's next is the node itself: one node is enough for a cycle.",
+      },
+      { args: [[1], -1], expected: false, hidden: true },
+      { args: [[], -1], expected: false, hidden: true },
+      { args: [[5, 5, 5, 5, 5, 5], 2], expected: true, hidden: true },
+    ],
+    hints: [
+      'In a list without a cycle, a walk along `next` reaches `null`. In a list with a cycle it never does, so a loop that only waits for `null` never ends.',
+      'Keeping every node already passed in a Set works, but the Set grows with the list. Two references that walk the same list at different speeds need no extra memory.',
+      'Each turn, move `slow` one node and `fast` two nodes. If `fast` or `fast.next` is `null`, the list ends. If `slow === fast` after the move, both are inside a cycle.',
+    ],
+    solution: {
+      code: `// A node is { val, next }; next is the following node, or null at the end.
+function hasCycle(head) {
+  let slow = head;
+  let fast = head;
+  while (fast !== null && fast.next !== null) {
+    slow = slow.next;
+    fast = fast.next.next;
+    if (slow === fast) return true;
+  }
+  return false;
+}
+
+${CYCLE_GIVEN_CODE}`,
+      explanation:
+        "Two references walk the list from its first node: `slow` moves one node each turn and `fast` moves two. In a list that ends, `fast` reaches `null` first and the answer is false. In a list with a cycle neither can leave it, and once both are inside, `fast` closes the gap to `slow` by one node each turn until the two hold the same node (this is Floyd's cycle detection). The cost is a number of turns in proportion to the length of the list and two variables whatever that length is, where a Set of the nodes already passed would grow with the list.",
     },
     suggestedLens: 'stack-heap',
   },

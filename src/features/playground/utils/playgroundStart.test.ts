@@ -112,8 +112,8 @@ describe('replacePlaygroundUrl', () => {
     // What the router keeps in the entry stays
     expect(window.history.state).toEqual({ key: 'router' });
 
-    replacePlaygroundUrl({ example: 'event-loop-demo' });
-    expect(parsePlaygroundLink(window.location.search)).toEqual({ example: 'event-loop-demo' });
+    replacePlaygroundUrl({ example: 'event-loop-story' });
+    expect(parsePlaygroundLink(window.location.search)).toEqual({ example: 'event-loop-story' });
 
     replacePlaygroundUrl({});
     expect(window.location.search).toBe('');

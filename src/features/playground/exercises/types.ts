@@ -5,6 +5,7 @@
  * Pure data. JavaScript only for now.
  */
 
+import type { LearningModuleId } from '../../../shared/constants/moduleNavigation';
 import type { VisualizationLens } from '../types';
 
 export type ExerciseLevel = 'easy' | 'medium' | 'hard';
@@ -38,9 +39,13 @@ export interface ExerciseSolution {
 
 /** A section of a module that teaches what an exercise practices. */
 export interface ExerciseLesson {
+  /** The module the section belongs to. */
+  moduleId: LearningModuleId;
+  /** The section's name, exactly as the sidebar spells it, e.g. `Hash Tables`. */
+  section: string;
   /**
-   * The section's name with its module's, e.g. `Data Structures: Hash Tables`: the Playground
-   * shows it outside the module's own page.
+   * The section's name with its module's, e.g. `Data Structures: Hash Tables`: for the
+   * Playground and for another module's page. A module's own page shows `section` alone.
    */
   label: string;
   /** The section's address, e.g. `/datastructures?section=Hash%20Tables`. */

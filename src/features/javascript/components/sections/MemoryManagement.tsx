@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import MemoryManagement2D from '../visualizations/2d/MemoryManagement2D';
+import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
+
+/** The section that holds the Stack ↔ Heap story (a test holds it equal to the sidebar's path). */
+const STACK_HEAP_STORY_HREF = '/javascript?section=Memory%20Heap%20%26%20Objects';
 
 const MemoryManagement: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -376,6 +380,28 @@ oldData = null; // No longer referenced
               <p className="text-sm opacity-90">Single-threaded execution with concurrency</p>
             </a>
           </div>
+        </div>
+
+        {/* From the theory to the story and the Playground */}
+        <div
+          className="mt-8 bg-white rounded-xl shadow-lg p-6 space-y-2"
+          data-testid="stack-heap-bridge"
+        >
+          <h2 className="text-xl font-bold text-gray-900">Watch the stack and the heap</h2>
+          <p className="text-sm text-slate-700">
+            <a
+              href={STACK_HEAP_STORY_HREF}
+              className="font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+            >
+              See it step by step
+            </a>
+            : the Stack ↔ Heap story in Memory Heap &amp; Objects follows one short program, from
+            its first frame on the stack to the moment no variable refers to its objects any more.
+          </p>
+          <TryInPlaygroundLink example="stack-heap-story" lens="stack-heap">
+            the story&apos;s program opens there with the Stack &amp; Heap lens chosen. Run it and
+            watch each call put a frame on the stack and each object appear on the heap.
+          </TryInPlaygroundLink>
         </div>
       </div>
     </div>

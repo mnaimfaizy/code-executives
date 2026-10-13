@@ -11,7 +11,13 @@ const exercise = (id: string, ...lessonHrefs: string[]): ProgressExercise => ({
   id,
   title: `Title of ${id}`,
   href: `/playground?exercise=${id}`,
-  lessons: lessonHrefs.map((href) => ({ label: href, href })),
+  // Progress reads only a lesson's address; the other parts are filled in to complete the type
+  lessons: lessonHrefs.map((href) => ({
+    moduleId: 'datastructures',
+    section: href,
+    label: href,
+    href,
+  })),
 });
 
 /** Three Data Structures exercises (one shared with Big-O), two Big-O ones, and two quizzes. */

@@ -5,12 +5,19 @@ import {
   loadProgress,
   type ExerciseProgress,
 } from '../../../features/playground/exercises/exerciseProgress';
+import type { LearningModuleId } from '../../constants/moduleNavigation';
 import PracticeInPlaygroundLink from './PracticeInPlaygroundLink';
 
 export interface ExerciseListProps {
   exercises: ExerciseCard[];
   /** Also name the section(s) that teach each exercise, as links. */
   showLessons?: boolean;
+  /**
+   * The module whose page shows the list. A lesson of that module goes by its section's name
+   * alone, because the page already says which module it is; a lesson of another module keeps
+   * its full label. Absent, every lesson keeps its full label.
+   */
+  moduleId?: LearningModuleId;
 }
 
 const LEVELS: Record<ExerciseCard['level'], { label: string; className: string }> = {
@@ -41,7 +48,11 @@ function useExerciseProgress(): ExerciseProgress {
  * Exercises of the Playground as rows on a module page: what each asks for, its level, whether
  * this viewer has passed it, and the link that opens it. Renders nothing for an empty list.
  */
-const ExerciseList: React.FC<ExerciseListProps> = ({ exercises, showLessons = false }) => {
+const ExerciseList: React.FC<ExerciseListProps> = ({
+  exercises,
+  showLessons = false,
+  moduleId,
+}) => {
   const progress = useExerciseProgress();
 
   if (exercises.length === 0) return null;
@@ -84,7 +95,7 @@ const ExerciseList: React.FC<ExerciseListProps> = ({ exercises, showLessons = fa
                         href={lesson.href}
                         className="font-medium text-slate-800 underline underline-offset-2 hover:text-slate-950"
                       >
-                        {lesson.label}
+                        {lesson.moduleId === moduleId ? lesson.section : lesson.label}
                       </a>
                     </React.Fragment>
                   ))}
