@@ -328,7 +328,7 @@ describe('moduleProgress', () => {
   it('covers every exercise and quiz of the real catalog and holds no score of its own', () => {
     const modules = moduleProgress(emptyProgressRecord(), {});
     expect(modules.find((item) => item.moduleId === 'datastructures')?.totalCount).toBeGreaterThan(2);
-    expect(modules.filter((item) => item.hasQuiz)).toHaveLength(14);
+    expect(modules.filter((item) => item.hasQuiz)).toHaveLength(16);
     for (const item of modules) {
       expect(Object.keys(item).join(' ')).not.toMatch(/points|streak|level|badge/i);
     }
