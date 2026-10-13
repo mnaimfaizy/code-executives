@@ -123,7 +123,7 @@ export const StackFrames: React.FC<StackFramesProps> = ({
               fontSize={10}
               fontWeight={700}
               textAnchor="end"
-              fill={P.root}
+              fill={P.text.root}
             >
               ROOT
             </text>

@@ -36,6 +36,9 @@ interface MarbleDiagram2DProps {
   timeScale?: number;
 }
 
+/** How far right of a value its stream's end is drawn when both happen at one time (r = 12). */
+const END_BESIDE_VALUE = 28;
+
 const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
   streams: initialStreams = [
     {
@@ -71,18 +74,27 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
     {
       name: 'take(3)',
       transform: (marbles) => {
-        let count = 0;
-        return marbles.reduce((acc: MarbleData[], marble) => {
-          if (marble.type === 'next' && count < 3) {
-            count++;
-            acc.push(marble);
-          } else if (marble.type !== 'next') {
-            acc.push(marble);
+        const out: MarbleData[] = [];
+        let taken = 0;
+        for (const marble of marbles) {
+          out.push(marble);
+          // The source ended first: its completion or error is the output's.
+          if (marble.type !== 'next') break;
+          taken += 1;
+          if (taken === 3) {
+            // take completes with its last value, not when the source completes.
+            out.push({
+              id: 'take_complete',
+              time: marble.time,
+              value: 'complete',
+              type: 'complete',
+            });
+            break;
           }
-          return acc;
-        }, []);
+        }
+        return out;
       },
-      description: 'Takes only the first 3 values',
+      description: 'Takes the first 3 values, then completes without waiting for the source',
     },
   ],
   autoPlay = true,
@@ -326,7 +338,7 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
             const yPos = 60 + streamIndex * streamHeight;
 
             return (
-              <g key={stream.id}>
+              <g key={stream.id} data-stream={stream.id}>
                 {/* Stream label */}
                 <text x={20} y={yPos + 5} fontSize="14" fontWeight="bold" fill={stream.color}>
                   {stream.name}
@@ -369,7 +381,13 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
 
                 {/* Marbles */}
                 {stream.marbles.map((marble) => {
-                  const marbleX = getTimelinePosition(marble.time);
+                  // A stream that ends with a value (take) has two marbles at one time: the
+                  // end is drawn beside the value, so the value stays visible.
+                  const besideValue =
+                    marble.type !== 'next' &&
+                    stream.marbles.some((m) => m.type === 'next' && m.time === marble.time);
+                  const marbleX =
+                    getTimelinePosition(marble.time) + (besideValue ? END_BESIDE_VALUE : 0);
                   const isVisible = shownTime >= marble.time;
                   const marbleColor =
                     marble.type === 'complete'
@@ -379,7 +397,7 @@ const MarbleDiagram2D: React.FC<MarbleDiagram2DProps> = ({
                         : marble.color || stream.color;
 
                   return (
-                    <g key={marble.id}>
+                    <g key={marble.id} data-marble={marble.type} data-time={marble.time}>
                       <circle
                         cx={marbleX}
                         cy={yPos}

@@ -11,7 +11,12 @@
 
 export type VizTheme = 'light' | 'dark';
 
-/** One kind of thing a view draws. 2D draws a pale `fill` with a `stroke`; 3D draws a `solid`. */
+/**
+ * One kind of thing a view draws. 2D draws a pale `fill` with a `stroke`; 3D draws a `solid`.
+ *
+ * A `stroke` is a mark: it is held to 3:1 against what it is drawn on, where text is held to
+ * 4.5:1 (`palette.test.ts`). Text that names a role takes its colour from `text`, not from here.
+ */
 export interface EntityColors {
   fill: string;
   stroke: string;
@@ -78,6 +83,12 @@ export interface VizPalette {
     slot: string;
     /** The ROOT tag on a frame. */
     root: string;
+    /** The UNMARKED / RECLAIMED tag on a heap object. */
+    unreachable: string;
+    /** The MICROTASK tag on the frame that runs a callback taken from the microtask queue. */
+    microtask: string;
+    /** The TASK tag on the frame that runs a callback taken from the task queue. */
+    task: string;
   };
   /** The DOM labels that float over the 3D scene. */
   label: {
@@ -121,7 +132,7 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
       fill: '#f8fafc',
       stroke: '#cbd5e1',
       label: '#64748b',
-      note: '#5b6b82',
+      note: '#4d5b70',
       ground: '#e2e8f0',
       floor: '#f1f5f9',
       plinth: '#cbd5e1',
@@ -129,32 +140,35 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
     lighting: { sky: '#ffffff', ground: '#cbd5e1' },
     frame: { fill: '#e0e7ff', stroke: '#6366f1', solid: '#818cf8' },
     frameActive: { fill: '#c7d2fe', stroke: '#4f46e5', solid: '#6366f1' },
-    object: { fill: '#d1fae5', stroke: '#10b981', solid: '#34d399' },
-    array: { fill: '#e0f2fe', stroke: '#0ea5e9', solid: '#38bdf8', divider: '#0369a1' },
+    object: { fill: '#d1fae5', stroke: '#059669', solid: '#34d399' },
+    array: { fill: '#e0f2fe', stroke: '#0284c7', solid: '#38bdf8', divider: '#0369a1' },
     function: { fill: '#f3e8ff', stroke: '#a855f7', solid: '#c084fc' },
     scope: { fill: '#e8eaf6', stroke: '#5c6399', solid: '#9aa0c9' },
-    unreachable: { fill: '#ffe4e6', stroke: '#f43f5e', solid: '#fb7185' },
+    unreachable: { fill: '#ffe4e6', stroke: '#be123c', solid: '#fb7185' },
     microtask: { fill: '#fae8ff', stroke: '#c026d3', solid: '#e879f9' },
     task: { fill: '#ccfbf1', stroke: '#0d9488', solid: '#2dd4bf' },
     timer: { fill: '#ecfccb', stroke: '#4d7c0f', solid: '#a3e635' },
     reference: { stroke: '#64748b', solid: '#475569' },
-    focus: '#f59e0b',
-    root: '#f59e0b',
+    focus: '#b45309',
+    root: '#b45309',
     text: {
       primary: '#1e293b',
       secondary: '#475569',
-      muted: '#94a3b8',
-      onFocus: '#b45309',
+      muted: '#586880',
+      onFocus: '#92400e',
       frameName: '#312e81',
       slot: '#334155',
-      root: '#d97706',
+      root: '#92400e',
+      unreachable: '#be123c',
+      microtask: '#a21caf',
+      task: '#0f766e',
     },
     label: {
       bg: '#ffffff',
       border: '#e2e8f0',
       frameBorder: '#c7d2fe',
-      focusBorder: '#fbbf24',
-      unreachableBorder: '#fda4af',
+      focusBorder: '#b45309',
+      unreachableBorder: '#e11d48',
     },
   },
   dark: {
@@ -190,6 +204,10 @@ export const vizPalette: Record<VizTheme, VizPalette> = {
       frameName: '#c7d2fe',
       slot: '#cbd5e1',
       root: '#fbbf24',
+      // The three below are the dark strokes of their roles: what dark drew before they existed.
+      unreachable: '#fb7185',
+      microtask: '#e879f9',
+      task: '#2dd4bf',
     },
     label: {
       bg: '#12122a',

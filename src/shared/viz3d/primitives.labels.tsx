@@ -8,6 +8,7 @@ import React from 'react';
 import { Html } from '@react-three/drei';
 import type { V3 } from '../components/viz/viewerCamera';
 import { labelStyle } from './primitives';
+import { useLabelHost } from './useLabelHost';
 
 export interface LabelProps {
   position: V3;
@@ -42,7 +43,7 @@ export const Label: React.FC<LabelProps> = ({
   attrs,
   children,
 }) => (
-  <Html position={position} zIndexRange={[10, 0]}>
+  <Html position={position} zIndexRange={[10, 0]} portal={useLabelHost()}>
     <div
       style={{
         ...labelStyle,
@@ -72,7 +73,7 @@ export const RegionLabel: React.FC<{
   style?: React.CSSProperties;
   children: React.ReactNode;
 }> = ({ position, color, anchor = 'translate(-50%, 0)', style, children }) => (
-  <Html position={position} zIndexRange={[10, 0]}>
+  <Html position={position} zIndexRange={[10, 0]} portal={useLabelHost()}>
     <div
       data-viz-framed
       style={{ ...labelStyle, transform: anchor, color, ...style }}

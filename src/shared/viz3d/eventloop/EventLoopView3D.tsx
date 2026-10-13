@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Html, Line, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
@@ -19,6 +19,7 @@ import { LabelFramer, StoryCamera } from '../camera';
 import type { V3 } from '../frameShot';
 import { MONO, damp, labelStyle, withAlpha } from '../primitives';
 import { Label } from '../primitives.labels';
+import { useLabelHost } from '../useLabelHost';
 import { FrameSlab, type FrameEntry, type FrameOrigin } from '../stackheap/FrameSlab';
 import { FRAME_CARD, extraLines } from '../stackheap/frameCard';
 import { FRAME_SIZE, STACK_X, frameLabelPlan } from '../stackheap/layout';
@@ -216,13 +217,11 @@ const Caption: React.FC<{
   P: VizPalette;
 }> = ({ region, position, anchor, note, P }) => {
   const info = REGION_INFO[region];
-  // The first drei Html of a scene can be left empty when the canvas connects its event target
-  // just after mount. A caption's props never change, so nothing would fill it again: it is
-  // mounted afresh once, after that moment.
-  const [settled, setSettled] = useState(false);
-  useEffect(() => setSettled(true), []);
+  // On the label host from its first render: a caption that is moved there later can be left
+  // empty for good (see `useLabelHost`), and its props never change to fill it again.
+  const host = useLabelHost();
   return (
-    <Html key={settled ? 'settled' : 'first'} position={position} zIndexRange={[10, 0]}>
+    <Html position={position} zIndexRange={[10, 0]} portal={host}>
       <div
         data-viz-framed
         data-viz-region={region}
@@ -256,7 +255,7 @@ const FloorNote: React.FC<{ position: V3; P: VizPalette; children: React.ReactNo
   P,
   children,
 }) => (
-  <Html position={position} zIndexRange={[10, 0]}>
+  <Html position={position} zIndexRange={[10, 0]} portal={useLabelHost()}>
     <div
       data-viz-framed
       style={{
@@ -478,7 +477,8 @@ const Scene: React.FC<Omit<EventLoopScene3DProps, 'label'>> = ({
                 tagged
                   ? {
                       text: runningRole.toUpperCase(),
-                      color: P[runningRole].stroke,
+                      // Text, so not the role's stroke. Only the two queues are run from.
+                      color: runningRole === 'microtask' ? P.text.microtask : P.text.task,
                       attrs: { 'data-viz-running': runs.entry.id },
                     }
                   : undefined

@@ -14,6 +14,7 @@ import { ErrorBoundary } from '../../../../shared/components/feedback';
 import { useReducedMotion, useStoryViewer } from '../../../../shared/hooks';
 import Viewer3DToolbar from '../../../../shared/components/viz/Viewer3DToolbar';
 import { Viewer3DHint, WheelZoomHint } from '../../../../shared/components/viz/ViewerHints';
+import { STORY_SPLIT } from '../../../../shared/components/viz/storyLayout';
 import BranchPointers2D from '../visualizations/2d/BranchPointers2D';
 import { STORY_CODE, STORY_BEATS } from '../../utils/branchPointersStory';
 import { canUseWebGL } from '../../../../shared/utils/webgl';
@@ -134,9 +135,10 @@ const BranchPointersStory: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 xl:flex-row">
+      {/* The code is above the picture until the page is wide enough for both: see storyLayout. */}
+      <div className={STORY_SPLIT.row}>
         {/* Code + narration */}
-        <div className="flex min-w-0 flex-col gap-3 xl:w-[38%]">
+        <div className={STORY_SPLIT.aside}>
           <div className="overflow-x-auto rounded-xl border border-slate-700 bg-slate-900 py-3 shadow">
             <pre className="text-[12.5px] leading-6" aria-label="Story code">
               {CODE_LINES.map((text, i) => {
@@ -178,7 +180,7 @@ const BranchPointersStory: React.FC = () => {
         </div>
 
         {/* Viewer */}
-        <div className="flex min-w-0 flex-col gap-2 xl:w-[62%]">
+        <div className={STORY_SPLIT.viewer}>
           <div
             data-viz-viewer
             onWheel={viewer.onViewerWheel}

@@ -9,6 +9,7 @@ import StoryCodePanel from '../../../../shared/components/viz/StoryCodePanel';
 import StoryControls from '../../../../shared/components/viz/StoryControls';
 import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
 import { useStoryPlayback } from '../../../../shared/components/viz/useStoryPlayback';
+import { STORY_SPLIT } from '../../../../shared/components/viz/storyLayout';
 import StackHeap2D from '../visualizations/2d/StackHeap2D';
 import { STORY_CODE, STORY_BEATS } from '../../utils/stackHeapStory';
 
@@ -26,6 +27,7 @@ const StackHeapStory: React.FC = () => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const beat = STORY_BEATS[index];
+  const is3D = view === '3d';
 
   const viewer = useStoryViewer({ rootRef, is3D: view === '3d', step: go });
   const fullscreen = viewer.fullscreen.isFullscreen;
@@ -50,16 +52,18 @@ const StackHeapStory: React.FC = () => {
             Stack ↔ Heap: who keeps an object alive?
           </h3>
           <p className="mt-1 text-xs text-slate-600">
-            A 10-beat story. Frames come and go; objects live as long as a root can reach them.
+            A {STORY_BEATS.length}-beat story. Frames come and go; objects live as long as a root
+            can reach them.
           </p>
         </div>
 
         <ViewToggle view={view} onChange={chooseView} webgl={webgl} />
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 lg:flex-row">
+      {/* The code is above the picture until the page is wide enough for both: see storyLayout. */}
+      <div className={STORY_SPLIT.row}>
         {/* Code + narration */}
-        <div className="flex min-w-0 flex-col gap-3 lg:w-[38%]">
+        <div className={STORY_SPLIT.aside}>
           <StoryCodePanel lines={CODE_LINES} activeLine={beat.line} />
 
           <div
@@ -75,12 +79,14 @@ const StackHeapStory: React.FC = () => {
         </div>
 
         {/* Viewer */}
-        <div className="flex min-w-0 flex-col gap-2 lg:w-[62%]">
+        <div className={STORY_SPLIT.viewer}>
           <div
             data-viz-viewer
+            data-view={view}
             onWheel={viewer.onViewerWheel}
+            // 2D below xl: no fixed height, so the drawing is as large as the width allows.
             className={`relative overflow-hidden rounded-xl border border-slate-300 bg-white shadow-lg ${
-              fullscreen ? 'h-[75vh]' : 'h-[420px] sm:h-[500px]'
+              fullscreen ? 'h-[75vh]' : is3D ? 'h-[420px] sm:h-[500px]' : 'xl:h-[500px]'
             }`}
           >
             {view === '3d' ? (
@@ -116,8 +122,8 @@ const StackHeapStory: React.FC = () => {
 
       <div className="mt-3">
         <TryInPlaygroundLink example="stack-heap-story" lens="stack-heap">
-          this program opens there with the Stack &amp; Heap lens chosen. Run it, then delete line
-          9 or line 11, and see which objects a root can still reach.
+          this program opens there with the Stack &amp; Heap lens chosen. Run it, then delete line 9
+          or line 11, and see which objects a root can still reach.
         </TryInPlaygroundLink>
       </div>
     </div>
