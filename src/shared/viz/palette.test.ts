@@ -156,12 +156,14 @@ describe('vizPalette', () => {
     };
 
     const TEXT: [name: string, colour: string, grounds: Grounds][] = [
-      // 2D: an object's heading, an entry's label, a head tag. 3D: the same on their cards.
+      // 2D: an object's heading, an entry's label, a head tag, and the MARKED tag of an object
+      // the collector has reached, which keeps the fill of its own kind (a scope included).
+      // 3D: the same on their cards.
       [
         'text.primary',
         p.text.primary,
         {
-          ...fills('object', 'array', 'function', 'unreachable', ...QUEUE_ROLES),
+          ...fills('object', 'array', 'function', 'scope', 'unreachable', ...QUEUE_ROLES),
           ...cards(...HEAP, ...QUEUE_ROLES),
         },
       ],
@@ -228,6 +230,15 @@ describe('vizPalette', () => {
         p[role].stroke,
         { ...cards(role), ...fills(role), ...scene, 'region.floor': p.region.floor },
       ]),
+      // 3D: the heavier border of the card of an object the collector has marked, which keeps
+      // the stroke of its own kind.
+      ...(['object', 'array', 'function', 'scope'] as const).map(
+        (role): [string, string, Grounds] => [
+          `${role}.stroke round a marked card`,
+          p[role].stroke,
+          { ...cards(role), ...scene, 'region.floor': p.region.floor },
+        ]
+      ),
       // The focus ring of any entity, the focused arrow and its head; the root pulse in 3D.
       ['focus', p.focus, { ...panel, ...allFills, ...scene, 'region.floor': p.region.floor }],
       // A root frame's dashed outline.

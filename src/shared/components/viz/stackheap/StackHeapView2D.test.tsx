@@ -5,6 +5,10 @@ import type { PlacedSnapshot } from './types';
 import type { HeapObject, Placed, Slot, StackFrame } from '../../../snapshot';
 import { vizPalette } from '../../../viz/palette';
 import { STORY_BEATS } from '../../../../features/javascript/utils/stackHeapStory';
+import {
+  STORY_BEATS as GC_BEATS,
+  withState,
+} from '../../../../features/javascript/utils/garbageCollectionStory';
 
 const frame = (id: string, slots: Slot[] = []): StackFrame => ({ id, name: `${id}()`, slots });
 
@@ -154,6 +158,82 @@ describe('StackHeapView2D', () => {
     expect(lost.querySelector('rect')!.getAttribute('stroke')).toBe(unreachable.stroke);
     expect(lost.hasAttribute('data-viz-unreachable')).toBe(true);
     expect(entity(on, 'kept').querySelector('rect')!.getAttribute('fill')).toBe(plain.fill);
+  });
+
+  describe('an object the collector has marked', () => {
+    const snapshot = (state: HeapObject['state']): PlacedSnapshot => ({
+      frames: [frame('main', [{ name: 'a', refId: 'kept' }])],
+      objects: [object('kept', 0, 0, [], { state }), object('other', 1, 0)],
+    });
+    const tag = (g: Element) => g.querySelector('[data-viz-tag="marked"]');
+    const width = (g: Element) => num(g.querySelector('rect')!, 'stroke-width');
+
+    it('gets a MARKED tag and a heavier outline, and keeps the colours of its kind', () => {
+      const { object: plain, text } = vizPalette.light;
+      const svg = draw(snapshot('marked'), { gcPhase: 'mark' });
+      const kept = entity(svg, 'kept');
+      const rect = kept.querySelector('rect')!;
+
+      expect(tag(kept)).toHaveTextContent('MARKED');
+      expect(tag(kept)!.getAttribute('fill')).toBe(text.primary);
+      expect(rect.getAttribute('fill')).toBe(plain.fill);
+      expect(rect.getAttribute('stroke')).toBe(plain.stroke);
+      expect(rect.hasAttribute('stroke-dasharray')).toBe(false);
+      // The cue that is not colour: twice the outline of the live object beside it
+      const other = entity(svg, 'other');
+      expect(width(kept)).toBe(3);
+      expect(width(other)).toBe(1.5);
+      expect(tag(other)).toBeNull();
+      expect(svg.textContent).not.toMatch(/UNMARKED|RECLAIMED/);
+    });
+
+    it('keeps the tag and the outline through the sweep, and in focus takes the focus colour', () => {
+      const svg = draw(snapshot('marked'), { gcPhase: 'sweep', focus: ['kept'] });
+      const kept = entity(svg, 'kept');
+      expect(tag(kept)).not.toBeNull();
+      expect(width(kept)).toBe(3);
+      expect(kept.querySelector('rect')!.getAttribute('stroke')).toBe(vizPalette.light.focus);
+    });
+
+    it('is not drawn for a live object', () => {
+      const svg = draw(snapshot('live'), { gcPhase: 'mark' });
+      expect(svg.querySelector('[data-viz-tag]')).toBeNull();
+      expect(svg.textContent).not.toContain('MARKED');
+      expect(width(entity(svg, 'kept'))).toBe(1.5);
+    });
+
+    it('is not drawn outside a collection: a Playground trace looks as it did', () => {
+      // The Stack & Heap lens hands over `marked` for an object held by a frame it does not
+      // draw; a trace never passes `gcPhase`.
+      const svg = draw(snapshot('marked'), { markUnreachable: true, theme: 'dark' });
+      const kept = entity(svg, 'kept');
+      expect(svg.textContent).not.toContain('MARKED');
+      expect(width(kept)).toBe(1.5);
+      expect(kept.querySelector('rect')!.getAttribute('fill')).toBe(vizPalette.dark.object.fill);
+    });
+
+    it('writes the tag in the dark palette when the theme is dark', () => {
+      const svg = draw(snapshot('marked'), { gcPhase: 'mark', theme: 'dark' });
+      expect(tag(entity(svg, 'kept'))!.getAttribute('fill')).toBe(vizPalette.dark.text.primary);
+    });
+
+    it('never appears in the Stack ↔ Heap story, whose collector reaches nothing', () => {
+      for (const beat of STORY_BEATS) {
+        const svg = draw(beat, { focus: beat.focus, gcPhase: beat.gcPhase });
+        expect(svg.querySelector('[data-viz-tag]'), beat.id).toBeNull();
+      }
+    });
+
+    it('is on exactly the marked objects of every Garbage Collection beat', () => {
+      for (const beat of GC_BEATS) {
+        const svg = draw(beat, { focus: beat.focus, gcPhase: beat.gcPhase });
+        expect(svg.getAttribute('viewBox'), beat.id).toBe('0 0 800 480');
+        const tagged = [...svg.querySelectorAll('[data-viz-label]')]
+          .filter((g) => tag(g))
+          .map((g) => g.querySelector('tspan')!.textContent!.trim().slice(1));
+        expect(tagged, beat.id).toEqual(withState(beat, 'marked'));
+      }
+    });
   });
 
   it('keeps every rect inside the viewBox and apart for a 3×4 heap with 6 frames', () => {

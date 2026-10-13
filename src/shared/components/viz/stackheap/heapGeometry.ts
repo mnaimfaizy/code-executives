@@ -50,6 +50,13 @@ const BAND = 20;
 /** Arrows that share a gutter or a band are spread over lanes this far apart. */
 const LANE_STEP = 4;
 const CORNER = 8;
+/**
+ * The way back in a mutual pair of row neighbours arcs over the gutter between them: it leaves
+ * and lands this far in from the facing edges, and its control points stand this far above the
+ * row (the curve peaks at three quarters of it, inside the clear band above every row).
+ */
+const RETURN_INSET = 40;
+const RETURN_RISE = 36;
 
 type PlacedObject = Placed<HeapObject>;
 
@@ -260,6 +267,15 @@ export function refPath(
       // Up-left: leave from the top, enter from the bottom.
       const tby = target.y + target.h;
       return `M ${sx} ${ownerBox.y} C ${sx} ${ownerBox.y - 50}, ${tx} ${tby + 50}, ${tx} ${tby}`;
+    }
+    if (dCol === -1 && dRow === 0 && targetObj.slots.some((s) => s.refId === src.id)) {
+      // The way back in a mutual pair. Drawn like any other arrow to the left it would cross
+      // the way out as an X in the gutter, each hiding the other's head; so it goes over the
+      // top: out of this object's top edge, into the target's. Decided by the slots and not
+      // by the objects' state, so the arrow keeps its path from beat to beat.
+      const x0 = ownerBox.x + RETURN_INSET;
+      const x1 = target.x + target.w - RETURN_INSET;
+      return `M ${x0} ${ownerBox.y} C ${x0} ${ownerBox.y - RETURN_RISE}, ${x1} ${target.y - RETURN_RISE}, ${x1} ${target.y}`;
     }
     if (dCol < 0) {
       // Straight left along a row: leave from the left edge, enter the right edge.

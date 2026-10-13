@@ -15,6 +15,9 @@ const KIND_RX: Record<HeapObject['kind'], number> = {
   scope: 8,
 };
 
+/** Outline of an object in focus, and of one the collector has marked (1.5 otherwise). */
+const HEAVY_STROKE = 3;
+
 /** The label shares its line with `#id`, so it gets what the id leaves (13px bold ≈ 7.5px). */
 const labelChars = (id: string) => Math.max(6, Math.floor((160 - (id.length + 3) * 6.2) / 7.5));
 
@@ -133,6 +136,9 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
         const isScope = o.kind === 'scope';
         const unmarked = o.state === 'unmarked';
         const collected = o.state === 'collected';
+        // A mark belongs to a collection, so it is drawn only while one runs. A Playground trace
+        // never passes `gcPhase`; its lens uses `marked` for "reachable from a frame not drawn".
+        const marked = o.state === 'marked' && gcPhase !== undefined;
         const unreachable = reachable !== null && o.state === 'live' && !reachable.has(o.id);
         const colors: EntityColors = unmarked || unreachable ? P.unreachable : P[o.kind];
         return (
@@ -140,6 +146,7 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
             data-viz-label
             data-viz-entity={o.kind}
             data-viz-unreachable={unreachable || undefined}
+            data-viz-state={o.state}
             key={o.id}
             className="sh-enter"
             opacity={collected ? 0.18 : 1}
@@ -154,7 +161,8 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
               rx={KIND_RX[o.kind]}
               fill={colors.fill}
               stroke={on ? P.focus : colors.stroke}
-              strokeWidth={on ? 3 : 1.5}
+              // A marked object keeps its own colour: the heavier outline is the cue.
+              strokeWidth={on || marked ? HEAVY_STROKE : 1.5}
               strokeDasharray={
                 collected ? '5 4' : isScope ? '6 4' : unreachable ? '2 3' : undefined
               }
@@ -183,6 +191,19 @@ const StackHeapView2D: React.FC<StackHeapViewProps> = ({
                 fill={P.text.unreachable}
               >
                 {collected ? 'RECLAIMED' : 'UNMARKED'}
+              </text>
+            )}
+            {marked && (
+              <text
+                data-viz-tag="marked"
+                x={b.x + b.w - 10}
+                y={b.y + 20}
+                fontSize={10}
+                fontWeight={700}
+                textAnchor="end"
+                fill={P.text.primary}
+              >
+                MARKED
               </text>
             )}
             {o.slots.length === 0 ? (

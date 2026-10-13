@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { examples, labelWithinSource } from './examples';
 import { parsePlaygroundLink, playgroundHref } from './playgroundLink';
 import { STORY_CODE as EVENT_LOOP_STORY_CODE } from '../../javascript/utils/eventLoopStory';
+import { STORY_CODE as GARBAGE_COLLECTION_STORY_CODE } from '../../javascript/utils/garbageCollectionStory';
 import { STORY_CODE as STACK_HEAP_STORY_CODE } from '../../javascript/utils/stackHeapStory';
 import { sectionSamples } from '../../javascript/utils/sectionSamples';
 import {
@@ -28,17 +29,19 @@ describe('examples', () => {
   });
 
   it('list the stories’ programs first, named as such', () => {
-    expect(examples.slice(0, 2).map((example) => example.id)).toEqual([
+    expect(examples.slice(0, 3).map((example) => example.id)).toEqual([
       'stack-heap-story',
       'event-loop-story',
+      'garbage-collection-story',
     ]);
-    for (const example of examples.slice(0, 2)) expect(example.label).toMatch(/^Story: /);
-    expect(examples.slice(2).every((example) => example.source?.kind !== 'story')).toBe(true);
+    for (const example of examples.slice(0, 3)) expect(example.label).toMatch(/^Story: /);
+    expect(examples.slice(3).every((example) => example.source?.kind !== 'story')).toBe(true);
   });
 
   it.each([
     ['stack-heap-story', STACK_HEAP_STORY_CODE, 'stack-heap'],
     ['event-loop-story', EVENT_LOOP_STORY_CODE, 'stack-queues'],
+    ['garbage-collection-story', GARBAGE_COLLECTION_STORY_CODE, 'stack-heap'],
   ])('%s is the story’s own program, with its lens', (id, code, lens) => {
     const example = byId(id);
     expect(example?.code).toBe(code);
@@ -48,7 +51,7 @@ describe('examples', () => {
 
   it('point a story’s example back at a section that exists', () => {
     const withStory = examples.filter((example) => example.source?.kind === 'story');
-    expect(withStory).toHaveLength(2);
+    expect(withStory).toHaveLength(3);
     for (const { source } of withStory) {
       const label = getSectionQueryValue(source!.href);
       expect(label).toBeTruthy();
