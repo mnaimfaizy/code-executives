@@ -24,6 +24,9 @@ interface AlgorithmExample {
   finalComplexity: string;
 }
 
+/** The input sizes of the "Measuring Versus Deriving" table: each ten times the one before. */
+const MEASURED_SIZES = [10, 100, 1_000, 10_000];
+
 const AlgorithmAnalysis: React.FC = () => {
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('linear-search');
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -382,6 +385,101 @@ const AlgorithmAnalysis: React.FC = () => {
     );
   };
 
+  const renderMeasuringVersusDeriving = () => (
+    <ThemeCard className="p-8">
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+        Measuring Versus Deriving
+      </h3>
+      <div className="space-y-4 text-gray-700">
+        <p>
+          The steps above <strong>derive</strong> a complexity from the code. The other way to learn
+          about an algorithm is to <strong>measure</strong> it: run it and time it. One timing
+          answers one question: how long this code took, on this machine, for this input size. It
+          is the right tool for comparing two implementations at the size you actually have.
+        </p>
+        <p>
+          One timing cannot tell you the Big-O class. Big-O describes how the work changes when n
+          changes, and a single measurement at a single n contains no change. Two things hide the
+          growth in it:
+        </p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>
+            <strong>Constants.</strong> Big-O drops them, but a stopwatch does not. In the table
+            below, algorithm A does 100 operations for each element and algorithm B does one
+            operation for each pair of elements. At n = 10 the O(n²) algorithm is ten times
+            faster.
+          </li>
+          <li>
+            <strong>Noise.</strong> The same run takes a different time each time: other programs
+            use the processor, data is or is not in the cache, and the engine may still be
+            compiling the code. A small difference between two timings can be nothing but this.
+          </li>
+        </ul>
+      </div>
+
+      <div className="mt-6 overflow-x-auto">
+        <table className="w-full text-sm text-left border border-gray-200 rounded-lg">
+          <caption className="sr-only">
+            Operations of a linear and a quadratic algorithm at four input sizes
+          </caption>
+          <thead className="bg-gray-50 text-gray-900">
+            <tr>
+              <th scope="col" className="px-4 py-2 font-semibold">
+                n
+              </th>
+              <th scope="col" className="px-4 py-2 font-semibold">
+                A: 100 × n, O(n)
+              </th>
+              <th scope="col" className="px-4 py-2 font-semibold">
+                B: n × n, O(n²)
+              </th>
+              <th scope="col" className="px-4 py-2 font-semibold">
+                Fewer operations
+              </th>
+            </tr>
+          </thead>
+          <tbody className="font-mono text-gray-800">
+            {MEASURED_SIZES.map((n) => {
+              const a = 100 * n;
+              const b = n * n;
+              return (
+                <tr key={n} className="border-t border-gray-200">
+                  <th scope="row" className="px-4 py-2 font-normal">
+                    {n.toLocaleString('en-US')}
+                  </th>
+                  <td className="px-4 py-2">{a.toLocaleString('en-US')}</td>
+                  <td className="px-4 py-2">{b.toLocaleString('en-US')}</td>
+                  <td className="px-4 py-2 font-sans">{a === b ? 'Equal' : a < b ? 'A' : 'B'}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-6 space-y-4 text-gray-700">
+        <p>
+          A benchmark at n = 10 alone would rank B first, and a benchmark at n = 100 alone would
+          call them equal. Only the whole column shows what happens: each time n grows ten times,
+          A&apos;s work grows ten times and B&apos;s grows a hundred times.
+        </p>
+        <p>There are two ways to see growth:</p>
+        <ul className="list-disc pl-6 space-y-2">
+          <li>
+            <strong>Derive it from the code</strong>, as in the steps above. The result holds for
+            every machine and every input size.
+          </li>
+          <li>
+            <strong>Measure at several sizes</strong> and look at how the time changes, not at any
+            one value. When n doubles, a time that stays about the same suggests O(1), a time that
+            doubles suggests O(n), and a time that grows four times suggests O(n²). Repeat each
+            measurement, and use sizes large enough that the growth is bigger than the noise.
+          </li>
+        </ul>
+      </div>
+    </ThemeCard>
+  );
+
   const renderAnalysisTips = () => (
     <div className="space-y-6">
       <ThemeCard className="p-8">
@@ -439,6 +537,9 @@ const AlgorithmAnalysis: React.FC = () => {
 
       {/* Code Viewer */}
       {renderCodeViewer()}
+
+      {/* Measuring versus deriving */}
+      {renderMeasuringVersusDeriving()}
 
       {/* Analysis Tips */}
       {renderAnalysisTips()}

@@ -79,32 +79,6 @@ export const examples: Example[] = [
     },
   },
   {
-    id: 'event-loop-demo',
-    label: 'Event Loop Demo',
-    description: 'Async execution order with setTimeout and Promises',
-    language: 'javascript',
-    suggestedLens: 'stack-queues',
-    code: `// Event Loop Demo
-// Watch how tasks are scheduled in the event loop
-
-console.log("1 — Synchronous (main script)");
-
-setTimeout(() => {
-  console.log("4 — Macrotask (setTimeout)");
-}, 0);
-
-Promise.resolve()
-  .then(() => {
-    console.log("2 — Microtask (Promise.then)");
-  })
-  .then(() => {
-    console.log("3 — Microtask (chained .then)");
-  });
-
-console.log("1.5 — Synchronous (still main script)");
-`,
-  },
-  {
     id: 'binary-search-tree',
     label: 'Binary Search Tree',
     description: 'BST insertion and in-order traversal',

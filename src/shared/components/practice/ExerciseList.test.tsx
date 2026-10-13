@@ -12,8 +12,18 @@ const cards: ExerciseCard[] = [
     summary: 'Find the two numbers that add up to a target.',
     href: '/playground?exercise=two-sum',
     lessons: [
-      { label: 'Hash Tables', href: '/datastructures?section=Hash%20Tables' },
-      { label: 'Real-World Applications', href: '/bigo?section=real-world-applications' },
+      {
+        moduleId: 'datastructures',
+        section: 'Hash Tables',
+        label: 'Data Structures: Hash Tables',
+        href: '/datastructures?section=Hash%20Tables',
+      },
+      {
+        moduleId: 'bigo',
+        section: 'Real-World Applications',
+        label: 'Big-O Notation: Real-World Applications',
+        href: '/bigo?section=real-world-applications',
+      },
     ],
   },
   {
@@ -58,21 +68,42 @@ describe('ExerciseList', () => {
     render(<ExerciseList exercises={cards} />);
 
     expect(screen.queryByText(/Taught in/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Hash Tables' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /Hash Tables/ })).not.toBeInTheDocument();
   });
 
   it('links each exercise to the sections that teach it, in the same tab', () => {
     render(<ExerciseList exercises={cards} showLessons />);
-    const lesson = row('two-sum').getByRole('link', { name: 'Hash Tables' });
+    const lesson = row('two-sum').getByRole('link', { name: 'Data Structures: Hash Tables' });
 
     expect(lesson).toHaveAttribute('href', '/datastructures?section=Hash%20Tables');
     expect(lesson).not.toHaveAttribute('target');
-    expect(row('two-sum').getByRole('link', { name: 'Real-World Applications' })).toHaveAttribute(
-      'href',
-      '/bigo?section=real-world-applications'
-    );
+    expect(
+      row('two-sum').getByRole('link', { name: 'Big-O Notation: Real-World Applications' })
+    ).toHaveAttribute('href', '/bigo?section=real-world-applications');
     // No lessons, no "Taught in" line
     expect(row('maximum-subarray').queryByText(/Taught in/)).not.toBeInTheDocument();
+  });
+
+  it('names a lesson of the page’s own module by its section alone, and any other in full', () => {
+    const { rerender } = render(
+      <ExerciseList exercises={cards} showLessons moduleId="datastructures" />
+    );
+
+    expect(row('two-sum').getByRole('link', { name: 'Hash Tables' })).toHaveAttribute(
+      'href',
+      '/datastructures?section=Hash%20Tables'
+    );
+    expect(
+      row('two-sum').getByRole('link', { name: 'Big-O Notation: Real-World Applications' })
+    ).toBeInTheDocument();
+    expect(row('two-sum').getByText(/Taught in/)).toHaveTextContent(
+      'Taught in Hash Tables, Big-O Notation: Real-World Applications'
+    );
+
+    rerender(<ExerciseList exercises={cards} showLessons moduleId="bigo" />);
+    expect(row('two-sum').getByText(/Taught in/)).toHaveTextContent(
+      'Taught in Data Structures: Hash Tables, Real-World Applications'
+    );
   });
 
   it('marks a passed exercise in words, and only that one', () => {

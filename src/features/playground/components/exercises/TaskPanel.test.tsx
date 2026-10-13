@@ -75,6 +75,9 @@ describe('TaskPanel', () => {
     const [first, second] = twoSum.teaches!;
     const paragraph = screen.getByText(/^Learn this first:/);
     const link = within(paragraph).getByRole('link');
+    // The full label: the Playground is outside the module's page, so the module is named
+    expect(first.label).toBe('Data Structures: Hash Tables');
+    expect(second.label).toBe('Big-O Notation: Real-World Applications');
     expect(link).toHaveAccessibleName(`${first.label} (opens in a new tab)`);
     expect(link).toHaveAttribute('href', '/datastructures?section=Hash%20Tables');
     expect(link).toHaveAttribute('target', '_blank');
