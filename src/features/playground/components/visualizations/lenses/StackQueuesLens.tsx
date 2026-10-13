@@ -1,7 +1,7 @@
 import React, { lazy, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { useReducedMotion, useStoryViewer } from '../../../../../shared/hooks';
-import { useViewChoice } from '../../../../../shared/hooks/useViewChoice';
+import { useViewChoice, type VizView } from '../../../../../shared/hooks/useViewChoice';
 import EventLoopView2D from '../../../../../shared/components/viz/eventloop/EventLoopView2D';
 import type { EventLoopView3DProps } from '../../../../../shared/components/viz/eventloop/types';
 import ViewToggle from '../../../../../shared/components/viz/ViewToggle';
@@ -41,6 +41,8 @@ export interface StackQueuesLensProps {
   approximate?: boolean;
   /** The 3D renderer. Default: the lens's own, loaded on demand. */
   view3D?: View3D;
+  /** Called when the learner picks a view with the 2D / 3D toggle. */
+  onViewChange?: (view: VizView) => void;
 }
 
 const VIEW_KEY = 'code-executives.playground.stack-queues.view';
@@ -49,7 +51,9 @@ const P = vizPalette.dark;
 /**
  * The smallest 3D viewer in which five frames beside three full lanes keep their labels apart
  * and in frame (`MIN_VIEWER` in the view's layout): labels are DOM cards of a fixed size, so a
- * small viewer cannot simply zoom out. A pane smaller than this scrolls.
+ * small viewer cannot simply zoom out. A pane smaller than this scrolls. The width is
+ * `VIEWER_3D_MIN_WIDTH` (lensViewer.ts), written out because Tailwind cannot see a class name
+ * built at runtime.
  */
 const VIEWER_3D = 'min-h-[520px] min-w-[760px]';
 
@@ -112,6 +116,7 @@ const StackQueuesLens: React.FC<StackQueuesLensProps> = ({
   heapRecorded,
   approximate = false,
   view3D: View3DComponent = EventLoopView3D,
+  onViewChange,
 }) => {
   const reducedMotion = useReducedMotion();
   const { view, webgl, chooseView } = useViewChoice(VIEW_KEY);
@@ -190,7 +195,15 @@ const StackQueuesLens: React.FC<StackQueuesLensProps> = ({
               )}
             </button>
           )}
-          <ViewToggle view={view} onChange={chooseView} webgl={webgl} theme="dark" />
+          <ViewToggle
+            view={view}
+            onChange={(next: VizView) => {
+              chooseView(next);
+              onViewChange?.(next);
+            }}
+            webgl={webgl}
+            theme="dark"
+          />
         </div>
       </div>
 

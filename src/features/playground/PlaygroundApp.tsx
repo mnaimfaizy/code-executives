@@ -10,6 +10,7 @@ import ConsoleOutput from './components/execution/ConsoleOutput';
 import PythonRunner from './components/execution/PythonRunner';
 import StepControls from './components/instrumentation/StepControls';
 import VisualizationCanvas from './components/visualizations/VisualizationCanvas';
+import { VIEWER_3D_MIN_WIDTH } from './components/visualizations/lensViewer';
 import RightPaneTabs, { type RightPaneTab } from './components/layout/RightPaneTabs';
 import TaskPanel from './components/exercises/TaskPanel';
 import ConfirmBar, { type ConfirmRequest } from './components/exercises/ConfirmBar';
@@ -19,7 +20,7 @@ import { useSandbox } from './hooks/useSandbox';
 import { usePyodide } from './hooks/usePyodide';
 import { useTrace } from './hooks/useTrace';
 import { usePaneLayout } from './hooks/usePaneLayout';
-import { instrument, resolveTraceLimits } from './tracer';
+import { guardLoops, instrument, resolveTraceLimits } from './tracer';
 import { transpileTypeScript } from './services/transpileTypeScript';
 import { examples, type Example } from './utils/examples';
 import { getDefaultTemplate } from './utils/codeTemplates';
@@ -97,6 +98,26 @@ const PlaygroundApp: React.FC = () => {
 
   // Resizable pane layout
   const paneLayout = usePaneLayout();
+  const lensPaneRef = useRef<HTMLDivElement>(null);
+  const { widenMiddle } = paneLayout;
+
+  /**
+   * The 3D view needs a wider viewer than the lens pane has by default. At the moment the
+   * learner chooses 3D, the pane is widened to fit it if the window has the room; after
+   * that the dividers are the learner's again.
+   */
+  const handleLensViewChange = useCallback(
+    (view: '2d' | '3d'): void => {
+      const pane = lensPaneRef.current;
+      const viewer = pane?.querySelector('[data-viz-viewer]');
+      if (view !== '3d' || !pane || !viewer) return;
+      const paneWidth = pane.getBoundingClientRect().width;
+      // What the pane puts around the viewer (its border) stays around the wider one
+      const around = paneWidth - viewer.getBoundingClientRect().width;
+      widenMiddle({ pane: paneWidth, needed: VIEWER_3D_MIN_WIDTH + Math.max(0, around) });
+    },
+    [widenMiddle]
+  );
 
   // Settings
   const [settings, setSettings] = useState<PlaygroundSettings>(loadSettings);
@@ -158,9 +179,19 @@ const PlaygroundApp: React.FC = () => {
             }
           });
       } else {
-        sandbox.execute(js, { mapLine, rateLimit }).then((result) => {
-          setExecutionState(result.error ? 'error' : 'completed');
-        });
+        // Trace off: the code only counts its loop turns and calls, so one that does not
+        // end is stopped. Code the guard cannot parse runs as it is, and the engine
+        // reports its syntax error.
+        const guarded = guardLoops(js);
+        sandbox
+          .execute(guarded.ok ? guarded.code : js, {
+            mapLine,
+            rateLimit,
+            guard: guarded.ok ? guarded.guard : undefined,
+          })
+          .then((result) => {
+            setExecutionState(result.error ? 'error' : 'completed');
+          });
       }
     },
     [sandbox, setExecutionState, trace]
@@ -659,6 +690,8 @@ const PlaygroundApp: React.FC = () => {
 
         {/* Visualization / Steps Pane */}
         <div
+          ref={lensPaneRef}
+          data-testid="lens-pane"
           className="flex flex-col rounded-lg overflow-hidden"
           style={{
             width: `${(paneLayout.dividers[1] - paneLayout.dividers[0]) * 100}%`,
@@ -675,6 +708,7 @@ const PlaygroundApp: React.FC = () => {
               index={trace.index}
               language={language}
               queuesApproximate={trace.queuesApproximate}
+              onViewChange={handleLensViewChange}
             />
           </div>
           {/* Step controls (bottom) */}

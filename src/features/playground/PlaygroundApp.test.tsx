@@ -15,6 +15,7 @@ import { traceSync } from './tracer';
 const mocks = vi.hoisted(() => ({
   execute: vi.fn(),
   reportError: vi.fn(),
+  widenMiddle: vi.fn(),
 }));
 
 // Mock Monaco Editor
@@ -65,7 +66,13 @@ vi.mock('./components/theme/SpaceBackground', () => ({
 // Mock VisualizationCanvas (the lens loads lazily)
 vi.mock('./components/visualizations/VisualizationCanvas', () => ({
   __esModule: true,
-  default: () => <div data-testid="mock-visualization" />,
+  default: ({ onViewChange }: { onViewChange?: (view: '2d' | '3d') => void }) => (
+    <div data-testid="mock-visualization">
+      <div data-viz-viewer data-testid="mock-viewer" />
+      <button onClick={() => onViewChange?.('3d')}>choose 3D</button>
+      <button onClick={() => onViewChange?.('2d')}>choose 2D</button>
+    </div>
+  ),
 }));
 
 // Mock CSS import
@@ -105,6 +112,7 @@ vi.mock('./hooks/usePaneLayout', () => ({
   usePaneLayout: () => ({
     dividers: [0.3, 0.78],
     setDivider: vi.fn(),
+    widenMiddle: mocks.widenMiddle,
     resetDividers: vi.fn(),
   }),
 }));
@@ -120,8 +128,6 @@ vi.mock('./components/layout/playgroundSettings', () => ({
   loadSettings: () => ({
     fontSize: 14,
     wordWrap: true,
-    executionTimeoutMs: 10_000,
-    animationsEnabled: true,
   }),
   saveSettings: vi.fn(),
 }));
@@ -207,6 +213,50 @@ describe('PlaygroundApp', () => {
       screen.getByText(`Step ${trace.steps.length} of ${trace.steps.length}`)
     ).toBeInTheDocument();
     expect(screen.getByTestId('mock-editor').getAttribute('data-line')).toBe('2');
+  });
+
+  it('runs guarded code with Trace off: counted, on its own lines, with the fixed limit', async () => {
+    render(<PlaygroundApp />);
+    fireEvent.click(screen.getByLabelText('Trace'));
+    await run();
+
+    const [code, options] = mocks.execute.mock.calls[0];
+    expect(options.traceLimits).toBeUndefined();
+    expect(options.guard.limit).toBe(1_000_000);
+    expect(options.guard.message).toMatch(/^Stopped after 1,000,000 loop turns and calls/);
+    // No tracer, only the counter, and not one line more than the learner wrote
+    expect(code).not.toContain('__t.');
+    expect(code).toContain(`function greet(name) {${options.guard.name}();`);
+    const source = screen.getByTestId('mock-editor').firstChild?.textContent ?? '';
+    expect(code.split('\n')).toHaveLength(source.split('\n').length);
+  });
+
+  it('leaves a syntax error to the engine with Trace off: the code runs unguarded', async () => {
+    render(<PlaygroundApp />);
+    fireEvent.click(screen.getByLabelText('Trace'));
+    fireEvent.click(screen.getByText('break the code'));
+    await run();
+
+    const [code, options] = mocks.execute.mock.calls[0];
+    expect(code).toBe('const a = 1;\nconst = ;');
+    expect(options.guard).toBeUndefined();
+    expect(mocks.reportError).not.toHaveBeenCalled();
+  });
+
+  it('asks for a lens pane wide enough for 3D at the moment the learner chooses 3D', () => {
+    render(<PlaygroundApp />);
+    const rect = (width: number) => (): DOMRect => ({ width }) as DOMRect;
+    // The pane is 690px wide and its border leaves the viewer 688
+    screen.getByTestId('lens-pane').getBoundingClientRect = rect(690);
+    screen.getByTestId('mock-viewer').getBoundingClientRect = rect(688);
+
+    fireEvent.click(screen.getByText('choose 2D'));
+    expect(mocks.widenMiddle).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('choose 3D'));
+    // 760 for the viewer, and the 2px the pane puts around it
+    expect(mocks.widenMiddle).toHaveBeenCalledTimes(1);
+    expect(mocks.widenMiddle).toHaveBeenCalledWith({ pane: 690, needed: 762 });
   });
 
   it('keeps the steps of a run that ended in an error', async () => {

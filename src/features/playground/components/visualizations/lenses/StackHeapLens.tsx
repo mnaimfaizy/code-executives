@@ -1,7 +1,7 @@
 import React, { lazy, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Maximize2, Minimize2 } from 'lucide-react';
 import { useReducedMotion, useStoryViewer } from '../../../../../shared/hooks';
-import { useViewChoice } from '../../../../../shared/hooks/useViewChoice';
+import { useViewChoice, type VizView } from '../../../../../shared/hooks/useViewChoice';
 import StackHeapView2D from '../../../../../shared/components/viz/stackheap/StackHeapView2D';
 import ViewToggle from '../../../../../shared/components/viz/ViewToggle';
 import View3DBoundary from '../../../../../shared/components/viz/View3DBoundary';
@@ -11,10 +11,13 @@ import { vizPalette } from '../../../../../shared/viz/palette';
 import type { Step } from '../../../tracer';
 import {
   MIN_2D_SCALE,
+  SHOWN_IN_2D_NOTE,
   describeStep,
   notesFor,
   prepareTrace,
   tooLargeMessage,
+  viewForStep,
+  type LensStep,
 } from './stackHeapLensModel';
 
 // three.js + R3F only download when the learner switches to 3D.
@@ -31,6 +34,8 @@ export interface StackHeapLensProps {
   index: number;
   /** False when the run could not record heap objects (Python, for now). */
   heapRecorded?: boolean;
+  /** Called when the learner picks a view with the 2D / 3D toggle. */
+  onViewChange?: (view: VizView) => void;
 }
 
 const VIEW_KEY = 'code-executives.playground.stack-heap.view';
@@ -39,7 +44,8 @@ const P = vizPalette.dark;
 /**
  * The smallest 3D viewer in which a full floor beside five frames keeps its labels apart and in
  * frame: labels are DOM cards of a fixed size, so a small viewer cannot simply zoom out. A pane
- * smaller than this scrolls.
+ * smaller than this scrolls. The width is `VIEWER_3D_MIN_WIDTH` (lensViewer.ts), written out
+ * because Tailwind cannot see a class name built at runtime.
  */
 const VIEWER_3D = 'min-h-[520px] min-w-[760px]';
 
@@ -105,15 +111,40 @@ const Message: React.FC<{ title: string; children: React.ReactNode }> = ({ title
   </div>
 );
 
-const StackHeapLens: React.FC<StackHeapLensProps> = ({ steps, index, heapRecorded }) => {
+const StackHeapLens: React.FC<StackHeapLensProps> = ({
+  steps,
+  index,
+  heapRecorded,
+  onViewChange,
+}) => {
   const reducedMotion = useReducedMotion();
   const { view, webgl, chooseView } = useViewChoice(VIEW_KEY);
   const rootRef = useRef<HTMLDivElement>(null);
-  const viewer = useStoryViewer({ rootRef, is3D: view === '3d', step: noStep });
-  const fullscreen = viewer.fullscreen;
 
   // The whole trace is prepared once: every drawn object gets one cell, and the floor one size.
-  const trace = useMemo(() => prepareTrace(steps, { heapRecorded }), [steps, heapRecorded]);
+  // Each view has its own largest floor, so the 3D view gets a preparation of its own.
+  const trace2D = useMemo(
+    () => prepareTrace(steps, { heapRecorded, view: '2d' }),
+    [steps, heapRecorded]
+  );
+  const trace3D = useMemo(
+    () => (view === '3d' ? prepareTrace(steps, { heapRecorded, view: '3d' }) : null),
+    [steps, heapRecorded, view]
+  );
+
+  const at = Math.min(steps.length - 1, Math.max(0, Math.floor(index) || 0));
+  // A step that fits the 2D floor but not the 3D one is drawn in 2D. The choice stays 3D, so
+  // the next step that fits is back in 3D.
+  const shown =
+    steps.length > 0
+      ? viewForStep(view, trace2D.steps[at], trace3D?.steps[at])
+      : { view: '2d' as const, fellBack: false };
+  const lens3D: LensStep | undefined = shown.view === '3d' ? trace3D?.steps[at] : undefined;
+  const scene3D = lens3D?.status === 'drawn' && trace3D ? { lens: lens3D, trace: trace3D } : null;
+  const is3D = scene3D !== null;
+
+  const viewer = useStoryViewer({ rootRef, is3D, step: noStep });
+  const fullscreen = viewer.fullscreen;
 
   if (steps.length === 0) {
     return (
@@ -125,26 +156,35 @@ const StackHeapLens: React.FC<StackHeapLensProps> = ({ steps, index, heapRecorde
     );
   }
 
-  const at = Math.min(steps.length - 1, Math.max(0, Math.floor(index) || 0));
   const step = steps[at];
-  const lens = trace.steps[at];
+  const lens2D = trace2D.steps[at];
+  const lens = scene3D?.lens ?? lens2D;
   const notes = notesFor(lens, { heapRecorded });
-  const label = `Stack and heap. ${describeStep(step, lens, { index: at, total: steps.length }, { heapRecorded })}`;
+  if (shown.fellBack) notes.push(SHOWN_IN_2D_NOTE);
+  const describe = (of: LensStep): string =>
+    `Stack and heap. ${describeStep(step, of, { index: at, total: steps.length }, { heapRecorded })}`;
+  const label = describe(lens);
   const drawn = lens.status === 'drawn';
-  const is3D = view === '3d' && drawn;
 
-  const view2D = drawn ? (
-    <Legible2D drawing={lens.snapshot} run={steps}>
-      <StackHeapView2D
-        snapshot={lens.snapshot}
-        focus={step.focus}
-        theme="dark"
-        markUnreachable
-        grid={trace.grid}
-        label={label}
-      />
-    </Legible2D>
-  ) : null;
+  // Also what the 3D view falls back to when it cannot start
+  const view2D =
+    lens2D.status === 'drawn' ? (
+      <Legible2D drawing={lens2D.snapshot} run={steps}>
+        <StackHeapView2D
+          snapshot={lens2D.snapshot}
+          focus={step.focus}
+          theme="dark"
+          markUnreachable
+          grid={trace2D.grid}
+          label={describe(lens2D)}
+        />
+      </Legible2D>
+    ) : null;
+
+  const onChooseView = (next: VizView): void => {
+    chooseView(next);
+    onViewChange?.(next);
+  };
 
   // Stepping belongs to the Playground's own controls: the arrow keys pass through untouched.
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -165,7 +205,7 @@ const StackHeapLens: React.FC<StackHeapLensProps> = ({ steps, index, heapRecorde
           {notes.join(' · ')}
         </p>
         <div className="flex items-center gap-2">
-          {view === '2d' && fullscreen.supported && (
+          {!is3D && fullscreen.supported && (
             <button
               type="button"
               aria-label={fullscreen.isFullscreen ? 'Exit full screen' : 'Full screen'}
@@ -180,7 +220,7 @@ const StackHeapLens: React.FC<StackHeapLensProps> = ({ steps, index, heapRecorde
               )}
             </button>
           )}
-          <ViewToggle view={view} onChange={chooseView} webgl={webgl} theme="dark" />
+          <ViewToggle view={view} onChange={onChooseView} webgl={webgl} theme="dark" />
         </div>
       </div>
 
@@ -198,14 +238,14 @@ const StackHeapLens: React.FC<StackHeapLensProps> = ({ steps, index, heapRecorde
             {tooLargeMessage(lens)} Step back to a smaller moment, or run a smaller input; the
             Console and the highlighted line still follow every step.
           </Message>
-        ) : is3D ? (
+        ) : scene3D ? (
           <View3DBoundary view2D={view2D} theme="dark">
             <StackHeapView3D
-              snapshot={lens.snapshot}
+              snapshot={scene3D.lens.snapshot}
               focus={step.focus}
               theme="dark"
               markUnreachable
-              grid={trace.grid}
+              grid={scene3D.trace.grid}
               shot="overview"
               label={`3D view. ${label}`}
               camera={viewer.camera}

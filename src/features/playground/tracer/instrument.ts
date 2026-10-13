@@ -534,25 +534,41 @@ function rewrite(program: Node): void {
 
 const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
+/** A parsed program: an ESTree node with `start`, `end` and `loc` on every node. */
+export type ProgramNode = Node;
+
+/**
+ * Parses the learner's code the way a run takes it: a script that may `return` at the top
+ * level, as the body of `new Function` may. A syntax error comes back with its line.
+ * The tracer's rewrite and the loop guard (`loopGuard.ts`) both start here.
+ */
+export function parseLearnerCode(
+  code: string
+): { ok: true; program: ProgramNode } | { ok: false; error: { message: string; line?: number } } {
+  try {
+    const program = acorn.parse(code, {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      locations: true,
+      allowReturnOutsideFunction: true,
+    }) as unknown as Node;
+    return { ok: true, program };
+  } catch (error) {
+    const line = (error as { loc?: { line?: number } }).loc?.line;
+    const message = messageOf(error).replace(/\s*\(\d+:\d+\)$/, '');
+    return { ok: false, error: line === undefined ? { message } : { message, line } };
+  }
+}
+
 /**
  * Instruments the learner's code. The result runs as a script (or a `new Function` body)
  * with the runtime in scope as `__t`; it takes its timers, `Promise` and clock from the runtime. Line numbers reported to the runtime are lines of
  * `code` itself. A syntax error is reported with its line and nothing is rewritten.
  */
 export function instrument(code: string): InstrumentResult {
-  let program: Node;
-  try {
-    program = acorn.parse(code, {
-      ecmaVersion: 'latest',
-      sourceType: 'script',
-      locations: true,
-      allowReturnOutsideFunction: true,
-    }) as unknown as Node;
-  } catch (error) {
-    const line = (error as { loc?: { line?: number } }).loc?.line;
-    const message = messageOf(error).replace(/\s*\(\d+:\d+\)$/, '');
-    return { ok: false, error: line === undefined ? { message } : { message, line } };
-  }
+  const parsed = parseLearnerCode(code);
+  if (!parsed.ok) return parsed;
+  const program = parsed.program;
   try {
     rewrite(program);
     const instrumented = generate(program as unknown as Parameters<typeof generate>[0]);

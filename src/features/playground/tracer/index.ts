@@ -20,6 +20,14 @@ export {
 } from './types';
 export type { InstrumentResult } from './instrument';
 export { instrument, TRACER_NAME } from './instrument';
+export type { GuardResult, LoopGuard, LoopGuardCounter } from './loopGuard';
+export {
+  LOOP_GUARD_LIMIT,
+  LoopGuardStop,
+  createLoopGuard,
+  guardLoops,
+  loopGuardMessage,
+} from './loopGuard';
 export type { Getter, ScopeHandle, Tracer, TracerHooks } from './runtime';
 export { createTracer, runtimeSource } from './runtime';
 export type { TraceRun } from './trace';

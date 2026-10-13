@@ -151,8 +151,56 @@ describe('stack-and-heap layout', () => {
         more: 0,
       });
       expect(frameLabelPlan(2, 3, 6)).toMatchObject({ stacked: true, grow: 'up', more: 0 });
-      // Between them a label has one pitch of height: one line, cut.
-      expect(frameLabelPlan(1, 3, 6)).toEqual({ stacked: false, cut: true });
+    });
+
+    it('gives a frame between them one row: two slots and the count of the rest', () => {
+      // Between the ends a label has one pitch of height
+      expect(frameLabelPlan(1, 3, 6)).toEqual({
+        stacked: false,
+        cut: true,
+        slots: [0, 1],
+        more: 4,
+      });
+      expect(frameLabelPlan(2, 5, 3)).toEqual({
+        stacked: false,
+        cut: true,
+        slots: [0, 1],
+        more: 1,
+      });
+      // Every middle frame of a deep stack, never the two ends
+      for (let index = 1; index < 4; index++) {
+        expect(frameLabelPlan(index, 5, 9)).toMatchObject({ stacked: false, cut: true });
+      }
+      expect(frameLabelPlan(0, 5, 9).stacked).toBe(true);
+      expect(frameLabelPlan(4, 5, 9).stacked).toBe(true);
+      // Up to two slots fit the row whole
+      expect(frameLabelPlan(1, 3, FRAME_ROW_SLOTS)).toEqual({ stacked: false, cut: false });
+    });
+
+    it('shows the focused slots of a middle frame first', () => {
+      const focused =
+        (...indexes: number[]) =>
+        (i: number) =>
+          indexes.includes(i);
+      // One focused slot takes a place, the first unfocused slot the other; frame order
+      expect(frameLabelPlan(1, 3, 6, focused(4))).toMatchObject({ slots: [0, 4], more: 4 });
+      expect(frameLabelPlan(1, 3, 6, focused(0))).toMatchObject({ slots: [0, 1], more: 4 });
+      // Two focused slots are both shown
+      expect(frameLabelPlan(1, 3, 6, focused(5, 2))).toMatchObject({ slots: [2, 5], more: 4 });
+      // More than two: the first two focused, and the rest are counted
+      expect(frameLabelPlan(1, 3, 6, focused(1, 3, 5))).toMatchObject({ slots: [1, 3], more: 4 });
+    });
+
+    it('never makes a middle frame taller than the one-row card', () => {
+      // Only a stacked label adds lines (`extraLines` in frameCard.ts); a middle frame's label
+      // is never stacked, and its row never holds more than two slots
+      for (const slotCount of [3, 6, 20]) {
+        const plan = frameLabelPlan(1, 3, slotCount, () => true);
+        expect(plan.stacked).toBe(false);
+        if (plan.stacked || !plan.cut) throw new Error('expected a cut label');
+        expect(plan.slots).toHaveLength(FRAME_ROW_SLOTS);
+        expect(plan.slots.length + plan.more).toBe(slotCount);
+      }
     });
 
     it('caps the list, the "+N more" line included', () => {

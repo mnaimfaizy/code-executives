@@ -16,6 +16,7 @@ import {
   lineStyle,
   titleClass,
 } from './frameCard';
+import { FrameRow } from './FrameRow';
 import { FRAME_SIZE, STACK_X, frameY, type FrameLabelPlan } from './layout';
 
 /**
@@ -94,7 +95,7 @@ export const FrameSlab: React.FC<{
   });
 
   const highlight = focused || root;
-  // An overfull frame with no room to stack takes the dense card: one line, cut at its width.
+  // An overfull frame with no room to stack takes the dense card: one row, cut at its width.
   const tight = dense || (!plan.stacked && plan.cut);
   const role = isTop ? P.frameActive : P.frame;
   return (
@@ -160,20 +161,7 @@ export const FrameSlab: React.FC<{
             )}
             {tag && <Tag tag={tag} tight={tight} />}
           </div>
-          <div className={tight ? undefined : 'flex gap-2.5'} style={lineStyle(tight)}>
-            {entry.frame.slots.map((s, i) => {
-              const f = focus.includes(slotKey(entry.frame.id, s.name));
-              return (
-                <span
-                  key={s.name}
-                  className={`${f ? 'font-bold' : ''}${tight && i > 0 ? ' ml-2.5' : ''}`}
-                  style={{ color: f ? P.text.onFocus : P.text.secondary }}
-                >
-                  {s.name}: {s.refId ? '●→' : s.value}
-                </span>
-              );
-            })}
-          </div>
+          <FrameRow frame={entry.frame} plan={plan} focus={focus} tight={tight} P={P} />
         </Label>
       )}
     </group>

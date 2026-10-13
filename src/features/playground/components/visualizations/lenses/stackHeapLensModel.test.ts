@@ -9,22 +9,28 @@ import {
 import { STORY_CODE } from '../../../../javascript/utils/stackHeapStory';
 import { traceSync, type Step } from '../../../tracer';
 import {
+  HEAP_LIMITS,
   MAX_DRAWN_FRAMES,
-  MAX_DRAWN_OBJECTS,
-  MAX_HEAP_COLS,
-  MAX_HEAP_ROWS,
+  MAX_DRAWN_OBJECTS_2D,
+  MAX_DRAWN_OBJECTS_3D,
   NOT_RECORDED,
+  SHOWN_IN_2D_NOTE,
   SKIPPED_FRAMES_ID,
   TOP_FRAMES,
   describeStep,
   heapColsFor,
+  heapFloorFor,
   notesFor,
   prepareTrace,
   selectStep,
   tooLargeMessage,
   trimFrames,
+  viewForStep,
   type LensStep,
 } from './stackHeapLensModel';
+
+// The 3D floor, which was the floor of both views before 2D got its own
+const { cols: MAX_HEAP_COLS, rows: MAX_HEAP_ROWS, objects: MAX_DRAWN_OBJECTS } = HEAP_LIMITS['3d'];
 
 const RECURSION = `function fact(n) {
   if (n <= 1) return 1;
@@ -44,6 +50,12 @@ const LOOP_KEEPING = `const keep = [];
 for (let i = 0; i < 15; i++) {
   keep.push({ i });
 }`;
+
+/**
+ * 25 objects that all stay reachable: too many for either view. A trace records the first 20
+ * slots of the array that holds them, so the step holds 21 objects.
+ */
+const LOOP_KEEPING_25 = LOOP_KEEPING.replace('15', '25');
 
 const ALIASING = `const a = { n: 1 };
 const b = a;
@@ -83,15 +95,31 @@ const expectNoDanglingReferences = (snapshot: Snapshot) => {
 };
 
 describe('limits', () => {
-  it('draws at most a full floor, and five frame boxes', () => {
-    expect(MAX_DRAWN_OBJECTS).toBe(MAX_HEAP_COLS * MAX_HEAP_ROWS);
+  it('draws at most a full floor, 20 objects in 2D and 9 in 3D, and five frame boxes', () => {
+    expect(HEAP_LIMITS['2d']).toEqual({ cols: 5, rows: 4, objects: 20 });
+    expect(HEAP_LIMITS['3d']).toEqual({ cols: 3, rows: 3, objects: 9 });
+    expect(MAX_DRAWN_OBJECTS_2D).toBe(20);
+    expect(MAX_DRAWN_OBJECTS_3D).toBe(9);
+    expect(MAX_DRAWN_FRAMES).toBe(5);
     expect(MAX_DRAWN_FRAMES).toBe(TOP_FRAMES + 2);
   });
 
   it('keeps two columns until a run needs the third', () => {
-    expect(heapColsFor(0)).toBe(2);
-    expect(heapColsFor(2 * MAX_HEAP_ROWS)).toBe(2);
-    expect(heapColsFor(2 * MAX_HEAP_ROWS + 1)).toBe(MAX_HEAP_COLS);
+    for (const view of ['2d', '3d'] as const) {
+      expect(heapColsFor(0, view)).toBe(2);
+      expect(heapColsFor(6, view)).toBe(2);
+      expect(heapColsFor(7, view)).toBe(3);
+      expect(heapFloorFor(9, view)).toEqual({ cols: 3, rows: 3 });
+    }
+  });
+
+  it('gives 2D a fourth and a fifth column, with a fourth row; 3D stays at 3×3', () => {
+    expect(heapFloorFor(10, '2d')).toEqual({ cols: 4, rows: 4 });
+    expect(heapFloorFor(16, '2d')).toEqual({ cols: 4, rows: 4 });
+    expect(heapFloorFor(17, '2d')).toEqual({ cols: 5, rows: 4 });
+    expect(heapFloorFor(20, '2d')).toEqual({ cols: 5, rows: 4 });
+    expect(heapFloorFor(10, '3d')).toEqual({ cols: 3, rows: 3 });
+    expect(heapFloorFor(20)).toEqual(heapFloorFor(20, '2d'));
   });
 });
 
@@ -206,9 +234,9 @@ describe('deep recursion', () => {
   });
 });
 
-describe('a loop that allocates 40 objects', () => {
+describe('a loop that allocates 40 objects, prepared for 3D', () => {
   const steps = stepsOf(LOOP);
-  const trace = prepareTrace(steps);
+  const trace = prepareTrace(steps, { view: '3d' });
 
   it('holds more objects than the lens draws', () => {
     expect(steps[steps.length - 1].snapshot.objects.length).toBe(41);
@@ -266,7 +294,7 @@ describe('a loop that allocates 40 objects', () => {
 
   it('is too large when every object stays reachable', () => {
     const keeping = stepsOf(LOOP_KEEPING);
-    const lens = prepareTrace(keeping);
+    const lens = prepareTrace(keeping, { view: '3d' });
     const last = lens.steps[lens.steps.length - 1];
     expect(last.status).toBe('too-large');
     expect(tooLargeMessage(last)).toBe(
@@ -287,6 +315,108 @@ describe('a loop that allocates 40 objects', () => {
     const [lens] = prepareTrace([cut]).steps;
     expect(lens.status).toBe('too-large');
     expect(tooLargeMessage(lens)).toMatch(/more than a trace records/);
+  });
+});
+
+describe('the 2D floor: up to 20 objects', () => {
+  it('draws 16 reachable objects whole, on a 4×4 floor, where 3D cannot', () => {
+    const steps = stepsOf(LOOP_KEEPING);
+    const in2D = prepareTrace(steps);
+    const in3D = prepareTrace(steps, { view: '3d' });
+    const at = steps.length - 1;
+    expect(steps[at].snapshot.objects).toHaveLength(16);
+    expect(drawn(in2D.steps[at]).objects).toHaveLength(16);
+    expect(in2D.grid).toEqual({ cols: 4, rows: 4 });
+    expect(in2D.steps.every((step) => step.status === 'drawn')).toBe(true);
+    expect(notesFor(in2D.steps[at])).toEqual([]);
+    expect(in3D.steps[at].status).toBe('too-large');
+    in2D.steps.forEach((step) => expectNoDanglingReferences(drawn(step)));
+  });
+
+  it('hides unreachable objects only past 20, and then fits the 5×4 floor', () => {
+    const steps = stepsOf(LOOP);
+    const trace = prepareTrace(steps, { view: '2d' });
+    trace.steps.forEach((step, i) => {
+      const full = steps[i].snapshot;
+      const snapshot = drawn(step);
+      expect(snapshot.objects.length).toBeLessThanOrEqual(20);
+      if (full.objects.length <= 20) {
+        expect(snapshot.objects).toHaveLength(full.objects.length);
+        expect(step.counts.unreachableHidden).toBe(0);
+      } else {
+        expect(step.counts.unreachableHidden).toBe(full.objects.length - snapshot.objects.length);
+      }
+    });
+    expect(trace.grid.cols).toBeLessThanOrEqual(5);
+    expect(trace.grid.rows).toBeLessThanOrEqual(4);
+    expect(trace.grid).toEqual({ cols: 5, rows: 4 });
+  });
+
+  it('never moves an object while it stays drawn, and never puts two on one cell', () => {
+    const trace = prepareTrace(stepsOf(LOOP));
+    let before = new Map<string, string>();
+    for (const step of trace.steps) {
+      const now = new Map(drawn(step).objects.map((o) => [o.id, `${o.cell.col},${o.cell.row}`]));
+      expect(new Set(now.values()).size).toBe(now.size);
+      for (const [id, cell] of now) {
+        if (before.has(id)) expect(cell, id).toBe(before.get(id));
+      }
+      before = now;
+    }
+  });
+
+  it('is too large above 20, and says the number', () => {
+    const steps = stepsOf(LOOP_KEEPING_25);
+    const lens = prepareTrace(steps);
+    const last = lens.steps[lens.steps.length - 1];
+    expect(last.status).toBe('too-large');
+    expect(tooLargeMessage(last)).toBe(
+      'This step holds 21 heap objects, 21 of them reachable. The lens draws up to 20.'
+    );
+    // The steps with up to 20 objects are drawn
+    const fullest = Math.max(
+      ...lens.steps.map((step) => (step.status === 'drawn' ? step.snapshot.objects.length : 0))
+    );
+    expect(fullest).toBe(20);
+  });
+
+  it('places a run that fits 3D the same in both views', () => {
+    const steps = stepsOf(ALIASING);
+    expect(prepareTrace(steps, { view: '3d' })).toEqual(prepareTrace(steps, { view: '2d' }));
+  });
+});
+
+describe('a step chosen in 3D that only fits 2D', () => {
+  const steps = stepsOf(LOOP_KEEPING);
+  const in2D = prepareTrace(steps, { view: '2d' });
+  const in3D = prepareTrace(steps, { view: '3d' });
+
+  it('is drawn in 2D with a note, and the steps that fit stay in 3D', () => {
+    const shown = steps.map((_, i) => viewForStep('3d', in2D.steps[i], in3D.steps[i]));
+    // The run starts small and ends with 16 objects
+    expect(shown[0]).toEqual({ view: '3d', fellBack: false });
+    expect(shown[shown.length - 1]).toEqual({ view: '2d', fellBack: true });
+    shown.forEach((choice, i) => {
+      const fits3D = steps[i].snapshot.objects.length <= 9;
+      expect(choice, `step ${i}`).toEqual(
+        fits3D ? { view: '3d', fellBack: false } : { view: '2d', fellBack: true }
+      );
+    });
+    expect(SHOWN_IN_2D_NOTE).toBe('This step is too large for 3D, so it is shown in 2D');
+  });
+
+  it('never falls back when the learner chose 2D', () => {
+    steps.forEach((_, i) => {
+      expect(viewForStep('2d', in2D.steps[i], undefined)).toEqual({ view: '2d', fellBack: false });
+    });
+  });
+
+  it('is not a fallback when the step fits neither view', () => {
+    const large = stepsOf(LOOP_KEEPING_25);
+    const at = large.length - 1;
+    const a = prepareTrace(large, { view: '2d' }).steps[at];
+    const b = prepareTrace(large, { view: '3d' }).steps[at];
+    expect(viewForStep('3d', a, b)).toEqual({ view: '2d', fellBack: false });
   });
 });
 
@@ -337,12 +467,13 @@ describe('describeStep', () => {
   });
 
   it('says a step is too large to draw', () => {
-    const steps = stepsOf(LOOP_KEEPING);
+    const steps = stepsOf(LOOP_KEEPING_25);
     const trace = prepareTrace(steps);
     const at = steps.length - 1;
     const text = describeStep(steps[at], trace.steps[at], { index: at, total: steps.length });
     expect(text).toContain('Heap: too large to draw.');
-    expect(text).toContain('16 heap objects');
+    expect(text).toContain('21 heap objects');
+    expect(text).toContain('The lens draws up to 20.');
   });
 });
 

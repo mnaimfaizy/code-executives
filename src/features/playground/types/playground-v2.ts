@@ -30,8 +30,7 @@ export interface PlaygroundConfig {
   code: string;
   executionState: ExecutionState;
   autoRun: boolean;
-  executionTimeoutMs: number;
 }
 
-/** Default execution timeout (10 seconds) */
+/** How long a run may take before the sandbox ends it (10 seconds). Fixed: there is no setting. */
 export const DEFAULT_EXECUTION_TIMEOUT_MS = 10_000;
