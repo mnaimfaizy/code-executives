@@ -1,8 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { getReferences, type HeapObject, type Placed, type Slot } from '../../../snapshot';
-import { layout2D, refPath } from './heapGeometry';
+import {
+  getCopyTrails,
+  getReferences,
+  type HeapObject,
+  type Placed,
+  type Slot,
+} from '../../../snapshot';
+import { SPACE_HEADER, copyTrailPath, layout2D, refPath } from './heapGeometry';
 import { checkArrows, samplePath } from './heapGeometryForTests';
 import type { PlacedSnapshot } from './types';
+import WITHOUT_SPACES from './__fixtures__/layoutWithoutSpaces.json';
+import { STORY_BEATS as STACK_HEAP_BEATS } from '../../../../features/javascript/utils/stackHeapStory';
+import { STORY_BEATS as GC_BEATS } from '../../../../features/javascript/utils/garbageCollectionStory';
+import { STORY_BEATS as GENERATIONAL_BEATS } from '../../../../features/javascript/utils/generationalCollectionStory';
 
 const COLS = 5;
 const ROWS = 4;
@@ -243,5 +253,110 @@ describe('refPath on a dense floor (5×4)', () => {
     // A point on the second straight run: past the first run and its corner (24 samples each)
     const gutter = (points: [number, number][]) => points[60][0];
     expect(Math.abs(gutter(a) - gutter(b))).toBe(4);
+  });
+});
+
+describe('a snapshot without spaces', () => {
+  /** Recorded from `layout2D` and `refPath` before spaces existed. */
+  const signature = (snapshot: PlacedSnapshot) => {
+    const at = layout2D(snapshot);
+    return {
+      width: at.width,
+      height: at.height,
+      rowY: at.rowY,
+      dense: at.dense,
+      frames: Object.fromEntries(at.frames),
+      objects: Object.fromEntries(at.objects),
+      refs: Object.fromEntries(
+        getReferences(snapshot).map((ref) => [ref.id, refPath(ref, snapshot, at)])
+      ),
+    };
+  };
+
+  it('lays out every beat of the earlier stories exactly as before spaces existed', () => {
+    const stories = { 'stack-heap': STACK_HEAP_BEATS, 'garbage-collection': GC_BEATS };
+    for (const [story, beats] of Object.entries(stories)) {
+      for (const beat of beats) {
+        expect(signature(beat), `${story} › ${beat.id}`).toEqual(
+          (WITHOUT_SPACES as Record<string, Record<string, unknown>>)[story][beat.id]
+        );
+        expect(layout2D(beat).spaces.size).toBe(0);
+      }
+    }
+  });
+});
+
+describe('a heap split into spaces', () => {
+  const beats = GENERATIONAL_BEATS;
+
+  it('keeps one drawing size, one band per space and every cell on every beat', () => {
+    const first = layout2D(beats[0]);
+    expect([first.width, first.height]).toEqual([
+      340 + 2 * 230 + 180 + 10 + 24,
+      100 + 3 * (190 + SPACE_HEADER),
+    ]);
+    for (const beat of beats) {
+      const at = layout2D(beat);
+      expect([at.width, at.height, at.rowY], beat.id).toEqual([
+        first.width,
+        first.height,
+        first.rowY,
+      ]);
+      expect([...at.spaces.keys()]).toEqual(['young-a', 'young-b', 'old']);
+      for (const [id, band] of at.spaces) expect(band, id).toEqual(first.spaces.get(id));
+    }
+  });
+
+  it('puts each header above the arrow band of its row, and each object inside its band', () => {
+    for (const beat of beats) {
+      const at = layout2D(beat);
+      for (const space of beat.spaces) {
+        const band = at.spaces.get(space.id)!;
+        const rowTop = at.rowY[space.row];
+        // Text 12px high on its baseline; the lanes above a row reach 28 units up
+        expect(band.labelY).toBeLessThan(rowTop - 28);
+        expect(band.labelY - 12).toBeGreaterThan(band.y);
+        for (const o of beat.objects.filter((o) => o.cell.row === space.row)) {
+          const b = at.objects.get(o.id)!;
+          expect(b.y).toBeGreaterThan(band.y);
+          expect(b.y + b.h).toBeLessThan(band.y + band.h);
+          expect(b.x).toBeGreaterThan(band.x);
+          expect(b.x + b.w).toBeLessThan(band.x + band.w);
+        }
+      }
+      const bands = [...at.spaces.values()];
+      for (let i = 1; i < bands.length; i++) {
+        expect(bands[i].y).toBeGreaterThan(bands[i - 1].y + bands[i - 1].h);
+      }
+      expect(bands[bands.length - 1].y + bands[bands.length - 1].h).toBeLessThan(at.height - 16);
+    }
+  });
+
+  it('draws the arrows of every beat through no frame and no object', () => {
+    for (const beat of beats) {
+      const { arrows, crossings } = checkArrows(beat);
+      expect(arrows, beat.id).toBe(getReferences(beat).length);
+      expect(crossings, beat.id).toEqual([]);
+    }
+  });
+
+  it('runs a copy trail down the gutter right of its column, clear of every object', () => {
+    for (const beat of beats) {
+      const at = layout2D(beat);
+      for (const trail of getCopyTrails(beat)) {
+        const from = at.objects.get(trail.from)!;
+        const to = at.objects.get(trail.to)!;
+        const points = samplePath(copyTrailPath(from, to));
+        expect(points[0], trail.id).toEqual([from.x + from.w, from.y + 15]);
+        expect(points[points.length - 1]).toEqual([to.x + to.w, to.y + 15]);
+        for (const [id, box] of at.objects) {
+          const inside = points.some(
+            ([x, y]) =>
+              x > box.x + 2 && x < box.x + box.w - 2 && y > box.y + 2 && y < box.y + box.h - 2
+          );
+          expect(inside, `${trail.id} through ${id}`).toBe(false);
+        }
+      }
+    }
   });
 });

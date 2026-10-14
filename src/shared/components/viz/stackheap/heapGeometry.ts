@@ -1,4 +1,5 @@
 import {
+  MIN_HEAP_GRID,
   gridOf,
   slotKey,
   type HeapGrid,
@@ -39,6 +40,28 @@ export const OBJ_W = 180;
 const HEAP_PAD_Y = 100;
 
 /*
+ * Spaces. A snapshot with `spaces` draws each heap row as its own band, with a header holding
+ * the space's label and tags. The header stands above the arrow band of its row, so a label
+ * never sits where an arrow runs: every row grows by `SPACE_HEADER`.
+ */
+/** What each row of a heap split into spaces grows by, for its header. */
+export const SPACE_HEADER = 30;
+/** A band's top edge stands this far above its row's top edge (header plus arrow band). */
+export const SPACE_BAND_TOP = 56;
+/** The header's text baseline, above the row's top edge. */
+export const SPACE_LABEL_RISE = 38;
+/** A band's left edge, clear of the stack gutter the frame arrows run in. */
+const SPACE_BAND_X = CELL_X0 - 10;
+/** Room a band keeps right of its last column, and between two bands. */
+const SPACE_BAND_PAD = 10;
+/**
+ * A split heap ends this far right of its bands (8 inside the HEAP panel, 16 outside it): a
+ * three-column floor then stays wide enough for 12-unit labels at 10px on a 1280px page.
+ */
+const SPACE_RIGHT_MARGIN = 24;
+const SPACE_BAND_GAP = 6;
+
+/*
  * Lanes. Between two columns of cells there is a gutter with no object in it, and above every
  * row a band of at least `ROW_CLEARANCE`. On a floor larger than the story's, an arrow whose
  * ends are not neighbours runs along these, so it never passes behind an object.
@@ -72,25 +95,42 @@ export interface StackHeapLayout2D {
    * neighbours are routed along the gutters instead of drawn as one curve.
    */
   dense: boolean;
+  /**
+   * One band per space, keyed by space id, when the snapshot has `spaces`; empty otherwise.
+   * `labelY` is the baseline of the header's text.
+   */
+  spaces: Map<string, Box & { labelY: number }>;
 }
 
 /** The one place positions are decided, so an entity keeps its place from snapshot to snapshot. */
 export function layout2D(snapshot: PlacedSnapshot, minGrid?: HeapGrid): StackHeapLayout2D {
-  const grid = gridOf(snapshot.objects, minGrid);
+  const spaces = snapshot.spaces ?? [];
+  const split = spaces.length > 0;
+  // A space is drawn even while it is empty, so the floor never grows from beat to beat.
+  const min: HeapGrid | undefined = split
+    ? {
+        cols: minGrid?.cols ?? MIN_HEAP_GRID.cols,
+        rows: Math.max(minGrid?.rows ?? MIN_HEAP_GRID.rows, ...spaces.map((s) => s.row + 1)),
+      }
+    : minGrid;
+  const grid = gridOf(snapshot.objects, min);
+  const header = split ? SPACE_HEADER : 0;
 
   const rowPitch = Array.from({ length: grid.rows }, () => CELL_DY);
   for (const o of snapshot.objects) {
     rowPitch[o.cell.row] = Math.max(rowPitch[o.cell.row], boxHeight(o.slots) + ROW_CLEARANCE);
   }
+  for (let r = 0; r < rowPitch.length; r++) rowPitch[r] += header;
   const rowY: number[] = [];
-  let nextRowY = CELL_Y0;
+  let nextRowY = CELL_Y0 + header;
   for (const pitch of rowPitch) {
     rowY.push(nextRowY);
     nextRowY += pitch;
   }
 
   const stackHeight = heightOfStack(snapshot.frames);
-  const width = CELL_X0 + grid.cols * CELL_DX;
+  const bandRight = CELL_X0 + (grid.cols - 1) * CELL_DX + OBJ_W + SPACE_BAND_PAD;
+  const width = split ? bandRight + SPACE_RIGHT_MARGIN : CELL_X0 + grid.cols * CELL_DX;
   const height = Math.max(
     HEAP_PAD_Y + rowPitch.reduce((sum, pitch) => sum + pitch, 0),
     STACK_PAD_TOP + stackHeight + STACK_PAD_BOTTOM
@@ -108,7 +148,55 @@ export function layout2D(snapshot: PlacedSnapshot, minGrid?: HeapGrid): StackHea
     });
   }
 
-  return { width, height, frames, objects, rowY, dense: grid.cols > 2 || grid.rows > 2 };
+  const bands = new Map<string, Box & { labelY: number }>();
+  for (const space of spaces) {
+    const top = rowY[space.row] - SPACE_BAND_TOP;
+    const next = rowY[space.row + 1];
+    const bottom = next === undefined ? height - 24 : next - SPACE_BAND_TOP - SPACE_BAND_GAP;
+    bands.set(space.id, {
+      x: SPACE_BAND_X,
+      y: top,
+      w: bandRight - SPACE_BAND_X,
+      h: bottom - top,
+      labelY: rowY[space.row] - SPACE_LABEL_RISE,
+    });
+  }
+
+  return {
+    width,
+    height,
+    frames,
+    objects,
+    rowY,
+    dense: grid.cols > 2 || grid.rows > 2,
+    spaces: bands,
+  };
+}
+
+/**
+ * The dotted trail from an object a collector copied to its copy: not a reference, so it takes
+ * none of a reference's lanes. In one column it runs down the gutter right of the column (the
+ * headers' text stands at the left); otherwise one curve between the two headings.
+ */
+export function copyTrailPath(from: Box, to: Box): string {
+  const fy = from.y + FRAME_HEADER / 2;
+  const ty = to.y + FRAME_HEADER / 2;
+  if (from.x === to.x) {
+    const right = from.x + from.w;
+    const gx = right + GUTTER + 4;
+    return lanes([
+      [right, fy],
+      [gx, fy],
+      [gx, ty],
+      [right, ty],
+    ]);
+  }
+  const sx = from.x + from.w / 2;
+  const tx = to.x + to.w / 2;
+  const down = to.y > from.y;
+  const sy = down ? from.y + from.h : from.y;
+  const ey = down ? to.y : to.y + to.h;
+  return `M ${sx} ${sy} C ${sx} ${(sy + ey) / 2}, ${tx} ${(sy + ey) / 2}, ${tx} ${ey}`;
 }
 
 type Point = readonly [number, number];

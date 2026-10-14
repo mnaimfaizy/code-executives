@@ -9,6 +9,12 @@ import {
   STORY_BEATS as GC_BEATS,
   withState,
 } from '../../../../features/javascript/utils/garbageCollectionStory';
+import {
+  STORY_BEATS as GEN_BEATS,
+  getCopyTrails,
+  isSpaceFreed,
+  withState as genWithState,
+} from '../../../../features/javascript/utils/generationalCollectionStory';
 
 const frame = (id: string, slots: Slot[] = []): StackFrame => ({ id, name: `${id}()`, slots });
 
@@ -301,5 +307,108 @@ describe('StackHeapView2D', () => {
     }
     for (const text of svg.querySelectorAll('text')) expect(text.getAttribute('fill')).toBeTruthy();
     expect(svg.innerHTML).not.toContain('fill-slate');
+  });
+
+  describe('a heap split into spaces (the generational collection story)', () => {
+    const drawBeat = (i: number) => {
+      const beat = GEN_BEATS[i];
+      return draw(beat, { focus: beat.focus, gcPhase: beat.gcPhase, label: beat.title });
+    };
+    const bandOf = (svg: SVGSVGElement, id: string) =>
+      svg.querySelector(`[data-viz-space="${id}"]`)!;
+    const tagsOf = (svg: SVGSVGElement, id: string) =>
+      [...bandOf(svg, id).querySelectorAll('[data-viz-tag]')].map((t) =>
+        t.getAttribute('data-viz-tag')
+      );
+    const objectGroup = (svg: SVGSVGElement, id: string) =>
+      svg.querySelector(`[data-viz-state][data-viz-copy-of="${id}"]`);
+
+    it('draws one band per space, with its label, on every beat', () => {
+      for (const [i, beat] of GEN_BEATS.entries()) {
+        const svg = drawBeat(i);
+        for (const space of beat.spaces) {
+          expect(bandOf(svg, space.id), beat.id).toHaveTextContent(space.label);
+        }
+        // One label per frame, object and space
+        expect(svg.querySelectorAll('[data-viz-label]')).toHaveLength(
+          beat.frames.length + beat.objects.length + beat.spaces.length
+        );
+      }
+    });
+
+    it('tags a space FROM-SPACE or TO-SPACE exactly when its role is set, and FREE when freed', () => {
+      for (const [i, beat] of GEN_BEATS.entries()) {
+        const svg = drawBeat(i);
+        for (const space of beat.spaces) {
+          const expected = [
+            ...(space.role ? [space.role === 'from' ? 'from-space' : 'to-space'] : []),
+            ...(isSpaceFreed(beat, space.id) ? ['free'] : []),
+          ];
+          expect(tagsOf(svg, space.id), `${beat.id} › ${space.id}`).toEqual(expected);
+        }
+      }
+    });
+
+    it('tags the copied objects COPIED, half faded, in the unreachable text colour', () => {
+      for (const [i, beat] of GEN_BEATS.entries()) {
+        const svg = drawBeat(i);
+        const copied = [...svg.querySelectorAll('[data-viz-tag="copied"]')];
+        expect(copied, beat.id).toHaveLength(genWithState(beat, 'copied').length);
+        for (const tag of copied) {
+          expect(tag.getAttribute('fill')).toBe(vizPalette.light.text.unreachable);
+          expect(tag.closest('[data-viz-state]')!.getAttribute('opacity')).toBe('0.5');
+        }
+      }
+    });
+
+    it('draws no RECLAIMED tag in a freed space: the space is freed once', () => {
+      for (const [i, beat] of GEN_BEATS.entries()) {
+        expect(drawBeat(i).textContent, beat.id).not.toContain('RECLAIMED');
+      }
+      // Beat 6: young-a freed, its three objects faint outlines
+      const svg = drawBeat(5);
+      const faint = [...svg.querySelectorAll('[data-viz-state="collected"]')];
+      expect(faint).toHaveLength(3);
+      for (const g of faint) expect(g.getAttribute('opacity')).toBe('0.18');
+    });
+
+    it('draws one dotted, muted copy trail per copied object, without a reference arrowhead', () => {
+      for (const [i, beat] of GEN_BEATS.entries()) {
+        const svg = drawBeat(i);
+        const trails = [...svg.querySelectorAll('[data-viz-trail]')];
+        expect(
+          trails.map((t) => t.getAttribute('data-viz-trail')),
+          beat.id
+        ).toEqual(getCopyTrails(beat).map((t) => t.id));
+        for (const t of trails) {
+          expect(t.getAttribute('stroke')).toBe(vizPalette.light.text.muted);
+          expect(t.getAttribute('stroke-dasharray')).toBeTruthy();
+          expect(t.getAttribute('marker-end')).not.toMatch(/sh-arrow\)|focus/);
+          expect(t.hasAttribute('data-viz-ref')).toBe(false);
+        }
+      }
+    });
+
+    it('names every copy of cache #cache', () => {
+      const svg = drawBeat(7); // promoted: cache, cache-b and cache-old are all on the floor
+      for (const copy of ['cache', 'cache-b']) {
+        expect(objectGroup(svg, copy)!.querySelector('tspan')).toHaveTextContent('#cache');
+      }
+      const ids = [...svg.querySelectorAll('[data-viz-state] > text > tspan')].map((t) =>
+        t.textContent!.trim()
+      );
+      expect(ids.filter((id) => id === '#cache')).toHaveLength(3);
+      expect(ids).not.toContain('#cache-b');
+      expect(ids).not.toContain('#cache-old');
+    });
+
+    it('draws the frames as roots while a scavenge runs', () => {
+      for (const [i, beat] of GEN_BEATS.entries()) {
+        const roots = [...drawBeat(i).querySelectorAll('text')].filter(
+          (t) => t.textContent === 'ROOT'
+        );
+        expect(roots, beat.id).toHaveLength(beat.gcPhase === 'scavenge' ? beat.frames.length : 0);
+      }
+    });
   });
 });
