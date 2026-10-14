@@ -38,15 +38,16 @@ export const SlotLines: React.FC<{
   });
 
 /** The stack region's panel and its caption. */
-export const StackPanel: React.FC<{ height: number; palette: VizPalette }> = ({
+export const StackPanel: React.FC<{ height: number; palette: VizPalette; width?: number }> = ({
   height,
   palette: P,
+  width = STACK_W,
 }) => (
   <>
     <rect
       x={STACK_X}
       y={20}
-      width={STACK_W}
+      width={width}
       height={height - 36}
       rx={14}
       fill={P.region.fill}

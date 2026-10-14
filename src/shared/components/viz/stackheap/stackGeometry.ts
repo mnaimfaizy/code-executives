@@ -44,14 +44,21 @@ export const clip = (text: string, max: number) =>
 export const stackHeight = (frames: readonly StackFrame[]) =>
   frames.reduce((sum, f) => sum + boxHeight(f.slots) + FRAME_GAP, 0);
 
-/** Where each frame is drawn in a drawing `height` tall: the stack stands on its bottom edge. */
-export function stackBoxes(frames: readonly StackFrame[], height: number): Map<string, Box> {
+/**
+ * Where each frame is drawn in a drawing `height` tall: the stack stands on its bottom edge.
+ * `width` is the stack panel's (a heap split into spaces draws a narrower stack).
+ */
+export function stackBoxes(
+  frames: readonly StackFrame[],
+  height: number,
+  width: number = STACK_W
+): Map<string, Box> {
   const boxes = new Map<string, Box>();
   let y = height - STACK_PAD_BOTTOM;
   for (const f of frames) {
     const h = boxHeight(f.slots);
     y -= h + FRAME_GAP;
-    boxes.set(f.id, { x: STACK_X + 12, y, w: STACK_W - 24, h });
+    boxes.set(f.id, { x: STACK_X + 12, y, w: width - 24, h });
   }
   return boxes;
 }

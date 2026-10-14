@@ -1,20 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { STORY_BEATS as GC_BEATS } from '../../../features/javascript/utils/garbageCollectionStory';
 import { STORY_BEATS } from '../../../features/javascript/utils/stackHeapStory';
+import { STORY_BEATS as GENERATIONAL_BEATS } from '../../../features/javascript/utils/generationalCollectionStory';
 import { getReferences, type HeapKind, type StackFrame } from '../../snapshot';
 import type { Box3 } from '../../components/viz/viewerCamera';
 import type { PlacedSnapshot } from '../../components/viz/stackheap/types';
 import { boundsOf } from '../frameShot';
+import WITHOUT_SPACES from './__fixtures__/layoutWithoutSpaces.json';
 import {
+  ENTITY_SIZE,
   FRAME_ROW_SLOTS,
   FRAME_SLOT_LINES,
   FRAME_SLOT_LINES_DEEP,
   entityBox,
   frameBox,
+  copyTrail,
   frameLabelPlan,
+  glideOffset,
+  cellPos,
   layoutFor,
   layoutOf,
   refArc,
+  type Arc,
 } from './layout';
 
 const contains = ([omin, omax]: Box3, [imin, imax]: Box3) =>
@@ -397,5 +404,148 @@ describe('stack-and-heap layout', () => {
           ).toBe(false);
       }
     });
+  });
+});
+
+describe('a snapshot without spaces', () => {
+  const fixture = WITHOUT_SPACES as {
+    layouts: Record<string, unknown>;
+    beats: Record<string, Record<string, { layout: string; refs: Record<string, unknown> }>>;
+  };
+
+  it('lays out every beat of the earlier stories exactly as before spaces existed', () => {
+    const stories = { 'stack-heap': STORY_BEATS, 'garbage-collection': GC_BEATS };
+    for (const [story, beats] of Object.entries(stories)) {
+      for (const beat of beats) {
+        const recorded = fixture.beats[story][beat.id];
+        const layout = layoutFor(beat);
+        // Recorded from `layoutFor` and `refArc` before spaces existed (JSON drops nothing else)
+        expect(JSON.parse(JSON.stringify(layout)), `${story} › ${beat.id}`).toEqual(
+          fixture.layouts[recorded.layout]
+        );
+        expect(layout.spaces, beat.id).toBeUndefined();
+        expect(
+          Object.fromEntries(getReferences(beat).map((r) => [r.id, refArc(r, beat, layout)])),
+          `${story} › ${beat.id}`
+        ).toEqual(recorded.refs);
+      }
+    }
+  });
+});
+
+describe('a heap split into spaces', () => {
+  const beats = GENERATIONAL_BEATS;
+  const first = layoutFor(beats[0]);
+
+  /** Points along an arc's quadratic curve. */
+  const along = ({ start, end, mid }: Arc, n = 40) =>
+    Array.from({ length: n + 1 }, (_, i) => {
+      const t = i / n;
+      return [0, 1, 2].map(
+        (k) => (1 - t) ** 2 * start[k] + 2 * t * (1 - t) * mid[k] + t ** 2 * end[k]
+      ) as [number, number, number];
+    });
+
+  it('keeps one layout on every beat, with a row for every space, the empty ones too', () => {
+    // Beat 1 holds objects in row 0 only; the floor is still three rows deep.
+    expect(first.grid).toEqual({ cols: 3, rows: 3 });
+    for (const beat of beats) expect(layoutFor(beat), beat.id).toBe(first);
+    expect(first.spaces?.map((s) => [s.id, s.row])).toEqual([
+      ['young-a', 0],
+      ['young-b', 1],
+      ['old', 2],
+    ]);
+  });
+
+  it('frames the same boxes as the single floor would, with room for the captions at the sides', () => {
+    const single = layoutOf(first.grid, beats[0].frames.length);
+    expect(single.spaces).toBeUndefined();
+    for (const shot of ['overview', 'stack', 'bridge', 'heap', 'gc'] as const) {
+      expect(first.shots[shot].boxes, shot).toEqual(single.shots[shot].boxes);
+      expect(first.shots[shot].isoDir, shot).toEqual(single.shots[shot].isoDir);
+      const { right, left, ...rest } = first.shots[shot].pad;
+      const { right: singleRight, left: singleLeft, ...singleRest } = single.shots[shot].pad;
+      expect(rest, shot).toEqual(singleRest);
+      expect(right, shot).toBeGreaterThan(singleRight);
+      expect(left, shot).toBeGreaterThanOrEqual(singleLeft);
+    }
+    expect(first.bounds).toEqual(single.bounds);
+  });
+
+  it('cuts the floor into one slab per row: apart, inside the floor, each holding its cells', () => {
+    const slabs = first.spaces!;
+    const [[fx0, , fz0], [fx1, , fz1]] = first.floor;
+    const zRange = (s: (typeof slabs)[number]) => [
+      s.center[2] - s.size[2] / 2,
+      s.center[2] + s.size[2] / 2,
+    ];
+    slabs.forEach((slab, i) => {
+      const [z0, z1] = zRange(slab);
+      expect(slab.center[0] - slab.size[0] / 2).toBeCloseTo(fx0);
+      expect(slab.center[0] + slab.size[0] / 2).toBeCloseTo(fx1);
+      expect(z0).toBeGreaterThanOrEqual(fz0 - 1e-9);
+      expect(z1).toBeLessThanOrEqual(fz1 + 1e-9);
+      if (i > 0) expect(z0).toBeGreaterThan(zRange(slabs[i - 1])[1]);
+      for (let col = 0; col < 3; col++) {
+        const [[, , bz0], [, , bz1]] = entityBox('object', { col, row: slab.row }, first);
+        expect(bz0).toBeGreaterThan(z0);
+        expect(bz1).toBeLessThan(z1);
+      }
+      // The caption stands at the floor's right edge, level with its row
+      expect(slab.label).toEqual([fx1, 0, cellPos({ col: 0, row: slab.row }, first)[2]]);
+    });
+    expect(zRange(slabs[0])[0]).toBeCloseTo(fz0);
+    expect(zRange(slabs[2])[1]).toBeCloseTo(fz1);
+  });
+
+  it("lands global.cache on its object's stack-facing side, clear of the objects in front", () => {
+    for (const beat of beats) {
+      const ref = getReferences(beat).find((r) => r.id === 'global.cache')!;
+      const target = beat.objects.find((o) => o.id === ref.to)!;
+      const arc = refArc(ref, beat, first)!;
+      const [x, , z] = cellPos(target.cell, first);
+      const [w, h] = ENTITY_SIZE.object;
+      if (target.cell.row === 0) {
+        // Nothing stands between: the face turned toward the frame, as before spaces existed
+        expect(arc.end[2], beat.id).toBeGreaterThan(z);
+      } else {
+        expect(arc.end, beat.id).toEqual([x - w / 2, h + 0.02, z]);
+      }
+      // Beats 8–10: the arc to row 2 passes no object of rows 0 and 1, faint or not
+      for (const other of beat.objects.filter((o) => o.id !== target.id)) {
+        const [[x0, , z0], [x1, y1, z1]] = entityBox('object', other.cell, first);
+        for (const [px, py, pz] of along(arc))
+          expect(
+            px > x0 && px < x1 && pz > z0 && pz < z1 && py < y1 + 0.2,
+            `${beat.id}: over ${other.id}`
+          ).toBe(false);
+      }
+    }
+  });
+
+  it('draws a copy trail on the floor from the original to its copy', () => {
+    const beat = beats.find((b) => b.id === 'copy-survivor')!;
+    const trail = copyTrail('cache', 'cache-b', beat, first)!;
+    const [, , za] = cellPos({ col: 0, row: 0 }, first);
+    const [, , zb] = cellPos({ col: 0, row: 1 }, first);
+    const d = ENTITY_SIZE.object[2] / 2;
+    expect(trail.start[1]).toBeLessThan(0.1);
+    expect(trail.end[1]).toBe(trail.start[1]);
+    expect(trail.start[2]).toBeCloseTo(za + d);
+    expect(trail.end[2]).toBeCloseTo(zb - d);
+    expect(copyTrail('cache', 'nothing', beat, first)).toBeNull();
+  });
+
+  it('glides a copy up out of its original cell and down into its own', () => {
+    const from = cellPos({ col: 0, row: 0 }, first);
+    const to = cellPos({ col: 0, row: 1 }, first);
+    const at = (t: number) => glideOffset(from, to, t).map((v, i) => v + to[i]);
+    expect(at(0)[0]).toBeCloseTo(from[0]);
+    expect(at(0)[1]).toBeCloseTo(0);
+    expect(at(0)[2]).toBeCloseTo(from[2]);
+    expect(at(0.5)[1]).toBeGreaterThan(1);
+    at(1).forEach((v, i) => expect(v).toBeCloseTo(to[i]));
+    // Past the end it stays put
+    glideOffset(from, to, 2).forEach((v) => expect(v).toBeCloseTo(0));
   });
 });

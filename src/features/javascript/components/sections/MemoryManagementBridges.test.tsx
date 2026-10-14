@@ -54,7 +54,7 @@ describe('the bridges from the memory sections to the stories', () => {
     expect(story).toHaveAttribute('href', stackHeapStory());
     expect(story).not.toHaveAttribute('target');
     expect(screen.getByTestId('stack-heap-bridge')).toHaveTextContent(
-      /the Stack ↔ Heap story in Memory Heap & Objects .* The story above starts where that one stops/
+      /the Stack ↔ Heap story in Memory Heap & Objects .* The Garbage Collection story above starts where that one stops/
     );
 
     // The Playground link opens this section's story, not the other one

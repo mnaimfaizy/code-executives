@@ -8,9 +8,11 @@ import {
   LayoutList,
   Lightbulb,
   Layers,
+  Copy,
 } from 'lucide-react';
 import TryInPlaygroundLink from '../../../../shared/components/viz/TryInPlaygroundLink';
 import GarbageCollectionStory from './GarbageCollectionStory';
+import GenerationalCollectionStory from './GenerationalCollectionStory';
 
 /** The section that holds the Stack ↔ Heap story (a test holds it equal to the sidebar's path). */
 const STACK_HEAP_STORY_HREF = '/javascript?section=Memory%20Heap%20%26%20Objects';
@@ -62,11 +64,11 @@ const GarbageCollection: React.FC = () => {
           Generational Garbage Collection
         </h3>
         <p className="mb-3 text-sm text-gray-700 leading-relaxed">
-          Modern engines use generational GC based on the <em>weak generational hypothesis</em>:
-          most objects die young. This allows frequent collection of short-lived objects while
-          minimizing collection of long-lived ones.
+          Modern engines use generational GC based on the <em>generational hypothesis</em>: most
+          objects die young. This allows frequent collection of short-lived objects while minimizing
+          collection of long-lived ones.
         </p>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 mb-3">
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
               <RefreshCw className="w-3.5 h-3.5 text-red-500" />
@@ -98,6 +100,16 @@ const GarbageCollection: React.FC = () => {
                 </li>
               ))}
             </ul>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-3" data-testid="young-generation">
+            <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
+              <Copy className="w-3.5 h-3.5 text-emerald-600" />
+              Young generation
+            </p>
+            <p className="text-xs text-gray-700 leading-relaxed">
+              <strong>Scavenge:</strong> copy the live objects from from-space to to-space; the rest
+              of from-space is free. An object that survives is promoted to the old generation.
+            </p>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs font-semibold text-gray-800 mb-2 flex items-center gap-1.5">
@@ -137,7 +149,17 @@ const GarbageCollection: React.FC = () => {
           which copies the live ones instead of marking and sweeping; both decide what is live by
           the same rule, reachability from the roots. The rule the last sentence of beat 8
           describes, freeing an object only when nothing references it, is called{' '}
-          <strong>reference counting</strong>.
+          <strong>reference counting</strong>. The story below follows that copying collector
+          through the young generation.
+        </p>
+      </div>
+
+      {/* The second story: a minor collection copies the survivors and frees the rest at once */}
+      <div className="mt-6">
+        <GenerationalCollectionStory />
+        <p className="mt-3 text-sm text-slate-700" data-testid="generational-story-note">
+          The Playground cannot show this story: a run never sees a collection, a copy or a
+          promotion happen.
         </p>
       </div>
 
@@ -156,8 +178,8 @@ const GarbageCollection: React.FC = () => {
           </a>
           : the Stack ↔ Heap story in Memory Heap &amp; Objects follows a program as frames are
           pushed and popped and objects are allocated, and ends with a collection that reaches
-          nothing. The story above starts where that one stops: here the collector has something to
-          mark.
+          nothing. The Garbage Collection story above starts where that one stops: there the
+          collector has something to mark.
         </p>
         <TryInPlaygroundLink example="garbage-collection-story" lens="stack-heap">
           this story&apos;s program opens there with the Stack &amp; Heap lens chosen. A run in the
