@@ -13,6 +13,7 @@ import {
   createQuestionMap,
   createQuizAttempt,
   getQuizStorageKeys,
+  hasReadableQuizPresentation,
   isQuizAnswerComplete,
   loadQuizBank,
 } from '../../utils/quiz';
@@ -171,6 +172,8 @@ export const useQuizSession = (moduleId: LearningModuleId): UseQuizSessionResult
     if (
       storedAttempt &&
       storedAttempt.bankVersion === bank.version &&
+      Array.isArray(storedAttempt.questionIds) &&
+      hasReadableQuizPresentation(storedAttempt) &&
       storedAttempt.questionIds.every((questionId) => Boolean(questionMap[questionId]))
     ) {
       const expiresAt = new Date(storedAttempt.expiresAt).getTime();
