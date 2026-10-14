@@ -591,6 +591,57 @@
       "explanation": "A collection begins at the roots, not at the objects. A mark is earned along a reference: first the object a root refers to, then the objects that marked object refers to. Each object is marked and traversed once, so a reference that leads back to an already marked object ends the search there, which is why a cycle cannot trap the collector. Only when marking is finished does the sweep run, and it follows no references at all: it keeps what is marked and reclaims the rest.",
       "tags": ["mark-and-sweep", "roots", "marking", "sweep", "cycles"],
       "references": ["Garbage Collection"]
+    },
+    {
+      "id": "javascript-q34",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A request handler allocates thousands of temporary objects that become unreachable as soon as it returns. Only one object, stored in a global variable, is still reachable. The young generation is full and a minor collection (the Scavenger) runs.",
+      "prompt": "What does the amount of work this minor collection does depend on?",
+      "options": [
+        "The thousands of unreachable objects, because each one has to be found and freed before the space can be reused",
+        "The total capacity of the young generation, because every slot in it is scanned whether it holds anything or not",
+        "The objects that survive: the collector copies only the reachable object from from-space to to-space, and its cost grows with the number of survivors",
+        "The size of the old generation, because every minor collection also marks and sweeps the old objects"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A scavenge copies the live objects out of from-space into to-space; everything left behind in from-space is implicit garbage, freed as a whole rather than one object at a time. The work is therefore proportional to the number of surviving objects, so one survivor among thousands of dead objects makes a cheap collection. The old generation is collected separately, by mark-and-sweep in a major collection.",
+      "tags": ["generational-gc", "scavenger", "minor-collection", "semi-space"],
+      "references": ["Garbage Collection"]
+    },
+    {
+      "id": "javascript-q35",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A global variable named cache refers to a young object holding a hit counter. A minor collection runs; the object is reachable, so the Scavenger copies it from from-space to to-space. On the next line the program reads cache.hits.",
+      "prompt": "What does cache refer to after the collection?",
+      "options": [
+        "The original in from-space, which stays in place until the program reassigns cache",
+        "The copy in to-space: the reference was updated to point at the copy, so to the program it is the same object with the same contents",
+        "Nothing usable: moving the object leaves cache dangling until the program assigns it again",
+        "A separate new object, so the counter restarts from its initial value"
+      ],
+      "correctAnswer": 1,
+      "explanation": "After copying the survivors, the Scavenger updates the references that pointed at the originals so they point at the copies. The program never observes the move: cache still reaches an object with the same contents, and reading cache.hits gives the same value as before. The original's place in from-space is part of the garbage freed as a whole, and the two semi-spaces then swap roles.",
+      "tags": ["scavenger", "copying-collector", "references", "semi-space"],
+      "references": ["Garbage Collection"]
+    },
+    {
+      "id": "javascript-q36",
+      "type": "single-choice",
+      "difficulty": "expert",
+      "scenario": "During a profiling review, a teammate says: \"This minor collection must have been slow, because the young generation was full of dead objects and the collector had to sweep through every one of them to free it.\"",
+      "prompt": "What is wrong with the teammate's reasoning?",
+      "options": [
+        "Nothing: the young generation is collected by the same mark-and-sweep as the old generation, so every dead object is visited and freed",
+        "Dead objects are freed at the moment they become unreachable, so none were left for the collection to deal with",
+        "Dead objects are promoted to the old generation during a minor collection and are only swept there later",
+        "A minor collection does not sweep the young generation object by object: it copies the survivors to to-space and leaves the rest of from-space as garbage, freed as a whole, so dead objects add no copying work"
+      ],
+      "correctAnswer": 3,
+      "explanation": "The Scavenger is a copying collector. Marking, copying and updating references are interleaved rather than separate phases, and they concern only the reachable objects. Once the survivors are in to-space, the whole of from-space is treated as garbage and the two semi-spaces swap roles, so the cost follows the number of survivors, not the number of dead objects. Mark-and-sweep is how the old generation is collected, in a major collection. Becoming unreachable frees nothing by itself, and promotion applies to objects that survive a second collection, not to dead ones.",
+      "tags": ["generational-gc", "scavenger", "misconception", "mark-and-sweep"],
+      "references": ["Garbage Collection"]
     }
   ]
 }
