@@ -33,7 +33,7 @@ Rules that make the model render cleanly:
 
 - **Full snapshot per beat.** Every beat lists every entity present at that moment; stepping backwards is just rendering an earlier beat.
 - **Stable identity.** An entity keeps its `id` across beats; views animate enter/exit by id.
-- **Stable placement.** Each entity carries a layout cell (e.g. `cell: { col, row }`) that both views use, so an entity never jumps between beats. Keep it on a small grid (≤ 4×3 per region); larger grids crowd labels in both views.
+- **Stable placement.** Each entity carries a layout cell (e.g. `cell: { col, row }`) that both views use, so an entity never jumps between beats. Keep it on a small grid (≤ 4×3 per region); larger grids crowd labels in both views. An entity never changes cell. When a collector moves an object, draw the move as a copy: a new entity in the new cell, with `copyOf` naming the original, while the original stays in its cell with state `copied` until its space is freed. Tests check that a `copied` object has exactly one copy, and that the copy's slots equal the original's on the copying beat.
 - **State as data.** Lifecycle changes are an explicit `state` field (`live`, `marked`, `collected`…), never implied by absence, so both views can animate them.
 
 ## Shot vocabulary
