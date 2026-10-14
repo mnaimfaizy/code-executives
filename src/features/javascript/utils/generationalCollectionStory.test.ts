@@ -157,7 +157,7 @@ describe('generational collection story model', () => {
     for (const b of STORY_BEATS) expect(originOf(b, cacheRef(b)!)).toBe('cache');
   });
 
-  it('lays out the three spaces, one row each, and swaps the semi-space roles on beat 7', () => {
+  it('lays out the three spaces, one row each, with roles on beats 3–9 that swap on beat 7', () => {
     for (const b of STORY_BEATS) {
       expect(b.spaces.map((s) => [s.id, s.row])).toEqual([
         ['young-a', 0],
@@ -166,11 +166,21 @@ describe('generational collection story model', () => {
       ]);
       expect(roleOf(b, 'old')).toBeUndefined();
     }
-    const roles = STORY_BEATS.map((b) => [roleOf(b, 'young-a'), roleOf(b, 'young-b')]);
-    expect(roles.slice(0, 6).every(([a, bb]) => a === 'from' && bb === 'to')).toBe(true);
-    expect(roles.slice(6).every(([a, bb]) => a === 'to' && bb === 'from')).toBe(true);
+    // Roles are set on beats 3–9 only, and swap on beat 7.
+    expect(STORY_BEATS.map((b) => [roleOf(b, 'young-a'), roleOf(b, 'young-b')])).toEqual([
+      [undefined, undefined],
+      [undefined, undefined],
+      ['from', 'to'],
+      ['from', 'to'],
+      ['from', 'to'],
+      ['from', 'to'],
+      ['to', 'from'],
+      ['to', 'from'],
+      ['to', 'from'],
+      [undefined, undefined],
+    ]);
     // New objects appear in the from-space: the first temps in A, the second in B after the swap.
-    expect(spaceOf(beat('temps-made'), 't1')?.role).toBe('from');
+    expect(spaceOf(beat('minor-starts'), 't1')?.role).toBe('from');
     expect(spaceOf(beat('second-batch'), 't3')?.role).toBe('from');
     expect(objectsInSpace(beat('second-batch'), 'young-b')).toEqual(['cache-b', 't3', 't4']);
   });

@@ -85,7 +85,9 @@ function batch() {
 batch(); // suppose a minor collection runs after this line
 batch(); // and another one after this line`;
 
-// ---- Spaces: one heap row each. The two semi-spaces swap roles after the first collection.
+// ---- Spaces: one heap row each. A role is set only while it matters (beats 3–9); the views
+// draw a FROM-SPACE / TO-SPACE tag whenever a role is set. The semi-spaces swap after the first
+// collection.
 
 const SPACE_LABELS: Record<SpaceId, string> = {
   'young-a': 'YOUNG · SEMI-SPACE A',
@@ -93,22 +95,16 @@ const SPACE_LABELS: Record<SpaceId, string> = {
   old: 'OLD GENERATION',
 };
 
-const spaces = (from: 'young-a' | 'young-b'): HeapSpace[] => [
-  {
-    id: 'young-a',
-    label: SPACE_LABELS['young-a'],
-    row: 0,
-    role: from === 'young-a' ? 'from' : 'to',
-  },
-  {
-    id: 'young-b',
-    label: SPACE_LABELS['young-b'],
-    row: 1,
-    role: from === 'young-b' ? 'from' : 'to',
-  },
+const roleIn = (space: SpaceId, from?: SpaceId): Pick<HeapSpace, 'role'> =>
+  from === undefined ? {} : { role: from === space ? 'from' : 'to' };
+
+const spaces = (from?: 'young-a' | 'young-b'): HeapSpace[] => [
+  { id: 'young-a', label: SPACE_LABELS['young-a'], row: 0, ...roleIn('young-a', from) },
+  { id: 'young-b', label: SPACE_LABELS['young-b'], row: 1, ...roleIn('young-b', from) },
   { id: 'old', label: SPACE_LABELS.old, row: 2 },
 ];
 
+const plainSpaces = spaces();
 const firstSpaces = spaces('young-a');
 const swappedSpaces = spaces('young-b');
 
@@ -189,7 +185,7 @@ export const STORY_BEATS: StoryBeat[] = [
     shot: 'overview',
     frames: [globalFrame('cache'), batchFrame, handleFrame],
     objects: youngA('live'),
-    spaces: firstSpaces,
+    spaces: plainSpaces,
     focus: ['handle.temp', 't2', 't1'],
   },
   {
@@ -201,7 +197,7 @@ export const STORY_BEATS: StoryBeat[] = [
     shot: 'bridge',
     frames: [globalFrame('cache')],
     objects: youngA('live'),
-    spaces: firstSpaces,
+    spaces: plainSpaces,
     focus: ['global.cache', 'cache', 't1', 't2'],
   },
   {
@@ -303,7 +299,7 @@ export const STORY_BEATS: StoryBeat[] = [
     shot: 'overview',
     frames: [globalFrame('cache-old')],
     objects: [...youngA('collected'), ...youngB('collected'), cacheOld],
-    spaces: swappedSpaces,
+    spaces: plainSpaces,
     focus: ['global.cache', 'cache-old'],
   },
 ];

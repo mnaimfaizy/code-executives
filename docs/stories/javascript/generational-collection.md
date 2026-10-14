@@ -63,6 +63,8 @@ Why this program:
 | `young-b` | 1 | YOUNG · SEMI-SPACE B | to-space | from-space |
 | `old` | 2 | OLD GENERATION | (none) | (none) |
 
+Roles are set on beats 3–9 only; views draw a tag whenever a role is set. (Beats 1, 2 and 10 have no role on any space; the table's columns read "beats 3–6" and "beats 7–9".)
+
 Row 0 is the back of the 3D floor and the top of the 2D heap, so every move in the story goes the same way: forward in 3D, down in 2D, towards "older".
 
 ### Objects
