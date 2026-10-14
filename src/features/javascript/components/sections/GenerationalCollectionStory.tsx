@@ -20,7 +20,7 @@ const CODE_LINES = STORY_CODE.split('\n');
 
 /**
  * Where this story puts its code: always above the picture. Its heap is three spaces of three
- * columns, a drawing 1014 units wide, so beside the code its labels would fall under 10px; the
+ * columns, a drawing 900 units wide, so beside the code its labels would fall under 10px; the
  * picture keeps the section's full width instead. Written out whole for Tailwind.
  */
 const GENERATIONAL_LAYOUT = {

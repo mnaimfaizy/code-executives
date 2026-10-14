@@ -292,8 +292,8 @@ describe('a heap split into spaces', () => {
   it('keeps one drawing size, one band per space and every cell on every beat', () => {
     const first = layout2D(beats[0]);
     expect([first.width, first.height]).toEqual([
-      340 + 2 * 230 + 180 + 10 + 24,
-      100 + 3 * (190 + SPACE_HEADER),
+      262 + 2 * 212 + 180 + 10 + 24,
+      100 + 3 * (132 + SPACE_HEADER),
     ]);
     for (const beat of beats) {
       const at = layout2D(beat);

@@ -260,7 +260,11 @@ describe('StackHeapView2D', () => {
       expect(width).toBeGreaterThan(800);
       expect(height).toBeGreaterThan(480);
 
-      const boxes = [...svg.querySelectorAll('[data-viz-label] > rect')].map((r) => ({
+      const boxes = [
+        ...svg.querySelectorAll(
+          '[data-viz-label] > rect, [data-viz-label] > [data-viz-fade] > rect'
+        ),
+      ].map((r) => ({
         x: num(r, 'x'),
         y: num(r, 'y'),
         right: num(r, 'x') + num(r, 'width'),
@@ -356,7 +360,7 @@ describe('StackHeapView2D', () => {
         expect(copied, beat.id).toHaveLength(genWithState(beat, 'copied').length);
         for (const tag of copied) {
           expect(tag.getAttribute('fill')).toBe(vizPalette.light.text.unreachable);
-          expect(tag.closest('[data-viz-state]')!.getAttribute('opacity')).toBe('0.5');
+          expect(tag.closest('[data-viz-fade]')!.getAttribute('opacity')).toBe('0.5');
         }
       }
     });
@@ -369,7 +373,12 @@ describe('StackHeapView2D', () => {
       const svg = drawBeat(5);
       const faint = [...svg.querySelectorAll('[data-viz-state="collected"]')];
       expect(faint).toHaveLength(3);
-      for (const g of faint) expect(g.getAttribute('opacity')).toBe('0.18');
+      for (const g of faint) {
+        expect(g.querySelector('[data-viz-fade]')!.getAttribute('opacity')).toBe('0.18');
+        // The enter animation ends at opacity 1 and would override a fade on its own group
+        expect(g).toHaveClass('sh-enter');
+        expect(g.hasAttribute('opacity')).toBe(false);
+      }
     });
 
     it('draws one dotted, muted copy trail per copied object, without a reference arrowhead', () => {
@@ -394,9 +403,9 @@ describe('StackHeapView2D', () => {
       for (const copy of ['cache', 'cache-b']) {
         expect(objectGroup(svg, copy)!.querySelector('tspan')).toHaveTextContent('#cache');
       }
-      const ids = [...svg.querySelectorAll('[data-viz-state] > text > tspan')].map((t) =>
-        t.textContent!.trim()
-      );
+      const ids = [
+        ...svg.querySelectorAll('[data-viz-state] > [data-viz-fade] > text > tspan'),
+      ].map((t) => t.textContent!.trim());
       expect(ids.filter((id) => id === '#cache')).toHaveLength(3);
       expect(ids).not.toContain('#cache-b');
       expect(ids).not.toContain('#cache-old');

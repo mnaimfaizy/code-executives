@@ -195,7 +195,7 @@ describe('GenerationalCollectionStory', () => {
     expect(drawing()).toBeInTheDocument();
   });
 
-  it('keeps the code above the picture at every width, and draws 12-unit labels at 10px or more from 1280 up', () => {
+  it('keeps the code above the picture at every width, and draws 12-unit labels at 11px or more from 1280 up', () => {
     const { container } = render(<GenerationalCollectionStory />);
     const viewer = container.querySelector<HTMLElement>('[data-viz-viewer]')!;
     const column = viewer.parentElement!;
@@ -210,11 +210,11 @@ describe('GenerationalCollectionStory', () => {
     // In 2D the viewer has no fixed height: it is as high as the drawing at that width.
     expect(viewer.className).not.toMatch(/(^| )(xl:|sm:)?h-\[/);
     const [, , width, height] = drawing().getAttribute('viewBox')!.split(' ').map(Number);
-    expect([width, height]).toEqual([1014, 760]);
+    expect([width, height]).toEqual([900, 586]);
     for (const page of [1280, 1440, 1536, 1920]) {
       // labelPx's viewer column is the full content width below the split; here it always is.
       const px = 12 * ((storyContentWidth(page) - 2) / width);
-      expect(px, `${page}`).toBeGreaterThanOrEqual(10);
+      expect(px, `${page}`).toBeGreaterThanOrEqual(11);
       if (page < 1536) expect(px).toBe(labelPx(page, { view: { width, height }, inset: 2 }));
     }
   });
