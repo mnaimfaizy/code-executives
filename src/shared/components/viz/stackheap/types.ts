@@ -7,7 +7,8 @@ export type PlacedSnapshot = Snapshot<Placed<HeapObject>>;
 /** The named framings of the stack-and-heap scene. A trace step uses `overview`. */
 export type StackHeapShot = 'overview' | 'stack' | 'bridge' | 'heap' | 'gc';
 
-export type GcPhase = 'mark' | 'sweep';
+/** `scavenge` = a copying (young-generation) collection; story only. */
+export type GcPhase = 'mark' | 'sweep' | 'scavenge';
 
 /**
  * What both stack-and-heap views draw. The views do not know whether the snapshot came

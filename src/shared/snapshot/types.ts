@@ -34,10 +34,12 @@ export interface StackFrame {
 export type HeapKind = 'object' | 'array' | 'function' | 'scope';
 
 /**
- * `unmarked` = GC mark phase found no path from a root; `collected` = swept.
+ * `unmarked` = GC mark phase found no path from a root; `collected` = swept or freed with its
+ * space; `copied` = a copying collector has copied the object elsewhere (see
+ * `HeapObject.copyOf`), so what is left here is garbage until its space is freed.
  * Reachability is not a state: derive it with `getReachable`.
  */
-export type HeapState = 'live' | 'marked' | 'unmarked' | 'collected';
+export type HeapState = 'live' | 'marked' | 'unmarked' | 'copied' | 'collected';
 
 export interface HeapObject<K extends HeapKind = HeapKind> {
   id: string;
@@ -47,6 +49,23 @@ export interface HeapObject<K extends HeapKind = HeapKind> {
   state: HeapState;
   /** Stable grid position on the heap floor. Authored in a story; absent in a trace until placed. */
   cell?: Cell;
+  /**
+   * Story only: the id of the object this one is a copy of. A collector's move is drawn as a
+   * copy in a new cell, never as an object changing cell. Absent in a trace.
+   */
+  copyOf?: string;
+}
+
+/**
+ * Story only: one named part of the heap (a young semi-space, the old generation), drawn as one
+ * heap row. An object belongs to the space whose `row` equals its cell's row.
+ */
+export interface HeapSpace {
+  id: string;
+  label: string;
+  row: number;
+  /** A semi-space's role in a copying collection: copied from, or copied to. */
+  role?: 'from' | 'to';
 }
 
 /** An entity whose cell is known, e.g. `Placed<HeapObject>`. */
@@ -88,6 +107,11 @@ export interface Snapshot<O extends HeapObject = HeapObject> {
   tasks?: QueueEntry[];
   /** Timers still counting down, soonest first. Not a queue: a timer joins `tasks` when it fires. */
   timers?: QueueEntry[];
+  /**
+   * Story only: the heap's spaces, one per heap row. Absent (every trace, and every story but the
+   * generational one) means the heap is one region.
+   */
+  spaces?: HeapSpace[];
 }
 
 /** A link from a slot to the entity it points at. Derived by `getReferences`, never stored. */
