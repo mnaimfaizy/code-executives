@@ -169,25 +169,136 @@ export const formatRemainingTime = (remainingSeconds: number): string => {
   return `${minutes}:${seconds}`;
 };
 
+/** A random number in [0, 1), like `Math.random`. Injected so tests can be deterministic. */
+export type QuizRandomSource = () => number;
+
+/** Fisher-Yates shuffle of a copy of `items`. */
+const shuffle = <T>(items: T[], random: QuizRandomSource): T[] => {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+};
+
+const identityOrder = (length: number): number[] => Array.from({ length }, (_, index) => index);
+
 export const sampleQuizQuestionIds = (
   questions: QuizQuestion[],
-  questionsPerAttempt: number
+  questionsPerAttempt: number,
+  random: QuizRandomSource = Math.random
 ): string[] => {
-  const questionIds = questions.map((question) => question.id);
-  for (let index = questionIds.length - 1; index > 0; index -= 1) {
-    const swapIndex = Math.floor(Math.random() * (index + 1));
-    [questionIds[index], questionIds[swapIndex]] = [questionIds[swapIndex], questionIds[index]];
+  const questionIds = shuffle(
+    questions.map((question) => question.id),
+    random
+  );
+  return questionIds.slice(0, Math.min(questionsPerAttempt, questionIds.length));
+};
+
+/** How many entries a question's presentation order covers, or null when it keeps bank order. */
+const presentationLength = (question: QuizQuestion): number | null => {
+  switch (question.type) {
+    case 'single-choice':
+    case 'multi-select':
+      return question.options.length;
+    case 'matching':
+      return question.responses.length;
+    case 'ordering':
+      return question.items.length;
+    default:
+      return null;
+  }
+};
+
+/**
+ * Draws the order a question is shown in for one attempt: display position -> bank index.
+ * Null for true/false, which keeps its order. An ordering question with 2 or more items never
+ * starts in its correct order.
+ */
+export const createQuestionPresentation = (
+  question: QuizQuestion,
+  random: QuizRandomSource = Math.random
+): number[] | null => {
+  const length = presentationLength(question);
+  if (length === null) {
+    return null;
   }
 
-  return questionIds.slice(0, Math.min(questionsPerAttempt, questionIds.length));
+  const order = shuffle(identityOrder(length), random);
+  if (question.type !== 'ordering' || length < 2) {
+    return order;
+  }
+
+  // Rotate until the starting order differs from the correct one. With distinct items the
+  // first rotation already does; the loop also covers repeated item texts.
+  const isCorrect = (candidate: number[]) =>
+    arraysEqual(
+      candidate.map((index) => question.items[index]),
+      question.correctAnswer
+    );
+  let candidate = order;
+  for (let turn = 0; turn < length && isCorrect(candidate); turn += 1) {
+    candidate = [...candidate.slice(1), candidate[0]];
+  }
+  return candidate;
+};
+
+const isPermutation = (value: unknown, length: number): value is number[] =>
+  isNumberArray(value) &&
+  value.length === length &&
+  new Set(value).size === length &&
+  value.every((index) => Number.isInteger(index) && index >= 0 && index < length);
+
+/**
+ * The order to show a question in: the attempt's presentation order when it holds a valid one
+ * for this question, otherwise bank order (attempts stored before shuffling, true/false).
+ */
+export const getPresentationOrder = (
+  question: QuizQuestion,
+  presentation: Record<string, number[]> | undefined
+): number[] => {
+  const length = presentationLength(question);
+  if (length === null) {
+    return question.type === 'true-false' ? identityOrder(question.options.length) : [];
+  }
+  const order = presentation?.[question.id];
+  return isPermutation(order, length) ? order : identityOrder(length);
+};
+
+/**
+ * Whether a stored attempt's `presentation` can be read: absent (an attempt stored before
+ * shuffling) or an object of number arrays. A malformed entry is shown in bank order.
+ */
+export const hasReadableQuizPresentation = (attempt: { presentation?: unknown }): boolean => {
+  const { presentation } = attempt;
+  if (presentation === undefined) {
+    return true;
+  }
+  return (
+    typeof presentation === 'object' &&
+    presentation !== null &&
+    !Array.isArray(presentation) &&
+    Object.values(presentation).every((order) => isNumberArray(order))
+  );
 };
 
 export const createQuizAttempt = (
   moduleId: LearningModuleId,
-  bank: QuizBankFile
+  bank: QuizBankFile,
+  random: QuizRandomSource = Math.random
 ): QuizAttemptState => {
   const startedAt = new Date();
   const expiresAt = new Date(startedAt.getTime() + bank.timeLimitMinutes * 60 * 1000);
+  const questionIds = sampleQuizQuestionIds(bank.questions, bank.questionsPerAttempt, random);
+  const questionMap = createQuestionMap(bank);
+  const presentation: Record<string, number[]> = {};
+  for (const questionId of questionIds) {
+    const order = createQuestionPresentation(questionMap[questionId], random);
+    if (order) {
+      presentation[questionId] = order;
+    }
+  }
 
   return {
     id:
@@ -196,7 +307,8 @@ export const createQuizAttempt = (
         : `${moduleId}-${startedAt.getTime()}`,
     moduleId,
     bankVersion: bank.version,
-    questionIds: sampleQuizQuestionIds(bank.questions, bank.questionsPerAttempt),
+    questionIds,
+    presentation,
     answers: {},
     currentQuestionIndex: 0,
     startedAt: startedAt.toISOString(),

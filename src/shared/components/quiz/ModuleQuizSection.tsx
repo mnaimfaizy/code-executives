@@ -340,6 +340,7 @@ const ModuleQuizSection: React.FC<ModuleQuizSectionProps> = ({ moduleId }) => {
           <QuestionRenderer
             question={currentQuestion}
             answer={currentQuestionAnswer}
+            presentation={activeAttempt?.presentation?.[currentQuestion.id]}
             colorScheme={theme.primary}
             onAnswerChange={(answer) => updateAnswer(currentQuestion.id, answer)}
           />

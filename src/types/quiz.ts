@@ -62,12 +62,26 @@ export interface QuizBankFile {
   questions: QuizQuestion[];
 }
 
+/**
+ * The order one question is shown in during an attempt: display position -> bank index.
+ * For single-choice and multi-select it orders `options`, for matching it orders `responses`
+ * (premises stay in order), and for ordering it is the starting order of `items`.
+ * True/false questions have no entry and keep the bank order.
+ */
+export type QuizPresentationOrder = number[];
+
 export interface QuizAttemptState {
   id: string;
   moduleId: LearningModuleId;
   bankVersion: number;
   questionIds: string[];
+  /** Answers in the bank's own indices and strings, whatever order they were shown in. */
   answers: Record<string, QuizStoredAnswer>;
+  /**
+   * The presentation order per question id, drawn when the attempt is created. Attempts stored
+   * before options were shuffled have none and are shown in bank order.
+   */
+  presentation?: Record<string, QuizPresentationOrder>;
   currentQuestionIndex: number;
   startedAt: string;
   expiresAt: string;

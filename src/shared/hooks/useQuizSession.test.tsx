@@ -123,6 +123,46 @@ describe('useQuizSession and progress', () => {
     expect(record).not.toHaveBeenCalled();
   });
 
+  it('stores a presentation order with a new attempt and keeps it across a reload', async () => {
+    const first = await openQuiz();
+    act(() => first.result.current.startAttempt());
+    const presentation = first.result.current.activeAttempt?.presentation;
+    expect(presentation).toBeDefined();
+    await waitFor(() => expect(localStorage.getItem(keys.activeAttempt)).not.toBeNull());
+    first.unmount();
+
+    const second = await openQuiz();
+    await waitFor(() => expect(second.result.current.activeAttempt).not.toBeNull());
+    expect(second.result.current.activeAttempt?.presentation).toEqual(presentation);
+  });
+
+  it('resumes and scores an attempt stored before options were shuffled', async () => {
+    const first = await openQuiz();
+    act(() => first.result.current.startAttempt());
+    const questions = first.result.current.questionsForAttempt;
+    await waitFor(() => expect(localStorage.getItem(keys.activeAttempt)).not.toBeNull());
+    first.unmount();
+
+    const stored = JSON.parse(localStorage.getItem(keys.activeAttempt)!) as QuizAttemptState;
+    const old: Partial<QuizAttemptState> = { ...stored };
+    delete old.presentation;
+    localStorage.setItem(
+      keys.activeAttempt,
+      JSON.stringify({
+        ...old,
+        answers: Object.fromEntries(
+          questions.map((question) => [question.id, question.correctAnswer])
+        ),
+      })
+    );
+
+    const second = await openQuiz();
+    await waitFor(() => expect(second.result.current.activeAttempt?.id).toBe(stored.id));
+    expect(second.result.current.activeAttempt).not.toHaveProperty('presentation');
+    act(() => second.result.current.submitAttempt());
+    expect(second.result.current.latestResult?.scorePercentage).toBe(100);
+  });
+
   it('drops the results it holds when progress is cleared, here or in another tab', async () => {
     const { result } = await openQuiz();
     takeAttempt(result, 'all');

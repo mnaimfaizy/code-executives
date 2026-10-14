@@ -7,10 +7,17 @@ import type {
   QuizQuestion,
   QuizStoredAnswer,
 } from '../../../types/quiz';
+import { getPresentationOrder } from '../../../utils/quiz';
 
 interface QuestionRendererProps {
   question: QuizQuestion;
   answer: QuizStoredAnswer | null;
+  /**
+   * This question's presentation order from the attempt (display position -> bank index).
+   * Absent for attempts stored before shuffling: the question is shown in bank order.
+   * Answers are always reported in bank indices and strings.
+   */
+  presentation?: number[];
   colorScheme: string;
   onAnswerChange: (answer: QuizStoredAnswer) => void;
 }
@@ -77,10 +84,15 @@ const isStringArray = (value: QuizStoredAnswer | null): value is string[] =>
 export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   question,
   answer,
+  presentation,
   colorScheme,
   onAnswerChange,
 }) => {
   const styles = getStyles(colorScheme);
+  const order = getPresentationOrder(
+    question,
+    presentation ? { [question.id]: presentation } : undefined
+  );
 
   const renderChoiceQuestion = (
     choiceQuestion: QuizChoiceQuestion | QuizMultiSelectQuestion,
@@ -91,7 +103,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
     return (
       <div className="space-y-3" role={multiSelect ? 'group' : 'radiogroup'}>
-        {choiceQuestion.options.map((option: string, index: number) => {
+        {order.map((index: number, position: number) => {
+          const option = choiceQuestion.options[index];
           const isSelected = multiSelect
             ? selectedAnswers.includes(index)
             : selectedAnswer === index;
@@ -124,7 +137,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       : 'border-gray-300 bg-white text-gray-500'
                   }`}
                 >
-                  {String.fromCharCode(65 + index)}
+                  {String.fromCharCode(65 + position)}
                 </span>
                 <span className="text-sm leading-6 text-gray-800">{option}</span>
               </div>
@@ -139,7 +152,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     const currentOrder =
       isStringArray(answer) && answer.length === orderingQuestion.items.length
         ? answer
-        : orderingQuestion.items;
+        : order.map((index) => orderingQuestion.items[index]);
 
     const moveItem = (fromIndex: number, direction: -1 | 1) => {
       const targetIndex = fromIndex + direction;
@@ -215,12 +228,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 shadow-sm focus:border-gray-400 focus:outline-none"
               >
                 <option value={-1}>Select the best match</option>
-                {matchingQuestion.responses.map((response: string, responseIndex: number) => (
+                {order.map((responseIndex: number) => (
                   <option
                     key={`${matchingQuestion.id}-response-${responseIndex}`}
                     value={responseIndex}
                   >
-                    {response}
+                    {matchingQuestion.responses[responseIndex]}
                   </option>
                 ))}
               </select>
