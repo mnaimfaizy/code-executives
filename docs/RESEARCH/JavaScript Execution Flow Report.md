@@ -182,6 +182,8 @@ The Orinoco garbage collector uses a combination of algorithms tailored for each
 
 **"Scavenger"** collector.27 This is a type of semi-space collector that copies all live objects from a "from-space" to a new, empty "to-space," leaving the old space as implicitly garbage.26 This process is highly efficient and can be parallelized using helper threads to reduce the pause time for the main thread.26
 
+During a scavenge, finding live objects, copying them and updating the pointers to them are interleaved rather than run as separate phases. Each copied object leaves a forwarding address in its old place, which is used to update every pointer to the original so that it points to the copy; to the program it is the same object. Because only the survivors are moved, the collector pays a copying cost proportional to the number of surviving objects, and every other allocation becomes implicit garbage that is never visited. The two semi-spaces then swap roles: to-space becomes from-space, where new objects are allocated next. An object that survives a second scavenge is copied into the old generation instead of to-space; this is promotion.26
+
 For the old generation, the collector uses a slower but more comprehensive **Mark-and-Sweep** algorithm.26 This process has three phases:
 
 1. **Marking:** The garbage collector identifies all reachable objects in the heap by traversing the object graph starting from the program's roots (global variables, etc.).24 All reachable objects are marked as "in-use".24
