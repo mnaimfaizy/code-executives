@@ -1,13 +1,25 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { QuadraticBezierLine, RoundedBox, type QuadraticBezierLineRef } from '@react-three/drei';
+import {
+  Html,
+  Line,
+  QuadraticBezierLine,
+  RoundedBox,
+  type QuadraticBezierLineRef,
+} from '@react-three/drei';
 import * as THREE from 'three';
 import { usePresence } from '../../hooks/usePresence';
 import {
+  getCopyTrails,
   getReachable,
   getReferences,
+  isSpaceFreed,
+  originOf,
   slotKey,
+  spaceOf,
+  type Cell,
   type HeapKind,
+  type HeapSpace,
   type HeapObject,
   type Placed,
 } from '../../snapshot';
@@ -16,10 +28,18 @@ import type { StackHeapShot, StackHeapViewProps } from '../../components/viz/sta
 import { vizPalette, type EntityColors, type VizPalette } from '../../viz/palette';
 import { LabelFramer, StoryCamera } from '../camera';
 import type { V3 } from '../frameShot';
-import { MONO, UP, damp } from '../primitives';
+import { MONO, UP, damp, labelStyle } from '../primitives';
 import { Label, RegionLabel } from '../primitives.labels';
+import { useLabelHost } from '../useLabelHost';
 import { FrameSlab, type FrameEntry } from './FrameSlab';
-import { labelLean, markTag, rootPulsePlays } from './gcCues';
+import {
+  framesAreRoots,
+  inStackArcPath,
+  labelLean,
+  markTag,
+  reclaimedTag,
+  rootPulsePlays,
+} from './gcCues';
 import {
   DENSE_OBJECT_WIDTH,
   FRAME_CARD,
@@ -36,10 +56,13 @@ import {
   OBJECT_LABEL_LIFT,
   STACK_X,
   cellPos,
+  copyTrail,
   frameLabelPlan,
+  glideOffset,
   layoutFor,
   refArc,
   type Arc,
+  type SpaceSlab,
   type StackHeapLayout,
 } from './layout';
 
@@ -85,8 +108,14 @@ const HeapBlock: React.FC<{
   /** A `live` object no frame can reach, drawn in the `unreachable` role. */
   unreachable: boolean;
   focus: readonly string[];
-  /** A frame's slot references this object: an arc from the stack lands on it. */
+  /** An arc from a frame's slot lands on this object or passes in front of its label. */
   stackHeld: boolean;
+  /** The id the label shows: the first object of a chain of copies (`originOf`). */
+  shownId: string;
+  /** It stands in a space freed as a whole: no RECLAIMED tag of its own. */
+  inFreedSpace: boolean;
+  /** Set when the object enters as a copy: the floor point of its original's cell. */
+  glideFrom?: V3;
   /** The collector's phase: a mark is drawn only while a collection runs. */
   gcPhase: StackHeapViewProps['gcPhase'];
   shot: StackHeapShot;
@@ -100,6 +129,9 @@ const HeapBlock: React.FC<{
   unreachable,
   focus,
   stackHeld,
+  shownId,
+  inFreedSpace,
+  glideFrom,
   gcPhase,
   shot,
   layout,
@@ -107,11 +139,16 @@ const HeapBlock: React.FC<{
   instant,
 }) => {
   const group = useRef<THREE.Group>(null);
+  const glider = useRef<THREE.Group>(null);
+  // A glide is decided once, when the block mounts: the copy enters on its copying beat.
+  const [glide] = useState(() => (glideFrom && !instant ? { from: glideFrom, t: 0 } : null));
   const mat = useRef<THREE.MeshLambertMaterial>(null);
   const size = ENTITY_SIZE[object.kind];
   const pos = cellPos(object.cell, layout);
   const lastCol = layout.grid.cols - 1;
   const collected = object.state === 'collected' || exiting;
+  // Copied: what is left here is garbage, but not yet freed. It keeps its colour, half faded.
+  const copied = object.state === 'copied' && !exiting;
   const offRole = object.state === 'unmarked' || object.state === 'collected' || unreachable;
   const role: EntityColors = offRole ? P.unreachable : P[object.kind];
   const tag = markTag(object.state, gcPhase);
@@ -121,130 +158,192 @@ const HeapBlock: React.FC<{
   // Back-row labels float above their block; labels of the rows in front hang in front of
   // theirs, so the gap between rows (where heap-to-heap arcs run) stays clear.
   const labelInFront = object.cell.row > 0;
-  const labelX = labelLean(shot, object.cell.col, lastCol, stackHeld);
+  const labelX = labelLean(shot, object.cell.col, lastCol, stackHeld, !layout.spaces);
   const baseColor = useMemo(() => new THREE.Color(role.solid), [role.solid]);
 
   useFrame((_, dt) => {
     if (!group.current || !mat.current) return;
+    if (glide && glider.current && glide.t < 1) {
+      glide.t = instant ? 1 : Math.min(1, glide.t + dt / GLIDE_SECONDS);
+      glider.current.position.set(...glideOffset(glide.from, pos, glide.t));
+    }
     const s = group.current.scale;
     s.x = damp(s.x, collected ? 0.85 : 1, instant, dt);
     s.z = s.x;
     s.y = damp(s.y, collected ? 0.04 : 1, instant, dt, 5);
-    mat.current.opacity = damp(mat.current.opacity, collected ? 0.25 : 1, instant, dt, 5);
+    const opacity = collected ? 0.25 : copied ? 0.5 : 1;
+    mat.current.opacity = damp(mat.current.opacity, opacity, instant, dt, 5);
     mat.current.color.lerp(baseColor, instant ? 1 : Math.min(1, dt * 6));
   });
 
   return (
     <group position={pos}>
-      {focused && !collected && (
-        <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[size[0] + 0.4, size[2] + 0.4]} />
-          <meshBasicMaterial color={P.focus} transparent opacity={0.6} />
-        </mesh>
-      )}
-      <group ref={group} scale={instant ? [1, 1, 1] : [0.2, 0.01, 0.2]}>
-        <RoundedBox
-          args={size}
-          radius={CORNER_RADIUS[object.kind]}
-          smoothness={3}
-          position={[0, size[1] / 2, 0]}
+      <group ref={glider} position={glide ? glideOffset(glide.from, pos, glide.t) : undefined}>
+        {focused && !collected && (
+          <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[size[0] + 0.4, size[2] + 0.4]} />
+            <meshBasicMaterial color={P.focus} transparent opacity={0.6} />
+          </mesh>
+        )}
+        <group ref={group} scale={instant || glide ? [1, 1, 1] : [0.2, 0.01, 0.2]}>
+          <RoundedBox
+            args={size}
+            radius={CORNER_RADIUS[object.kind]}
+            smoothness={3}
+            position={[0, size[1] / 2, 0]}
+          >
+            <meshLambertMaterial ref={mat} color={baseColor} transparent opacity={1} flatShading />
+          </RoundedBox>
+          {object.kind === 'array' &&
+            [1, 2, 3].map((i) => (
+              <mesh key={i} position={[-size[0] / 2 + (i * size[0]) / 4, size[1] + 0.005, 0]}>
+                <boxGeometry args={[0.03, 0.01, size[2] * 0.8]} />
+                <meshBasicMaterial color={P.array.divider} transparent opacity={0.35} />
+              </mesh>
+            ))}
+        </group>
+        <Label
+          position={
+            labelInFront
+              ? [0, 0, size[2] / 2 + 0.15]
+              : [0, collected ? 0.3 : size[1] + OBJECT_LABEL_LIFT, 0]
+          }
+          anchor={labelInFront ? `translate(${labelX}, 6px)` : `translate(${labelX}, -100%)`}
+          opacity={collected ? 0.4 : copied ? 0.8 : 1}
+          fadeMs={500}
+          instant={instant}
+          className={
+            layout.dense
+              ? 'border px-2 py-0.5 text-[11px] leading-[14px]'
+              : 'border px-2 py-1 text-[11px] leading-4'
+          }
+          attrs={marked ? MARKED_ATTRS : undefined}
+          style={{
+            ...cardStyle(P, layout.dense ? DENSE_OBJECT_WIDTH : undefined),
+            borderColor: focused
+              ? P.label.focusBorder
+              : object.state === 'unmarked' || unreachable
+                ? P.label.unreachableBorder
+                : marked
+                  ? role.stroke
+                  : P.label.border,
+            // The outline takes no room, so a card does not grow or move when it gets its mark.
+            ...(marked && {
+              outline: `${MARKED_OUTLINE}px solid ${focused ? P.label.focusBorder : role.stroke}`,
+            }),
+          }}
         >
-          <meshLambertMaterial ref={mat} color={baseColor} transparent opacity={1} flatShading />
-        </RoundedBox>
-        {object.kind === 'array' &&
-          [1, 2, 3].map((i) => (
-            <mesh key={i} position={[-size[0] / 2 + (i * size[0]) / 4, size[1] + 0.005, 0]}>
-              <boxGeometry args={[0.03, 0.01, size[2] * 0.8]} />
-              <meshBasicMaterial color={P.array.divider} transparent opacity={0.35} />
-            </mesh>
-          ))}
+          <div
+            className={titleClass(layout.dense)}
+            style={{ color: P.text.primary, ...lineStyle(layout.dense) }}
+          >
+            {object.label}
+            <span
+              // A split heap's ids are longer (`#cache`): a narrower gap keeps `Object #cache`
+              // inside a dense card.
+              className={`font-normal${layout.spaces ? ' ml-1' : badgeGap(layout.dense)}`}
+              style={{ color: P.text.muted }}
+            >
+              #{shownId}
+            </span>
+            {tag === 'UNMARKED' && (
+              <span
+                className={`text-[9px]${badgeGap(layout.dense)}`}
+                style={{ color: P.unreachable.stroke }}
+              >
+                UNMARKED
+              </span>
+            )}
+            {marked && (
+              <span
+                data-viz-tag="marked"
+                className={`text-[9px]${badgeGap(layout.dense)}`}
+                style={{ color: P.text.primary }}
+              >
+                MARKED
+              </span>
+            )}
+            {reclaimedTag(collected, inFreedSpace) && (
+              <span
+                className={`text-[9px]${badgeGap(layout.dense)}`}
+                style={{ color: P.unreachable.stroke }}
+              >
+                RECLAIMED
+              </span>
+            )}
+          </div>
+          {/* Its own line: a dense title has no room left for it after `Object #cache`. */}
+          {tag === 'COPIED' && copied && (
+            <div
+              data-viz-tag="copied"
+              className="font-bold"
+              style={{ color: P.text.unreachable, ...lineStyle(layout.dense) }}
+            >
+              COPIED
+            </div>
+          )}
+          {!collected &&
+            (object.slots.length === 0 ? (
+              <div style={{ color: P.text.muted }}>(empty)</div>
+            ) : (
+              object.slots.map((s) => {
+                const f = focus.includes(slotKey(object.id, s.name));
+                return (
+                  <div
+                    key={s.name}
+                    className={f ? 'font-bold' : undefined}
+                    style={{
+                      color: f ? P.text.onFocus : P.text.secondary,
+                      ...lineStyle(layout.dense),
+                    }}
+                  >
+                    {object.kind === 'array' ? `[${s.name}]` : s.name}: {s.refId ? '●→' : s.value}
+                  </div>
+                );
+              })
+            ))}
+        </Label>
       </group>
-      <Label
-        position={
-          labelInFront
-            ? [0, 0, size[2] / 2 + 0.15]
-            : [0, collected ? 0.3 : size[1] + OBJECT_LABEL_LIFT, 0]
-        }
-        anchor={labelInFront ? `translate(${labelX}, 6px)` : `translate(${labelX}, -100%)`}
-        opacity={collected ? 0.4 : 1}
-        fadeMs={500}
-        instant={instant}
-        className={
-          layout.dense
-            ? 'border px-2 py-0.5 text-[11px] leading-[14px]'
-            : 'border px-2 py-1 text-[11px] leading-4'
-        }
-        attrs={marked ? MARKED_ATTRS : undefined}
-        style={{
-          ...cardStyle(P, layout.dense ? DENSE_OBJECT_WIDTH : undefined),
-          borderColor: focused
-            ? P.label.focusBorder
-            : object.state === 'unmarked' || unreachable
-              ? P.label.unreachableBorder
-              : marked
-                ? role.stroke
-                : P.label.border,
-          // The outline takes no room, so a card does not grow or move when it gets its mark.
-          ...(marked && {
-            outline: `${MARKED_OUTLINE}px solid ${focused ? P.label.focusBorder : role.stroke}`,
-          }),
-        }}
-      >
-        <div
-          className={titleClass(layout.dense)}
-          style={{ color: P.text.primary, ...lineStyle(layout.dense) }}
-        >
-          {object.label}
-          <span className={`font-normal${badgeGap(layout.dense)}`} style={{ color: P.text.muted }}>
-            #{object.id}
-          </span>
-          {tag === 'UNMARKED' && (
-            <span
-              className={`text-[9px]${badgeGap(layout.dense)}`}
-              style={{ color: P.unreachable.stroke }}
-            >
-              UNMARKED
-            </span>
-          )}
-          {marked && (
-            <span
-              data-viz-tag="marked"
-              className={`text-[9px]${badgeGap(layout.dense)}`}
-              style={{ color: P.text.primary }}
-            >
-              MARKED
-            </span>
-          )}
-          {collected && (
-            <span
-              className={`text-[9px]${badgeGap(layout.dense)}`}
-              style={{ color: P.unreachable.stroke }}
-            >
-              RECLAIMED
-            </span>
-          )}
-        </div>
-        {!collected &&
-          (object.slots.length === 0 ? (
-            <div style={{ color: P.text.muted }}>(empty)</div>
-          ) : (
-            object.slots.map((s) => {
-              const f = focus.includes(slotKey(object.id, s.name));
-              return (
-                <div
-                  key={s.name}
-                  className={f ? 'font-bold' : undefined}
-                  style={{
-                    color: f ? P.text.onFocus : P.text.secondary,
-                    ...lineStyle(layout.dense),
-                  }}
-                >
-                  {object.kind === 'array' ? `[${s.name}]` : s.name}: {s.refId ? '●→' : s.value}
-                </div>
-              );
-            })
-          ))}
-      </Label>
+    </group>
+  );
+};
+
+/** How long a copy takes to rise out of its original's cell and settle in its own. */
+const GLIDE_SECONDS = 1.6;
+
+// ---- Copies ---------------------------------------------------------------------------
+
+/**
+ * The dotted line on the floor from an object a collector copied to its copy. Not a
+ * reference: muted, thin and dotted, with an open chevron instead of the reference cone.
+ */
+const CopyTrail: React.FC<{ start: V3; end: V3; color: string }> = ({ start, end, color }) => {
+  const chevron = useMemo(() => {
+    const tip = new THREE.Vector3(...end);
+    const back = tip
+      .clone()
+      .sub(new THREE.Vector3(...start))
+      .setY(0)
+      .normalize()
+      .multiplyScalar(0.35);
+    const side = new THREE.Vector3(-back.z, 0, back.x);
+    return [
+      tip.clone().sub(back).add(side).toArray(),
+      tip.toArray(),
+      tip.clone().sub(back).sub(side).toArray(),
+    ] as V3[];
+  }, [start, end]);
+  return (
+    <group>
+      <Line
+        points={[start, end]}
+        color={color}
+        lineWidth={2}
+        dashed
+        dashSize={0.08}
+        gapSize={0.22}
+      />
+      <Line points={chevron} color={color} lineWidth={2} />
     </group>
   );
 };
@@ -326,12 +425,87 @@ const RootPulse: React.FC<{ color: string; reach: number }> = ({ color, reach })
 
 // ---- Regions --------------------------------------------------------------------------
 
+/** A floor slab with its grid: the whole heap, or one space of it. */
+const FloorSlab: React.FC<{ center: V3; size: V3; divisions: number; P: VizPalette }> = ({
+  center,
+  size,
+  divisions,
+  P,
+}) => (
+  <>
+    <mesh position={[center[0], -0.06, center[2]]}>
+      <boxGeometry args={size} />
+      <meshLambertMaterial color={P.region.floor} flatShading />
+    </mesh>
+    <gridHelper
+      // Keyed: a helper's geometry and colours are fixed when it is built.
+      key={`${size[0]}:${size[2]}:${divisions}:${P.region.stroke}`}
+      args={[size[0], divisions, P.region.stroke, P.region.stroke]}
+      position={[center[0], 0.001, center[2]]}
+      scale={[1, 1, size[2] / size[0]]}
+    />
+  </>
+);
+
+const SPACE_ROLE_TAG = { from: 'FROM-SPACE', to: 'TO-SPACE' } as const;
+/** Px the HEAP caption keeps above the back-right corner: clear of the back space's caption. */
+const HEAP_ABOVE_SPACES = 16;
+
+/**
+ * A space's caption: its name, and under it the tags it has now (a semi-space's role, FREE).
+ * Drawn like a region caption, but marked `data-viz-label`, so the label checks hold its tags
+ * to the same rules as every other label (in frame, overlapping nothing).
+ */
+const SpaceLabel: React.FC<{
+  slab: SpaceSlab;
+  space: HeapSpace;
+  freed: boolean;
+  P: VizPalette;
+}> = ({ slab, space, freed, P }) => {
+  const tags = [space.role ? SPACE_ROLE_TAG[space.role] : null, freed ? 'FREE' : null].filter(
+    (t): t is string => t !== null
+  );
+  return (
+    <Html position={slab.label} zIndexRange={[10, 0]} portal={useLabelHost()}>
+      <div
+        data-viz-label
+        data-viz-entity="space"
+        data-viz-space={space.id}
+        data-viz-role={space.role}
+        style={{ ...labelStyle, transform: 'translate(12px, -50%)', fontFamily: MONO }}
+        className="text-[11px] font-bold leading-[14px] tracking-[0.1em]"
+      >
+        {/* One part of the name per line ("YOUNG", "SEMI-SPACE A"), and one tag per line: a
+            narrow caption needs little room right of the floor. */}
+        {space.label.split(' · ').map((part) => (
+          <div key={part} style={{ color: P.region.label }}>
+            {part}
+          </div>
+        ))}
+        {tags.map((tag) => (
+          <div
+            key={tag}
+            data-viz-tag={tag.toLowerCase()}
+            style={{ color: tag === 'FREE' ? P.text.unreachable : P.text.primary }}
+          >
+            {tag}
+          </div>
+        ))}
+      </div>
+    </Html>
+  );
+};
+
 const Regions: React.FC<{
   layout: StackHeapLayout;
+  /** The snapshot's spaces, when its heap is split into them. */
+  spaces?: readonly HeapSpace[];
+  /** Ids of the spaces freed as a whole. */
+  freed: ReadonlySet<string>;
   /** Px the bottom frame's label grows downward, over the stack caption's usual place. */
   stackLabelDrop: number;
   P: VizPalette;
-}> = ({ layout, stackLabelDrop, P }) => {
+}> = ({ layout, spaces, freed, stackLabelDrop, P }) => {
   const { heapCenter, heapSize } = layout;
   return (
     <>
@@ -339,17 +513,24 @@ const Regions: React.FC<{
         <boxGeometry args={[FRAME_SIZE[0] + 0.8, 0.12, FRAME_SIZE[2] + 0.8]} />
         <meshLambertMaterial color={P.region.plinth} flatShading />
       </mesh>
-      <mesh position={[heapCenter[0], -0.06, heapCenter[2]]}>
-        <boxGeometry args={heapSize} />
-        <meshLambertMaterial color={P.region.floor} flatShading />
-      </mesh>
-      <gridHelper
-        // Keyed: a helper's geometry and colours are fixed when it is built.
-        key={`${heapSize[0]}:${layout.gridDivisions}:${P.region.stroke}`}
-        args={[heapSize[0], layout.gridDivisions, P.region.stroke, P.region.stroke]}
-        position={[heapCenter[0], 0.001, heapCenter[2]]}
-        scale={[1, 1, heapSize[2] / heapSize[0]]}
-      />
+      {layout.spaces && spaces ? (
+        layout.spaces.map((slab) => {
+          const space = spaces.find((s) => s.id === slab.id);
+          return (
+            <React.Fragment key={slab.id}>
+              <FloorSlab
+                center={slab.center}
+                size={slab.size}
+                divisions={layout.gridDivisions}
+                P={P}
+              />
+              {space && <SpaceLabel slab={slab} space={space} freed={freed.has(space.id)} P={P} />}
+            </React.Fragment>
+          );
+        })
+      ) : (
+        <FloorSlab center={heapCenter} size={heapSize} divisions={layout.gridDivisions} P={P} />
+      )}
       <RegionLabel
         position={[STACK_X, -0.1, FRAME_SIZE[2] / 2 + 0.5]}
         color={P.region.label}
@@ -362,14 +543,23 @@ const Regions: React.FC<{
       </RegionLabel>
       <RegionLabel
         // A dense floor's front edge lies under its front row's labels, so the caption stands
-        // beside the floor's front-right corner instead.
+        // beside the floor's front-right corner instead. A floor split into spaces has their
+        // captions down its right side; HEAP heads them, beside the back-right corner.
         position={
-          layout.dense
-            ? [layout.floor[1][0], -0.1, layout.floor[1][2]]
-            : [heapCenter[0], -0.1, heapCenter[2] + heapSize[2] / 2]
+          layout.spaces
+            ? [layout.floor[1][0], -0.1, layout.floor[0][2]]
+            : layout.dense
+              ? [layout.floor[1][0], -0.1, layout.floor[1][2]]
+              : [heapCenter[0], -0.1, heapCenter[2] + heapSize[2] / 2]
         }
         color={P.region.label}
-        anchor={layout.dense ? 'translate(10px, -50%)' : undefined}
+        anchor={
+          layout.spaces
+            ? `translate(12px, calc(-100% - ${HEAP_ABOVE_SPACES}px))`
+            : layout.dense
+              ? 'translate(10px, -50%)'
+              : undefined
+        }
         style={{ fontFamily: MONO }}
       >
         HEAP
@@ -407,7 +597,31 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
     () => (markUnreachable ? getReachable(snapshot) : null),
     [markUnreachable, snapshot]
   );
-  const marking = gcPhase === 'mark';
+  const marking = framesAreRoots(gcPhase);
+  const freed = useMemo(
+    () =>
+      new Set((snapshot.spaces ?? []).filter((s) => isSpaceFreed(snapshot, s.id)).map((s) => s.id)),
+    [snapshot]
+  );
+  const trails = getCopyTrails(snapshot);
+  // Cells an arc from a frame lands on: first-column labels in such an arc's path stay centred.
+  const landings: Cell[] = refs
+    .filter((r) => r.fromKind === 'frame')
+    .flatMap((r) => snapshot.objects.filter((o) => o.id === r.to).map((o) => o.cell));
+  // A copy glides in only when it enters while the scene is showing, never on the first render.
+  const shown = useRef(false);
+  useEffect(() => {
+    shown.current = true;
+  }, []);
+  const glideFrom = (o: PlacedObject): V3 | undefined => {
+    if (!shown.current || !o.copyOf) return undefined;
+    const original = snapshot.objects.find((x) => x.id === o.copyOf);
+    return original?.state === 'copied' ? cellPos(original.cell, layout) : undefined;
+  };
+  const inFreedSpace = (id: string) => {
+    const space = spaceOf(snapshot, id);
+    return space !== undefined && freed.has(space.id);
+  };
   const planFor = ({ frame, index }: FrameEntry) =>
     frameLabelPlan(index, snapshot.frames.length, frame.slots.length, (i) =>
       focus.includes(slotKey(frame.id, frame.slots[i].name))
@@ -423,7 +637,13 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
       <hemisphereLight args={[P.lighting.sky, P.lighting.ground, 1.4]} />
       <directionalLight position={[6, 12, 8]} intensity={1.6} />
 
-      <Regions layout={layout} stackLabelDrop={stackLabelDrop} P={P} />
+      <Regions
+        layout={layout}
+        spaces={snapshot.spaces}
+        freed={freed}
+        stackLabelDrop={stackLabelDrop}
+        P={P}
+      />
 
       {frames.map(({ item, exiting }) => (
         <FrameSlab
@@ -449,7 +669,10 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
           focused={focus.includes(item.id)}
           unreachable={!!reachable && item.state === 'live' && !reachable.has(item.id)}
           focus={focus}
-          stackHeld={refs.some((r) => r.fromKind === 'frame' && r.to === item.id)}
+          stackHeld={inStackArcPath(item.cell, landings)}
+          shownId={originOf(snapshot, item.id)}
+          inFreedSpace={inFreedSpace(item.id)}
+          glideFrom={exiting ? undefined : glideFrom(item)}
           gcPhase={gcPhase}
           shot={shot}
           layout={layout}
@@ -463,6 +686,11 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
         return arc ? (
           <RefArc key={r.id} {...arc} focused={focus.includes(r.from)} P={P} instant={instant} />
         ) : null;
+      })}
+
+      {trails.map((t) => {
+        const line = copyTrail(t.from, t.to, snapshot, layout);
+        return line ? <CopyTrail key={t.id} {...line} color={P.text.muted} /> : null;
       })}
 
       {rootPulsePlays(gcPhase, focus, snapshot.frames) && !instant && (

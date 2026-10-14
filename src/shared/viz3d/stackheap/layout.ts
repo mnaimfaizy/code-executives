@@ -19,6 +19,7 @@ import {
   type Cell,
   type HeapGrid,
   type HeapKind,
+  type HeapSpace,
   type Reference,
 } from '../../snapshot';
 import type { Box3, V3 } from '../../components/viz/viewerCamera';
@@ -77,6 +78,16 @@ const HEAP_ONLY: ShotPad = { left: 60, right: 60, top: 70, bottom: 80 };
 // A dense scene has a tall stack at the back, with nothing floating above it, and needs every
 // pixel of height for its rows.
 const DENSE_WITH_STACK: ShotPad = { left: 40, right: 60, top: 30, bottom: 70 };
+/**
+ * A heap split into spaces puts each space's label beside the floor's right edge (see
+ * `SpaceSlab.label`). The back row's label stands furthest right, so the right pad holds it.
+ */
+const SPACE_LABEL_ROOM = 100;
+/** Px a split heap's shots add on the left, for the CALL STACK caption. */
+const CALL_STACK_ROOM = 12;
+
+/** World gap between two neighbouring space slabs. */
+export const SPACE_GAP = 0.3;
 
 // ---- Layout -----------------------------------------------------------------------------
 
@@ -99,6 +110,25 @@ export interface StackHeapLayout {
   shots: Record<StackHeapShot, Shot>;
   /** The scene plus a margin: panning keeps the camera target inside it. */
   bounds: Box3;
+  /**
+   * One floor slab per heap space, when the snapshot splits its heap into spaces. Absent
+   * otherwise: the heap is then the single floor, exactly as before spaces existed.
+   */
+  spaces?: SpaceSlab[];
+}
+
+/** The floor of one heap space: one heap row, its own slab and its label's anchor. */
+export interface SpaceSlab {
+  id: string;
+  row: number;
+  center: V3;
+  size: V3;
+  /**
+   * Where the space's label stands: just right of the floor's right edge, toward the back of
+   * the slab. Nothing else is drawn right of the floor, and the back of a row is clear of the
+   * labels of the row in front of it (which hang toward the front).
+   */
+  label: V3;
 }
 
 /** The union of `boxes`, grown by `margin` (same arithmetic as `boundsOf` in frameShot). */
@@ -119,11 +149,19 @@ const cache = new Map<string, StackHeapLayout>();
  * The layout for a heap grid and a number of frames. Equal inputs return the same object, so
  * a camera keyed on `shots[...]` only re-frames when the layout really changed.
  */
-export function layoutOf(grid: HeapGrid, frameCount: number): StackHeapLayout {
+export function layoutOf(
+  grid: HeapGrid,
+  frameCount: number,
+  spaces?: readonly Pick<HeapSpace, 'id' | 'row'>[]
+): StackHeapLayout {
+  const split = spaces !== undefined && spaces.length > 0;
   const cols = Math.max(1, grid.cols);
-  const rows = Math.max(1, grid.rows);
+  // Every space has its row, an empty one too, so the floor never changes size between beats.
+  const rows = Math.max(1, grid.rows, ...(split ? spaces.map((s) => s.row + 1) : []));
   const depth = Math.max(MIN_STACK_DEPTH, frameCount);
-  const key = `${cols}x${rows}x${depth}`;
+  const key =
+    `${cols}x${rows}x${depth}` +
+    (split ? `|${spaces.map((s) => `${s.id}:${s.row}`).join(',')}` : '');
   const hit = cache.get(key);
   if (hit) return hit;
 
@@ -134,7 +172,15 @@ export function layoutOf(grid: HeapGrid, frameCount: number): StackHeapLayout {
     z: rows > 2 ? WIDE_PITCH.z : CELL_PITCH,
   };
   const dense = cols > 2 || rows > 2 || depth > MIN_STACK_DEPTH;
-  const withStack = dense ? DENSE_WITH_STACK : WITH_STACK;
+  const baseWithStack = dense ? DENSE_WITH_STACK : WITH_STACK;
+  const withStack = split ? { ...baseWithStack, right: SPACE_LABEL_ROOM } : baseWithStack;
+  // A bottom frame that lists its slots moves the CALL STACK caption left under its card (see
+  // `Regions`), a few px past the dense pad. The overview's floor already reaches further left;
+  // the closer shots of a split heap give the caption its room.
+  const closeWithStack = split
+    ? { ...withStack, left: withStack.left + CALL_STACK_ROOM }
+    : withStack;
+  const heapOnly = split ? { ...HEAP_ONLY, right: SPACE_LABEL_ROOM } : HEAP_ONLY;
   const spanX = (cols - 1) * pitch.x;
   const spanZ = (rows - 1) * pitch.z;
   const heapCenter: V3 = [CELL_X0 + spanX / 2, 0, CELL_Z0 + spanZ / 2];
@@ -166,20 +212,46 @@ export function layoutOf(grid: HeapGrid, frameCount: number): StackHeapLayout {
     floor,
     shots: {
       overview: { boxes: [stack, floor], pad: withStack },
-      stack: { boxes: [stack], pad: withStack },
-      bridge: { boxes: [stack, objects], pad: withStack },
-      heap: { boxes: [objects], pad: HEAP_ONLY },
-      gc: { boxes: [stack, floor], pad: withStack, isoDir: GC_ISO },
+      stack: { boxes: [stack], pad: closeWithStack },
+      bridge: { boxes: [stack, objects], pad: closeWithStack },
+      heap: { boxes: [objects], pad: heapOnly },
+      gc: { boxes: [stack, floor], pad: closeWithStack, isoDir: GC_ISO },
     },
     bounds: union([stack, floor], 3),
   };
+  if (split) layout.spaces = spaceSlabs(spaces, layout);
   cache.set(key, layout);
   return layout;
 }
 
+/**
+ * The slabs of a heap split into spaces: the floor cut between rows, halfway from one row of
+ * cells to the next, with a small gap. Together they cover the single floor's area, so every
+ * shot box stays as it is.
+ */
+function spaceSlabs(
+  spaces: readonly Pick<HeapSpace, 'id' | 'row'>[],
+  layout: Pick<StackHeapLayout, 'floor' | 'pitch' | 'grid'>
+): SpaceSlab[] {
+  const [[x0, , z0], [x1, , z1]] = layout.floor;
+  const lastRow = layout.grid.rows - 1;
+  return spaces.map(({ id, row }) => {
+    const z = CELL_Z0 + row * layout.pitch.z;
+    const back = row === 0 ? z0 : z - layout.pitch.z / 2 + SPACE_GAP / 2;
+    const front = row === lastRow ? z1 : z + layout.pitch.z / 2 - SPACE_GAP / 2;
+    return {
+      id,
+      row,
+      center: [(x0 + x1) / 2, 0, (back + front) / 2],
+      size: [x1 - x0, 0.1, front - back],
+      label: [x1, 0, z],
+    };
+  });
+}
+
 /** The layout that holds everything in `snapshot`. */
 export const layoutFor = (snapshot: PlacedSnapshot, minGrid?: HeapGrid): StackHeapLayout =>
-  layoutOf(gridOf(snapshot.objects, minGrid), snapshot.frames.length);
+  layoutOf(gridOf(snapshot.objects, minGrid), snapshot.frames.length, snapshot.spaces);
 
 // ---- Frame labels -----------------------------------------------------------------------
 
@@ -351,7 +423,17 @@ export function refArc(
       };
     }
     const size = ENTITY_SIZE[targetObject.kind];
-    const end = faceToward(cellPos(targetObject.cell, layout), size, start, size[1]);
+    const centre = cellPos(targetObject.cell, layout);
+    // In a heap split into spaces the rows are deep. An arc to a first-column object behind
+    // which (toward the stack's row) another object stands would land on the back face, past
+    // that object and under its label; it lands on the face turned toward the stack instead.
+    const { col, row } = targetObject.cell;
+    const passesOver =
+      layout.spaces !== undefined &&
+      col === 0 &&
+      snapshot.objects.some((o) => o.cell.col === col && o.cell.row < row);
+    const toward: V3 = passesOver ? [centre[0] - 1, 0, centre[2]] : start;
+    const end = faceToward(centre, size, toward, size[1]);
     return { start, end, mid: lifted(start, end, STACK_ARC_LIFT) };
   }
 
@@ -425,3 +507,46 @@ const lifted = (start: V3, end: V3, lift: number): V3 => [
   Math.max(start[1], end[1]) + lift,
   (start[2] + end[2]) / 2,
 ];
+
+// ---- Copies -----------------------------------------------------------------------------
+
+/** Height of a copy trail above the floor: on it, under every block and arc. */
+export const TRAIL_Y = 0.03;
+/** How high a copy rises above its original's cell while it glides to its own. */
+export const GLIDE_LIFT = 1.4;
+
+/**
+ * The dotted floor line from an object a collector copied to its copy: from the original's
+ * face turned toward the copy to the copy's face turned toward the original. `null` when either
+ * is not in the snapshot.
+ */
+export function copyTrail(
+  fromId: string,
+  toId: string,
+  snapshot: PlacedSnapshot,
+  layout: StackHeapLayout = layoutFor(snapshot)
+): { start: V3; end: V3 } | null {
+  const from = snapshot.objects.find((o) => o.id === fromId);
+  const to = snapshot.objects.find((o) => o.id === toId);
+  if (!from || !to) return null;
+  const a = cellPos(from.cell, layout);
+  const b = cellPos(to.cell, layout);
+  const start = faceToward(a, ENTITY_SIZE[from.kind], b, TRAIL_Y - 0.02);
+  const end = faceToward(b, ENTITY_SIZE[to.kind], a, TRAIL_Y - 0.02);
+  return { start, end };
+}
+
+/**
+ * Where a gliding copy is at `t` (0 → 1): it rises out of its original's cell, crosses over
+ * and settles in its own. Offset from the copy's own cell, since the block is drawn there.
+ */
+export function glideOffset(origin: V3, target: V3, t: number): V3 {
+  const k = Math.min(1, Math.max(0, t));
+  // Ease in and out along the way; the height is an arch that peaks halfway.
+  const e = k * k * (3 - 2 * k);
+  return [
+    (origin[0] - target[0]) * (1 - e),
+    GLIDE_LIFT * Math.sin(Math.PI * Math.min(1, k * 1.15)),
+    (origin[2] - target[2]) * (1 - e),
+  ];
+}
