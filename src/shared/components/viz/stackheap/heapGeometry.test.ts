@@ -79,6 +79,97 @@ describe('refPath on the story floor (2×2)', () => {
   });
 });
 
+describe('refPath for a mutual pair in one row', () => {
+  const node = (id: string, col: number, row: number, slots: Slot[]): Placed<HeapObject> => ({
+    id,
+    label: 'Object',
+    kind: 'object',
+    state: 'live',
+    cell: { col, row },
+    slots,
+  });
+  const pairOf = (back: boolean): PlacedSnapshot => ({
+    frames: frames([[{ name: 'p', refId: 'p' }]]),
+    objects: [
+      node('p', 0, 0, [
+        { name: 'name', value: "'p'" },
+        { name: 'child', refId: 'c' },
+      ]),
+      node('c', 1, 0, [
+        { name: 'name', value: "'c'" },
+        back ? { name: 'parent', refId: 'p' } : { name: 'parent', value: 'null' },
+      ]),
+    ],
+  });
+  const paths = (snapshot: PlacedSnapshot) => {
+    const at = layout2D(snapshot);
+    return Object.fromEntries(
+      getReferences(snapshot).map((ref) => [ref.from, refPath(ref, snapshot, at)!])
+    );
+  };
+  /** The least distance between any two sampled points of two paths. */
+  const apart = (a: string, b: string) =>
+    Math.min(
+      ...samplePath(a).flatMap(([ax, ay]) =>
+        samplePath(b).map(([bx, by]) => Math.hypot(ax - bx, ay - by))
+      )
+    );
+
+  it('sends the way back over the top, so the two arrows never cross', () => {
+    const snapshot = pairOf(true);
+    const at = layout2D(snapshot);
+    const { 'p.child': out, 'c.parent': back } = paths(snapshot);
+    const p = at.objects.get('p')!;
+    const c = at.objects.get('c')!;
+
+    // The way out is drawn as it always was: slot line to heading, across the gutter
+    expect(out).toBe(paths(pairOf(false))['p.child']);
+    // The way back leaves the child's top edge and lands on the parent's, inside both
+    const points = samplePath(back);
+    const [start, end] = [points[0], points[points.length - 1]];
+    expect(start[1]).toBe(c.y);
+    expect(end[1]).toBe(p.y);
+    expect(start[0]).toBeGreaterThan(c.x);
+    expect(end[0]).toBeLessThan(p.x + p.w);
+    for (const [, y] of points) expect(y).toBeLessThanOrEqual(p.y);
+    // Under the region's top edge (20), and clear of the other arrow and of its head
+    expect(Math.min(...points.map(([, y]) => y))).toBeGreaterThan(40);
+    expect(apart(out, back)).toBeGreaterThan(12);
+    expect(checkArrows(snapshot).crossings).toEqual([]);
+  });
+
+  it('keeps the same path whatever the state of the two objects', () => {
+    const live = pairOf(true);
+    const marked: PlacedSnapshot = {
+      ...live,
+      objects: live.objects.map((o) => ({ ...o, state: 'marked' as const })),
+    };
+    expect(paths(marked)).toEqual(paths(live));
+  });
+
+  it('leaves a single reference to the left as one curve between the facing edges', () => {
+    const snapshot: PlacedSnapshot = {
+      frames: [],
+      objects: [
+        node('p', 0, 0, [{ name: 'name', value: "'p'" }]),
+        node('c', 1, 0, [{ name: 'parent', refId: 'p' }]),
+      ],
+    };
+    const at = layout2D(snapshot);
+    const points = samplePath(paths(snapshot)['c.parent']);
+    const p = at.objects.get('p')!;
+    const c = at.objects.get('c')!;
+    expect(points[0][0]).toBe(c.x);
+    expect(points[points.length - 1]).toEqual([p.x + p.w, p.y + 15]);
+  });
+
+  it('does the same on a dense floor without passing through an object', () => {
+    const check = checkArrows({ frames: [], objects: floor({ o6: ['o7'], o7: ['o6'] }) });
+    expect(check.arrows).toBe(2);
+    expect(check.crossings).toEqual([]);
+  });
+});
+
 describe('refPath on a dense floor (5×4)', () => {
   it('never passes through an object, from any cell to any other', () => {
     let arrows = 0;

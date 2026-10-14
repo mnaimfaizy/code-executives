@@ -384,16 +384,41 @@ export function refArc(
   const targetPos = cellPos(targetObject.cell, layout);
   const start = faceToward(sourcePos, sourceSize, targetPos, sourceSize[1]);
   const end = faceToward(targetPos, targetSize, sourcePos, targetSize[1]);
+  const mid: V3 = [
+    (start[0] + end[0]) / 2,
+    Math.max(sourceSize[1], targetSize[1]) + HEAP_ARC_LIFT,
+    (start[2] + end[2]) / 2,
+  ];
+  if (!pointsBack(targetObject, source.id)) return { start, end, mid };
+
+  // Two objects that reference each other: on the one curve the two arcs would coincide. Each
+  // keeps to the lane on its own right, as traffic does, so the two run side by side.
+  const dx = targetPos[0] - sourcePos[0];
+  const dz = targetPos[2] - sourcePos[2];
+  const length = Math.hypot(dx, dz);
+  const lane: V3 = [(-dz / length) * MUTUAL_LANE, 0, (dx / length) * MUTUAL_LANE];
   return {
-    start,
-    end,
-    mid: [
-      (start[0] + end[0]) / 2,
-      Math.max(sourceSize[1], targetSize[1]) + HEAP_ARC_LIFT,
-      (start[2] + end[2]) / 2,
-    ],
+    start: onFootprint(shifted(start, lane), sourcePos, sourceSize),
+    end: onFootprint(shifted(end, lane), targetPos, targetSize),
+    mid: shifted(mid, lane),
   };
 }
+
+/** How far each arc of a mutual pair moves off the line between the two centres. */
+export const MUTUAL_LANE = 0.4;
+
+/** Whether `object` holds a reference to `id` that is drawn (a collected object's are not). */
+const pointsBack = (object: PlacedSnapshot['objects'][number], id: string) =>
+  object.state !== 'collected' && object.slots.some((slot) => slot.refId === id);
+
+const shifted = (p: V3, by: V3): V3 => [p[0] + by[0], p[1] + by[1], p[2] + by[2]];
+
+/** `p` moved back onto the footprint of the block at `centre`, when a lane took it off. */
+const onFootprint = (p: V3, centre: V3, size: V3): V3 => [
+  Math.min(centre[0] + size[0] / 2, Math.max(centre[0] - size[0] / 2, p[0])),
+  p[1],
+  Math.min(centre[2] + size[2] / 2, Math.max(centre[2] - size[2] / 2, p[2])),
+];
 
 const lifted = (start: V3, end: V3, lift: number): V3 => [
   (start[0] + end[0]) / 2,

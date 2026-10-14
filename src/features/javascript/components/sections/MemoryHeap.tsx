@@ -420,6 +420,17 @@ const MemoryHeap: React.FC = () => {
 
       <div className="mb-4">
         <StackHeapStory />
+        <p className="mt-3 text-sm text-slate-700" data-testid="garbage-collection-bridge">
+          <a
+            href="/javascript?section=Garbage%20Collection"
+            className="font-semibold text-indigo-700 underline underline-offset-2 hover:text-indigo-900"
+          >
+            See how the collector decides
+          </a>
+          : this story ends with a collection that reaches nothing. The Garbage Collection story
+          follows one that has something to mark, and shows why two objects that reference each
+          other are still reclaimed.
+        </p>
       </div>
 
       <div className="mt-2">

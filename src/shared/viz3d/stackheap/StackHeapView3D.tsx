@@ -19,6 +19,7 @@ import type { V3 } from '../frameShot';
 import { MONO, UP, damp } from '../primitives';
 import { Label, RegionLabel } from '../primitives.labels';
 import { FrameSlab, type FrameEntry } from './FrameSlab';
+import { labelLean, markTag, rootPulsePlays } from './gcCues';
 import {
   DENSE_OBJECT_WIDTH,
   FRAME_CARD,
@@ -73,6 +74,10 @@ const CORNER_RADIUS: Record<HeapKind, number> = {
 
 // ---- Heap -----------------------------------------------------------------------------
 
+/** Px added round the 1px border of a marked object's card: the cue that is not a colour. */
+const MARKED_OUTLINE = 2;
+const MARKED_ATTRS = { 'data-viz-marked': '' };
+
 const HeapBlock: React.FC<{
   object: PlacedObject;
   exiting: boolean;
@@ -80,11 +85,27 @@ const HeapBlock: React.FC<{
   /** A `live` object no frame can reach, drawn in the `unreachable` role. */
   unreachable: boolean;
   focus: readonly string[];
+  /** A frame's slot references this object: an arc from the stack lands on it. */
+  stackHeld: boolean;
+  /** The collector's phase: a mark is drawn only while a collection runs. */
+  gcPhase: StackHeapViewProps['gcPhase'];
   shot: StackHeapShot;
   layout: StackHeapLayout;
   P: VizPalette;
   instant: boolean;
-}> = ({ object, exiting, focused, unreachable, focus, shot, layout, P, instant }) => {
+}> = ({
+  object,
+  exiting,
+  focused,
+  unreachable,
+  focus,
+  stackHeld,
+  gcPhase,
+  shot,
+  layout,
+  P,
+  instant,
+}) => {
   const group = useRef<THREE.Group>(null);
   const mat = useRef<THREE.MeshLambertMaterial>(null);
   const size = ENTITY_SIZE[object.kind];
@@ -93,20 +114,14 @@ const HeapBlock: React.FC<{
   const collected = object.state === 'collected' || exiting;
   const offRole = object.state === 'unmarked' || object.state === 'collected' || unreachable;
   const role: EntityColors = offRole ? P.unreachable : P[object.kind];
+  const tag = markTag(object.state, gcPhase);
+  // A marked object is a live object: it keeps its own colour. The mark is the tag and a
+  // heavier border on its card, in the object's own stroke.
+  const marked = tag === 'MARKED' && !collected;
   // Back-row labels float above their block; labels of the rows in front hang in front of
   // theirs, so the gap between rows (where heap-to-heap arcs run) stays clear.
   const labelInFront = object.cell.row > 0;
-  // The GC shot adds UNMARKED/RECLAIMED badges, widening every label until neighbours in a
-  // row meet over the gap between columns. With no stack arcs to cover on those beats, the
-  // outer columns' labels lean outward (first column left, last column right) to open that gap.
-  const labelX =
-    shot !== 'gc'
-      ? '-50%'
-      : object.cell.col === 0
-        ? '-80%'
-        : object.cell.col === lastCol
-          ? '-20%'
-          : '-50%';
+  const labelX = labelLean(shot, object.cell.col, lastCol, stackHeld);
   const baseColor = useMemo(() => new THREE.Color(role.solid), [role.solid]);
 
   useFrame((_, dt) => {
@@ -159,13 +174,20 @@ const HeapBlock: React.FC<{
             ? 'border px-2 py-0.5 text-[11px] leading-[14px]'
             : 'border px-2 py-1 text-[11px] leading-4'
         }
+        attrs={marked ? MARKED_ATTRS : undefined}
         style={{
           ...cardStyle(P, layout.dense ? DENSE_OBJECT_WIDTH : undefined),
           borderColor: focused
             ? P.label.focusBorder
             : object.state === 'unmarked' || unreachable
               ? P.label.unreachableBorder
-              : P.label.border,
+              : marked
+                ? role.stroke
+                : P.label.border,
+          // The outline takes no room, so a card does not grow or move when it gets its mark.
+          ...(marked && {
+            outline: `${MARKED_OUTLINE}px solid ${focused ? P.label.focusBorder : role.stroke}`,
+          }),
         }}
       >
         <div
@@ -176,12 +198,21 @@ const HeapBlock: React.FC<{
           <span className={`font-normal${badgeGap(layout.dense)}`} style={{ color: P.text.muted }}>
             #{object.id}
           </span>
-          {object.state === 'unmarked' && (
+          {tag === 'UNMARKED' && (
             <span
               className={`text-[9px]${badgeGap(layout.dense)}`}
               style={{ color: P.unreachable.stroke }}
             >
               UNMARKED
+            </span>
+          )}
+          {marked && (
+            <span
+              data-viz-tag="marked"
+              className={`text-[9px]${badgeGap(layout.dense)}`}
+              style={{ color: P.text.primary }}
+            >
+              MARKED
             </span>
           )}
           {collected && (
@@ -418,6 +449,8 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
           focused={focus.includes(item.id)}
           unreachable={!!reachable && item.state === 'live' && !reachable.has(item.id)}
           focus={focus}
+          stackHeld={refs.some((r) => r.fromKind === 'frame' && r.to === item.id)}
+          gcPhase={gcPhase}
           shot={shot}
           layout={layout}
           P={P}
@@ -432,7 +465,7 @@ const Scene: React.FC<Omit<StackHeapView3DProps, 'label'>> = ({
         ) : null;
       })}
 
-      {marking && !instant && (
+      {rootPulsePlays(gcPhase, focus, snapshot.frames) && !instant && (
         <RootPulse
           color={P.root}
           reach={(9 * Math.max(layout.heapSize[0], layout.heapSize[2])) / 8}

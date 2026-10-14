@@ -188,6 +188,10 @@ For the old generation, the collector uses a slower but more comprehensive **Mar
 2. **Sweeping:** The collector then scans the entire heap and removes all unmarked objects, reclaiming their memory.24
 3. **Compacting:** Optionally, the collector can defragment the memory by moving live objects together, which helps reduce memory fragmentation and improves the efficiency of future memory allocations.26
 
+The roots are not only the global variables. Every local variable of a function that has not yet returned, held in that function's frame on the call stack, is a root as well, because the running program can still use whatever it refers to.26 The traversal moves from each marked object along the references that object holds, and repeats until every reachable object is marked.26 It follows from this that an object needs to be traversed only once: one that already carries a mark is not traversed again, so references that lead back to an object already visited cannot keep the marking going forever. It also follows that a mark belongs to the collection that set it: the next collection starts again from the roots with no object marked. Neither source states these two points in so many words; they are properties of the algorithm as described.
+
+Reachability, and not being referenced, is therefore the test for what is kept. A group of objects that reference each other but that no root reaches, for example two objects that each hold a reference to the other, is unreachable: none of them is marked, and all of them are collected.34 A simpler rule, **reference counting**, treats an object as garbage only when no reference points to it at all. That rule can never free such a cycle, since every object in it is still referenced by another one, so the memory of the whole group would stay occupied for as long as the program runs. Mark-and-sweep has no such limit, because it never asks how many references an object has, only whether a path from a root leads to it (MDN, "Memory management", https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management).34
+
 ## **7. A Blueprint for Visualization and Implementation**
 
 ### **7.1 Principles for Visualizing Code Execution**
@@ -249,3 +253,4 @@ The proposed visual platform, built on these nuanced and precise technical insig
 31. Free Online Block Diagram Maker - Canva, accessed September 11, 2025, https://www.canva.com/graphs/block-diagrams/
 32. EventLoop Visualized JavaScript : r/javascript - Reddit, accessed September 11, 2025, https://www.reddit.com/r/javascript/comments/1jk6zsi/eventloop_visualized_javascript/
 33. Interactive figures and asynchronous programming — Matplotlib 3.10.6 documentation, accessed September 11, 2025, https://matplotlib.org/stable/users/explain/figure/interactive_guide.html
+34. Memory management - JavaScript | MDN, accessed October 13, 2026, https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Memory_management

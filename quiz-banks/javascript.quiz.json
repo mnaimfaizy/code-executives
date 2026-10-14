@@ -550,6 +550,47 @@
       "explanation": "After the click task completes, the microtask checkpoint runs Promise reactions before the event loop takes a later timer task, which matches the displayed sequence.",
       "tags": ["visualization", "event-loop", "promises", "timers"],
       "references": ["Visualization", "Event Loop & Coordination", "Task Queues & Priority"]
+    },
+    {
+      "id": "javascript-q32",
+      "type": "single-choice",
+      "difficulty": "advanced",
+      "scenario": "A function builds a parent object and a child object, stores the child in parent.child and the parent in child.parent, and keeps the parent in a local variable named draft. The next statement is draft = null, and no other variable, closure, or global refers to either object. The function keeps running.",
+      "prompt": "What does a mark-and-sweep collector do with the two objects at the next collection, and why?",
+      "options": [
+        "It reclaims both, because no path from a root reaches either one, so neither is marked and the sweep removes every unmarked object",
+        "It keeps both, because each one is still referenced by the other and an object is only freed when nothing references it",
+        "It reclaims only the parent, because draft pointed at the parent while the child is still referenced by parent.child",
+        "Nothing is left for it to do, because both objects were freed at the moment draft was set to null"
+      ],
+      "correctAnswer": 0,
+      "explanation": "Marking starts at the roots (the frames on the call stack and the global scope) and spreads only along references. After draft = null no root leads to the pair, so the search never arrives at either object and neither gets a mark. The sweep then reads marks, not references: it does not matter that each object still has one reference pointing at it. Assigning null frees nothing by itself; it only removes a reference, and the memory is reclaimed later by a collection. A rule that frees an object only when nothing references it (reference counting) would keep this pair forever.",
+      "tags": ["mark-and-sweep", "reachability", "cycles", "reference-counting"],
+      "references": ["Garbage Collection"]
+    },
+    {
+      "id": "javascript-q33",
+      "type": "ordering",
+      "difficulty": "advanced",
+      "scenario": "A running function holds one local variable that refers to a parent object. The parent refers to its child and the child refers back to the parent. You are explaining to a teammate how a single mark-and-sweep collection walks this heap without going round the cycle forever.",
+      "prompt": "Arrange the steps of the collection from earliest to latest.",
+      "items": [
+        "The collector reads the parent's own references and marks the child",
+        "The sweep scans the whole heap and reclaims every object that has no mark",
+        "The collector starts at the roots: the frames on the call stack and the global scope",
+        "The child's reference leads back to the parent, which is already marked, so the collector does not traverse it again",
+        "The collector follows the reference held by the local variable and marks the parent"
+      ],
+      "correctAnswer": [
+        "The collector starts at the roots: the frames on the call stack and the global scope",
+        "The collector follows the reference held by the local variable and marks the parent",
+        "The collector reads the parent's own references and marks the child",
+        "The child's reference leads back to the parent, which is already marked, so the collector does not traverse it again",
+        "The sweep scans the whole heap and reclaims every object that has no mark"
+      ],
+      "explanation": "A collection begins at the roots, not at the objects. A mark is earned along a reference: first the object a root refers to, then the objects that marked object refers to. Each object is marked and traversed once, so a reference that leads back to an already marked object ends the search there, which is why a cycle cannot trap the collector. Only when marking is finished does the sweep run, and it follows no references at all: it keeps what is marked and reclaims the rest.",
+      "tags": ["mark-and-sweep", "roots", "marking", "sweep", "cycles"],
+      "references": ["Garbage Collection"]
     }
   ]
 }

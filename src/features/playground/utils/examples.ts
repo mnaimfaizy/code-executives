@@ -2,6 +2,7 @@ import type { PlaygroundLanguage, VisualizationLens } from '../types';
 // Only code that the site already shows is imported, from pure data modules: an example that is
 // a story's program, or a section's sample, is that same string, so the two cannot drift apart.
 import { STORY_CODE as EVENT_LOOP_STORY_CODE } from '../../javascript/utils/eventLoopStory';
+import { STORY_CODE as GARBAGE_COLLECTION_STORY_CODE } from '../../javascript/utils/garbageCollectionStory';
 import { sectionSamples, type SectionSample } from '../../javascript/utils/sectionSamples';
 import { STORY_CODE as STACK_HEAP_STORY_CODE } from '../../javascript/utils/stackHeapStory';
 
@@ -76,6 +77,19 @@ export const examples: Example[] = [
       kind: 'story',
       label: 'The Event Loop: what runs next?',
       href: '/javascript?section=Event%20Loop%20%26%20Coordination',
+    },
+  },
+  {
+    id: 'garbage-collection-story',
+    label: 'Story: Garbage Collection',
+    description: 'The program from the Garbage Collection story: what does the collector free?',
+    language: 'javascript',
+    suggestedLens: 'stack-heap',
+    code: GARBAGE_COLLECTION_STORY_CODE,
+    source: {
+      kind: 'story',
+      label: 'Garbage Collection: what does the collector free?',
+      href: '/javascript?section=Garbage%20Collection',
     },
   },
   {

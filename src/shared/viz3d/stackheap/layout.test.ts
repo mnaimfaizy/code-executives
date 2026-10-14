@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { STORY_BEATS as GC_BEATS } from '../../../features/javascript/utils/garbageCollectionStory';
 import { STORY_BEATS } from '../../../features/javascript/utils/stackHeapStory';
 import { getReferences, type HeapKind, type StackFrame } from '../../snapshot';
 import type { Box3 } from '../../components/viz/viewerCamera';
@@ -274,6 +275,127 @@ describe('stack-and-heap layout', () => {
       expect(arc).not.toBeNull();
       for (const p of [arc!.start, arc!.mid, arc!.end])
         for (const v of p) expect(Number.isFinite(v)).toBe(true);
+    });
+  });
+
+  describe('refArc between two objects that reference each other', () => {
+    const object = (
+      id: string,
+      col: number,
+      row: number,
+      refId?: string,
+      state: 'live' | 'collected' = 'live'
+    ): PlacedSnapshot['objects'][number] => ({
+      id,
+      label: 'Object',
+      kind: 'object',
+      slots: refId ? [{ name: 'to', refId }] : [],
+      state,
+      cell: { col, row },
+    });
+    const arcsOf = (snapshot: PlacedSnapshot) =>
+      new Map(getReferences(snapshot).map((r) => [r.id, refArc(r, snapshot)!]));
+    const inFootprint = (p: number[], box: Box3) =>
+      p[0] >= box[0][0] - 1e-9 &&
+      p[0] <= box[1][0] + 1e-9 &&
+      p[2] >= box[0][2] - 1e-9 &&
+      p[2] <= box[1][2] + 1e-9;
+
+    it('draws a single reference on the centre line, exactly as before', () => {
+      const snapshot: PlacedSnapshot = {
+        frames: [],
+        objects: [object('a', 0, 0, 'b'), object('b', 1, 0)],
+      };
+      // Blocks are 2.4 × 0.7 × 1.6 at x = 0.9 and 4.5, z = -1.8: facing edges, a 0.45 lift.
+      const arc = arcsOf(snapshot).get('a.to')!;
+      const expected = {
+        start: [0.9 + 1.2, 0.7 + 0.02, -1.8],
+        end: [4.5 - 1.2, 0.7 + 0.02, -1.8],
+        mid: [2.7, 0.7 + 0.45, -1.8],
+      };
+      for (const point of ['start', 'end', 'mid'] as const)
+        arc[point].forEach((v, i) => expect(v, `${point}[${i}]`).toBeCloseTo(expected[point][i]));
+    });
+
+    it('gives each arc of a mutual pair its own side of that line', () => {
+      const snapshot: PlacedSnapshot = {
+        frames: [],
+        objects: [object('a', 0, 0, 'b'), object('b', 1, 0, 'a')],
+      };
+      const arcs = arcsOf(snapshot);
+      const out = arcs.get('a.to')!;
+      const back = arcs.get('b.to')!;
+      // Side by side along x: one lane in front of the line between the centres, one behind.
+      for (const p of [out.start, out.mid, out.end]) expect(p[2]).toBeCloseTo(-1.8 + 0.4);
+      for (const p of [back.start, back.mid, back.end]) expect(p[2]).toBeCloseTo(-1.8 - 0.4);
+      // Otherwise the two are the one curve run in each direction.
+      expect(out.start[0]).toBeCloseTo(back.end[0]);
+      expect(out.end[0]).toBeCloseTo(back.start[0]);
+      expect(out.mid[0]).toBeCloseTo(back.mid[0]);
+      expect(out.mid[1]).toBeCloseTo(back.mid[1]);
+    });
+
+    it('keeps both ends of every lane on the blocks, in a row, a column and a diagonal', () => {
+      for (const [col, row] of [
+        [1, 0],
+        [0, 1],
+        [1, 1],
+      ]) {
+        const snapshot: PlacedSnapshot = {
+          frames: [],
+          objects: [object('a', 0, 0, 'b'), object('b', col, row, 'a')],
+        };
+        const layout = layoutFor(snapshot);
+        const boxes = new Map(
+          snapshot.objects.map((o) => [o.id, entityBox(o.kind, o.cell, layout)])
+        );
+        const arcs = arcsOf(snapshot);
+        const [out, back] = [arcs.get('a.to')!, arcs.get('b.to')!];
+        expect(inFootprint(out.start, boxes.get('a')!), `${col},${row}`).toBe(true);
+        expect(inFootprint(out.end, boxes.get('b')!), `${col},${row}`).toBe(true);
+        expect(inFootprint(back.start, boxes.get('b')!), `${col},${row}`).toBe(true);
+        expect(inFootprint(back.end, boxes.get('a')!), `${col},${row}`).toBe(true);
+        // The two curves stay apart where they are closest to coinciding: at their midpoints.
+        expect(Math.hypot(out.mid[0] - back.mid[0], out.mid[2] - back.mid[2])).toBeCloseTo(0.8);
+      }
+    });
+
+    it('treats a reference to a collected object as single: nothing is drawn back from it', () => {
+      const snapshot: PlacedSnapshot = {
+        frames: [],
+        objects: [object('a', 0, 0, 'b'), object('b', 1, 0, 'a', 'collected')],
+      };
+      const arcs = arcsOf(snapshot);
+      expect([...arcs.keys()]).toEqual(['a.to']);
+      for (const p of [arcs.get('a.to')!.start, arcs.get('a.to')!.mid, arcs.get('a.to')!.end])
+        expect(p[2]).toBeCloseTo(-1.8);
+    });
+
+    it('never draws two references of the Garbage Collection story on one curve', () => {
+      for (const beat of GC_BEATS) {
+        const arcs = [...arcsOf(beat).values()];
+        expect(arcs.length, beat.id).toBe(getReferences(beat).length);
+        arcs.forEach((a, i) =>
+          arcs.slice(i + 1).forEach((b) => {
+            const apart = Math.hypot(a.mid[0] - b.mid[0], a.mid[1] - b.mid[1], a.mid[2] - b.mid[2]);
+            expect(apart, beat.id).toBeGreaterThan(0.5);
+          })
+        );
+      }
+      // Beats 5 and 6 tell the two arcs of the page pair apart by which one is in focus.
+      const arcs = arcsOf(GC_BEATS[4]);
+      expect(arcs.get('page.child')!.mid[2]).toBeGreaterThan(arcs.get('page0.parent')!.mid[2]);
+    });
+
+    it('has no mutual pair in the Stack ↔ Heap story, so its arcs are where they were', () => {
+      for (const beat of STORY_BEATS) {
+        const refs = getReferences(beat).filter((r) => r.fromKind === 'object');
+        for (const r of refs)
+          expect(
+            refs.some((other) => other.fromOwner === r.to && other.to === r.fromOwner),
+            `${beat.id} ${r.id}`
+          ).toBe(false);
+      }
     });
   });
 });
