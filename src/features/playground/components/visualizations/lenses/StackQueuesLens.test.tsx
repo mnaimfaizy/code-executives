@@ -96,7 +96,8 @@ describe('StackQueuesLens', () => {
     expect(drawing()).toHaveAccessibleName(
       'Stack and queues. Step 3 of 8, line 1. Call stack: 1 frame, global() on top. Microtask queue: 1, next first: m1 callback. Task queue: empty. Timers: 1, soonest first: t1. Changed: m1 callback in microtask queue.'
     );
-    expect(container.querySelector('[data-viz-viewer]')).toHaveStyle({ background: '#0a0a1a' });
+    // The color is the longhand. jsdom serializes the `background` shorthand with the other layers' initial values.
+    expect(container.querySelector('[data-viz-viewer]')).toHaveStyle({ backgroundColor: '#0a0a1a' });
     expect(container.querySelector('[data-viz-viewer]')).toHaveAttribute('data-view', '2d');
     expect(card(container, 'm1')).toHaveAttribute('data-viz-in', 'microtasks');
     expect(card(container, 't1')).toHaveAttribute('data-viz-in', 'timers');

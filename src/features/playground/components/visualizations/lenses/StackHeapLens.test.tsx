@@ -76,7 +76,8 @@ describe('StackHeapLens', () => {
       `Stack and heap. Step 4 of ${STORY.length}, line 2. Call stack: 3 frames, makeUser('Ada') on top. Heap: 2 objects. Changed: user in makeUser('Ada'), Object #o3, Array #o4.`
     );
     // The dark palette's surface, and no collector phase: a run cannot observe a sweep.
-    expect(container.querySelector('[data-viz-viewer]')).toHaveStyle({ background: '#0a0a1a' });
+    // The color is the longhand. jsdom serializes the `background` shorthand with the other layers' initial values.
+    expect(container.querySelector('[data-viz-viewer]')).toHaveStyle({ backgroundColor: '#0a0a1a' });
     expect(container.querySelector('svg')?.textContent).not.toMatch(/ROOT|UNMARKED|RECLAIMED/);
   });
 
