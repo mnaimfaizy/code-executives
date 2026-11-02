@@ -31,11 +31,11 @@
     "@tailwindcss/vite": "4.3.3",
     "acorn": "8.19.0",
     "astring": "1.9.0",
-    "lucide-react": "1.59.0",
+    "lucide-react": "1.64.0",
     "monaco-editor": "0.57.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-router-dom": "7.18.4",
+    "react-router-dom": "7.18.5",
     "tailwindcss": "4.3.3",
     "three": "0.186.1",
     "web-vitals": "6.2.3"
